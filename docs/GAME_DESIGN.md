@@ -10,7 +10,9 @@
 
 ## 1. One-sentence pitch
 
-A tiny 2-player tower defense where you either **hold one shared lane together** or **race mirror lanes by sending units at each other** — finished in five minutes.
+A tiny 2-player tower defense where you either **hold one shared lane together** or **duel on mirror lanes fed by a sushi-belt of towers and send-packs** — finished in five minutes.
+
+**Design focus right now:** Versus is being optimized first (sushi belt, 90% parallel / 10% exclusive). Co-op stays as drafted below and gets its own belt pass later.
 
 ---
 
@@ -19,7 +21,7 @@ A tiny 2-player tower defense where you either **hold one shared lane together**
 1. **Short and decisive** — A match has a clear start, middle, and end. No grinding waves forever.
 2. **Readable at a glance** — Few tower types, strong colors, big touch targets.
 3. **Teamplay that matters** — Co-op roles are complementary, not “two solo players on one map.”
-4. **Fair versus** — Same map layout, same economy rules; skill = timing of sends + build order.
+4. **Fair versus** — Same map, same belt sequence; skill = what you buy, when you save, and when you snipe the rare exclusive plate.
 5. **Simple looks, sharp feel** — Circles, squares, arrows; juice comes from timing and feedback, not polygons.
 
 ---
@@ -43,27 +45,36 @@ Avoid: free-for-all building with no communication, and complex inventory crafti
 | Pattern | Games that nail it | How we use it |
 |---|---|---|
 | **Mirror lanes** | *Bloons TD Battles*, *Clash Royale*-adjacent pacing | Identical path, identical build slots, mirrored UI. |
-| **Send units (eco → pressure)** | *BTD Battles*, *GemCraft*-ish send fantasy | Spend income to send a pack to the opponent’s lane; stronger sends cost more and have cooldowns. |
-| **Eco vs rush tension** | *BTD Battles*, RTS | Saving for big sends vs building defense now — the core decision loop. |
-| **Sudden death / last lives** | Fighting games, *Clash* overtime | After timer, sudden death: leaks hurt more, or first leak loses. |
-| **No permanent snowball map control** | — | No destroying the opponent’s towers. You only pressure via sends and their leaks. |
+| **Conveyor / draft under time** | Sushi-belt fantasy, auto-chess timed shops, *BTD Battles* eco timing | Shared **sushi belt** of tower plates + send plates scrolls past both players. |
+| **Mostly parallel shops** | — | **~90% of plates are parallel** — both can buy the same offer. Fairness first. |
+| **Rare exclusives** | Limited drops, contested objectives | **~10% exclusive plates** — first who can afford and taps gets it (spice, not core). |
+| **Send units (eco → pressure)** | *BTD Battles* | Send plates on the belt replace static L/M/H buttons. |
+| **Sudden death** | Fighting games, *Clash* overtime | After timer, leaks hurt more / first leak can decide. |
 
-Avoid: shared-map sabotage (too chaotic for 5-minute mobile), steal towers, RNG loot mid-match.
+Avoid: every plate being a click-race, shared-map sabotage, steal towers, pay-to-win belt contents.
 
 ---
 
-## 4. Core loop (both modes)
+## 4. Core loop
+
+### Versus (optimized)
 
 ```
-Build / upgrade → Wave or send arrives → Spend gold / income →
-Decide: eco, defense, or pressure → Repeat until win condition
+Belt plate appears → Buy tower OR buy send OR skip/save →
+Place tower / opponent receives send → Defend leaks → Repeat
+```
+
+### Co-op (unchanged for now — belt pass later)
+
+```
+Build / upgrade from loadout shop → Scripted wave → Spend gold →
+Coordinate with partner → Survive timer
 ```
 
 **Touch UX (mobile):**
-- Tap empty slot → tower menu (3 choices max)
-- Tap own tower → Upgrade / Sell
-- Versus only: bottom strip = Send buttons (3 pack sizes)
-- Co-op only: top strip = Ping + shared Panic meter
+- **Versus:** Bottom sushi belt — tap plate to buy (if gold enough); tower goes to hand → tap slot to place; send plate fires immediately
+- Tap own tower → Upgrade / Sell (upgrades are **not** on the belt)
+- **Co-op:** Tap empty slot → tower menu from loadout; Ping + Panic on top strip
 
 ---
 
@@ -148,53 +159,132 @@ Each tower has **2 upgrades** (not 4+). Upgrade path is linear: L1 → L2 → L3
 
 ---
 
-## 7. Mode B — Versus (mirror lanes + send units)
+## 7. Mode B — Versus (mirror lanes + sushi belt) — OPTIMIZED PASS
+
+This section is the active design focus. Co-op still uses the loadout shop until its own pass.
 
 ### Layout
 
-- Split screen **or** tabbed “my lane / their lane” (mobile-friendly: **your lane full screen**, peek button for opponent)
-- Identical path & 6 build slots each
-- Opponent HP and last-sent pack visible as a thin status bar
+- Full-screen **own lane** (portrait)
+- Thin status bar: opponent HP, opponent gold band (approx), last send they bought
+- **Sushi belt** along the bottom (~20–24% of screen height) — always visible
+- Identical path & **6 build slots** each
+- Peek-at-opponent lane = polish later
 
-**Recommendation for v1:** Full-screen own lane + status bar (enemy HP, eco, last send). Peek is polish.
+### The sushi belt (core versus fantasy)
+
+One shared sequence of **plates** scrolls left→right (or top of belt strip).  
+Each plate is either a **Tower** or a **Send**.
+
+```
+… → [Bolt 50] → [Light Send 40] → [Glue 60] → [★ Sniper 90] → [Mid Send 90] → …
+                 parallel              parallel     EXCLUSIVE          parallel
+```
+
+#### Plate types
+
+| Kind | What you get on buy | Default share mode |
+|---|---|---|
+| Tower plate | 1× tower token in hand → place on free slot | Parallel (~90%) |
+| Send plate | Pack immediately enters opponent lane | Parallel (~90%) |
+| Exclusive of either | Same, but only **one** player may buy it | Exclusive (~10%) |
+
+#### 90 / 10 share rule
+
+| Mode | Share of plates | Behavior |
+|---|---|---|
+| **Parallel** | ~90% | Both players see the same plate. Either can buy it **independently** while it is on the belt. One buying does **not** remove it for the other. |
+| **Exclusive** | ~10% | Marked with a clear star / thick rim / “1×”. **First valid purchase** (server: enough gold + tap) claims it; plate vanishes for the other. |
+
+**Cadence (readable, not pure RNG):** every **10th** plate is exclusive (plates 10, 20, 30…).  
+That is exactly 10%, easy to learn, easy to balance. Optional later: weighted RNG ±1 around that slot.
+
+**Telegraph for exclusives:** Exclusive plates pulse for **0.6s** before they become buyable. Reduces pure ping-snipe; rewards watching the belt.
+
+**Dwell time:** Each plate stays claimable for **~4.5s**, then slides off. Missed = gone (no backlog clutter).
+
+**Hand limit:** Max **1** unplaced tower token. Must place or sell-back (90% refund) before buying another tower plate. Sends do not use the hand.
+
+### Belt composition by phase
+
+Belt contents shift so early/mid/late have different decisions. Same seed for both players.
+
+| Phase | Time | Towers weighted toward | Sends weighted toward | Notes |
+|---|---|---|---|---|
+| Open | 0:00–0:25 | Cheap (Bolt, Mines, Glue) | None | Fair setup; no sends yet |
+| Pressure | 0:25–2:00 | Mixed cheap/mid | Light | First exclusives appear |
+| Mid | 2:00–4:00 | Spray, Beacon, Sniper | Mid | Eco vs defense bites |
+| Late | 4:00–5:00 | Sniper, upgraded-value repeats | Heavy + Mid | Big swings |
+| Sudden death | 5:00+ | Defense-leaning | Light spam + Mid | Faster belt (+20% scroll) |
+
+Rough mix on the belt overall: **~55% tower / ~45% send** after Open.
+
+### Send plates (replace old L/M/H buttons)
+
+| Send | Contents | Cost | Earliest on belt |
+|---|---|---|---|
+| Light | 6× Runner | 40 | 0:25 |
+| Mid | 4× Grunt + 2× Swarm | 90 | 1:30 |
+| Heavy | 2× Tank + 1× Bosslet | 180 | 3:00 |
+
+Rules:
+- Buying a send plate = send fires (queue max **1** outgoing pack; if busy, plate purchase is rejected with a short buzz).
+- **Eco tax:** After any send, passive income −20% for 3s.
+- Defender consolation gold on leak: 10–20.
+- Parallel send plates mean both can rush the same timing — mirror skill check.
+- Exclusive Heavy is a match-swing moment (rare, telegraphed).
+
+### Tower plates & placement
+
+- Costs match the tower table in §5.
+- After buy: token sits in hand (ghost icon); tap a free slot to place.
+- **Upgrades stay off-belt:** tap your tower → Upgrade (same gold costs as before). Keeps the belt about *access*, not every micro decision.
+- Duplicate tower plates can appear; you may build multiples.
+- If no free slot: tower purchase blocked (or auto-offers sell prompt) — prefer **block + shake** for clarity.
+
+### Economy tweaks for belt pacing
+
+Belt gates opportunity, so income stays as in §5, with one change:
+
+- **Miss-pity:** If a player buys nothing for 12s while having ≥ cost of the cheapest on-screen plate, the next parallel plate they can afford gets a **10% discount** once. Soft anti-starve for new players; does not apply to exclusives.
 
 ### Match structure (~5 min)
 
 | Phase | Time | What happens |
 |---|---|---|
-| Build | 0:00–0:25 | No sends allowed (fair setup) |
-| Open | 0:25–2:00 | Small sends unlocked |
-| Mid | 2:00–4:00 | Medium/heavy sends unlock |
-| Late | 4:00–5:00 | Eco ramps; big sends |
-| Sudden death | 5:00+ | First leak loses **or** leaks deal ×2 until someone dies |
+| Open belt | 0:00–0:25 | Towers only; place core defense |
+| Pressure | 0:25–2:00 | Light sends enter belt |
+| Mid | 2:00–4:00 | Mid sends + stronger towers |
+| Late | 4:00–5:00 | Heavy sends; exclusives matter more |
+| Sudden death | 5:00+ | Faster belt; leaks deal ×2 until someone dies |
 
 **Win:** Opponent HP → 0.  
-**Draw prevention:** Sudden death after 5:00; if both die same second, higher remaining eco wins (tiebreak).
+**Tiebreak:** Same-second mutual death → higher current gold wins.
 
-### Send Units system
+### Fairness & netcode (versus belt)
 
-Sending is the versus identity.
+- Server owns belt index, plate IDs, and gold.
+- **Parallel buys:** both can succeed; no race.
+- **Exclusive buys:** server resolves first valid request; loser gets “sniped” toast + gold untouched.
+- Client may show optimistic gray-out only after server ACK on exclusives.
 
-| Send | Contents | Cost | Cooldown | Unlock |
-|---|---|---|---|---|
-| Light | 6× Runner | 40 | 4s | 0:25 |
-| Mid | 4× Grunt + 2× Swarm | 90 | 8s | 1:30 |
-| Heavy | 2× Tank + 1× Bosslet | 180 | 14s | 3:00 |
+### Versus strategy space (with belt)
 
-Rules:
-- You cannot send while a send pack from you is still entering (queue max 1).
-- **Eco tax:** Each send temporarily reduces passive income by 20% for 3s (prevents pure all-in spam without defense).
-- Leaked units give the defender a small gold consolation (10–20) so a lost life isn’t pure brick.
+- **Rush:** Spend early parallel Lights; force opponent onto defense plates
+- **Eco bank:** Skip mid plates, cash Exclusive Heavy or stacked Mid timing
+- **Tech line:** Prioritize Glue/Beacon/Sniper parallels; ignore early sends
+- **Snipe discipline:** Save ~90–180 gold before exclusive windows (every 10th plate)
+- **Hand discipline:** Don’t hold a tower token while a must-have send is coming
 
-### Versus strategy space
+### Versus success feel
 
-- **Rush:** Early Light spam, force panic builds
-- **Eco:** Skip early sends, hit Heavy timing
-- **Tech defense:** Glue + Beacon + Sniper, punish their Heavy
-- **Bait:** Sell and rebuild after they overcommit sends
+> “I banked for the exclusive Heavy, but they glued in time — next rematch I’m sniping the Beacon.”
 
-This is enough depth for a minigame without card collections.
+---
 
+## 7b. Co-op note (deferred)
+
+Co-op keeps §6 loadout shop for now. A later pass will decide whether co-op uses a **shared contested belt**, a **parallel belt**, or stays shop-based. Do not mix unfinished co-op belt rules into Versus.
 ---
 
 ## 8. Meta progression (keep tiny)
@@ -212,27 +302,27 @@ No tower unlock tree that changes balance between players.
 
 ---
 
-## 9. UI wireframe (portrait)
+## 9. UI wireframe (portrait) — Versus
 
 ```
-┌─────────────────────┐
-│ HP ❤ 16   ⏱ 2:41   │
-│ Gold 184  Income+9  │
-├─────────────────────┤
-│                     │
-│     [path / units]  │
-│   □ slot   □ slot   │
-│                     │
-│   □ slot   □ slot   │
-│                     │
-│        BASE         │
-├─────────────────────┤
-│ [Tower] [Upgrade]   │  ← context actions
-│ COOP: [Ping][Panic] │
-│ PVP:  [L][M][H] Send│
-└─────────────────────┘
+┌─────────────────────────┐
+│ HP ❤ 16  ⏱ 2:41  VS HP 11│
+│ Gold 184  Income +9     │
+├─────────────────────────┤
+│                         │
+│      [path / units]     │
+│    □ slot    □ slot     │
+│                         │
+│    □ slot    □ slot     │
+│           BASE          │
+├─────────────────────────┤
+│ hand: [Bolt?]  sell     │
+│ 〰 sushi belt 〰〰〰〰〰  │
+│ [Glue] [Light] [★Heavy] │  ← ★ = exclusive
+└─────────────────────────┘
 ```
 
+Co-op UI remains shop + ping/panic until the co-op pass.
 ---
 
 ## 10. Art & audio direction (cheap)
@@ -249,24 +339,26 @@ No tower unlock tree that changes balance between players.
 
 Out of scope for this concept doc, but constraints that keep the design honest:
 
-- Authority: **server-authoritative** for online (anti-cheat on gold/sends)
+- Authority: **server-authoritative** for online (gold, belt index, exclusive claims)
+- Exclusive resolve: first valid server request wins; parallel buys never contend
 - Tick: 10–20 Hz is enough
-- Deterministic-ish combat for replays optional later
-- Offline: vs easy bot using scripted send timings
+- Offline: bot follows scripted buy priorities on the same belt seed
 
 ---
 
 ## 12. MVP scope (when building starts)
 
-**Must have**
-- 1 co-op map, 1 versus mirror map
-- 6 towers / 5 enemies as above
-- Send system + sudden death
-- Basic online or local 2P (pick one first)
-- Tutorials: 30s co-op tip, 30s versus tip
+**Must have (Versus-first MVP)**
+- 1 versus mirror map + sushi belt (90% parallel / 10% exclusive cadence)
+- Tower + send plates, hand placement, upgrades on-tower
+- Sudden death + basic bot or local 2P
+- 30s versus tip (parallel vs ★ exclusive)
+
+**Still in full MVP later**
+- Co-op map + loadout/pings/panic (belt undecided)
 
 **Explicitly cut from MVP**
-- 2v2, ranked ladder, hero units, card drafts, 3D, seasonal battle pass
+- 2v2, ranked ladder, hero units, card drafts, 3D, seasonal battle pass, every-plate click races
 
 ---
 
@@ -275,7 +367,7 @@ Out of scope for this concept doc, but constraints that keep the design honest:
 A good session feels like:
 
 - Co-op: “We barely held because you glued and I sniped the tanks.”
-- Versus: “I eco’d into Heavy and broke their glue line.”
+- Versus: “I skipped two Lights to bank the ★ Heavy — they still had Glue ready.”
 - Either way: rematch button is tempting within 10 seconds of the result screen.
 
 ---
@@ -288,4 +380,4 @@ A good session feels like:
 
 ---
 
-*Document status: Concept complete for design sign-off. Ready to prototype after approval.*
+*Document status: Versus sushi-belt pass drafted (90/10). Co-op belt pass pending. Ready for design feedback on Versus before co-op optimization.*
