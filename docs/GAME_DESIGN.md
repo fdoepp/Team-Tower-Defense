@@ -12,7 +12,7 @@
 
 A tiny 2-player tower defense where you either **hold one shared lane together** or **duel on mirror lanes fed by a sushi-belt of towers and send-packs** — finished in five minutes.
 
-**Design focus right now:** Versus is being optimized first (sushi belt, 90% parallel / 10% exclusive). Co-op stays as drafted below and gets its own belt pass later.
+**Design focus:** Versus sushi belt is locked (§7). This pass optimizes **Co-op roles + alternate victories** (§6).
 
 ---
 
@@ -20,7 +20,7 @@ A tiny 2-player tower defense where you either **hold one shared lane together**
 
 1. **Short and decisive** — A match has a clear start, middle, and end. No grinding waves forever.
 2. **Readable at a glance** — Few tower types, strong colors, big touch targets.
-3. **Teamplay that matters** — Co-op roles are complementary, not “two solo players on one map.”
+3. **Teamplay that matters** — Co-op splits labor (supply vs. build); either role can clutch an alternate win, but most runs just hold the line together.
 4. **Fair versus** — Same map, same belt sequence; skill = what you buy, when you save, and when you snipe the rare exclusive plate.
 5. **Simple looks, sharp feel** — Circles, squares, arrows; juice comes from timing and feedback, not polygons.
 
@@ -32,13 +32,14 @@ A tiny 2-player tower defense where you either **hold one shared lane together**
 
 | Pattern | Games that nail it | How we use it |
 |---|---|---|
-| **Split roles (damage / control / economy)** | *Orcs Must Die*, *Dungeon Defenders*, *Sanctum 2* | Each player picks a **Loadout** before the match (3 towers). Overlap is allowed but inefficient. |
-| **Shared life, shared loss** | Most co-op TDs | One HP pool. No blaming the “other lane” — you win or lose together. |
-| **Ping / callouts** | *Deep Rock*, co-op shooters | One-tap pings: “Need slow here”, “Upgrade this”, “Save gold”. |
-| **Combo towers** | *Bloons* buffs, *Kingdom Rush* synergies | Towers gain a small bonus when placed next to a partner’s tower (adjacency buff). |
-| **Shared emergency button** | *Orcs Must Die* traps / cooldowns | One shared **Panic Skill** per match (freeze / clear small pack) — both must agree or one spends team meter. |
+| **True job split** | *Deep Rock* (class kits), *Overcooked* (stations), *Orcs Must Die* | Fixed roles: **Supplier** gathers mats, **Architect** spends them on towers. |
+| **Pipeline dependency** | Factory/crafting co-op, *Factorio*-lite fantasy | Architect cannot place mid/late towers without Supplier deliveries. |
+| **Shared life, shared loss** | Most co-op TDs | One HP pool — alt-wins still require the lane to stay alive. |
+| **Multiple victory paths** | *Civilization* (domination / science / culture…) | ~80% **Hold** wins; ~20% flashy role breakthroughs (**Stockpile** / **Bastion**). |
+| **Ping / callouts** | *Deep Rock*, co-op shooters | Need Parts / Need Slow / Upgrade Here / Push Alt-Win. |
+| **Shared emergency button** | *Orcs Must Die* | Shared **Panic Freeze** filled by both roles’ actions. |
 
-Avoid: free-for-all building with no communication, and complex inventory crafting.
+Avoid: both players doing the same job, crafting trees too deep for 5 minutes, alt-wins that ignore the partner.
 
 ### Versus that feels fair
 
@@ -64,17 +65,18 @@ Belt plate appears → Buy tower OR buy send OR skip/save →
 Place tower / opponent receives send → Defend leaks → Repeat
 ```
 
-### Co-op (unchanged for now — belt pass later)
+### Co-op (roles + pipeline)
 
 ```
-Build / upgrade from loadout shop → Scripted wave → Spend gold →
-Coordinate with partner → Survive timer
+Supplier harvests / refines materials → delivers to shared crate →
+Architect spends mats (+gold) to place/upgrade towers →
+Both keep HP alive → Hold timer OR hit a role breakthrough win
 ```
 
 **Touch UX (mobile):**
-- **Versus:** Bottom sushi belt — tap plate to buy (if gold enough); tower goes to hand → tap slot to place; send plate fires immediately
-- Tap own tower → Upgrade / Sell (upgrades are **not** on the belt)
-- **Co-op:** Tap empty slot → tower menu from loadout; Ping + Panic on top strip
+- **Versus:** Bottom sushi belt — tap plate to buy; tower → hand → slot; send fires immediately; upgrades on-tower
+- **Co-op Supplier:** Tap resource nodes / refine UI / “Deliver” to crate; cannot place combat towers
+- **Co-op Architect:** Tap crate-funded tower menu → place/upgrade on slots; cannot harvest nodes
 
 ---
 
@@ -97,16 +99,17 @@ Coordinate with partner → Survive timer
 
 Players never need more than these:
 
-| ID | Name | Role | Cost | Notes |
-|---|---|---|---|---|
-| T1 | **Bolt** | Single-target DPS | 50 | Default workhorse |
-| T2 | **Spray** | AoE splash | 75 | Weak vs single tanks |
-| T3 | **Glue** | Slow aura | 60 | Essential for co-op combos |
-| T4 | **Sniper** | High damage, slow fire | 90 | Anti-tank |
-| T5 | **Beacon** | Aura: +damage to adjacent ally towers | 80 | Co-op star; still useful in versus |
-| T6 | **Mines** | Ground trap, charges | 55 | Good for chokepoints |
+| ID | Name | Role | Gold | Co-op mats | Notes |
+|---|---|---|---|---|---|
+| T1 | **Bolt** | Single-target DPS | 50 | 2 Scrap | Default workhorse |
+| T2 | **Spray** | AoE splash | 75 | 3 Scrap | Weak vs single tanks |
+| T3 | **Glue** | Slow aura | 60 | 1 Core | Essential control |
+| T4 | **Sniper** | High damage, slow fire | 90 | 2 Core | Anti-tank |
+| T5 | **Beacon** | Aura: +damage adjacent | 80 | 2 Core | Buffs neighbors |
+| T6 | **Mines** | Ground trap, charges | 55 | 2 Scrap | Chokepoints |
 
-Each tower has **2 upgrades** (not 4+). Upgrade path is linear: L1 → L2 → L3.
+Versus uses gold only (via belt). Co-op gates with mats + gold.  
+Each tower has **2 upgrades** (L1 → L2 → L3), paying the same mat type again at higher amounts.
 
 ### Enemies (minimal set — 5)
 
@@ -120,44 +123,125 @@ Each tower has **2 upgrades** (not 4+). Upgrade path is linear: L1 → L2 → L3
 
 ---
 
-## 6. Mode A — Co-op (shared map)
+## 6. Mode A — Co-op (shared map, role split) — OPTIMIZED PASS
+
+### Design intent
+
+Co-op should feel like **two jobs on one machine**, not “two builders sharing slots.”  
+Inspiration: *Civilization*-style multiple ways to win, tuned for a 5-minute mobile run.
+
+**Opinion (locked into this design):** Alternate victories are a great fit **if** we keep exactly **one default path + one breakthrough per role**, make breakthroughs harder/rarer (~20% of wins), and keep them as **team wins** (both celebrate). Too many Civ-style paths would muddy a minigame; greed tunnels that ignore HP should still lose.
+
+### Roles (picked in lobby, 10s)
+
+| Role | Fantasy | Can do | Cannot do |
+|---|---|---|---|
+| **Supplier** | Beschafft Materialien | Harvest nodes, refine, deliver to crate, spend gold on logistics | Place/upgrade combat towers |
+| **Architect** | Baut die Verteidigung | Place/upgrade towers from crate stock, sell towers, aim Panic | Harvest or refine materials |
+
+Roles are asymmetric on purpose. Swap next match is encouraged.
 
 ### Layout
 
 - One vertical lane (portrait): spawn top → base bottom
-- **8 build slots** along the path (4 left / 4 right), clearly numbered
-- Both players can build on any free slot
-- Optional soft claim: placing a tower “owns” the slot for upgrades (partner can still sell if agreed via ping — or allow partner upgrade with 10% tax to reduce griefing)
+- **6 combat slots** along the path (Architect only)
+- **3 resource nodes** off-path (left/right edges) — Supplier only
+- **Shared Crate** UI near the base (material counts both can see)
+- **Refine bench** next to crate (Supplier mini-loop)
 
-**Recommendation for v1:** Anyone can upgrade any tower. Trust + short matches. Add ownership later if griefing appears.
+```
+   NODE        spawn
+     \           |
+   NODE ---- [ path + slots ] ---- NODE
+                 |
+            CRATE / REFINE
+               BASE
+```
+
+### Materials (keep to 2 types)
+
+| Mat | How Supplier gets it | Architect spends it on |
+|---|---|---|
+| **Scrap** | Tap nodes (cooldown), small bonus from kills near nodes | Bolt, Spray, Mines + their upgrades |
+| **Core** | Refine 3 Scrap → 1 Core at bench (2.5s channel) | Glue, Sniper, Beacon + their upgrades |
+
+Why only two: readable on a phone, clear midgame pivot (Cores unlock control/tech).
+
+**Starter kit:** Crate begins with Scrap 8 / Core 1 so Architect can place an opener without waiting idle.
+
+**Gold in co-op:** Shared team gold (same income numbers as §5).  
+- Supplier: gold speeds node cooldown / pays for **Surge Extract** (burst harvest).  
+- Architect: gold is a second cost next to mats (towers still have a gold price, but **mats are the gate**).
+
+Example: Sniper = **90 gold + 2 Core**. If mats missing, button shows “need Core” not “broke.”
+
+### Supplier loop (detail)
+
+1. Tap a ready node → +2 Scrap (node CD ~3.5s; Surge Extract: 25g → instant +4 Scrap, 12s CD)
+2. Optional: at bench, convert 3 Scrap → 1 Core (channel; cancelable)
+3. Tap **Deliver** if carrying (Supplier has a pocket of max 6 Scrap + 2 Core). Delivery is instant into crate.
+4. Optional late tool: **Overclock Node** (40g) — one node runs 30% faster for 20s (feeds Stockpile path)
+
+Pocket + Deliver keeps the “I bring you parts” fantasy instead of auto-deposit magic.
+
+### Architect loop (detail)
+
+1. Watch crate + wave status
+2. Buy tower if crate + gold allow → place on free slot
+3. Upgrade towers (costs Scrap/Core + gold)
+4. Ping Supplier for missing mat type
+5. Fire Panic when meter full
+
+**Adjacency:** Towers on neighboring slots gain **+10% damage** (Beacon adds one more stack). Still rewards smart placement, not a second builder.
 
 ### Match structure (~5 min)
 
 | Phase | Time | What happens |
 |---|---|---|
-| Loadout | 20s | Each picks 3 tower types from the 6 |
-| Calm | 0:00–0:40 | Build, first income |
-| Waves 1–4 | ~0:40–3:30 | Scripted escalating waves |
-| Spike | ~3:30–4:30 | Bosslet + mixed pack |
-| Final hold | until HP 0 or timer | Survive until **4:30** clock → victory |
+| Role pick | 10s | Supplier / Architect |
+| Calm | 0:00–0:40 | First deliveries + opener towers |
+| Waves 1–3 | 0:40–2:30 | Scrap-heavy defense |
+| Pivot | 2:30–3:30 | Cores matter (Glue/Sniper/Beacon) |
+| Spike | 3:30–4:30 | Bosslet + mixed pack |
+| Resolve | ≤4:30 | Hold timer **or** breakthrough already triggered |
 
-**Win:** Survive until the timer ends with HP > 0.  
-**Lose:** HP hits 0.
+**Lose:** HP hits 0 (always overrides alt-win progress).
 
-### Collaboration systems (the fun part)
+### Victory paths (Civ-lite)
 
-1. **Loadout asymmetry** — If both take only Bolt, you lack AoE/slow. Natural pressure to diversify.
-2. **Adjacency bonus** — Partner tower within 1 slot: **+10% damage** (Beacon stacks once more).
-3. **Shared Panic Meter** — Fills from kills. At full, either player can trigger **Freeze 2.5s**. Once per ~90s effective use.
-4. **Pings (no voice required)** — 4 icons: Need Slow / Need Splash / Upgrade Here / Save Gold.
-5. **Combo challenge (optional score)** — Bonus stars if you win with ≥3 adjacency links active — soft goal for replay.
+Target mix over many matches: **~80% Hold**, **~10% Stockpile**, **~10% Bastion**.
+
+| Victory | Who drives it | Condition | Feel |
+|---|---|---|---|
+| **Hold** (default) | Both | Survive until **4:30** with HP > 0 | “We gritted it out.” |
+| **Stockpile** (Supplier breakthrough) | Supplier | Shared crate reaches **Stockpile 100** (Scrap×1 + Core×4 toward score) **and** HP > 0 | “Logistics clutched the contract early.” |
+| **Bastion** (Architect breakthrough) | Architect | Fortification score **≥ 40** while HP ≥ 12, held for **8 continuous seconds** | “The wall became unbeatable.” |
+
+**Fortification score (simple):**  
+`sum over towers (tier × weight)` with weights Bolt/Mines 1, Spray/Glue 2, Sniper/Beacon 3; tier L1/L2/L3 = ×1/2/3.  
+Example: Sniper L3 (9) + Glue L2 (4) + Beacon L2 (6) + Bolt L2 (2) = 21 — needs a strong, upgraded grid to hit 40.
+
+**Breakthrough rules (important):**
+1. Alt-wins are **team victories** — both get the win screen; MVP banner names the driving role.
+2. Alt-wins are **opt-in greed**: chasing Stockpile/Bastion means fewer Panic dumps / greedier refine — if the lane breaks, you still lose.
+3. Partner is never useless: Stockpile needs Architect to keep HP up; Bastion needs Supplier feeding Cores.
+4. Only one victory can fire; first condition met ends the match (Hold checked at timer).
+5. UI shows two thin breakthrough meters (Stockpile / Bastion) so the team can choose to contest them or ignore them.
+
+### Collaboration tools
+
+1. **Pings:** Need Scrap / Need Core / Upgrade Here / Push Breakthrough / Save Panic  
+2. **Shared Panic Meter:** +from deliveries AND kills. Freeze 2.5s when full.  
+3. **Crate visibility:** Architect always sees incoming pocket contents when Supplier is carrying.
 
 ### Co-op difficulty
 
-- One difficulty for v1: **Standard**
-- Later: Elite (less income, faster swarms)
+- v1: **Standard** only  
+- Later: Elite (node CDs longer, Stockpile 120, Bastion 48)
 
----
+### Why not a sushi belt in co-op (for now)
+
+Versus already owns the belt fantasy. Co-op’s fantasy is **pipeline + roles**. Mixing both would blur modes. Revisit only if Supplier harvesting feels dull in playtests.
 
 ## 7. Mode B — Versus (mirror lanes + sushi belt) — OPTIMIZED PASS
 
@@ -282,9 +366,14 @@ Belt gates opportunity, so income stays as in §5, with one change:
 
 ---
 
-## 7b. Co-op note (deferred)
+## 7b. Mode separation
 
-Co-op keeps §6 loadout shop for now. A later pass will decide whether co-op uses a **shared contested belt**, a **parallel belt**, or stays shop-based. Do not mix unfinished co-op belt rules into Versus.
+| Mode | Acquisition fantasy |
+|---|---|
+| **Versus** | Sushi belt (90/10) |
+| **Co-op** | Supplier → Crate → Architect pipeline |
+
+Do not mix belt rules into co-op unless playtests demand it.
 ---
 
 ## 8. Meta progression (keep tiny)
@@ -302,7 +391,9 @@ No tower unlock tree that changes balance between players.
 
 ---
 
-## 9. UI wireframe (portrait) — Versus
+## 9. UI wireframes (portrait)
+
+### Versus
 
 ```
 ┌─────────────────────────┐
@@ -322,7 +413,27 @@ No tower unlock tree that changes balance between players.
 └─────────────────────────┘
 ```
 
-Co-op UI remains shop + ping/panic until the co-op pass.
+### Co-op
+
+```
+┌─────────────────────────────┐
+│ HP ❤ 14  ⏱ 2:41  Panic ▮▮▮ │
+│ Stockpile 62/100  Bastion 28│
+├─────────────────────────────┤
+│ NODE·        [path]     ·NODE│
+│           □     □            │
+│ NODE·     □     □            │
+│         CRATE S:12 C:3       │
+│           BASE               │
+├─────────────────────────────┤
+│ Supplier: [Harvest][Refine]  │
+│           [Deliver][Surge]   │
+│ Architect:[Bolt][Glue][…]    │
+│ Pings: Scrap|Core|Push|Panic │
+└─────────────────────────────┘
+```
+
+(Each client highlights only their role’s controls; partner actions still visible as ghosts.)
 ---
 
 ## 10. Art & audio direction (cheap)
@@ -348,17 +459,13 @@ Out of scope for this concept doc, but constraints that keep the design honest:
 
 ## 12. MVP scope (when building starts)
 
-**Must have (Versus-first MVP)**
-- 1 versus mirror map + sushi belt (90% parallel / 10% exclusive cadence)
-- Tower + send plates, hand placement, upgrades on-tower
-- Sudden death + basic bot or local 2P
-- 30s versus tip (parallel vs ★ exclusive)
-
-**Still in full MVP later**
-- Co-op map + loadout/pings/panic (belt undecided)
+**Must have**
+- Versus: mirror map + sushi belt (90/10), sudden death, bot or local 2P
+- Co-op: shared map, Supplier/Architect roles, Scrap/Core crate, three victory paths
+- Tutorials: 30s versus tip, 40s co-op role tip
 
 **Explicitly cut from MVP**
-- 2v2, ranked ladder, hero units, card drafts, 3D, seasonal battle pass, every-plate click races
+- 2v2, ranked ladder, hero units, card drafts, 3D, battle pass, co-op sushi belt, 4+ Civ victory types
 
 ---
 
@@ -366,9 +473,10 @@ Out of scope for this concept doc, but constraints that keep the design honest:
 
 A good session feels like:
 
-- Co-op: “We barely held because you glued and I sniped the tanks.”
+- Co-op Hold: “You kept Cores coming while I glued the Bosslet.”
+- Co-op breakthrough: “Stockpile hit 100 with eight seconds left — logistics win.”
 - Versus: “I skipped two Lights to bank the ★ Heavy — they still had Glue ready.”
-- Either way: rematch button is tempting within 10 seconds of the result screen.
+- Rematch tempting within 10 seconds of the result screen.
 
 ---
 
@@ -380,4 +488,4 @@ A good session feels like:
 
 ---
 
-*Document status: Versus sushi-belt pass drafted (90/10). Co-op belt pass pending. Ready for design feedback on Versus before co-op optimization.*
+*Document status: Versus belt (90/10) + Co-op roles/pipeline/Civ-lite victories drafted. Ready for feedback, then prototype.*

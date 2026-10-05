@@ -1,6 +1,6 @@
 # LaneLink — Team Tower Defense (Konzept)
 
-Kurzes **2D-Handy-Minigame** (~5 Minuten): zu zweit **Koop auf einer geteilten Map** oder **Versus auf Spiegel-Lanes mit Sushi-Band**.
+Kurzes **2D-Handy-Minigame** (~5 Minuten): **Koop mit Aufgabenteilung** oder **Versus mit Sushi-Band**.
 
 Grafik bewusst simpel (Flächen, Formen, klare Silhouetten).
 
@@ -8,24 +8,19 @@ Grafik bewusst simpel (Flächen, Formen, klare Silhouetten).
 
 - **[Game Design Concept](docs/GAME_DESIGN.md)** — vollständiges Konzept
 
-## Aktueller Fokus: Versus optimieren
+## Versus
 
-Sushi-Band für Towers **und** Sends:
+Sushi-Band für Towers und Sends: **~90% parallel**, **~10% exklusiv (★, jede 10. Plate)**.
 
-| Anteil | Regel |
+## Koop
+
+| Rolle | Job |
 |---|---|
-| **~90% parallel** | Beide können dasselbe Angebot unabhängig kaufen |
-| **~10% exklusiv (★)** | Nur der Erste mit genug Gold bekommt es (jede 10. Plate) |
+| **Supplier** | Nodes ernten, Scrap→Core raffinieren, an die Kiste liefern |
+| **Architect** | Aus der Kiste Türme bauen/upgraden, Lane halten |
 
-Koop bleibt vorerst beim Loadout-Shop; eigenes Band-Pass kommt danach.
-
-## Modi (Kurz)
-
-| Modus | Idee | Sieg |
-|---|---|---|
-| **Versus** | Spiegel-Lanes + Sushi-Band (90/10) | Gegner-HP auf 0 |
-| **Koop** | Eine Lane, gemeinsames HP, Loadouts, Pings, Panic | Timer überleben |
+Siege (Civ-lite): **~80% Hold** (Timer), plus seltene Breakthroughs **Stockpile** (Supplier) und **Bastion** (Architect) — immer Team-Siege.
 
 ## Status
 
-Konzeptphase — Versus-Band-Pass geschrieben, noch keine Engine/Implementierung.
+Konzeptphase — Versus- und Koop-Pass geschrieben, noch keine Implementierung.
