@@ -123,9 +123,9 @@ function pointOnPath(t: number): { x: number; y: number } {
 }
 
 function diffMul(d: AiDifficulty): number {
-  if (d === "easy") return 0.75;
-  if (d === "hard") return 1.25;
-  return 1;
+  if (d === "easy") return 0.55;
+  if (d === "hard") return 1.15;
+  return 0.85;
 }
 
 export class Match {
@@ -169,7 +169,7 @@ export class Match {
     return {
       team,
       mix: { ...setup.mix },
-      hp: 20,
+      hp: 24,
       gold: isPlayer ? 130 : 120,
       beer: 12,
       thirst: 20,
@@ -317,8 +317,8 @@ export class Match {
   private tickWaves(dt: number): void {
     const mul = diffMul(this.cfg.settings.difficulty);
     const rate =
-      (0.55 + this.minute / 90 + this.ai.aggro / 120) * mul *
-      (this.phase === "et" ? 1.3 : 1);
+      (0.28 + this.minute / 140 + this.ai.aggro / 180) * mul *
+      (this.phase === "et" ? 1.25 : 1);
     this.spawnAcc += dt * rate;
     while (this.spawnAcc >= 1) {
       this.spawnAcc -= 1;

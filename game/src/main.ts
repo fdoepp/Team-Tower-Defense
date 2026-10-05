@@ -232,7 +232,7 @@ function renderMatchScreen(): void {
                 )
                 .join("")}
               <button data-act="upgrade">Upgrade<span class="price">Slot</span></button>
-              <button data-act="pyro">Pyro<span class="price">25g</span></button>
+              <button data-act="pyro">Zünden<span class="price">25g Pyro</span></button>
               <button data-act="raid">Trinken<span class="price">20g Fremd</span></button>
             </div>
           </div>
@@ -312,7 +312,7 @@ function syncHud(m: Match): void {
     (app.querySelector(`#${id}`) as HTMLElement).style.width =
       `${Math.round(clampPct(v, max))}%`;
   };
-  setBar("hp", m.player.hp, 20);
+  setBar("hp", m.player.hp, 24);
   $("hpv").textContent = String(Math.max(0, Math.ceil(m.player.hp)));
   setBar("gold", m.player.gold, 250);
   $("goldv").textContent = String(Math.floor(m.player.gold));
