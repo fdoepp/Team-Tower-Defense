@@ -1,24 +1,33 @@
-# LaneLink — Stadion Team-TD (Konzept)
+# LaneLink — Stadion Team-TD
 
 Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fußball auf dem Platz. Flavor: **KSC vs. VfB**.
+
+## Spielen
+
+```bash
+cd game
+npm install
+npm run dev
+```
+
+Dann im Browser öffnen (Portrait/Handy-Breite ideal). **Solo vs KI** ist spielbar.
 
 ## Dokument
 
 - **[Game Design Concept](docs/GAME_DESIGN.md)** — vollständiges Konzept
 
-## Modi
+## Implementiert (Prototyp)
 
-| Modus | Kern |
-|---|---|
-| **Versus** | Spiegel-Kurven, Sushi-Band 90/10, Early Wins inkl. Curva-Kill |
-| **Koop** | Supplier → Kiste → Architect, gemeinsame Kurva |
-| **Solo** | vs KI / Koop mit KI — Default einfach & lesbar, Schwierigkeit + Verhalten anpassbar |
+- Solo vs KI (Schwierigkeit + Verhalten einstellbar)
+- Architect-Setup: Fan-Mix (10 Punkte) + Starttower
+- Kurva-TD: Slots, Towers, Waves, Leaks
+- Bier / Durst / Interesse / Stimmung / Pyro / Fremdtrinken
+- Spielzüge → Tore, Kummerbier, Fieberphase
+- Early Wins: Bier & Stimmung (reguläre Zeit); Curva-Kill bei HP 0
+- 90′ → Verlängerung → Elfmeter (kein Unentschieden)
 
-## Sieg
+## Noch nicht
 
-- **Early Wins** nur bis Ende der regulären Zeit (Bier, Stimmung, Versus-Curva-Kill) → Spielstand egal  
-- Sonst entscheidet das **Fußballspiel** (90′ → VL → Effen) — **kein Unentschieden**
-
-## Status
-
-Konzeptphase — Design dokumentiert, noch keine Engine-Implementierung.
+- Echter 2P-Koop / Versus-Online
+- Sushi-Band-UI (Versus)
+- Supplier-Rolle getrennt spielbar
