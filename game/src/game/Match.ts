@@ -494,9 +494,16 @@ export class Match {
   }
 
   tryBuild(kind: TowerKind): boolean {
-    if (this.selectedSlot == null) return false;
-    const slot = this.player.slots[this.selectedSlot];
-    if (!slot || slot.tower) return false;
+    let slot =
+      this.selectedSlot != null ? this.player.slots[this.selectedSlot] : null;
+    if (!slot || slot.tower) {
+      slot = this.player.slots.find((s) => !s.tower) ?? null;
+      if (slot) this.selectedSlot = slot.id;
+    }
+    if (!slot || slot.tower) {
+      this.toast("Kein freier Slot");
+      return false;
+    }
     const cost = TOWERS[kind].cost;
     if (this.player.gold < cost) {
       this.toast("Zu wenig Gold");

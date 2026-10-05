@@ -297,9 +297,9 @@ function renderMatchScreen(): void {
 
 function syncHud(m: Match): void {
   const $ = (id: string) => app.querySelector(`#${id}`)!;
-  $("#score").textContent = `${m.scoreKsc}:${m.scoreVfb}`;
-  $("#clock").textContent = formatMinute(m.minute);
-  $("#phase").textContent =
+  $("score").textContent = `${m.scoreKsc}:${m.scoreVfb}`;
+  $("clock").textContent = formatMinute(m.minute);
+  $("phase").textContent =
     m.phase === "regular"
       ? "Regulär"
       : m.phase === "et"
@@ -307,23 +307,23 @@ function syncHud(m: Match): void {
         : m.phase === "pens"
           ? "Elfmeter"
           : "Ende";
-  $("#fever").innerHTML = m.fever ? '<span class="fieber">FIEBER</span>' : "";
+  $("fever").innerHTML = m.fever ? '<span class="fieber">FIEBER</span>' : "";
   const setBar = (id: string, v: number, max = 100) => {
     (app.querySelector(`#${id}`) as HTMLElement).style.width =
       `${Math.round(clampPct(v, max))}%`;
   };
   setBar("hp", m.player.hp, 20);
-  $("#hpv").textContent = String(Math.max(0, Math.ceil(m.player.hp)));
+  $("hpv").textContent = String(Math.max(0, Math.ceil(m.player.hp)));
   setBar("gold", m.player.gold, 250);
-  $("#goldv").textContent = String(Math.floor(m.player.gold));
+  $("goldv").textContent = String(Math.floor(m.player.gold));
   setBar("thirst", m.player.thirst);
-  $("#thirstv").textContent = String(Math.floor(m.player.thirst));
+  $("thirstv").textContent = String(Math.floor(m.player.thirst));
   setBar("int", m.player.interest);
-  $("#intv").textContent = String(Math.floor(m.player.interest));
+  $("intv").textContent = String(Math.floor(m.player.interest));
   setBar("beerw", m.player.beerDrunk, 120);
-  $("#beerwv").textContent = String(Math.floor(m.player.beerDrunk));
+  $("beerwv").textContent = String(Math.floor(m.player.beerDrunk));
   setBar("moodw", m.player.mood);
-  $("#moodwv").textContent = String(Math.floor(m.player.mood));
+  $("moodwv").textContent = String(Math.floor(m.player.mood));
 
   const toast = app.querySelector("#toast")!;
   const t = m.toasts[0];
