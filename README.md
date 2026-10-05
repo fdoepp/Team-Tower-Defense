@@ -1,26 +1,24 @@
-# LaneLink — Team Tower Defense (Konzept)
+# LaneLink — Stadion Team-TD (Konzept)
 
-Kurzes **2D-Handy-Minigame** (~5 Minuten): **Koop mit Aufgabenteilung** oder **Versus mit Sushi-Band**.
+Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fußball auf dem Platz. Flavor: **KSC vs. VfB**.
 
-Grafik bewusst simpel (Flächen, Formen, klare Silhouetten).
-
-## Dokumente
+## Dokument
 
 - **[Game Design Concept](docs/GAME_DESIGN.md)** — vollständiges Konzept
 
-## Versus
+## Modi
 
-Sushi-Band für Towers und Sends: **~90% parallel**, **~10% exklusiv (★, jede 10. Plate)**.
-
-## Koop
-
-| Rolle | Job |
+| Modus | Kern |
 |---|---|
-| **Supplier** | Nodes ernten, Scrap→Core raffinieren, an die Kiste liefern |
-| **Architect** | Aus der Kiste Türme bauen/upgraden, Lane halten |
+| **Versus** | Spiegel-Kurven, Sushi-Band 90/10, Early Wins inkl. Curva-Kill |
+| **Koop** | Supplier → Kiste → Architect, gemeinsame Kurva |
+| **Solo** | vs KI / Koop mit KI — Default einfach & lesbar, Schwierigkeit + Verhalten anpassbar |
 
-Siege (Civ-lite): **~80% Hold** (Timer), plus seltene Breakthroughs **Stockpile** (Supplier) und **Bastion** (Architect) — immer Team-Siege.
+## Sieg
+
+- **Early Wins** nur bis Ende der regulären Zeit (Bier, Stimmung, Versus-Curva-Kill) → Spielstand egal  
+- Sonst entscheidet das **Fußballspiel** (90′ → VL → Effen) — **kein Unentschieden**
 
 ## Status
 
-Konzeptphase — Versus- und Koop-Pass geschrieben, noch keine Implementierung.
+Konzeptphase — Design dokumentiert, noch keine Engine-Implementierung.
