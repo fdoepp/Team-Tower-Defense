@@ -4,7 +4,7 @@ Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fu�
 
 ## Spielen (Handy-Link)
 
-**Live:** https://houses-selecting-anthropology-penetration.trycloudflare.com  
+**Live:** https://prayers-expects-safe-insured.trycloudflare.com  
 
 ### Vollbild (wichtig)
 
