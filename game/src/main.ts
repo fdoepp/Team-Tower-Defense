@@ -84,9 +84,9 @@ function renderMenu(): void {
   app.innerHTML = `
     <div class="screen menu">
       <div>
-        <p class="sub">LaneLink · A2c Stadion</p>
-        <h1 class="brand">KSC vs VfB</h1>
-        <p class="sub">Blöcke · Gang · Stimmung — Querformat</p>
+        <p class="sub">Stadion · Blöcke · Gang · Stimmung</p>
+        <h1 class="brand">LaneLink</h1>
+        <p class="sub">KSC vs VfB — Querformat</p>
       </div>
       <div class="card stack">
         <button class="btn ksc" id="solo">Solo vs KI</button>

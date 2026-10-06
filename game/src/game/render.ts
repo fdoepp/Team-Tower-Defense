@@ -29,11 +29,12 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   if (w < 32 || h < 32) return;
   ctx.clearRect(0, 0, w, h);
 
-  // A2c atmosphere: cool stadium night → pitch glow
+  // Clean stadium shell — soft cool daylight, Apple Sports clarity
   const bg = ctx.createLinearGradient(0, 0, 0, h);
-  bg.addColorStop(0, "#1a2e24");
-  bg.addColorStop(0.35, "#14241c");
-  bg.addColorStop(1, "#0c1612");
+  bg.addColorStop(0, "#dce6ee");
+  bg.addColorStop(0.28, "#cfd9e3");
+  bg.addColorStop(0.55, "#b8c5d1");
+  bg.addColorStop(1, "#9aabba");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
@@ -52,8 +53,8 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
 
 function blockFill(m: Match, id: number): string {
   const owner = m.blockOwner[id];
-  if (owner === "ksc") return "#2563eb";
-  if (owner === "vfb") return "#dc2626";
+  if (owner === "ksc") return "#3b82f6";
+  if (owner === "vfb") return "#ef4444";
   return BLOCK_META.find((b) => b.id === id)!.fill;
 }
 
@@ -64,23 +65,30 @@ function drawPitch(
   h: number,
 ): void {
   const ph = h * L.pitchH;
-  // grass
+  // crisp daylight grass
   const g = ctx.createLinearGradient(0, 0, 0, ph);
-  g.addColorStop(0, "#3aa85a");
-  g.addColorStop(1, "#2d8a48");
+  g.addColorStop(0, "#4ade80");
+  g.addColorStop(0.45, "#22c55e");
+  g.addColorStop(1, "#16a34a");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, ph);
-  ctx.fillStyle = "rgba(255,255,255,0.07)";
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
   for (let i = 0; i < 12; i++) {
     if (i % 2 === 0) ctx.fillRect((w / 12) * i, 0, w / 12, ph);
   }
-  ctx.strokeStyle = "rgba(255,255,255,0.45)";
-  ctx.lineWidth = 1.5;
+  // soft pitch frame
+  ctx.strokeStyle = "rgba(255,255,255,0.55)";
+  ctx.lineWidth = 2;
   ctx.strokeRect(w * 0.3, ph * 0.12, w * 0.4, ph * 0.72);
   ctx.beginPath();
   ctx.arc(w / 2, ph, ph * 0.32, Math.PI, 0);
   ctx.stroke();
-  // Match score / momentum live only in the HTML pitch-hud over this band
+  // subtle bottom vignette into stands
+  const vig = ctx.createLinearGradient(0, ph * 0.7, 0, ph);
+  vig.addColorStop(0, "rgba(15,23,42,0)");
+  vig.addColorStop(1, "rgba(15,23,42,0.12)");
+  ctx.fillStyle = vig;
+  ctx.fillRect(0, ph * 0.7, w, ph * 0.3);
 }
 
 function drawBlocks(
@@ -95,58 +103,59 @@ function drawBlocks(
   const gapPx = L.blockGap * w;
   for (let i = 0; i < BLOCK_COUNT - 1; i++) {
     const rightEdge = (blockCenterX(i) + blockWidthNorm() / 2) * w;
-    ctx.fillStyle = "#0a1410";
+    ctx.fillStyle = "rgba(148,163,184,0.35)";
     ctx.fillRect(rightEdge, top, gapPx, bh);
   }
   for (const b of BLOCK_META) {
     const cx = blockCenterX(b.id) * w;
     const y = top;
-
     const bodyH = bh;
     const left = cx - bw / 2;
-    // terrace body — square bottom so booths sit flush (no corner gaps)
-    ctx.fillStyle = blockFill(m, b.id);
-    roundRectTop(ctx, left, y, bw, bodyH, 12);
+    ctx.fillStyle = "rgba(15,23,42,0.12)";
+    roundRectTop(ctx, left + 2, y + 3, bw, bodyH, 14);
     ctx.fill();
-    // seat rows (A2c benches)
+    ctx.fillStyle = blockFill(m, b.id);
+    roundRectTop(ctx, left, y, bw, bodyH, 14);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.14)";
+    roundRectTop(ctx, left + 3, y + 3, bw - 6, bodyH * 0.22, 10);
+    ctx.fill();
     ctx.save();
-    roundRectTop(ctx, left, y, bw, bodyH, 12);
+    roundRectTop(ctx, left, y, bw, bodyH, 14);
     ctx.clip();
     for (let row = 0; row < 5; row++) {
-      ctx.fillStyle = row % 2 === 0 ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)";
+      ctx.fillStyle =
+        row % 2 === 0 ? "rgba(255,255,255,0.12)" : "rgba(15,23,42,0.1)";
       ctx.fillRect(left + 4, y + 22 + row * (bodyH / 6), bw - 8, bodyH / 7);
     }
     ctx.restore();
-    // header badge — show club crest when block stormed/owned
-    ctx.fillStyle = "rgba(10,20,16,0.5)";
-    roundRect(ctx, cx - bw * 0.32, y + 4, bw * 0.64, 18, 6);
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    roundRect(ctx, cx - bw * 0.34, y + 5, bw * 0.68, 18, 9);
     ctx.fill();
     const owner = m.blockOwner[b.id];
     if (owner === "ksc" || owner === "vfb") {
-      drawClubCrest(ctx, cx - bw * 0.18, y + 13, 11, owner);
-      ctx.fillStyle = "#fff";
-      ctx.font = `700 ${Math.floor(h * 0.018)}px Archivo Black, DM Sans`;
+      drawClubCrest(ctx, cx - bw * 0.2, y + 14, 11, owner);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = `800 ${Math.floor(h * 0.016)}px Outfit, Manrope, sans-serif`;
       ctx.textAlign = "left";
-      ctx.fillText(owner === "ksc" ? "KSC" : "VfB", cx - bw * 0.08, y + 17);
+      ctx.fillText(owner === "ksc" ? "KSC" : "VfB", cx - bw * 0.1, y + 18);
     } else if (b.side === "neutral") {
-      ctx.fillStyle = "#e5e7eb";
-      ctx.font = `700 ${Math.floor(h * 0.016)}px Archivo Black, DM Sans`;
+      ctx.fillStyle = "#64748b";
+      ctx.font = `700 ${Math.floor(h * 0.014)}px Manrope, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText("NEUTRAL · einnehmbar", cx, y + 17);
+      ctx.fillText("NEUTRAL", cx, y + 18);
     } else {
-      ctx.fillStyle = "#fff";
-      ctx.font = `700 ${Math.floor(h * 0.02)}px Archivo Black, DM Sans`;
+      ctx.fillStyle = "#0f172a";
+      ctx.font = `800 ${Math.floor(h * 0.016)}px Outfit, Manrope, sans-serif`;
       ctx.textAlign = "center";
-      ctx.fillText(b.label, cx, y + 17);
+      ctx.fillText(b.label, cx, y + 18);
     }
-    // arched tunnel into gang (mockup style)
     const d = doorPos(b.id);
     const doorW = bw * L.doorFrac;
     const corridorTop = d.y * h;
     const corridorH = h * gangY() - corridorTop + 2;
     const dx = d.x * w - doorW / 2;
-    ctx.fillStyle = "#070a0c";
-    // arch mouth at block bottom
+    ctx.fillStyle = "#334155";
     ctx.beginPath();
     ctx.moveTo(dx, corridorTop + 8);
     ctx.lineTo(dx, corridorTop);
@@ -154,9 +163,9 @@ function drawBlocks(
     ctx.lineTo(dx + doorW, corridorTop + 8);
     ctx.closePath();
     ctx.fill();
-    ctx.fillRect(dx, corridorTop, doorW, corridorH);
-    ctx.strokeStyle = "rgba(243,240,231,0.2)";
-    ctx.lineWidth = 2;
+    ctx.fillRect(dx, corridorTop, doorW, Math.max(4, corridorH));
+    ctx.strokeStyle = "rgba(255,255,255,0.28)";
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(dx + 3, corridorTop + 6);
     ctx.quadraticCurveTo(d.x * w, corridorTop - doorW * 0.28, dx + doorW - 3, corridorTop + 6);
@@ -183,7 +192,7 @@ function drawSeats(
         !occ && b.id === HEIM_BLOCK && m.blockOwner[HEIM_BLOCK] === m.playerTeam;
 
       let cushion = buyable
-        ? "rgba(20,50,32,0.85)"
+        ? "rgba(220,252,231,0.95)"
         : occ
           ? "rgba(0,0,0,0.2)"
           : "rgba(0,0,0,0.28)";
@@ -230,7 +239,7 @@ function drawSeats(
 
       if (buyable) {
         ctx.fillStyle = "#6bcb77";
-        ctx.font = "700 12px DM Sans";
+        ctx.font = "800 12px Outfit, Manrope, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText("+", x, y + 5);
       }
@@ -247,15 +256,15 @@ function drawGang(
   const y = h * gangY();
   const gh = h * L.gangH;
   const g = ctx.createLinearGradient(0, y, 0, y + gh);
-  g.addColorStop(0, "#2a3038");
-  g.addColorStop(0.5, "#1e242c");
-  g.addColorStop(1, "#171c22");
+  g.addColorStop(0, "#64748b");
+  g.addColorStop(0.45, "#475569");
+  g.addColorStop(1, "#334155");
   ctx.fillStyle = g;
   ctx.fillRect(w * L.blocksLeft, y, w * (L.blocksRight - L.blocksLeft), gh);
-  ctx.strokeStyle = "rgba(243,240,231,0.18)";
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.lineWidth = 1.5;
   ctx.strokeRect(w * L.blocksLeft, y, w * (L.blocksRight - L.blocksLeft), gh);
-  ctx.strokeStyle = "rgba(255,255,255,0.05)";
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
   ctx.lineWidth = 1;
   for (let i = 1; i < 10; i++) {
     const tx = w * L.blocksLeft + (w * (L.blocksRight - L.blocksLeft) / 10) * i;
@@ -283,16 +292,23 @@ function drawGang(
   ctx.lineTo(ax, y + gh - 3);
   ctx.stroke();
   ctx.setLineDash([]);
-  // Soft fill between fronts when they haven't crossed
   if (px < ax) {
-    ctx.fillStyle = "rgba(243,240,231,0.06)";
+    ctx.fillStyle = "rgba(255,255,255,0.1)";
     ctx.fillRect(px, y + 4, ax - px, gh - 8);
   }
   ctx.restore();
-  ctx.fillStyle = "rgba(243,240,231,0.45)";
-  ctx.font = `600 ${Math.floor(h * 0.018)}px DM Sans`;
+  // Center corridor label pill
+  const label = "GANG";
+  ctx.font = `800 ${Math.floor(h * 0.016)}px Outfit, Manrope, sans-serif`;
+  const tw = ctx.measureText(label).width;
+  const lx = w / 2 - tw / 2 - 10;
+  const ly = y + 4;
+  ctx.fillStyle = "rgba(15,23,42,0.72)";
+  roundRect(ctx, lx, ly, tw + 20, 16, 8);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
   ctx.textAlign = "center";
-  ctx.fillText("GANG · Kampflinie", w / 2, y + 12);
+  ctx.fillText(label, w / 2, y + 16);
 }
 
 function drawCombatOverlays(
@@ -312,7 +328,7 @@ function drawCombatOverlays(
     ctx.arc(x, y, 16 + pulse * 4, 0, Math.PI * 2);
     ctx.stroke();
     ctx.fillStyle = "#fbbf24";
-    ctx.font = `700 ${Math.floor(h * 0.02)}px Archivo Black, sans-serif`;
+    ctx.font = `700 ${Math.floor(h * 0.02)}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
     ctx.fillText("KAMPF", x, y - 22);
   }
@@ -389,17 +405,17 @@ function drawBuilding(
   const r = Math.min(8, Math.min(bw, bh) * 0.12);
 
   if (!s.building) {
-    ctx.fillStyle = "rgba(12, 18, 22, 0.75)";
+    ctx.fillStyle = "rgba(255,255,255,0.82)";
     roundRect(ctx, x, y, bw, bh, r);
     ctx.fill();
     ctx.setLineDash([5, 4]);
-    ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.35)";
+    ctx.strokeStyle = sel ? "#16a34a" : "rgba(100,116,139,0.45)";
     ctx.lineWidth = 2;
-    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
+    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, Math.max(4, r - 1));
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = sel ? "#6bcb77" : "rgba(243,240,231,0.75)";
-    ctx.font = `700 ${Math.max(16, Math.floor(bh * 0.36))}px Archivo Black, sans-serif`;
+    ctx.fillStyle = sel ? "#16a34a" : "#64748b";
+    ctx.font = `800 ${Math.max(16, Math.floor(bh * 0.36))}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("+", x + bw / 2, y + bh / 2 + 1);
@@ -407,15 +423,15 @@ function drawBuilding(
     return;
   }
 
-  // mockup-like panel colors — blend toward converter while timer runs
-  let wall = "#3f4650";
+  // Clean booth cards — light surfaces, team tint
+  let wall = "#f1f5f9";
   if (!grey) {
-    if (s.building === "bier") wall = player ? "#2f6b45" : ai ? "#7f1d1d" : "#4b5563";
+    if (s.building === "bier") wall = player ? "#ecfdf5" : ai ? "#fef2f2" : "#f8fafc";
     else if (s.building === "ordner")
-      wall = player ? "#1e3a5f" : ai ? "#3f1d1d" : "#374151";
-    else wall = player ? "#4c1d6a" : ai ? "#5b1a3a" : "#44403c";
+      wall = player ? "#eff6ff" : ai ? "#fef2f2" : "#f8fafc";
+    else wall = player ? "#eff6ff" : ai ? "#fef2f2" : "#f8fafc";
   } else {
-    wall = "#4b5563";
+    wall = "#e2e8f0";
   }
   const convT = Math.min(1, s.convertAcc / STAND_CONVERT_SEC);
   if (s.convertBy && convT > 0.05) {
@@ -427,7 +443,7 @@ function drawBuilding(
   roundRect(ctx, x, y, bw, bh, r);
   ctx.fill();
   // soft inner face
-  ctx.fillStyle = "rgba(255,255,255,0.06)";
+  ctx.fillStyle = "rgba(255,255,255,0.55)";
   roundRect(ctx, x + 3, y + 3, bw - 6, bh - 6, Math.max(2, r - 2));
   ctx.fill();
 
@@ -481,7 +497,7 @@ function drawBuilding(
     ctx.arc(cx, y + bh * 0.22, rr, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
     ctx.stroke();
     ctx.fillStyle = col;
-    ctx.font = `700 ${Math.max(9, Math.floor(rr * 0.7))}px Archivo Black, sans-serif`;
+    ctx.font = `700 ${Math.max(9, Math.floor(rr * 0.7))}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(`${Math.ceil(left)}`, cx, y + bh * 0.22 + 1);
@@ -500,12 +516,12 @@ function drawBuilding(
   }
 
   ctx.strokeStyle = sel
-    ? "#6bcb77"
+    ? "#16a34a"
     : player
-      ? "rgba(147,197,253,0.55)"
+      ? "rgba(37,99,235,0.45)"
       : ai
-        ? "rgba(252,165,165,0.55)"
-        : "rgba(255,255,255,0.18)";
+        ? "rgba(220,38,38,0.4)"
+        : "rgba(100,116,139,0.35)";
   ctx.lineWidth = sel ? 2.5 : 1.5;
   roundRect(ctx, x + 0.5, y + 0.5, bw - 1, bh - 1, r);
   ctx.stroke();
@@ -539,12 +555,12 @@ function drawClubCrest(
   ctx.closePath();
   ctx.fillStyle = team === "ksc" ? "#1d4ed8" : "#b91c1c";
   ctx.fill();
-  ctx.strokeStyle = "#f3f0e7";
+  ctx.strokeStyle = "#fff";
   ctx.lineWidth = Math.max(1.2, s * 0.08);
   ctx.stroke();
   // monogram
   ctx.fillStyle = "#fff";
-  ctx.font = `700 ${Math.max(8, Math.floor(s * 0.55))}px Archivo Black, sans-serif`;
+  ctx.font = `800 ${Math.max(8, Math.floor(s * 0.55))}px Outfit, Manrope, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(team === "ksc" ? "K" : "V", 0, s * 0.02);
@@ -1072,7 +1088,7 @@ function drawFloats(
   for (const f of m.floats) {
     const alpha = Math.min(1, f.t / 0.35);
     ctx.globalAlpha = alpha;
-    ctx.font = `700 ${Math.floor(h * 0.026)}px DM Sans`;
+    ctx.font = `700 ${Math.floor(h * 0.026)}px Manrope, sans-serif`;
     ctx.textAlign = "center";
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(0,0,0,0.55)";
@@ -1120,7 +1136,7 @@ function drawMoodParticles(
     const py = p.y * h;
     if (p.kind === "note") {
       ctx.fillStyle = p.color;
-      ctx.font = `700 ${Math.max(10, p.size * h * 1.8)}px Archivo Black, sans-serif`;
+      ctx.font = `700 ${Math.max(10, p.size * h * 1.8)}px Outfit, Manrope, sans-serif`;
       ctx.textAlign = "center";
       ctx.fillText(p.size > 0.014 ? "♫" : "♪", px, py);
     } else if (p.kind === "smoke") {
