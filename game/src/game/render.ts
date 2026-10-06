@@ -1,8 +1,6 @@
 import { Match } from "./Match";
 import {
   BLOCK_META,
-  BUILD_LABEL,
-  FAN_STATS,
   type BuildSlot,
   type FanUnit,
 } from "./types";
@@ -25,7 +23,13 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   const w = m.width;
   const h = m.height;
   ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#102418";
+
+  // A2c atmosphere: cool stadium night → pitch glow
+  const bg = ctx.createLinearGradient(0, 0, 0, h);
+  bg.addColorStop(0, "#1a2e24");
+  bg.addColorStop(0.35, "#14241c");
+  bg.addColorStop(1, "#0c1612");
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
   drawPitch(ctx, m, w, h);
@@ -38,21 +42,20 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawFloats(ctx, m, w, h);
 
   if (m.speed === 0 && !m.result) {
-    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fillStyle = "rgba(8,16,12,0.35)";
     ctx.fillRect(0, h * L.gangY, w, h * L.gangH);
-    ctx.fillStyle = "#fff";
-    ctx.font = `700 ${Math.floor(h * 0.06)}px Archivo Black, sans-serif`;
+    ctx.fillStyle = "#f3f0e7";
+    ctx.font = `700 ${Math.floor(h * 0.055)}px Archivo Black, sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillText("PAUSE", w / 2, h * (L.gangY + L.gangH / 2) + 8);
+    ctx.fillText("PAUSE", w / 2, h * (L.gangY + L.gangH / 2) + 6);
   }
 }
 
 function blockFill(m: Match, id: number): string {
   const owner = m.blockOwner[id];
-  if (owner === "ksc") return "#1f6feb";
+  if (owner === "ksc") return "#2563eb";
   if (owner === "vfb") return "#dc2626";
-  const meta = BLOCK_META.find((b) => b.id === id)!;
-  return meta.fill;
+  return BLOCK_META.find((b) => b.id === id)!.fill;
 }
 
 function drawPitch(
@@ -62,43 +65,63 @@ function drawPitch(
   h: number,
 ): void {
   const ph = h * L.pitchH;
-  ctx.fillStyle = "#2f8a4a";
+  // grass
+  const g = ctx.createLinearGradient(0, 0, 0, ph);
+  g.addColorStop(0, "#3aa85a");
+  g.addColorStop(1, "#2d8a48");
+  ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, ph);
-  ctx.fillStyle = "rgba(255,255,255,0.06)";
-  for (let i = 0; i < 10; i++) {
-    if (i % 2 === 0) ctx.fillRect((w / 10) * i, 0, w / 10, ph);
+  ctx.fillStyle = "rgba(255,255,255,0.07)";
+  for (let i = 0; i < 12; i++) {
+    if (i % 2 === 0) ctx.fillRect((w / 12) * i, 0, w / 12, ph);
   }
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(w * 0.28, ph * 0.15, w * 0.44, ph * 0.7);
+  ctx.strokeStyle = "rgba(255,255,255,0.45)";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(w * 0.3, ph * 0.12, w * 0.4, ph * 0.72);
   ctx.beginPath();
-  ctx.arc(w / 2, ph, ph * 0.35, Math.PI, 0);
+  ctx.arc(w / 2, ph, ph * 0.32, Math.PI, 0);
   ctx.stroke();
 
-  ctx.fillStyle = "#0a1410";
-  ctx.font = `700 ${Math.floor(ph * 0.38)}px Archivo Black, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w / 2, ph * 0.48);
-  ctx.fillStyle = "#f5d76e";
-  ctx.font = `700 ${Math.floor(ph * 0.28)}px Archivo Black, sans-serif`;
-  ctx.fillText(`${Math.floor(m.minute)}′`, w / 2, ph * 0.82);
+  // A2c scoreboard plate
+  const bx = w * 0.38;
+  const by = ph * 0.08;
+  const bw = w * 0.24;
+  const bh = ph * 0.78;
+  ctx.fillStyle = "rgba(15,22,18,0.72)";
+  roundRect(ctx, bx, by, bw, bh, 8);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(243,240,231,0.25)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
 
-  const mx = w * 0.22;
-  const mw = w * 0.56;
-  const my = ph * 0.92;
+  ctx.fillStyle = "#f3f0e7";
+  ctx.font = `700 ${Math.floor(ph * 0.36)}px Archivo Black, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w / 2, by + bh * 0.42);
+  ctx.fillStyle = "#f5d76e";
+  ctx.font = `700 ${Math.floor(ph * 0.24)}px Archivo Black, sans-serif`;
+  ctx.fillText(`${Math.floor(m.minute)}′`, w / 2, by + bh * 0.78);
+
+  // momentum
+  const mx = w * 0.24;
+  const mw = w * 0.52;
+  const my = ph * 0.94;
   ctx.fillStyle = "rgba(0,0,0,0.35)";
   roundRect(ctx, mx, my - 5, mw, 8, 4);
   ctx.fill();
-  ctx.fillStyle = "rgba(31,111,235,0.35)";
+  ctx.fillStyle = "rgba(37,99,235,0.55)";
   ctx.fillRect(mx, my - 5, mw / 3, 8);
-  ctx.fillStyle = "rgba(156,163,175,0.35)";
+  ctx.fillStyle = "rgba(156,163,175,0.4)";
   ctx.fillRect(mx + mw / 3, my - 5, mw / 3, 8);
-  ctx.fillStyle = "rgba(220,38,38,0.35)";
+  ctx.fillStyle = "rgba(220,38,38,0.55)";
   ctx.fillRect(mx + (2 * mw) / 3, my - 5, mw / 3, 8);
   const knob = mx + mw * ((m.momentum + 1) / 2);
-  ctx.fillStyle = "#f3f0e7";
+  ctx.fillStyle = "#fff";
   ctx.beginPath();
-  ctx.arc(knob, my - 1, 6, 0, Math.PI * 2);
+  ctx.moveTo(knob, my - 10);
+  ctx.lineTo(knob - 5, my - 2);
+  ctx.lineTo(knob + 5, my - 2);
+  ctx.closePath();
   ctx.fill();
 }
 
@@ -114,39 +137,42 @@ function drawBlocks(
   const gapPx = L.blockGap * w;
   for (let i = 0; i < BLOCK_COUNT - 1; i++) {
     const rightEdge = (blockCenterX(i) + blockWidthNorm() / 2) * w;
-    ctx.fillStyle = "#0a1810";
+    ctx.fillStyle = "#0a1410";
     ctx.fillRect(rightEdge, top, gapPx, bh * 0.72);
   }
   for (const b of BLOCK_META) {
     const cx = blockCenterX(b.id) * w;
     const y = top + Math.abs(b.id - 1.5) * h * 0.008;
+    const bodyH = bh * 0.7;
+    // terrace body
     ctx.fillStyle = blockFill(m, b.id);
-    roundRect(ctx, cx - bw / 2, y, bw, bh * 0.7, 10);
+    roundRect(ctx, cx - bw / 2, y, bw, bodyH, 12);
     ctx.fill();
-    ctx.strokeStyle = "#0a1410";
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    // seat rows (A2c benches)
     ctx.save();
-    roundRect(ctx, cx - bw / 2 + 2, y + 2, bw - 4, bh * 0.7 - 4, 8);
+    roundRect(ctx, cx - bw / 2, y, bw, bodyH, 12);
     ctx.clip();
-    ctx.fillStyle = b.stripe;
-    ctx.globalAlpha = 0.16;
-    for (let i = 0; i < 4; i++) {
-      ctx.fillRect(cx - bw / 2 + 6 + i * (bw / 4), y + 5, bw / 14, bh * 0.7 - 10);
+    for (let row = 0; row < 5; row++) {
+      ctx.fillStyle = row % 2 === 0 ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)";
+      ctx.fillRect(cx - bw / 2 + 4, y + 22 + row * (bodyH / 6), bw - 8, bodyH / 7);
     }
     ctx.restore();
-    ctx.globalAlpha = 1;
+    // header badge
+    ctx.fillStyle = "rgba(10,20,16,0.45)";
+    roundRect(ctx, cx - bw * 0.28, y + 4, bw * 0.56, 16, 6);
+    ctx.fill();
     ctx.fillStyle = "#fff";
-    ctx.font = `700 ${Math.floor(h * 0.026)}px DM Sans`;
+    ctx.font = `700 ${Math.floor(h * 0.022)}px DM Sans`;
     ctx.textAlign = "center";
     ctx.fillText(b.label, cx, y + 16);
+    // door tunnel
     const d = doorPos(b.id);
-    ctx.fillStyle = "#0a1410";
-    roundRect(ctx, d.x * w - 14, d.y * h - 4, 28, 16, 4);
+    ctx.fillStyle = "#0a0e0c";
+    roundRect(ctx, d.x * w - 16, d.y * h - 2, 32, 18, 5);
     ctx.fill();
-    ctx.fillStyle = "rgba(243,240,231,0.5)";
-    ctx.font = `600 ${Math.floor(h * 0.016)}px DM Sans`;
-    ctx.fillText("Tür", d.x * w, d.y * h + 8);
+    ctx.fillStyle = "rgba(243,240,231,0.35)";
+    ctx.fillRect(d.x * w - 6, d.y * h + 2, 4, 10);
+    ctx.fillRect(d.x * w + 2, d.y * h + 2, 4, 10);
   }
 }
 
@@ -165,25 +191,24 @@ function drawSeats(
       const sel =
         m.selectedSeat?.blockId === b.id && m.selectedSeat?.seatIndex === i;
       const emptyHeim = !occ && b.id === HEIM_BLOCK;
+      // seat cushion
+      ctx.fillStyle = emptyHeim
+        ? "rgba(20,50,32,0.85)"
+        : occ
+          ? "rgba(0,0,0,0.2)"
+          : "rgba(0,0,0,0.35)";
+      roundRect(ctx, x - 12, y - 6, 24, 14, 3);
+      ctx.fill();
       ctx.strokeStyle = sel
         ? "#6bcb77"
         : emptyHeim
-          ? "rgba(107,203,119,0.65)"
-          : occ
-            ? "rgba(255,255,255,0.12)"
-            : "rgba(255,255,255,0.28)";
+          ? "rgba(107,203,119,0.7)"
+          : "rgba(255,255,255,0.18)";
       ctx.lineWidth = sel || emptyHeim ? 2 : 1;
-      ctx.fillStyle = emptyHeim
-        ? "rgba(15,40,24,0.75)"
-        : occ
-          ? "rgba(0,0,0,0.12)"
-          : "rgba(0,0,0,0.3)";
-      roundRect(ctx, x - 11, y - 11, 22, 22, 3);
-      ctx.fill();
       ctx.stroke();
       if (emptyHeim) {
         ctx.fillStyle = "#6bcb77";
-        ctx.font = "700 13px DM Sans";
+        ctx.font = "700 12px DM Sans";
         ctx.textAlign = "center";
         ctx.fillText("+", x, y + 5);
       }
@@ -199,23 +224,38 @@ function drawGang(
 ): void {
   const y = h * L.gangY;
   const gh = h * L.gangH;
-  ctx.fillStyle = "#1a1f24";
-  roundRect(ctx, w * 0.04, y, w * 0.92, gh, 12);
+  // concrete floor
+  const g = ctx.createLinearGradient(0, y, 0, y + gh);
+  g.addColorStop(0, "#2a3038");
+  g.addColorStop(0.5, "#1e242c");
+  g.addColorStop(1, "#171c22");
+  ctx.fillStyle = g;
+  roundRect(ctx, w * 0.04, y, w * 0.92, gh, 14);
   ctx.fill();
-  ctx.strokeStyle = "rgba(243,240,231,0.2)";
+  ctx.strokeStyle = "rgba(243,240,231,0.18)";
   ctx.lineWidth = 2;
   ctx.stroke();
-  ctx.strokeStyle = "rgba(255,255,255,0.12)";
-  ctx.setLineDash([8, 8]);
+  // floor tiles
+  ctx.strokeStyle = "rgba(255,255,255,0.05)";
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 10; i++) {
+    const tx = w * 0.08 + ((w * 0.84) / 10) * i;
+    ctx.beginPath();
+    ctx.moveTo(tx, y + 8);
+    ctx.lineTo(tx, y + gh - 8);
+    ctx.stroke();
+  }
+  ctx.setLineDash([10, 8]);
+  ctx.strokeStyle = "rgba(255,255,255,0.14)";
   ctx.beginPath();
   ctx.moveTo(w * 0.08, y + gh / 2);
   ctx.lineTo(w * 0.92, y + gh / 2);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle = "rgba(243,240,231,0.55)";
-  ctx.font = `600 ${Math.floor(h * 0.025)}px DM Sans`;
+  ctx.fillStyle = "rgba(243,240,231,0.4)";
+  ctx.font = `600 ${Math.floor(h * 0.022)}px DM Sans`;
   ctx.textAlign = "center";
-  ctx.fillText("GANG", w / 2, y + 14);
+  ctx.fillText("GANG", w / 2, y + 13);
 }
 
 function drawSlots(
@@ -229,62 +269,154 @@ function drawSlots(
     const sel =
       m.selectedSlot?.blockId === s.blockId &&
       m.selectedSlot?.index === s.index;
-    ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.3)";
-    ctx.lineWidth = sel ? 2 : 1;
-    if (s.greyNeutral && s.owner === "neutral") {
-      ctx.fillStyle = "#6b7280";
-    } else if (s.building) {
-      // tint by owner so captures are obvious
-      if (s.owner === m.playerTeam) {
-        ctx.fillStyle =
-          s.building === "bier"
-            ? "#c9a227"
-            : s.building === "ordner"
-              ? "#3b82f6"
-              : "#a855f7";
-      } else if (s.owner === m.aiTeam) {
-        ctx.fillStyle =
-          s.building === "bier"
-            ? "#b45309"
-            : s.building === "ordner"
-              ? "#1d4ed8"
-              : "#7e22ce";
-      } else {
-        ctx.fillStyle = "#9ca3af";
-      }
-    } else {
-      ctx.fillStyle = "rgba(0,0,0,0.25)";
-    }
-    roundRect(ctx, p.x - 16, p.y - 11, 32, 22, 4);
-    ctx.fill();
-    // owner rim
-    if (s.building && s.owner && s.owner !== "neutral") {
-      ctx.strokeStyle = s.owner === m.playerTeam ? "#93c5fd" : "#fca5a5";
-      ctx.lineWidth = sel ? 2.5 : 1.5;
-      ctx.stroke();
-    } else {
-      ctx.stroke();
-    }
-    ctx.fillStyle = s.building || s.greyNeutral ? "#0a1410" : "rgba(255,255,255,0.5)";
-    if (s.greyNeutral && s.owner === "neutral") ctx.fillStyle = "#e5e7eb";
-    ctx.font = "700 8px DM Sans";
-    ctx.textAlign = "center";
-    if (s.greyNeutral && s.owner === "neutral" && s.building) {
-      ctx.fillText(BUILD_LABEL[s.building].toUpperCase(), p.x, p.y + 2);
-    } else if (s.greyNeutral && !s.building) {
-      ctx.fillText("GRAU", p.x, p.y + 3);
-    } else if (s.building) {
-      ctx.fillText(BUILD_LABEL[s.building].toUpperCase(), p.x, p.y + 2);
-      if (s.building === "bier") {
-        ctx.fillStyle = "rgba(0,0,0,0.35)";
-        ctx.fillRect(p.x - 12, p.y + 7, 24, 3);
-        ctx.fillStyle = "#f5d76e";
-        ctx.fillRect(p.x - 12, p.y + 7, 24 * (s.beer / s.capacity), 3);
-      }
-    } else {
-      ctx.fillText("+", p.x, p.y + 4);
-    }
+    drawBuilding(ctx, s, p.x, p.y, sel, m);
   }
+}
+
+function drawBuilding(
+  ctx: CanvasRenderingContext2D,
+  s: BuildSlot,
+  x: number,
+  y: number,
+  sel: boolean,
+  m: Match,
+): void {
+  const bw = 38;
+  const bh = 30;
+  const left = x - bw / 2;
+  const top = y - bh / 2;
+
+  if (!s.building) {
+    ctx.setLineDash([4, 3]);
+    ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.35)";
+    ctx.lineWidth = 1.5;
+    ctx.fillStyle = "rgba(0,0,0,0.28)";
+    roundRect(ctx, left, top, bw, bh, 5);
+    ctx.fill();
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.font = "700 14px DM Sans";
+    ctx.textAlign = "center";
+    ctx.fillText("+", x, y + 5);
+    return;
+  }
+
+  const grey = s.greyNeutral && s.owner === "neutral";
+  const player = s.owner === m.playerTeam;
+  const ai = s.owner === m.aiTeam;
+
+  // booth base
+  let wall = "#9ca3af";
+  if (!grey) {
+    if (s.building === "bier") wall = player ? "#d4a017" : ai ? "#9a3412" : "#a8a29e";
+    else if (s.building === "ordner") wall = player ? "#3b82f6" : ai ? "#1e3a8a" : "#94a3b8";
+    else wall = player ? "#c084fc" : ai ? "#6b21a8" : "#a78bfa";
+  } else wall = "#6b7280";
+
+  ctx.fillStyle = wall;
+  roundRect(ctx, left, top + 6, bw, bh - 6, 4);
+  ctx.fill();
+  // roof
+  ctx.fillStyle = grey ? "#4b5563" : "rgba(10,14,12,0.55)";
+  ctx.beginPath();
+  ctx.moveTo(left - 2, top + 8);
+  ctx.lineTo(x, top - 2);
+  ctx.lineTo(left + bw + 2, top + 8);
+  ctx.closePath();
+  ctx.fill();
+  // counter / window
+  ctx.fillStyle = "rgba(255,255,255,0.2)";
+  ctx.fillRect(left + 4, top + 14, bw - 8, 3);
+
+  if (s.building === "bier") drawBeerMug(ctx, x, y + 4, grey);
+  else if (s.building === "ordner") drawOrdnerBadge(ctx, x, y + 3, grey);
+  else drawShopJersey(ctx, x, y + 3, grey, player);
+
+  ctx.strokeStyle = sel
+    ? "#6bcb77"
+    : player
+      ? "#93c5fd"
+      : ai
+        ? "#fca5a5"
+        : "rgba(255,255,255,0.25)";
+  ctx.lineWidth = sel ? 2 : 1.2;
+  roundRect(ctx, left, top + 6, bw, bh - 6, 4);
+  ctx.stroke();
+
+  if (s.building === "bier" && !grey) {
+    ctx.fillStyle = "rgba(0,0,0,0.4)";
+    ctx.fillRect(left + 4, top + bh - 4, bw - 8, 3);
+    ctx.fillStyle = "#f5d76e";
+    ctx.fillRect(left + 4, top + bh - 4, (bw - 8) * (s.beer / s.capacity), 3);
+  }
+}
+
+function drawBeerMug(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  grey: boolean,
+): void {
+  ctx.fillStyle = grey ? "#d1d5db" : "#f5d76e";
+  roundRect(ctx, x - 7, y - 4, 12, 12, 2);
+  ctx.fill();
+  ctx.fillStyle = grey ? "#e5e7eb" : "#fff8e7";
+  ctx.fillRect(x - 6, y - 6, 10, 4);
+  ctx.strokeStyle = grey ? "#9ca3af" : "#b45309";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(x + 7, y + 2, 4, -0.6, 0.6);
+  ctx.stroke();
+}
+
+function drawOrdnerBadge(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  grey: boolean,
+): void {
+  // hi-vis vest hint
+  ctx.fillStyle = grey ? "#9ca3af" : "#facc15";
+  ctx.fillRect(x - 8, y - 2, 16, 10);
+  ctx.fillStyle = grey ? "#6b7280" : "#1e293b";
+  ctx.beginPath();
+  ctx.arc(x, y - 6, 4, 0, Math.PI * 2);
+  ctx.fill();
+  // badge
+  ctx.fillStyle = grey ? "#d1d5db" : "#fff";
+  ctx.beginPath();
+  ctx.moveTo(x, y + 1);
+  ctx.lineTo(x + 4, y + 5);
+  ctx.lineTo(x, y + 9);
+  ctx.lineTo(x - 4, y + 5);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawShopJersey(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  grey: boolean,
+  player: boolean,
+): void {
+  const col = grey ? "#d1d5db" : player ? "#1f6feb" : "#dc2626";
+  ctx.fillStyle = col;
+  // jersey body
+  ctx.beginPath();
+  ctx.moveTo(x - 8, y - 2);
+  ctx.lineTo(x - 10, y + 2);
+  ctx.lineTo(x - 6, y + 2);
+  ctx.lineTo(x - 6, y + 10);
+  ctx.lineTo(x + 6, y + 10);
+  ctx.lineTo(x + 6, y + 2);
+  ctx.lineTo(x + 10, y + 2);
+  ctx.lineTo(x + 8, y - 2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(x - 2, y + 2, 4, 5);
 }
 
 export function slotPos(
@@ -299,7 +431,7 @@ export function slotPos(
   const inset = blockWidthNorm() * w * 0.28;
   return {
     x: cx + side * inset,
-    y: above ? gangMid - h * 0.08 : gangMid + h * 0.08,
+    y: above ? gangMid - h * 0.085 : gangMid + h * 0.085,
   };
 }
 
@@ -309,10 +441,21 @@ function drawFans(
   w: number,
   h: number,
 ): void {
-  for (const f of m.fans) {
-    if (f.hp <= 0) continue;
+  // draw block fans first, then gang (depth)
+  const sorted = [...m.fans].filter((f) => f.hp > 0).sort((a, b) => {
+    const za = a.state === "gang" || a.invading ? 1 : 0;
+    const zb = b.state === "gang" || b.invading ? 1 : 0;
+    return za - zb || a.y - b.y;
+  });
+  for (const f of sorted) {
     drawMannchen(ctx, f, f.x * w, f.y * h, h);
   }
+}
+
+function teamJersey(f: FanUnit): string {
+  if (f.team === "neutral") return "#9ca3af";
+  if (f.team === "ksc") return "#1f6feb";
+  return "#dc2626";
 }
 
 function drawMannchen(
@@ -323,61 +466,119 @@ function drawMannchen(
   h: number,
 ): void {
   const onGang = f.state === "gang" || f.invading;
-  const r = Math.max(5, h * (onGang ? 0.022 : 0.014));
-  let col = FAN_STATS[f.kind].color;
-  if (f.team === "neutral") col = "#9ca3af";
-  else if (f.team === "ksc") col = f.kind === "ultras" ? "#1f6feb" : col;
-  else if (f.team === "vfb") col = f.kind === "ultras" ? "#dc2626" : col;
+  const scale = Math.max(0.85, h * (onGang ? 0.028 : 0.018) / 10);
+  const s = 10 * scale;
+  const jersey = teamJersey(f);
+  const skin = f.team === "neutral" ? "#c4c4c4" : "#e8c4a0";
+  const pants = f.kind === "ultras" ? "#111827" : "#1f2937";
 
-  // swinging arm for ultras (and anyone mid-swing)
-  if (f.armSwing > 0 || f.kind === "ultras") {
-    const swing = f.armSwing > 0 ? f.armSwing : 0;
-    const ang = (-0.9 + swing * 1.8) * (f.team === "vfb" ? -1 : 1);
-    const armLen = r * 1.8;
-    ctx.strokeStyle = col;
-    ctx.lineWidth = Math.max(2, r * 0.35);
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(x + r * 0.2, y);
-    ctx.lineTo(x + Math.cos(ang) * armLen, y + Math.sin(ang) * armLen);
-    ctx.stroke();
-    if (swing > 0.4) {
-      // impact flash
-      ctx.fillStyle = "rgba(245,215,110,0.7)";
-      ctx.beginPath();
-      ctx.arc(
-        x + Math.cos(ang) * armLen,
-        y + Math.sin(ang) * armLen,
-        4,
-        0,
-        Math.PI * 2,
-      );
-      ctx.fill();
-    }
+  ctx.save();
+  ctx.translate(x, y);
+
+  // shadow
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.beginPath();
+  ctx.ellipse(0, s * 1.15, s * 0.7, s * 0.22, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // legs
+  ctx.strokeStyle = pants;
+  ctx.lineWidth = Math.max(2, s * 0.22);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.25, s * 0.35);
+  ctx.lineTo(-s * 0.35, s * 1.05);
+  ctx.moveTo(s * 0.25, s * 0.35);
+  ctx.lineTo(s * 0.4, s * 1.05);
+  ctx.stroke();
+
+  // body / jersey
+  ctx.fillStyle = jersey;
+  roundRect(ctx, -s * 0.55, -s * 0.35, s * 1.1, s * 0.85, 3);
+  ctx.fill();
+  // jersey stripes for teams
+  if (f.team !== "neutral") {
+    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.fillRect(-s * 0.15, -s * 0.3, s * 0.3, s * 0.75);
   }
 
-  ctx.fillStyle = col;
+  // kind accents
   if (f.kind === "ultras") {
+    // beanie
+    ctx.fillStyle = "#0f172a";
     ctx.beginPath();
-    ctx.moveTo(x, y - r);
-    ctx.lineTo(x + r, y + r);
-    ctx.lineTo(x - r, y + r);
+    ctx.arc(0, -s * 0.75, s * 0.42, Math.PI, 0);
+    ctx.fill();
+    ctx.fillRect(-s * 0.42, -s * 0.75, s * 0.84, s * 0.18);
+    // scarf
+    ctx.fillStyle = jersey;
+    ctx.fillRect(-s * 0.5, -s * 0.05, s, s * 0.18);
+    ctx.fillRect(s * 0.35, -s * 0.05, s * 0.18, s * 0.55);
+  } else if (f.kind === "familie") {
+    // backpack
+    ctx.fillStyle = "#ca8a04";
+    roundRect(ctx, s * 0.35, -s * 0.2, s * 0.35, s * 0.45, 2);
+    ctx.fill();
+  } else {
+    // normalo scarf wave
+    ctx.strokeStyle = jersey;
+    ctx.lineWidth = Math.max(1.5, s * 0.15);
+    ctx.beginPath();
+    ctx.moveTo(s * 0.4, -s * 0.1);
+    ctx.quadraticCurveTo(s * 0.9, -s * 0.4, s * 0.75, s * 0.2);
+    ctx.stroke();
+  }
+
+  // head
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.arc(0, -s * 0.7, s * 0.38, 0, Math.PI * 2);
+  ctx.fill();
+
+  // swinging arm (combat)
+  const face = f.team === "vfb" ? -1 : 1;
+  const swing = f.armSwing > 0 ? f.armSwing : f.kind === "ultras" && onGang ? 0.15 : 0;
+  const ang = (-0.7 + swing * 1.6) * face;
+  ctx.strokeStyle = skin;
+  ctx.lineWidth = Math.max(2, s * 0.2);
+  ctx.beginPath();
+  ctx.moveTo(face * s * 0.45, -s * 0.05);
+  ctx.lineTo(face * s * 0.45 + Math.cos(ang) * s * 1.1, -s * 0.05 + Math.sin(ang) * s * 1.1);
+  ctx.stroke();
+  if (swing > 0.35) {
+    const ix = face * s * 0.45 + Math.cos(ang) * s * 1.1;
+    const iy = -s * 0.05 + Math.sin(ang) * s * 1.1;
+    ctx.fillStyle = "rgba(245,215,110,0.85)";
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      const r = i % 2 === 0 ? s * 0.45 : s * 0.2;
+      const px = ix + Math.cos(a) * r;
+      const py = iy + Math.sin(a) * r;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
     ctx.closePath();
     ctx.fill();
-  } else if (f.kind === "familie") {
-    ctx.fillRect(x - r * 0.8, y - r * 0.8, r * 1.6, r * 1.6);
-  } else {
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
   }
 
-  const bw = r * 2.4;
+  // other arm down
+  ctx.strokeStyle = skin;
+  ctx.beginPath();
+  ctx.moveTo(-face * s * 0.4, 0);
+  ctx.lineTo(-face * s * 0.55, s * 0.45);
+  ctx.stroke();
+
+  ctx.restore();
+
+  // HP bar
+  const bw = s * 2.2;
   const bx = x - bw / 2;
+  const by = y + s * 1.25;
   ctx.fillStyle = "rgba(0,0,0,0.5)";
-  ctx.fillRect(bx, y + r + 2, bw, 4);
-  ctx.fillStyle = "#6bcb77";
-  ctx.fillRect(bx, y + r + 2, bw * Math.max(0, f.hp / f.maxHp), 4);
+  ctx.fillRect(bx, by, bw, 3);
+  ctx.fillStyle = f.hp / f.maxHp > 0.35 ? "#6bcb77" : "#f87171";
+  ctx.fillRect(bx, by, bw * Math.max(0, f.hp / f.maxHp), 3);
 }
 
 function drawMoodMeter(
@@ -386,14 +587,19 @@ function drawMoodMeter(
   w: number,
   h: number,
 ): void {
-  const x = w * 0.012;
-  const y = h * 0.2;
-  const segH = h * 0.055;
-  const filled = Math.floor(m.moodHeim) + 1;
+  const x = w * 0.01;
+  const y = h * 0.18;
+  const segH = h * 0.05;
+  const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e"];
+  const filled = Math.min(4, Math.floor(m.moodHeim) + 1);
+  ctx.fillStyle = "rgba(243,240,231,0.45)";
+  ctx.font = `600 ${Math.floor(h * 0.014)}px DM Sans`;
+  ctx.textAlign = "left";
+  ctx.fillText("STIMMUNG", x, y - 6);
   for (let i = 0; i < 4; i++) {
-    const sy = y + (3 - i) * (segH + 4);
-    ctx.fillStyle = i < filled ? "#1f6feb" : "rgba(255,255,255,0.12)";
-    roundRect(ctx, x, sy, w * 0.028, segH, 4);
+    const sy = y + (3 - i) * (segH + 3);
+    ctx.fillStyle = i < filled ? colors[i] : "rgba(255,255,255,0.1)";
+    roundRect(ctx, x, sy, w * 0.026, segH, 4);
     ctx.fill();
   }
 }
@@ -407,7 +613,7 @@ function drawFloats(
   for (const f of m.floats) {
     const alpha = Math.min(1, f.t / 0.35);
     ctx.globalAlpha = alpha;
-    ctx.font = `700 ${Math.floor(h * 0.028)}px DM Sans`;
+    ctx.font = `700 ${Math.floor(h * 0.026)}px DM Sans`;
     ctx.textAlign = "center";
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(0,0,0,0.55)";
@@ -428,7 +634,7 @@ export function hitSlot(
   for (const s of m.slots) {
     if (s.blockId === GAST_BLOCK) continue;
     const p = slotPos(s, m.width, m.height);
-    if (Math.abs(mx - p.x) < 18 && Math.abs(my - p.y) < 14) {
+    if (Math.abs(mx - p.x) < 22 && Math.abs(my - p.y) < 18) {
       return { blockId: s.blockId, index: s.index };
     }
   }
@@ -461,11 +667,12 @@ function roundRect(
   h: number,
   r: number,
 ): void {
+  const rr = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
   ctx.closePath();
 }

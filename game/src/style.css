@@ -1,12 +1,12 @@
 :root {
-  --bg0: #0c1a12;
-  --ksc: #1f6feb;
-  --ok: #2f9e44;
-  --bad: #5c6570;
-  --panel: rgba(8, 18, 14, 0.9);
+  --bg0: #0e1c16;
+  --ksc: #2563eb;
+  --ok: #22c55e;
+  --bad: #64748b;
+  --panel: rgba(12, 22, 18, 0.92);
   --text: #f3f0e7;
   --muted: #a8b5ad;
-  --line: rgba(243, 240, 231, 0.14);
+  --line: rgba(243, 240, 231, 0.16);
   font-family: "DM Sans", system-ui, sans-serif;
   color: var(--text);
 }
