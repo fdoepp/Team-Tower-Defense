@@ -449,7 +449,10 @@ select {
   max-width: 92%;
 }
 
-.popup-menu .hidden,
+.popup-menu.hidden {
+  display: none !important;
+}
+
 #upgrade-options.hidden,
 #build-options.hidden {
   display: none !important;

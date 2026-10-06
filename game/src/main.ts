@@ -312,23 +312,23 @@ function renderMatchScreen(): void {
   const hideMenus = () => {
     m.seatMenu = null;
     m.buildMenu = null;
+    m.selectedSeat = null;
     seatMenu.classList.add("hidden");
     buildMenu.classList.add("hidden");
   };
 
   const showSeatMenu = (blockId: number, seatIndex: number) => {
+    hideMenus();
     m.seatMenu = { blockId, seatIndex };
-    m.buildMenu = null;
-    buildMenu.classList.add("hidden");
+    m.selectedSeat = { blockId, seatIndex };
     seatMenu.classList.remove("hidden");
     syncBuyButtons();
   };
 
   const showBuildMenu = (blockId: number, index: number) => {
+    hideMenus();
     m.buildMenu = { blockId, index };
     m.selectedSlot = { blockId, index };
-    m.seatMenu = null;
-    seatMenu.classList.add("hidden");
     const slot = m.slots.find((s) => s.blockId === blockId && s.index === index);
     const owned =
       slot?.building &&

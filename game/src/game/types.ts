@@ -172,8 +172,8 @@ export const FAN_STATS: Record<
 };
 
 export const BLOCK_META = [
-  { id: 0, side: "heim" as const, label: "Heim", fill: "#1f6feb", stripe: "#f3f0e7" },
-  { id: 1, side: "neutral" as const, label: "N1", fill: "#9ca3af", stripe: "#e5e7eb" },
-  { id: 2, side: "neutral" as const, label: "N2", fill: "#6b7280", stripe: "#d1d5db" },
-  { id: 3, side: "gaeste" as const, label: "Gäste", fill: "#dc2626", stripe: "#f3f0e7" },
+  { id: 0, side: "heim" as const, label: "HEIM", fill: "#1f6feb", stripe: "#f3f0e7" },
+  { id: 1, side: "neutral" as const, label: "NEUTRAL", fill: "#9ca3af", stripe: "#e5e7eb" },
+  { id: 2, side: "neutral" as const, label: "NEUTRAL", fill: "#6b7280", stripe: "#d1d5db" },
+  { id: 3, side: "gaeste" as const, label: "GÄSTE", fill: "#dc2626", stripe: "#f3f0e7" },
 ];

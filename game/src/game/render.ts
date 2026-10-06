@@ -85,25 +85,41 @@ function drawPitch(
   ctx.arc(w / 2, ph, ph * 0.32, Math.PI, 0);
   ctx.stroke();
 
-  // A2c scoreboard plate
-  const bx = w * 0.38;
-  const by = ph * 0.08;
-  const bw = w * 0.24;
-  const bh = ph * 0.78;
-  ctx.fillStyle = "rgba(15,22,18,0.72)";
-  roundRect(ctx, bx, by, bw, bh, 8);
+  // A2c scoreboard plate — mockup: score + minute, team badges
+  const bx = w * 0.36;
+  const by = ph * 0.06;
+  const bw = w * 0.28;
+  const bh = ph * 0.72;
+  ctx.fillStyle = "rgba(15,22,18,0.78)";
+  roundRect(ctx, bx, by, bw, bh, 10);
   ctx.fill();
-  ctx.strokeStyle = "rgba(243,240,231,0.25)";
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(243,240,231,0.28)";
+  ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  ctx.fillStyle = "#f3f0e7";
-  ctx.font = `700 ${Math.floor(ph * 0.36)}px Archivo Black, sans-serif`;
+  // team badges
+  const badgeY = by + bh * 0.28;
+  ctx.fillStyle = "#1d4ed8";
+  ctx.beginPath();
+  ctx.arc(bx + bw * 0.18, badgeY, ph * 0.14, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.font = `700 ${Math.floor(ph * 0.16)}px Archivo Black, sans-serif`;
   ctx.textAlign = "center";
-  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w / 2, by + bh * 0.42);
+  ctx.fillText("H", bx + bw * 0.18, badgeY + ph * 0.06);
+  ctx.fillStyle = "#dc2626";
+  ctx.beginPath();
+  ctx.arc(bx + bw * 0.82, badgeY, ph * 0.14, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.fillText("G", bx + bw * 0.82, badgeY + ph * 0.06);
+
+  ctx.fillStyle = "#f3f0e7";
+  ctx.font = `700 ${Math.floor(ph * 0.32)}px Archivo Black, sans-serif`;
+  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w / 2, by + bh * 0.38);
   ctx.fillStyle = "#f5d76e";
-  ctx.font = `700 ${Math.floor(ph * 0.24)}px Archivo Black, sans-serif`;
-  ctx.fillText(`${Math.floor(m.minute)}′`, w / 2, by + bh * 0.78);
+  ctx.font = `700 ${Math.floor(ph * 0.2)}px Archivo Black, sans-serif`;
+  ctx.fillText(`${Math.floor(m.minute)}′`, w / 2, by + bh * 0.72);
 
   // momentum
   const mx = w * 0.24;
@@ -162,23 +178,35 @@ function drawBlocks(
     }
     ctx.restore();
     // header badge
-    ctx.fillStyle = "rgba(10,20,16,0.45)";
-    roundRect(ctx, cx - bw * 0.28, y + 4, bw * 0.56, 16, 6);
+    ctx.fillStyle = "rgba(10,20,16,0.5)";
+    roundRect(ctx, cx - bw * 0.32, y + 4, bw * 0.64, 18, 6);
     ctx.fill();
     ctx.fillStyle = "#fff";
-    ctx.font = `700 ${Math.floor(h * 0.022)}px DM Sans`;
+    ctx.font = `700 ${Math.floor(h * 0.02)}px Archivo Black, DM Sans`;
     ctx.textAlign = "center";
-    ctx.fillText(b.label, cx, y + 16);
-    // door corridor through upper booth strip into gang
+    ctx.fillText(b.label, cx, y + 17);
+    // arched tunnel into gang (mockup style)
     const d = doorPos(b.id);
     const doorW = bw * L.doorFrac;
     const corridorTop = d.y * h;
     const corridorH = h * gangY() - corridorTop + 2;
-    ctx.fillStyle = "#0a0e0c";
-    ctx.fillRect(d.x * w - doorW / 2, corridorTop - 2, doorW, corridorH);
-    ctx.fillStyle = "rgba(243,240,231,0.22)";
-    ctx.fillRect(d.x * w - doorW / 2 + 3, corridorTop, 3, corridorH - 4);
-    ctx.fillRect(d.x * w + doorW / 2 - 6, corridorTop, 3, corridorH - 4);
+    const dx = d.x * w - doorW / 2;
+    ctx.fillStyle = "#070a0c";
+    // arch mouth at block bottom
+    ctx.beginPath();
+    ctx.moveTo(dx, corridorTop + 8);
+    ctx.lineTo(dx, corridorTop);
+    ctx.quadraticCurveTo(d.x * w, corridorTop - doorW * 0.35, dx + doorW, corridorTop);
+    ctx.lineTo(dx + doorW, corridorTop + 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillRect(dx, corridorTop, doorW, corridorH);
+    ctx.strokeStyle = "rgba(243,240,231,0.2)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(dx + 3, corridorTop + 6);
+    ctx.quadraticCurveTo(d.x * w, corridorTop - doorW * 0.28, dx + doorW - 3, corridorTop + 6);
+    ctx.stroke();
   }
 }
 
@@ -299,81 +327,86 @@ function drawBuilding(
   const grey = !!(s.greyNeutral && s.owner === "neutral");
   const player = s.owner === m.playerTeam;
   const ai = s.owner === m.aiTeam;
+  const r = Math.min(8, Math.min(bw, bh) * 0.12);
 
   if (!s.building) {
-    ctx.setLineDash([5, 4]);
-    ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.4)";
+    ctx.fillStyle = "rgba(12, 18, 22, 0.85)";
+    roundRect(ctx, x, y, bw, bh, r);
+    ctx.fill();
+    ctx.setLineDash([6, 5]);
+    ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.28)";
     ctx.lineWidth = 2;
-    ctx.fillStyle = "rgba(0,0,0,0.3)";
-    ctx.fillRect(x, y, bw, bh);
-    ctx.strokeRect(x + 1, y + 1, bw - 2, bh - 2);
+    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
+    ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.font = `700 ${Math.max(11, Math.floor(bh * 0.28))}px Archivo Black, DM Sans`;
-    ctx.textAlign = "center";
-    ctx.fillText("BAU", x + bw / 2, y + bh * 0.58);
+    // only a plus — no BAU text
+    ctx.strokeStyle = "rgba(255,255,255,0.45)";
+    ctx.lineWidth = 2.5;
+    const cx = x + bw / 2;
+    const cy = y + bh / 2;
+    const arm = Math.min(bw, bh) * 0.18;
+    ctx.beginPath();
+    ctx.moveTo(cx - arm, cy);
+    ctx.lineTo(cx + arm, cy);
+    ctx.moveTo(cx, cy - arm);
+    ctx.lineTo(cx, cy + arm);
+    ctx.stroke();
     return;
   }
 
-  let wall = "#78716c";
+  // mockup-like panel colors
+  let wall = "#3f4650";
   if (!grey) {
-    if (s.building === "bier") wall = player ? "#ca8a04" : ai ? "#9a3412" : "#a8a29e";
+    if (s.building === "bier") wall = player ? "#2f6b45" : ai ? "#7f1d1d" : "#4b5563";
     else if (s.building === "ordner")
-      wall = player ? "#2563eb" : ai ? "#1e3a8a" : "#64748b";
-    else wall = player ? "#9333ea" : ai ? "#6b21a8" : "#7c3aed";
+      wall = player ? "#1e3a5f" : ai ? "#3f1d1d" : "#374151";
+    else wall = player ? "#4c1d6a" : ai ? "#5b1a3a" : "#44403c";
+  } else {
+    wall = "#4b5563";
   }
 
-  // flush booth body
   ctx.fillStyle = wall;
-  ctx.fillRect(x, y, bw, bh);
-  // roof strip at top edge (toward block)
-  ctx.fillStyle = grey ? "#44403c" : "rgba(10,14,12,0.5)";
-  ctx.fillRect(x, y, bw, Math.max(4, bh * 0.14));
-  // counter
-  ctx.fillStyle = "rgba(255,255,255,0.18)";
-  ctx.fillRect(x + 2, y + bh * 0.42, bw - 4, 3);
+  roundRect(ctx, x, y, bw, bh, r);
+  ctx.fill();
+  // soft inner face
+  ctx.fillStyle = "rgba(255,255,255,0.06)";
+  roundRect(ctx, x + 3, y + 3, bw - 6, bh - 6, Math.max(2, r - 2));
+  ctx.fill();
 
   const cx = x + bw / 2;
-  const cy = y + bh * 0.55;
-  const iconS = Math.min(bw * 0.55, bh * 0.48);
+  const cy = y + bh * 0.48;
+  const iconS = Math.min(bw, bh) * 0.42;
 
-  if (s.building === "bier") drawBeerMug(ctx, cx, cy - 2, iconS, grey);
-  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy - 2, iconS, grey);
-  else drawShopJersey(ctx, cx, cy - 2, iconS, grey, player);
+  if (s.building === "bier") drawBeerMug(ctx, cx, cy, iconS, grey);
+  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy, iconS, grey);
+  else drawShopJersey(ctx, cx, cy, iconS, grey, player);
 
-  // clear label
-  const label =
-    s.building === "bier" ? "BIER" : s.building === "ordner" ? "ORDNER" : "SHOP";
+  // level pips only — no text labels
   const lv = s.level || 1;
-  ctx.fillStyle = grey ? "#e7e5e4" : "#fff";
-  ctx.font = `700 ${Math.max(9, Math.floor(bh * 0.2))}px Archivo Black, DM Sans`;
-  ctx.textAlign = "center";
-  ctx.fillText(lv > 1 ? `${label} Lv${lv}` : label, cx, y + bh - 5);
-
-  // level pips (5)
-  if (!grey && lv >= 1) {
-    const pipW = Math.min(6, (bw - 10) / 5 - 1);
+  if (!grey) {
+    const pipW = Math.min(7, (bw - 12) / 5 - 1);
     for (let i = 0; i < 5; i++) {
-      ctx.fillStyle = i < lv ? "#fde68a" : "rgba(0,0,0,0.35)";
-      ctx.fillRect(x + 4 + i * (pipW + 2), y + 3, pipW, 4);
+      ctx.fillStyle = i < lv ? "#fde68a" : "rgba(0,0,0,0.4)";
+      ctx.fillRect(x + 5 + i * (pipW + 2), y + 4, pipW, 4);
     }
   }
 
   ctx.strokeStyle = sel
     ? "#6bcb77"
     : player
-      ? "#93c5fd"
+      ? "rgba(147,197,253,0.55)"
       : ai
-        ? "#fca5a5"
-        : "rgba(255,255,255,0.2)";
+        ? "rgba(252,165,165,0.55)"
+        : "rgba(255,255,255,0.18)";
   ctx.lineWidth = sel ? 2.5 : 1.5;
-  ctx.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1);
+  roundRect(ctx, x + 0.5, y + 0.5, bw - 1, bh - 1, r);
+  ctx.stroke();
 
   if (s.building === "bier" && !grey) {
     ctx.fillStyle = "rgba(0,0,0,0.45)";
-    ctx.fillRect(x + 4, y + bh * 0.32, bw - 8, 4);
+    ctx.fillRect(x + 6, y + bh - 10, bw - 12, 4);
     ctx.fillStyle = "#fde68a";
-    ctx.fillRect(x + 4, y + bh * 0.32, (bw - 8) * (s.beer / s.capacity), 4);
+    ctx.fillRect(x + 6, y + bh - 10, (bw - 12) * (s.beer / s.capacity), 4);
   }
 }
 
@@ -516,7 +549,7 @@ function drawMannchen(
 
   ctx.restore();
 
-  // HP bar
+  // HP bar only — no text tags on fans
   const bw = s * 2.2;
   const bx = x - bw / 2;
   const by = y + s * 1.35;
@@ -524,20 +557,6 @@ function drawMannchen(
   ctx.fillRect(bx, by, bw, 3);
   ctx.fillStyle = f.hp / f.maxHp > 0.35 ? "#6bcb77" : "#f87171";
   ctx.fillRect(bx, by, bw * Math.max(0, f.hp / f.maxHp), 3);
-
-  // kind tag — color-coded
-  ctx.font = `700 ${Math.max(9, Math.floor(s * 0.6))}px Archivo Black, DM Sans`;
-  ctx.textAlign = "center";
-  if (f.kind === "ultras") {
-    ctx.fillStyle = "#f97316";
-    ctx.fillText("ULTRA", x, by + 12);
-  } else if (f.kind === "familie") {
-    ctx.fillStyle = "#fbbf24";
-    ctx.fillText("FAM", x, by + 12);
-  } else {
-    ctx.fillStyle = "#4ade80";
-    ctx.fillText("NORM", x, by + 12);
-  }
 }
 
 function drawUltra(
@@ -829,10 +848,6 @@ function drawSteward(
   ctx.fillRect(x - bw / 2, y + s * 1.25, bw, 3);
   ctx.fillStyle = "#facc15";
   ctx.fillRect(x - bw / 2, y + s * 1.25, bw * Math.max(0, f.hp / f.maxHp), 3);
-  ctx.fillStyle = "#fde68a";
-  ctx.font = `700 ${Math.max(8, Math.floor(s * 0.5))}px Archivo Black, DM Sans`;
-  ctx.textAlign = "center";
-  ctx.fillText("ORD", x, y + s * 1.25 + 12);
 }
 
 function drawMoodMeter(
