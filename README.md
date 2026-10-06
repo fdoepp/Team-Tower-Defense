@@ -4,9 +4,9 @@ Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fu�
 
 ## Spielen (Handy-Link)
 
-**Live:** https://sellers-laboratories-belongs-shapes.trycloudflare.com
+**Live:** https://sellers-laboratories-belongs-shapes.trycloudflare.com  
 
-(Öffentlicher Tunnel aus der aktuellen Agent-Session — solange der Agent läuft.)
+Handy **quer** halten. Hard-Refresh, falls noch die alte Version cached ist.
 
 Lokal:
 
