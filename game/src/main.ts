@@ -137,14 +137,14 @@ function renderSetup(): void {
   app.innerHTML = `
     <div class="screen menu">
       <div>
-        <p class="sub">10 Fans für den Heimblock</p>
+        <p class="sub">8 Fans für den Heimblock (max. 12)</p>
         <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
       </div>
       <div class="card stack">
         ${row("ultras", "Ultras (Kampf/Pyro)")}
-        ${row("normalos", "Normalos (Gesang/Durst)")}
-        ${row("familie", "Familie (Klatschen/Gold)")}
-        <p class="tiny">Summe ${mixSum(mix)} / 10 ${isValidMix(mix) ? "✓" : ""}</p>
+        ${row("normalos", "Normalos (Gesang)")}
+        ${row("familie", "Familie (Geld, braucht Sicherheit)")}
+        <p class="tiny">Summe ${mixSum(mix)} / 8 ${isValidMix(mix) ? "✓" : ""}</p>
       </div>
       <div class="row">
         <button class="btn secondary grow" id="back">Zurück</button>
@@ -167,7 +167,7 @@ function renderSetup(): void {
       const d = Number(btn.dataset.d);
       const next = { ...state.setup.mix, [key]: state.setup.mix[key] + d };
       if (next[key] < MIX_MIN[key] || next[key] > MIX_MAX[key]) return;
-      if (mixSum(next) > 10) return;
+      if (mixSum(next) > 8) return;
       state.setup.mix = next;
       renderSetup();
     });
@@ -188,15 +188,15 @@ function renderMatchScreen(): void {
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell a2c">
       <div class="top-chrome currency-chrome">
-        <div class="cur-pill gold-pill"><span>Gold</span><b id="gold">0</b></div>
-        <div class="cur-pill bier-pill" title="Bier → Ultras kaufen">
+        <div class="cur-pill gold-pill"><span>Geld</span><b id="gold">0</b></div>
+        <div class="cur-pill bier-pill" title="Bier → Ultras / Pyro">
           <span>BIER</span><b id="cur-beer">0</b><i>/100</i>
         </div>
-        <div class="cur-pill shop-pill" title="Fanshop → Normalos kaufen">
-          <span>SHOP</span><b id="cur-shop">0</b><i>/100</i>
+        <div class="cur-pill shop-pill" title="Fanartikel → Normalos / Gesang">
+          <span>FANARTIKEL</span><b id="cur-merch">0</b><i>/100</i>
         </div>
-        <div class="cur-pill ord-pill" title="Ordner → Familien kaufen">
-          <span>ORDNER</span><b id="cur-ord">0</b><i>/100</i>
+        <div class="cur-pill ord-pill" title="Sicherheit → Familien ab 25">
+          <span>SICHERHEIT</span><b id="cur-sec">0</b><i>/100</i>
         </div>
         <div class="speed-btns">
           <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
@@ -210,25 +210,24 @@ function renderMatchScreen(): void {
         <div class="toast" id="toast"></div>
         <aside class="control-rail">
           <div class="mood-stack">
-            <button class="mood-btn" data-mood="gesang" id="btn-gesang">Gesang <small>SHOP</small><span></span></button>
+            <button class="mood-btn" data-mood="gesang" id="btn-gesang">Gesang <small>FANARTIKEL</small><span></span></button>
             <button class="mood-btn" data-mood="pyro" id="btn-pyro">Pyro <small>BIER</small><span></span></button>
-            <button class="mood-btn" data-mood="klatschen" id="btn-klatschen">Klatschen <small>ORDNER</small><span></span></button>
           </div>
           <button class="ultra-btn" id="btn-ultra">1 Ultra → Gang <small>5 BIER</small><span></span></button>
         </aside>
         <div class="popup-menu hidden" id="seat-menu">
           <p class="popup-title">Fan kaufen</p>
-          <button data-buy="ultras" id="buy-ultras">Ultra <small>40 BIER</small></button>
-          <button data-buy="normalos" id="buy-normalos">Normalo <small>35 SHOP</small></button>
-          <button data-buy="familie" id="buy-familie">Familie <small>30 ORDNER</small></button>
+          <button data-buy="ultras" id="buy-ultras">Ultra <small>35 BIER</small></button>
+          <button data-buy="normalos" id="buy-normalos">Normalo <small>30 FANARTIKEL</small></button>
+          <button data-buy="familie" id="buy-familie">Familie <small>40€ · Sicherheit≥25</small></button>
           <button class="popup-cancel" id="seat-cancel">Abbrechen</button>
         </div>
         <div class="popup-menu hidden" id="build-menu">
           <p class="popup-title" id="build-title">Gebäude</p>
           <div id="build-options">
-            <button data-build="bier">Bierstand <small>+BIER</small></button>
-            <button data-build="ordner">Ordnerposten <small>+ORDNER</small></button>
-            <button data-build="fanshop">Fanshop <small>+SHOP</small></button>
+            <button data-build="bier">Bierstand <small>+Bier / Fass</small></button>
+            <button data-build="ordner">Ordnerposten <small>+Sicherheit · €/s</small></button>
+            <button data-build="fanshop">Fanshop <small>+Fanartikel</small></button>
           </div>
           <div id="upgrade-options" class="hidden">
             <button id="btn-upgrade">Upgrade <small></small></button>
@@ -416,7 +415,7 @@ function renderMatchScreen(): void {
   });
 
   const syncOverlay = () => {
-    (["gesang", "pyro", "klatschen"] as MoodAction[]).forEach((act) => {
+    (["gesang", "pyro"] as MoodAction[]).forEach((act) => {
       const btn = app.querySelector<HTMLButtonElement>(`#btn-${act}`)!;
       const ready = m.moodActionReady(act);
       btn.classList.toggle("ready", ready);
@@ -480,11 +479,11 @@ function renderMatchScreen(): void {
       const gold = app.querySelector("#gold");
       if (gold) gold.textContent = String(Math.floor(m.gold));
       const beer = app.querySelector("#cur-beer");
-      const shop = app.querySelector("#cur-shop");
-      const ord = app.querySelector("#cur-ord");
+      const merch = app.querySelector("#cur-merch");
+      const sec = app.querySelector("#cur-sec");
       if (beer) beer.textContent = String(m.currencyPct("beer"));
-      if (shop) shop.textContent = String(m.currencyPct("shop"));
-      if (ord) ord.textContent = String(m.currencyPct("ordner"));
+      if (merch) merch.textContent = String(m.currencyPct("merch"));
+      if (sec) sec.textContent = String(m.currencyPct("security"));
       const toast = app.querySelector("#toast");
       if (toast) {
         const t = m.toasts[0];

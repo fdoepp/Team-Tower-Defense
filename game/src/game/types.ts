@@ -32,32 +32,31 @@ export type FanUnit = {
   team: TeamId | "neutral";
   blockId: number;
   state: FanState;
+  /** Seat stays reserved while Ultra is on gang (alive) */
   seatIndex: number | null;
   standKey: string | null;
   hp: number;
   maxHp: number;
   thirst: number;
-  /** realElapsed until thirst rises again after a beer */
+  /** realElapsed until thirst rises again after one beer */
   satisfiedUntil: number;
+  /** shop hunger for familie — time until next fanshop visit */
+  shopUntil: number;
   aggro: number;
+  /** neutral capture lean -1..1 */
   lean: number;
+  /** capture progress 0..1 for neutrals */
+  captureProg: number;
   gangX: number;
   x: number;
   y: number;
-  /** waypoints for door/lane pathing */
   path: { x: number; y: number }[];
   pathI: number;
-  /** 0..1 swing animation for ultras in combat */
   armSwing: number;
-  /** seconds until next discrete hit */
   attackCd: number;
-  /** currently invading enemy block */
   invading: boolean;
-  /** Ordner from a steward stand — patrols/blocks the gang */
   isSteward: boolean;
-  /** slotKey of the ordner stand that spawned this steward */
   homeStandKey: string | null;
-  /** path completion mode */
   _after?: string;
   _homeSeat?: number | null;
 };
@@ -67,32 +66,35 @@ export type BuildSlot = {
   index: number;
   building: BuildingKind | null;
   greyNeutral: boolean;
+  /** Fass — NPC beer stock at bierstand */
   beer: number;
   capacity: number;
   owner: TeamId | "neutral" | null;
-  /** 1..UPGRADE_MAX — higher = more production / more stewards */
   level: number;
-  /** cooldown until next steward spawn */
   stewardCd: number;
+  /** seconds of foreign battle-line dominance toward conversion */
+  convertAcc: number;
 };
 
-/** Currencies for buying fans (capped 0..100) */
+/** Player currencies (0..100). Sicherheit gates Familien. */
 export type Currencies = {
   beer: number;
-  ordner: number;
-  shop: number;
+  merch: number;
+  security: number;
 };
 
+export const START_GOLD = 75;
+
 export const BUY_COST = {
-  ultras: { beer: 40, ordner: 0, shop: 0 },
-  normalos: { beer: 0, ordner: 0, shop: 35 },
-  familie: { beer: 0, ordner: 30, shop: 0 },
+  ultras: { beer: 35, merch: 0, gold: 0 },
+  normalos: { beer: 0, merch: 30, gold: 0 },
+  familie: { beer: 0, merch: 0, gold: 40 },
 } as const;
 
 export const BUILD_COST: Record<BuildingKind, number> = {
   bier: 50,
-  ordner: 45,
-  fanshop: 45,
+  ordner: 50,
+  fanshop: 50,
 };
 
 export const BUILD_LABEL: Record<BuildingKind, string> = {
@@ -101,20 +103,17 @@ export const BUILD_LABEL: Record<BuildingKind, string> = {
   fanshop: "Shop",
 };
 
-/** Max booth upgrade level */
 export const UPGRADE_MAX = 5;
+export const UPGRADE_COST = [0, 0, 40, 75, 120, 180] as const;
 
-/** Gold cost to reach level N (index = level). Level 1 = built. */
-export const UPGRADE_COST = [0, 0, 55, 95, 150, 220] as const;
-
-/** Production multiplier by level */
 export function productionRate(level: number): number {
-  return 0.55 + level * 0.45;
+  return 0.7 + level * 0.5;
 }
 
-export const MIX_MIN = { normalos: 2, ultras: 1, familie: 1 } as const;
-export const MIX_MAX = { normalos: 6, ultras: 5, familie: 4 } as const;
-export const MIX_TOTAL = 10;
+/** Startmix wählbar, Summe 8; Block-Cap = SEATS_PER_BLOCK (12) */
+export const MIX_MIN = { normalos: 1, ultras: 1, familie: 1 } as const;
+export const MIX_MAX = { normalos: 5, ultras: 5, familie: 4 } as const;
+export const MIX_TOTAL = 8;
 
 export const REGULAR_REAL_SEC = 390;
 export const ET_REAL_SEC = 70;
@@ -123,52 +122,83 @@ export const FEVER_FROM_MIN = 80;
 export const MOOD_CD = {
   gesang: 12,
   pyro: 16,
-  klatschen: 10,
 } as const;
 
 export const ULTRA_ORDER_CD = 14;
+export const ULTRA_ORDER_BEER = 5;
 
-export const HIT_DAMAGE = 28;
-export const HIT_CD = 0.55;
-export const INVADE_WIN_COUNT = 3;
+/** Combat */
+export const HIT_DAMAGE = 22;
+export const HIT_CD = 0.6;
+export const BLOCK_STORM_COUNT = 3;
+export const BLOCK_STORM_SEC = 5;
+/** Medium stand conversion under battle-line dominance */
+export const STAND_CONVERT_SEC = 10;
+export const STEWARD_GOLD_PER_SEC = 0.55;
+export const SECURITY_FAMILY_GATE = 25;
+/** Familie shop visit: gold gained per purchase */
+export const FAMILY_SHOP_GOLD = 10;
+export const FAMILY_SHOP_INTERVAL = 30;
+export const ULTRA_BEER_INTERVAL = 18;
+export const NORMALO_BEER_INTERVAL = 28;
 
-export type MoodAction = "gesang" | "pyro" | "klatschen";
+export type MoodAction = "gesang" | "pyro";
 
 export const FAN_STATS: Record<
   FanKind,
   {
     maxHp: number;
+    /** attack multiplier */
+    attack: number;
+    /** defense multiplier (damage reduction factor ~1/def) */
+    defense: number;
+    /** legacy fight ≈ attack for movement pacing */
     fight: number;
     drink: number;
-    mood: number;
+    /** Jubel weight while in block (gang = 0) */
+    jubel: number;
     color: string;
     label: string;
   }
 > = {
   ultras: {
-    maxHp: 100,
+    maxHp: 110,
+    attack: 1.45,
+    defense: 0.9,
     fight: 1.45,
-    drink: 0.7,
-    mood: 1.1,
+    drink: 0.9,
+    jubel: 0.85,
     color: "#1f6feb",
     label: "Ultra",
   },
   normalos: {
-    maxHp: 80,
+    maxHp: 75,
+    attack: 0.55,
+    defense: 0.55,
     fight: 0.7,
-    drink: 1.35,
-    mood: 1.25,
+    drink: 1.2,
+    jubel: 1.0,
     color: "#3ecf6a",
     label: "Normal",
   },
   familie: {
-    maxHp: 70,
+    maxHp: 55,
+    attack: 0.25,
+    defense: 0.4,
     fight: 0.35,
-    drink: 0.85,
-    mood: 0.9,
+    drink: 0.5,
+    jubel: 0.7,
     color: "#e6b422",
     label: "Familie",
   },
+};
+
+/** Steward (Ordner) combat profile — Def > Atk */
+export const STEWARD_STATS = {
+  maxHpBase: 100,
+  maxHpPerLevel: 14,
+  attack: 0.7,
+  defense: 1.5,
 };
 
 export const BLOCK_META = [

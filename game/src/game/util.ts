@@ -10,7 +10,7 @@ export function mixSum(m: FanMix): number {
 }
 
 export function defaultMix(): FanMix {
-  return { normalos: 4, ultras: 3, familie: 3 };
+  return { normalos: 3, ultras: 3, familie: 2 };
 }
 
 export function isValidMix(mix: FanMix): boolean {

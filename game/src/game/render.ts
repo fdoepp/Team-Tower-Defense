@@ -54,6 +54,22 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
     ctx.textAlign = "center";
     ctx.fillText("PAUSE", w / 2, h * (gy + L.gangH / 2) + 6);
   }
+
+  // Blocksturm progress
+  if (m.stormAccPlayer > 0.05 || m.stormAccAi > 0.05) {
+    const acc = Math.max(m.stormAccPlayer, m.stormAccAi);
+    const pct = Math.min(1, acc / 5);
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    roundRect(ctx, w * 0.35, h * 0.42, w * 0.3, 18, 6);
+    ctx.fill();
+    ctx.fillStyle = "#ef4444";
+    roundRect(ctx, w * 0.35, h * 0.42, w * 0.3 * pct, 18, 6);
+    ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = `700 ${Math.floor(h * 0.022)}px DM Sans`;
+    ctx.textAlign = "center";
+    ctx.fillText(`Blocksturm ${Math.ceil(5 - acc)}s`, w / 2, h * 0.42 + 13);
+  }
 }
 
 function blockFill(m: Match, id: number): string {
@@ -179,14 +195,23 @@ function drawBlocks(
       ctx.fillRect(left + 4, y + 22 + row * (bodyH / 6), bw - 8, bodyH / 7);
     }
     ctx.restore();
-    // header badge
+    // header badge — show club crest when block stormed/owned
     ctx.fillStyle = "rgba(10,20,16,0.5)";
     roundRect(ctx, cx - bw * 0.32, y + 4, bw * 0.64, 18, 6);
     ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.font = `700 ${Math.floor(h * 0.02)}px Archivo Black, DM Sans`;
-    ctx.textAlign = "center";
-    ctx.fillText(b.label, cx, y + 17);
+    const owner = m.blockOwner[b.id];
+    if (owner === "ksc" || owner === "vfb") {
+      drawClubCrest(ctx, cx - bw * 0.18, y + 13, 11, owner);
+      ctx.fillStyle = "#fff";
+      ctx.font = `700 ${Math.floor(h * 0.018)}px Archivo Black, DM Sans`;
+      ctx.textAlign = "left";
+      ctx.fillText(owner === "ksc" ? "KSC" : "VfB", cx - bw * 0.08, y + 17);
+    } else {
+      ctx.fillStyle = "#fff";
+      ctx.font = `700 ${Math.floor(h * 0.02)}px Archivo Black, DM Sans`;
+      ctx.textAlign = "center";
+      ctx.fillText(b.label, cx, y + 17);
+    }
     // arched tunnel into gang (mockup style)
     const d = doorPos(b.id);
     const doorW = bw * L.doorFrac;
@@ -379,9 +404,29 @@ function drawBuilding(
   const cy = y + bh * 0.48;
   const iconS = Math.min(bw, bh) * 0.42;
 
-  if (s.building === "bier") drawBeerMug(ctx, cx, cy, iconS, grey);
-  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy, iconS, grey);
-  else drawShopJersey(ctx, cx, cy, iconS, grey, player);
+  if (s.building === "bier") drawBeerMug(ctx, cx, cy - bh * 0.06, iconS * 0.85, grey);
+  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy - bh * 0.06, iconS * 0.85, grey);
+  else drawShopJersey(ctx, cx, cy - bh * 0.06, iconS * 0.85, grey, player);
+
+  // Club crest when stand is owned (not grey neutral)
+  if (!grey && (player || ai)) {
+    drawClubCrest(
+      ctx,
+      x + bw - Math.min(bw, bh) * 0.22,
+      y + Math.min(bw, bh) * 0.22,
+      Math.min(bw, bh) * 0.32,
+      s.owner === "ksc" ? "ksc" : "vfb",
+    );
+  }
+
+  // conversion progress
+  if (s.convertAcc > 0.4) {
+    const pct = Math.min(1, s.convertAcc / 10);
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(x + 4, y + bh * 0.55, bw - 8, 5);
+    ctx.fillStyle = "#fbbf24";
+    ctx.fillRect(x + 4, y + bh * 0.55, (bw - 8) * pct, 5);
+  }
 
   // level pips only — no text labels
   const lv = s.level || 1;
@@ -410,6 +455,39 @@ function drawBuilding(
     ctx.fillStyle = "#fde68a";
     ctx.fillRect(x + 6, y + bh - 10, (bw - 12) * (s.beer / s.capacity), 4);
   }
+}
+
+/** Vereinswappen on captured stands / stormed blocks */
+function drawClubCrest(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  s: number,
+  team: "ksc" | "vfb",
+): void {
+  ctx.save();
+  ctx.translate(x, y);
+  // shield
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.55);
+  ctx.lineTo(s * 0.45, -s * 0.25);
+  ctx.lineTo(s * 0.4, s * 0.25);
+  ctx.lineTo(0, s * 0.55);
+  ctx.lineTo(-s * 0.4, s * 0.25);
+  ctx.lineTo(-s * 0.45, -s * 0.25);
+  ctx.closePath();
+  ctx.fillStyle = team === "ksc" ? "#1d4ed8" : "#b91c1c";
+  ctx.fill();
+  ctx.strokeStyle = "#f3f0e7";
+  ctx.lineWidth = Math.max(1.2, s * 0.08);
+  ctx.stroke();
+  // monogram
+  ctx.fillStyle = "#fff";
+  ctx.font = `700 ${Math.max(8, Math.floor(s * 0.55))}px Archivo Black, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(team === "ksc" ? "K" : "V", 0, s * 0.02);
+  ctx.restore();
 }
 
 function drawBeerMug(
@@ -614,22 +692,20 @@ function drawUltra(
   ctx.arc(0, -s * 1.22, s * 0.16, 0, Math.PI * 2);
   ctx.fill();
 
-  // swinging arm / pyro stick
+  // arms — two limbs (swing + plant)
   const face = f.team === "vfb" ? -1 : 1;
   const swing = f.armSwing > 0 ? f.armSwing : onGang ? 0.2 : 0;
   const ang = (-0.8 + swing * 1.7) * face;
   ctx.strokeStyle = skin;
   ctx.lineWidth = Math.max(2.2, s * 0.22);
+  ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(face * s * 0.5, -s * 0.05);
   const ix = face * s * 0.5 + Math.cos(ang) * s * 1.15;
   const iy = -s * 0.05 + Math.sin(ang) * s * 1.15;
   ctx.lineTo(ix, iy);
-  ctx.stroke();
-  // other arm
-  ctx.beginPath();
-  ctx.moveTo(-face * s * 0.45, 0);
-  ctx.lineTo(-face * s * 0.6, s * 0.5);
+  ctx.moveTo(-face * s * 0.5, -s * 0.02);
+  ctx.lineTo(-face * s * 0.75, s * 0.45);
   ctx.stroke();
   if (swing > 0.3) {
     ctx.fillStyle = "rgba(251,146,60,0.9)";
@@ -696,14 +772,15 @@ function drawNormalo(
   ctx.ellipse(s * 0.28, -s * 0.72, s * 0.35, s * 0.11, 0.15, 0, Math.PI * 2);
   ctx.fill();
 
-  // arms
+  // arms — always two clear limbs
   ctx.strokeStyle = skin;
   ctx.lineWidth = Math.max(2, s * 0.18);
+  ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(-s * 0.45, 0);
-  ctx.lineTo(-s * 0.55, s * 0.4);
-  ctx.moveTo(s * 0.45, -s * 0.05);
-  ctx.lineTo(s * 0.7, -s * 0.25);
+  ctx.moveTo(-s * 0.48, -s * 0.05);
+  ctx.lineTo(-s * 0.75, s * 0.35);
+  ctx.moveTo(s * 0.48, -s * 0.05);
+  ctx.lineTo(s * 0.85, -s * 0.35);
   ctx.stroke();
 }
 
@@ -759,14 +836,15 @@ function drawFamilie(
   ctx.fillStyle = "#fef3c7";
   ctx.fillRect(-s * 0.72, -s * 0.7, s * 0.35, s * 0.28);
 
-  // arms
+  // arms — always two
   ctx.strokeStyle = skin;
   ctx.lineWidth = Math.max(1.8, s * 0.16);
+  ctx.lineCap = "round";
   ctx.beginPath();
-  ctx.moveTo(s * 0.4, 0);
-  ctx.lineTo(s * 0.5, s * 0.35);
-  ctx.moveTo(-s * 0.4, 0);
-  ctx.lineTo(-s * 0.5, -s * 0.2);
+  ctx.moveTo(s * 0.42, 0);
+  ctx.lineTo(s * 0.62, s * 0.4);
+  ctx.moveTo(-s * 0.42, 0);
+  ctx.lineTo(-s * 0.7, -s * 0.35);
   ctx.stroke();
 }
 
