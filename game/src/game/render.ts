@@ -329,7 +329,7 @@ function drawBuilding(
   sel: boolean,
   m: Match,
 ): void {
-  const grey = !!(s.greyNeutral && s.owner === "neutral");
+  const grey = !!(s.owner === "neutral" || s.greyNeutral);
   const player = s.owner === m.playerTeam;
   const ai = s.owner === m.aiTeam;
   const r = Math.min(8, Math.min(bw, bh) * 0.12);
@@ -840,7 +840,14 @@ function drawSteward(
   h: number,
 ): void {
   const s = 10 * Math.max(1, h * 0.028 / 10);
-  const skin = "#e8c4a0";
+  const neutral = f.team === "neutral";
+  const skin = neutral ? "#c4c4c4" : "#e8c4a0";
+  // Neutral buffer Ordners stay grey; team Ordners keep hi-vis
+  const vest = neutral ? "#9ca3af" : "#facc15";
+  const vestStripe = neutral ? "#57534e" : "#0f172a";
+  const cap = neutral ? "#6b7280" : "#1e293b";
+  const hpCol = neutral ? "#a8a29e" : "#facc15";
+
   ctx.save();
   ctx.translate(x, y);
 
@@ -850,7 +857,7 @@ function drawSteward(
   ctx.fill();
 
   // dark pants
-  ctx.strokeStyle = "#1e293b";
+  ctx.strokeStyle = neutral ? "#44403c" : "#1e293b";
   ctx.lineWidth = Math.max(2.2, s * 0.24);
   ctx.lineCap = "round";
   ctx.beginPath();
@@ -860,11 +867,11 @@ function drawSteward(
   ctx.lineTo(s * 0.35, s * 1.05);
   ctx.stroke();
 
-  // hi-vis vest
-  ctx.fillStyle = "#facc15";
+  // vest
+  ctx.fillStyle = vest;
   roundRect(ctx, -s * 0.55, -s * 0.3, s * 1.1, s * 0.85, 3);
   ctx.fill();
-  ctx.fillStyle = "#0f172a";
+  ctx.fillStyle = vestStripe;
   ctx.fillRect(-s * 0.55, -s * 0.05, s * 1.1, s * 0.12);
   ctx.fillRect(-s * 0.08, -s * 0.3, s * 0.16, s * 0.85);
 
@@ -873,14 +880,14 @@ function drawSteward(
   ctx.beginPath();
   ctx.arc(0, -s * 0.65, s * 0.36, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "#1e293b";
+  ctx.fillStyle = cap;
   ctx.beginPath();
   ctx.ellipse(0, -s * 0.78, s * 0.4, s * 0.18, 0, Math.PI, 0);
   ctx.fill();
   ctx.fillRect(-s * 0.4, -s * 0.8, s * 0.8, s * 0.14);
 
   // badge
-  ctx.fillStyle = "#fff";
+  ctx.fillStyle = neutral ? "#e7e5e4" : "#fff";
   ctx.beginPath();
   ctx.moveTo(0, -s * 0.05);
   ctx.lineTo(s * 0.22, s * 0.12);
@@ -910,7 +917,7 @@ function drawSteward(
   const bw = s * 2.2;
   ctx.fillStyle = "rgba(0,0,0,0.5)";
   ctx.fillRect(x - bw / 2, y + s * 1.25, bw, 3);
-  ctx.fillStyle = "#facc15";
+  ctx.fillStyle = hpCol;
   ctx.fillRect(x - bw / 2, y + s * 1.25, bw * Math.max(0, f.hp / f.maxHp), 3);
 }
 

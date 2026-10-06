@@ -16,11 +16,16 @@ export const SEAT_ROWS = 4;
  */
 export const L = {
   /** Green pitch — match HUD sits only in this band */
-  pitchH: 0.28,
-  blockTop: 0.285,
-  blockBodyH: 0.21,
-  boothH: 0.08,
-  gangH: 0.115,
+  pitchH: 0.27,
+  blockTop: 0.275,
+  blockBodyH: 0.22,
+  /**
+   * Upper & lower booth rows share the same height.
+   * boothH = (1 - blockTop - blockBodyH - gangH) / 2
+   * so lower booths (flush to y=1) match the upper row.
+   */
+  boothH: 0.1925,
+  gangH: 0.12,
   blocksLeft: 0.04,
   blocksRight: 0.99,
   blockGap: 0.018,
@@ -104,7 +109,7 @@ export function gangLanePos(blockId: number): { x: number; y: number } {
 
 /**
  * Booth rect: index 0,1 = above gang (L/R); 2,3 = below gang (L/R).
- * Lower booths flush to canvas bottom (y=1).
+ * Upper and lower heights match (L.boothH); lower row flush to y=1.
  */
 export function boothRect(blockId: number, index: number): {
   x: number;
@@ -130,7 +135,8 @@ export function boothRect(blockId: number, index: number): {
     return { x: bx, y: bodyBot, w: bwBooth, h: Math.max(0.04, gy - bodyBot) };
   }
   const y0 = gy + L.gangH;
-  return { x: bx, y: y0, w: bwBooth, h: Math.max(0.06, 1 - y0) };
+  // Equal to upper row: remaining space to canvas bottom equals boothH when L is balanced
+  return { x: bx, y: y0, w: bwBooth, h: Math.max(0.04, 1 - y0) };
 }
 
 export function boothCenter(blockId: number, index: number): { x: number; y: number } {
