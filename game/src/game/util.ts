@@ -1,4 +1,4 @@
-import type { FanMix, SoloSettings, SetupConfig, TowerKind } from "./types";
+import type { FanMix, FanKind } from "./types";
 import { MIX_MAX, MIX_MIN, MIX_TOTAL } from "./types";
 
 export function clamp(n: number, a: number, b: number): number {
@@ -13,20 +13,6 @@ export function defaultMix(): FanMix {
   return { normalos: 4, ultras: 3, familie: 3 };
 }
 
-export function adjustMix(
-  mix: FanMix,
-  key: keyof FanMix,
-  delta: number,
-): FanMix {
-  const next = { ...mix, [key]: mix[key] + delta };
-  if (next[key] < MIX_MIN[key] || next[key] > MIX_MAX[key]) return mix;
-  if (mixSum(next) > MIX_TOTAL) return mix;
-  if (mixSum(next) < MIX_TOTAL && delta < 0) {
-    // allow temporary underfill while adjusting UI — caller validates
-  }
-  return next;
-}
-
 export function isValidMix(mix: FanMix): boolean {
   return (
     mixSum(mix) === MIX_TOTAL &&
@@ -39,16 +25,11 @@ export function isValidMix(mix: FanMix): boolean {
   );
 }
 
-export function synergyBonus(mix: FanMix, tower: TowerKind): number {
-  if (tower === "chor" && mix.ultras >= 4) return 1.15;
-  if (tower === "bier" && mix.normalos >= 5) return 1.15;
-  if (tower === "gitter" && mix.familie >= 3) return 1.1;
-  if (tower === "pyro" && mix.ultras >= 4) return 1.2;
-  if (tower === "schmaeh" && mix.ultras >= 3) return 1.1;
-  return 1;
-}
-
-export function defaultSoloSettings(): SoloSettings {
+export function defaultSoloSettings(): {
+  difficulty: "easy" | "normal" | "hard";
+  behavior: "patient" | "balanced" | "aggro" | "beer" | "earlywin";
+  playerTeam: "ksc" | "vfb";
+} {
   return {
     difficulty: "easy",
     behavior: "balanced",
@@ -56,8 +37,8 @@ export function defaultSoloSettings(): SoloSettings {
   };
 }
 
-export function defaultSetup(): SetupConfig {
-  return { mix: defaultMix(), startTower: "gitter" };
+export function defaultSetup() {
+  return { mix: defaultMix(), startBier: true };
 }
 
 export function teamLabel(team: "ksc" | "vfb"): string {
@@ -65,6 +46,13 @@ export function teamLabel(team: "ksc" | "vfb"): string {
 }
 
 export function formatMinute(minute: number): string {
-  const m = Math.floor(minute);
-  return `${m}′`;
+  return `${Math.floor(minute)}′`;
+}
+
+export function expandMix(mix: FanMix): FanKind[] {
+  const out: FanKind[] = [];
+  for (let i = 0; i < mix.ultras; i++) out.push("ultras");
+  for (let i = 0; i < mix.normalos; i++) out.push("normalos");
+  for (let i = 0; i < mix.familie; i++) out.push("familie");
+  return out;
 }

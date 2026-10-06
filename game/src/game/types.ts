@@ -1,6 +1,6 @@
 export type TeamId = "ksc" | "vfb";
-export type TowerKind = "chor" | "bier" | "gitter" | "pyro" | "schmaeh";
-export type FanMix = { normalos: number; ultras: number; familie: number };
+export type FanKind = "normalos" | "ultras" | "familie";
+export type FanMix = Record<FanKind, number>;
 export type AiDifficulty = "easy" | "normal" | "hard";
 export type AiBehavior =
   | "patient"
@@ -15,98 +15,104 @@ export type SoloSettings = {
   playerTeam: TeamId;
 };
 
+export type BuildKind = "bierstand";
+export type SendKind = "ultras" | "normalos" | "familie" | "mix";
+export type CurvaAction = "pyro" | "chor";
+
 export type SetupConfig = {
   mix: FanMix;
-  startTower: TowerKind;
+  /** Start with one free bierstand on nearest lane slot */
+  startBier: boolean;
 };
-
-export type GameMode = "solo-versus" | "solo-coop";
 
 export type MatchPhase = "regular" | "et" | "pens" | "ended";
+export type SpeedMode = 0 | 1 | 2; // 0 = pause
 
-export type EnemyKind = "runner" | "grunt" | "tank" | "swarm" | "boss";
-
-export type TowerDef = {
-  kind: TowerKind;
-  name: string;
-  cost: number;
-  range: number;
-  dps: number;
-  slow: number;
-  mood: number;
-  beerGen: number;
+export type FanUnit = {
+  id: number;
+  kind: FanKind;
+  hp: number;
+  maxHp: number;
+  thirst: number;
   aggro: number;
-  color: string;
+  /** 0 = in own curva, 1 = neutral, 2 = fighting on lane tracked separately */
+  zone: "curva" | "neutral";
 };
 
-export const TOWERS: Record<TowerKind, TowerDef> = {
-  chor: {
-    kind: "chor",
-    name: "Chor",
-    cost: 60,
-    range: 0,
-    dps: 0,
-    slow: 0,
-    mood: 14,
-    beerGen: 0,
-    aggro: 2,
-    color: "#5b8cff",
-  },
-  bier: {
-    kind: "bier",
-    name: "Bierstand",
-    cost: 50,
-    range: 0,
-    dps: 0,
-    slow: 0,
-    mood: 4,
-    beerGen: 3.2,
-    aggro: 0,
-    color: "#d4a017",
-  },
-  gitter: {
-    kind: "gitter",
-    name: "Gitter",
-    cost: 55,
-    range: 90,
-    dps: 10,
-    slow: 0.35,
-    mood: 1,
-    beerGen: 0,
-    aggro: 0,
-    color: "#8fa39a",
-  },
-  pyro: {
-    kind: "pyro",
-    name: "Pyro",
-    cost: 80,
-    range: 70,
-    dps: 6,
-    slow: 0,
-    mood: 18,
-    beerGen: 0,
-    aggro: 8,
-    color: "#e85d4c",
-  },
-  schmaeh: {
-    kind: "schmaeh",
-    name: "Schmäh",
-    cost: 65,
-    range: 0,
-    dps: 0,
-    slow: 0,
-    mood: 10,
-    beerGen: 0,
-    aggro: 12,
-    color: "#c084fc",
-  },
+export type LaneBlock = {
+  id: number;
+  team: TeamId;
+  /** composition counts */
+  ultras: number;
+  normalos: number;
+  familie: number;
+  /** 0 = player goal line (left), 1 = enemy (right) — player advances +x */
+  x: number;
+  hp: number;
+  maxHp: number;
+  thirst: number;
+  aggro: number;
+};
+
+export type BierStand = {
+  id: number;
+  /** lane slot index 0..4 */
+  slot: number;
+  owner: TeamId | "neutral";
+  beer: number;
+  capacity: number;
 };
 
 export const MIX_MIN = { normalos: 2, ultras: 1, familie: 1 } as const;
 export const MIX_MAX = { normalos: 6, ultras: 5, familie: 4 } as const;
 export const MIX_TOTAL = 10;
 
-/** Real seconds for 90' — prototype pace (~2.5 min regulär). */
-export const REGULAR_REAL_SEC = 150;
-export const ET_REAL_SEC = 40;
+/** Slower: ~5 real minutes for 90' */
+export const REGULAR_REAL_SEC = 300;
+export const ET_REAL_SEC = 60;
 export const FEVER_FROM_MIN = 80;
+
+export const LANE_SLOTS = 5; // buildable bierstand positions along lane
+
+export const COSTS = {
+  sendUltras: 40,
+  sendNormalos: 30,
+  sendFamilie: 35,
+  sendMix: 45,
+  bierstand: 55,
+  pyro: 25,
+  chor: 40,
+} as const;
+
+export const FAN_STATS: Record<
+  FanKind,
+  { maxHp: number; fight: number; drink: number; mood: number; income: number; color: string; label: string }
+> = {
+  ultras: {
+    maxHp: 100,
+    fight: 1.4,
+    drink: 0.7,
+    mood: 0.9,
+    income: 0.5,
+    color: "#1f6feb",
+    label: "Ultra",
+  },
+  normalos: {
+    maxHp: 80,
+    fight: 0.7,
+    drink: 1.4,
+    mood: 1.3,
+    income: 0.8,
+    color: "#6bcb77",
+    label: "Normal",
+  },
+  familie: {
+    maxHp: 70,
+    fight: 0.45,
+    drink: 0.8,
+    mood: 0.7,
+    income: 1.6,
+    color: "#d4a017",
+    label: "Familie",
+  },
+};
