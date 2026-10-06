@@ -185,8 +185,19 @@ export class Match {
       bufferPost.owner = "neutral";
       bufferPost.level = 3; // cap = 2 Ordner
       bufferPost.stewardCd = 4;
-      this.fans.push(this.makeSteward("neutral", bufferPost));
-      this.fans.push(this.makeSteward("neutral", bufferPost));
+      const post = this.stewardPostPos(bufferPost);
+      for (let i = 0; i < 2; i++) {
+        const st = this.makeSteward("neutral", bufferPost);
+        st.state = "gang";
+        st.path = [];
+        st.pathI = 0;
+        this.setAfter(st, "");
+        const spread = (i - 0.5) * 0.028;
+        st.x = post.x + spread;
+        st.y = post.y;
+        st.gangX = blockIdToGangX(1) + spread * 0.35;
+        this.fans.push(st);
+      }
     }
     // Zweites Neutral-Slot-Index 1 bleibt freier Bauplatz (Claim später möglich)
     // Block 2 Index 1: freier + Slot ohne vorgebautes Gebäude
