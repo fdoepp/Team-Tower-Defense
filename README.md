@@ -6,7 +6,15 @@ Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fu�
 
 **Live:** https://houses-selecting-anthropology-penetration.trycloudflare.com  
 
-Handy **quer** halten. Hard-Refresh, falls noch die alte Version cached ist.
+### Vollbild (wichtig)
+
+Im normalen Safari/Chrome-Tab bleiben Adressleiste und Tabs — das Spielfeld wird unbrauchbar klein.
+
+1. Link öffnen → **Vollbild** tippen (oder beim Match-Start **Vollbild starten**)
+2. Handy **quer** halten
+3. **iPhone:** Teilen → **Zum Home-Bildschirm** → LaneLink von dort starten (echtes Vollbild ohne Tabs)
+
+Hard-Refresh, falls noch die alte Version cached ist.
 
 Lokal:
 

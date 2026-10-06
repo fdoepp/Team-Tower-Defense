@@ -1,5 +1,14 @@
 import "./style.css";
 import { Match } from "./game/Match";
+import {
+  enterFullscreen,
+  isFullscreen,
+  isIos,
+  isStandalone,
+  lockLandscape,
+  needsFullscreenGate,
+  onFullscreenChange,
+} from "./game/fullscreen";
 import { drawMatch, hitSeat, hitSlot } from "./game/render";
 import {
   BUILD_COST,
@@ -36,6 +45,23 @@ const state = {
   last: 0,
 };
 
+document.documentElement.classList.toggle("standalone", isStandalone());
+
+async function goFullscreen(): Promise<boolean> {
+  const ok = await enterFullscreen(document.documentElement);
+  await lockLandscape();
+  document.documentElement.classList.toggle("is-fs", isFullscreen());
+  return ok;
+}
+
+function syncFsClass(): void {
+  document.documentElement.classList.toggle("is-fs", isFullscreen());
+  document.documentElement.classList.toggle("standalone", isStandalone());
+}
+
+onFullscreenChange(syncFsClass);
+syncFsClass();
+
 function go(screen: Screen): void {
   state.screen = screen;
   render();
@@ -50,6 +76,7 @@ function render(): void {
 }
 
 function renderMenu(): void {
+  const iosHint = isIos() && !isStandalone();
   app.innerHTML = `
     <div class="screen menu">
       <div>
@@ -59,7 +86,13 @@ function renderMenu(): void {
       </div>
       <div class="card stack">
         <button class="btn ksc" id="solo">Solo vs KI</button>
+        <button class="btn secondary" id="fs-menu">Vollbild</button>
       </div>
+      ${
+        iosHint
+          ? `<p class="tiny fs-hint">iPhone: Teilen → <b>Zum Home-Bildschirm</b> — dann ohne Tabs/Adressleiste.</p>`
+          : `<p class="tiny fs-hint">Tipp: Vollbild für volle Spielfläche (ohne Browser-Leisten).</p>`
+      }
       <div class="card stack">
         <label class="field">Verein
           <select id="team"><option value="ksc">KSC</option><option value="vfb">VfB</option></select>
@@ -73,7 +106,11 @@ function renderMenu(): void {
         </label>
       </div>
     </div>`;
+  app.querySelector("#fs-menu")!.addEventListener("click", () => {
+    void goFullscreen();
+  });
   app.querySelector("#solo")!.addEventListener("click", () => {
+    void goFullscreen();
     state.settings = {
       playerTeam: (app.querySelector("#team") as HTMLSelectElement).value as TeamId,
       difficulty: (app.querySelector("#diff") as HTMLSelectElement)
@@ -115,6 +152,7 @@ function renderSetup(): void {
     </div>`;
   app.querySelector("#back")!.addEventListener("click", () => go("menu"));
   app.querySelector("#start")!.addEventListener("click", () => {
+    void goFullscreen();
     state.match = new Match({
       settings: state.settings,
       playerSetup: state.setup,
@@ -143,6 +181,8 @@ function cdLabel(left: number): string {
 function renderMatchScreen(): void {
   const m = state.match!;
   m.setSpeed(0);
+  const needFs = needsFullscreenGate();
+  const iosHint = isIos() && !isStandalone();
   app.innerHTML = `
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell a2c">
@@ -158,6 +198,7 @@ function renderMatchScreen(): void {
           <span>ORDNER</span><b id="cur-ord">0</b><i>/100</i>
         </div>
         <div class="speed-btns">
+          <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
           <button data-spd="0" class="on">⏸</button>
           <button data-spd="1">▶</button>
           <button data-spd="2">2×</button>
@@ -188,6 +229,18 @@ function renderMatchScreen(): void {
           <button data-build="fanshop">Fanshop <small>+SHOP</small></button>
           <button class="popup-cancel" id="build-cancel">Abbrechen</button>
         </div>
+        <div class="fs-gate ${needFs ? "" : "hidden"}" id="fs-gate">
+          <div class="fs-gate-card">
+            <h2>Vollbild nötig</h2>
+            <p>Ohne Vollbild bleiben Tabs und Adressleiste — das Spielfeld ist zu klein.</p>
+            <button class="btn ksc" type="button" id="fs-enter">Vollbild starten</button>
+            ${
+              iosHint
+                ? `<p class="tiny">iPhone: Teilen-Symbol → <b>Zum Home-Bildschirm</b>, dann LaneLink von dort öffnen.</p>`
+                : `<p class="tiny">Danach Handy quer halten.</p>`
+            }
+          </div>
+        </div>
       </div>
     </div>`;
 
@@ -196,6 +249,7 @@ function renderMatchScreen(): void {
   const ctx = canvas.getContext("2d")!;
   const seatMenu = app.querySelector<HTMLDivElement>("#seat-menu")!;
   const buildMenu = app.querySelector<HTMLDivElement>("#build-menu")!;
+  const fsGate = app.querySelector<HTMLDivElement>("#fs-gate")!;
 
   const resize = () => {
     const rect = wrap.getBoundingClientRect();
@@ -213,6 +267,25 @@ function renderMatchScreen(): void {
   requestAnimationFrame(resize);
   window.addEventListener("resize", resize);
   window.addEventListener("orientationchange", () => setTimeout(resize, 200));
+
+  const syncGate = () => {
+    const show = needsFullscreenGate();
+    fsGate.classList.toggle("hidden", !show);
+    syncFsClass();
+    resize();
+  };
+  const unFs = onFullscreenChange(syncGate);
+
+  const tryFs = () => {
+    void goFullscreen().then(() => {
+      syncGate();
+      setTimeout(resize, 100);
+      setTimeout(resize, 350);
+    });
+  };
+  app.querySelector("#fs-enter")!.addEventListener("click", tryFs);
+  app.querySelector("#btn-fs")!.addEventListener("click", tryFs);
+  if (!needFs) void lockLandscape();
 
   const hideMenus = () => {
     m.seatMenu = null;
@@ -359,6 +432,7 @@ function renderMatchScreen(): void {
     }
     if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
     if (m.result) {
+      unFs();
       setTimeout(() => go("result"), 800);
       return;
     }
