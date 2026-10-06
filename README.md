@@ -4,7 +4,7 @@ Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fu�
 
 ## Spielen (Handy-Link)
 
-**Live:** https://entered-wine-privilege-engineer.trycloudflare.com  
+**Live:** https://raid-politics-collectible-impact.trycloudflare.com  
 
 Handy **quer** halten. Hard-Refresh, falls noch die alte Version cached ist.
 
