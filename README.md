@@ -4,7 +4,7 @@ Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fu�
 
 ## Spielen (Handy-Link)
 
-**Live:** https://beautifully-former-decorative-indianapolis.trycloudflare.com  
+**Live:** https://marshall-occur-harbor-unified.trycloudflare.com  
 
 ### Vollbild (wichtig)
 
