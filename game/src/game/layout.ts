@@ -62,7 +62,8 @@ export function gangXToWorld(gangX: number): number {
 }
 
 export function blockTopY(blockId: number): number {
-  return L.blockTop + Math.abs(blockId - 1.5) * 0.006;
+  void blockId;
+  return L.blockTop;
 }
 
 export function blockBodyBottom(blockId: number): number {

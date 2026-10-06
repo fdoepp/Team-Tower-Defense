@@ -97,7 +97,8 @@ function drawBlocks(
   }
   for (const b of BLOCK_META) {
     const cx = blockCenterX(b.id) * w;
-    const y = top + Math.abs(b.id - 1.5) * h * 0.006;
+    const y = top;
+
     const bodyH = bh;
     const left = cx - bw / 2;
     // terrace body — square bottom so booths sit flush (no corner gaps)
