@@ -94,23 +94,28 @@ function drawBlocks(
   const top = h * L.blockTop;
   const bh = h * L.blockH;
   const bw = blockWidthNorm() * w;
+  const gapPx = L.blockGap * w;
+  // paint gap strips first so separation is unmistakable
+  for (let i = 0; i < 4; i++) {
+    const rightEdge = (blockCenterX(i) + blockWidthNorm() / 2) * w;
+    ctx.fillStyle = "#0a1810";
+    ctx.fillRect(rightEdge, top, gapPx, bh * 0.72);
+  }
   for (const b of BLOCK_META) {
     const cx = blockCenterX(b.id) * w;
-    const y = top + Math.abs(b.id - 2) * h * 0.01;
-    // opaque body — no overlapping alpha wash
+    const y = top + Math.abs(b.id - 2) * h * 0.008;
     ctx.globalAlpha = 1;
     ctx.fillStyle = b.fill;
     roundRect(ctx, cx - bw / 2, y, bw, bh * 0.7, 10);
     ctx.fill();
-    ctx.strokeStyle = "rgba(10,20,16,0.75)";
-    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#0a1410";
+    ctx.lineWidth = 3;
     ctx.stroke();
-    // light inner stripe only inside block
     ctx.save();
-    roundRect(ctx, cx - bw / 2 + 1, y + 1, bw - 2, bh * 0.7 - 2, 9);
+    roundRect(ctx, cx - bw / 2 + 2, y + 2, bw - 4, bh * 0.7 - 4, 8);
     ctx.clip();
     ctx.fillStyle = b.stripe;
-    ctx.globalAlpha = 0.18;
+    ctx.globalAlpha = 0.16;
     for (let i = 0; i < 4; i++) {
       ctx.fillRect(cx - bw / 2 + 6 + i * (bw / 4), y + 5, bw / 14, bh * 0.7 - 10);
     }
@@ -119,7 +124,7 @@ function drawBlocks(
     ctx.fillStyle = "#fff";
     ctx.font = `700 ${Math.floor(h * 0.026)}px DM Sans`;
     ctx.textAlign = "center";
-    ctx.fillText(b.label, cx, y + 15);
+    ctx.fillText(b.label, cx, y + 16);
     const doorY = y + bh * 0.7 - 2;
     ctx.fillStyle = "#0a1410";
     roundRect(ctx, cx - 12, doorY, 24, 14, 4);
