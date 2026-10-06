@@ -2,7 +2,13 @@
 
 Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fußball auf dem Platz. Flavor: **KSC vs. VfB**.
 
-## Spielen
+## Spielen (Handy-Link)
+
+**Live:** https://sellers-laboratories-belongs-shapes.trycloudflare.com
+
+(Öffentlicher Tunnel aus der aktuellen Agent-Session — solange der Agent läuft.)
+
+Lokal:
 
 ```bash
 cd game
@@ -10,7 +16,9 @@ npm install
 npm run dev
 ```
 
-Dann im Browser öffnen (Portrait/Handy-Breite ideal). **Solo vs KI** ist spielbar.
+Dann http://localhost:5173/ (Portrait/Handy-Breite ideal). **Solo vs KI** ist spielbar.
+
+Dauerhaftes Hosting: Branch `gh-pages` ist vorbereitet. In GitHub → Settings → Pages → Source **Deploy from a branch** → `gh-pages` / `/` speichern. Danach: `https://fdoepp.github.io/Team-Tower-Defense/`
 
 ## Dokument
 
