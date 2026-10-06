@@ -260,6 +260,24 @@ select {
   font-size: clamp(1.15rem, 3.2vw, 1.55rem);
   color: #f3f0e7;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+  display: inline-block;
+  transition: transform 0.12s ease-out;
+  transform-origin: center center;
+}
+
+.pitch-hud .hud-scoreline b.goal-pulse {
+  color: #fde68a;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.75);
+}
+
+.pitch-hud .hud-crest.goal-flash {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 3px rgba(253, 230, 138, 0.85);
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.pitch-hud .hud-crest {
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .pitch-hud .hud-scoreline span {

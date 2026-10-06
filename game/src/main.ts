@@ -546,7 +546,30 @@ function renderMatchScreen(): void {
       if (sec) sec.textContent = String(m.currencyPct("security"));
       const hudScore = app.querySelector("#hud-score");
       const hudMin = app.querySelector("#hud-minute");
-      if (hudScore) hudScore.textContent = `${m.scoreKsc}:${m.scoreVfb}`;
+      if (hudScore) {
+        hudScore.textContent = `${m.scoreKsc}:${m.scoreVfb}`;
+        hudScore.classList.toggle("goal-pulse", m.scorePulse > 0.15);
+        if (m.scorePulse > 0.15) {
+          const scale = 1 + m.scorePulse * 0.55;
+          (hudScore as HTMLElement).style.transform = `scale(${scale})`;
+        } else {
+          (hudScore as HTMLElement).style.transform = "";
+        }
+      }
+      const crestK = app.querySelector(".hud-crest.ksc");
+      const crestV = app.querySelector(".hud-crest.vfb");
+      if (crestK) {
+        crestK.classList.toggle(
+          "goal-flash",
+          m.scorePulse > 0.2 && m.lastGoalTeam === "ksc",
+        );
+      }
+      if (crestV) {
+        crestV.classList.toggle(
+          "goal-flash",
+          m.scorePulse > 0.2 && m.lastGoalTeam === "vfb",
+        );
+      }
       if (hudMin) hudMin.textContent = `${Math.floor(m.minute)}′`;
       const ch = m.goalChance();
       const momHeim = app.querySelector<HTMLElement>("#mom-heim");

@@ -9,23 +9,22 @@ export const SEAT_COLS = 3;
 export const SEAT_ROWS = 4;
 
 /**
- * Vertical pack: larger green pitch (HUD lives only here),
- * then blocks, upper booths, gang, lower booths flush to y=1.
- * Pitch must be tall enough for score + momentum + mood chips
- * without spilling onto the colored blocks.
+ * Vertical pack:
+ * - Large green pitch (HUD only here) — blocks must not cover Gesang/Pyro
+ * - Blocks
+ * - Upper booth + gang + lower booth ≈ 1/3 height, equal booth rows, lower flush to y=1
  */
 export const L = {
   /** Green pitch — match HUD sits only in this band */
-  pitchH: 0.27,
-  blockTop: 0.275,
+  pitchH: 0.445,
+  blockTop: 0.45,
   blockBodyH: 0.22,
   /**
-   * Upper & lower booth rows share the same height.
-   * boothH = (1 - blockTop - blockBodyH - gangH) / 2
-   * so lower booths (flush to y=1) match the upper row.
+   * Upper & lower booth rows share height.
+   * booth*2 + gang ≈ 0.33 of canvas height.
    */
-  boothH: 0.1925,
-  gangH: 0.12,
+  boothH: 0.125,
+  gangH: 0.08,
   blocksLeft: 0.04,
   blocksRight: 0.99,
   blockGap: 0.018,
@@ -136,7 +135,6 @@ export function boothRect(blockId: number, index: number): {
     return { x: bx, y: bodyBot, w: bwBooth, h: Math.max(0.04, gy - bodyBot) };
   }
   const y0 = gy + L.gangH;
-  // Equal to upper row: remaining space to canvas bottom equals boothH when L is balanced
   return { x: bx, y: y0, w: bwBooth, h: Math.max(0.04, 1 - y0) };
 }
 

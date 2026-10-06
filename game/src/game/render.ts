@@ -44,6 +44,7 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawReservedPads(ctx, m, w, h);
   drawFans(ctx, m, w, h);
   drawCombatOverlays(ctx, m, w, h);
+  drawConfetti(ctx, m, w, h);
   drawFloats(ctx, m, w, h);
 }
 
@@ -940,6 +941,27 @@ function drawFloats(
     const y = f.y * h;
     ctx.strokeText(f.text, x, y);
     ctx.fillText(f.text, x, y);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawConfetti(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  for (const c of m.confetti) {
+    const lifeLeft = 1 - c.t / c.life;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, lifeLeft * 1.2));
+    ctx.translate(c.x * w, c.y * h);
+    ctx.rotate(c.rot);
+    ctx.fillStyle = c.color;
+    const pw = Math.max(3, h * 0.008);
+    const ph = Math.max(5, h * 0.014);
+    ctx.fillRect(-pw / 2, -ph / 2, pw, ph);
+    ctx.restore();
   }
   ctx.globalAlpha = 1;
 }

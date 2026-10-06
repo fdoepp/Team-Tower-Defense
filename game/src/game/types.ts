@@ -57,6 +57,8 @@ export type FanUnit = {
   invading: boolean;
   isSteward: boolean;
   homeStandKey: string | null;
+  /** Ordner patrol direction on gang (−1 / +1) */
+  patrolDir: number;
   _after?: string;
   _homeSeat?: number | null;
 };
@@ -195,12 +197,16 @@ export const FAN_STATS: Record<
   },
 };
 
-/** Steward (Ordner) combat profile — Def > Atk */
+/** Steward (Ordner) combat profile — same for all teams / neutral */
 export const STEWARD_STATS = {
   maxHpBase: 100,
   maxHpPerLevel: 14,
   attack: 0.7,
-  defense: 1.5,
+  defense: 1.15,
+  /** slow patrol along own gang band */
+  patrolSpeed: 0.045,
+  /** rush toward infiltrating Ultra */
+  chaseSpeed: 0.16,
 };
 
 export const BLOCK_META = [
