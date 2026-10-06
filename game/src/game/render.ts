@@ -231,31 +231,49 @@ function drawSlots(
       m.selectedSlot?.index === s.index;
     ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.3)";
     ctx.lineWidth = sel ? 2 : 1;
-    if (s.greyNeutral && !s.building) {
+    if (s.greyNeutral && s.owner === "neutral") {
       ctx.fillStyle = "#6b7280";
-    } else if (s.building === "bier") {
-      ctx.fillStyle =
-        s.owner === m.playerTeam
-          ? "#c9a227"
-          : s.owner === m.aiTeam
+    } else if (s.building) {
+      // tint by owner so captures are obvious
+      if (s.owner === m.playerTeam) {
+        ctx.fillStyle =
+          s.building === "bier"
+            ? "#c9a227"
+            : s.building === "ordner"
+              ? "#3b82f6"
+              : "#a855f7";
+      } else if (s.owner === m.aiTeam) {
+        ctx.fillStyle =
+          s.building === "bier"
             ? "#b45309"
-            : "#9ca3af";
-    } else if (s.building === "ordner") {
-      ctx.fillStyle = "#3b82f6";
-    } else if (s.building === "fanshop") {
-      ctx.fillStyle = "#a855f7";
+            : s.building === "ordner"
+              ? "#1d4ed8"
+              : "#7e22ce";
+      } else {
+        ctx.fillStyle = "#9ca3af";
+      }
     } else {
       ctx.fillStyle = "rgba(0,0,0,0.25)";
     }
     roundRect(ctx, p.x - 16, p.y - 11, 32, 22, 4);
     ctx.fill();
-    ctx.stroke();
+    // owner rim
+    if (s.building && s.owner && s.owner !== "neutral") {
+      ctx.strokeStyle = s.owner === m.playerTeam ? "#93c5fd" : "#fca5a5";
+      ctx.lineWidth = sel ? 2.5 : 1.5;
+      ctx.stroke();
+    } else {
+      ctx.stroke();
+    }
     ctx.fillStyle = s.building || s.greyNeutral ? "#0a1410" : "rgba(255,255,255,0.5)";
-    if (s.greyNeutral && !s.building) ctx.fillStyle = "#e5e7eb";
+    if (s.greyNeutral && s.owner === "neutral") ctx.fillStyle = "#e5e7eb";
     ctx.font = "700 8px DM Sans";
     ctx.textAlign = "center";
-    if (s.greyNeutral && !s.building) ctx.fillText("GRAU", p.x, p.y + 3);
-    else if (s.building) {
+    if (s.greyNeutral && s.owner === "neutral" && s.building) {
+      ctx.fillText(BUILD_LABEL[s.building].toUpperCase(), p.x, p.y + 2);
+    } else if (s.greyNeutral && !s.building) {
+      ctx.fillText("GRAU", p.x, p.y + 3);
+    } else if (s.building) {
       ctx.fillText(BUILD_LABEL[s.building].toUpperCase(), p.x, p.y + 2);
       if (s.building === "bier") {
         ctx.fillStyle = "rgba(0,0,0,0.35)";

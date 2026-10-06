@@ -108,6 +108,11 @@ export class Match {
   buildPulse = 0;
   /** drink float accumulators per stand key */
   drinkAcc: Record<string, number> = {};
+  /** ultra capture progress per stand key */
+  captureAcc: Record<string, number> = {};
+  /** AI shadow economy for building */
+  aiGold = 200;
+  aiBuildRot = 0;
   width = 960;
   height = 440;
   pensRound = 0;
@@ -142,8 +147,22 @@ export class Match {
     }
     this.placeBuilding(HEIM_BLOCK, 0, "bier", true, this.playerTeam);
     this.placeBuilding(HEIM_BLOCK, 2, "ordner", true, this.playerTeam);
+    this.placeBuilding(HEIM_BLOCK, 1, "fanshop", true, this.playerTeam);
     this.placeBuilding(GAST_BLOCK, 0, "bier", true, this.aiTeam);
     this.placeBuilding(GAST_BLOCK, 2, "ordner", true, this.aiTeam);
+    this.placeBuilding(GAST_BLOCK, 1, "fanshop", true, this.aiTeam);
+    // Neutrale Buden starten als graue Claims (noch niemand)
+    for (const blockId of [1, 2]) {
+      this.placeBuilding(blockId, 0, "bier", true, "neutral");
+      this.placeBuilding(blockId, 1, "ordner", true, "neutral");
+      const s0 = this.slots.find((x) => x.blockId === blockId && x.index === 0);
+      const s1 = this.slots.find((x) => x.blockId === blockId && x.index === 1);
+      if (s0) {
+        s0.greyNeutral = true;
+        s0.beer = 30;
+      }
+      if (s1) s1.greyNeutral = true;
+    }
 
     const homeKinds = expandMix(cfg.playerSetup.mix);
     homeKinds.forEach((kind, i) => {
@@ -481,32 +500,41 @@ export class Match {
     const s = this.slots.find(
       (x) => x.blockId === sel.blockId && x.index === sel.index,
     );
-    if (!s || s.building) {
+    if (!s || (s.building && !s.greyNeutral && s.owner && s.owner !== "neutral")) {
       this.toast("Slot belegt");
       return false;
     }
-    const cost = s.greyNeutral ? Math.floor(BUILD_COST[kind] * 0.7) : BUILD_COST[kind];
+    const cost =
+      s.greyNeutral || s.owner === "neutral"
+        ? Math.floor(BUILD_COST[kind] * 0.7)
+        : BUILD_COST[kind];
     if (this.gold < cost) {
       this.toast(`${cost}g nötig`);
       return false;
     }
     this.gold -= cost;
-    s.building = kind;
+    if (!s.building) s.building = kind;
+    // Claim behält ggf. bestehenden Typ, sonst neuer Typ
+    if (s.greyNeutral || s.owner === "neutral") {
+      if (!s.building) s.building = kind;
+    } else {
+      s.building = kind;
+    }
     s.greyNeutral = false;
     s.owner = this.playerTeam;
-    if (kind === "bier") s.beer = 40;
+    if (s.building === "bier" && s.beer < 20) s.beer = 40;
     this.buildMenu = null;
     const p = this.standWorld(s);
     this.floatAt(p.x, p.y, `−${cost}€`, false);
-    if (kind === "bier") {
+    if (s.building === "bier") {
       this.gain("beer", 4, { x: p.x, y: p.y - 0.025 }, "BIER");
-    } else if (kind === "ordner") {
+    } else if (s.building === "ordner") {
       this.gain("ordner", 6, { x: p.x, y: p.y - 0.025 }, "ORDNER");
     } else {
       this.gain("shop", 6, { x: p.x, y: p.y - 0.025 }, "SHOP");
     }
     this.toast(
-      `${kind === "bier" ? "Bierstand" : kind === "ordner" ? "Ordnerposten" : "Fanshop"} gebaut`,
+      `${s.building === "bier" ? "Bierstand" : s.building === "ordner" ? "Ordnerposten" : "Fanshop"} ${cost < BUILD_COST[kind] ? "übernommen" : "gebaut"}`,
     );
     return true;
   }
@@ -553,6 +581,7 @@ export class Match {
     this.tickEconomy(dt);
     this.tickFans(dt);
     this.tickCombat(dt);
+    this.tickCapture(dt);
     this.tickMatch(dt);
     this.tickAi(dt);
     this.tickDefection(dt);
@@ -571,24 +600,28 @@ export class Match {
 
   private tickEconomy(dt: number): void {
     this.gold += (1.2 + this.countInBlock(this.playerTeam, HEIM_BLOCK, "familie") * 0.35) * dt;
+    this.aiGold += (1.4 + this.countInBlock(this.aiTeam, GAST_BLOCK, "familie") * 0.4) * dt;
     this.buildPulse += dt;
 
     for (const s of this.slots) {
       if (!s.building) continue;
-      // stock refill for any bier stand
       if (s.building === "bier") {
         s.beer = clamp(s.beer + 0.9 * dt, 0, s.capacity);
       }
-      if (s.owner !== this.playerTeam) continue;
-
-      // slow currency drip — pulse floats every ~2.8s
-      if (s.building === "bier") {
-        this.currency.beer = clamp(this.currency.beer + 0.22 * dt, 0, 100);
-      } else if (s.building === "ordner") {
-        this.currency.ordner = clamp(this.currency.ordner + 0.2 * dt, 0, 100);
-      } else if (s.building === "fanshop") {
-        this.currency.shop = clamp(this.currency.shop + 0.2 * dt, 0, 100);
-        this.moodHeim = clamp(this.moodHeim + 0.012 * dt, 0, 3);
+      // only owned (non-neutral) buildings produce for that side
+      if (s.owner === this.playerTeam) {
+        if (s.building === "bier") {
+          this.currency.beer = clamp(this.currency.beer + 0.22 * dt, 0, 100);
+        } else if (s.building === "ordner") {
+          this.currency.ordner = clamp(this.currency.ordner + 0.2 * dt, 0, 100);
+        } else if (s.building === "fanshop") {
+          this.currency.shop = clamp(this.currency.shop + 0.2 * dt, 0, 100);
+          this.moodHeim = clamp(this.moodHeim + 0.012 * dt, 0, 3);
+        }
+      } else if (s.owner === this.aiTeam) {
+        // AI gets soft income (no UI) — stronger if many stands
+        if (s.building === "bier") this.aiGold += 0.15 * dt;
+        else this.aiGold += 0.1 * dt;
       }
     }
 
@@ -852,10 +885,14 @@ export class Match {
         Math.abs(o.x - f.x) < 0.06 &&
         Math.abs(o.y - f.y) < 0.08,
     );
-    if (!foeNear) {
+    const capturing = this.isCapturingNear(f);
+    if (!foeNear && !capturing) {
       f.gangX = clamp(f.gangX + dir * 0.07 * FAN_STATS[f.kind].fight * dt, 0, 1);
       f.x = gangXToWorld(f.gangX);
       f.y = 0.58 + 0.08 + Math.sin(this.realElapsed * 3 + f.id) * 0.008;
+    } else if (capturing) {
+      f.x = gangXToWorld(f.gangX);
+      f.y = 0.58 + 0.08;
     }
 
     // reach enemy door → enter block
@@ -863,7 +900,7 @@ export class Match {
     const goalGx = blockIdToGangX(goalBlock);
     const reached =
       f.team === this.playerTeam ? f.gangX >= goalGx - 0.02 : f.gangX <= goalGx + 0.02;
-    if (reached && !foeNear) {
+    if (reached && !foeNear && !capturing) {
       const door = doorPos(goalBlock);
       const seat = this.freeSeat(goalBlock) ?? 0;
       f.blockId = goalBlock;
@@ -874,8 +911,84 @@ export class Match {
       ];
       f.pathI = 0;
       f.state = "moving";
-      (f as FanUnit & { _homeSeat?: number })._homeSeat = seat;
+      f._homeSeat = seat;
       this.setAfter(f, "invade");
+    }
+  }
+
+  private isCapturingNear(f: FanUnit): boolean {
+    if (f.team === "neutral" || f.kind !== "ultras") return false;
+    return this.slots.some((s) => {
+      if (!s.building || s.owner === f.team) return false;
+      return Math.abs(f.gangX - blockIdToGangX(s.blockId)) < 0.1;
+    });
+  }
+
+  /** Ultras halten an Buden und übernehmen sie für die eigene Seite */
+  private tickCapture(dt: number): void {
+    const ultras = this.fans.filter(
+      (f) => f.hp > 0 && f.state === "gang" && f.kind === "ultras" && f.team !== "neutral",
+    );
+    const activeKeys = new Set<string>();
+
+    for (const ultra of ultras) {
+      for (const s of this.slots) {
+        if (!s.building || s.owner === ultra.team) continue;
+        if (Math.abs(ultra.gangX - blockIdToGangX(s.blockId)) > 0.1) continue;
+
+        const defenders = this.fans.filter(
+          (d) =>
+            d.hp > 0 &&
+            d.team !== ultra.team &&
+            d.team !== "neutral" &&
+            (d.state === "stand" || d.state === "gang") &&
+            d.blockId === s.blockId,
+        );
+        if (defenders.length) {
+          // fight first — handled in tickCombat; reset slow capture
+          continue;
+        }
+
+        const key = slotKey(s.blockId, s.index);
+        activeKeys.add(key);
+        this.captureAcc[key] = (this.captureAcc[key] ?? 0) + dt * FAN_STATS[ultra.kind].fight;
+        // progress float occasionally
+        if (Math.random() < 0.02) {
+          const pct = Math.min(99, Math.floor(((this.captureAcc[key] ?? 0) / 1.4) * 100));
+          this.floatAtSlot(s, `Einnahme ${pct}%`, true);
+        }
+        if ((this.captureAcc[key] ?? 0) >= 1.4) {
+          const prev = s.owner;
+          s.owner = ultra.team as TeamId;
+          s.greyNeutral = false;
+          if (s.building === "bier" && s.beer < 25) s.beer = 40;
+          this.captureAcc[key] = 0;
+          this.floatAtSlot(s, "Übernommen!", true);
+          if (ultra.team === this.playerTeam) {
+            // sofort etwas Ertrag
+            if (s.building === "bier") this.gain("beer", 5, this.standWorld(s), "BIER");
+            else if (s.building === "ordner")
+              this.gain("ordner", 5, this.standWorld(s), "ORDNER");
+            else this.gain("shop", 5, this.standWorld(s), "SHOP");
+            this.toast(
+              prev === "neutral"
+                ? `Neutral-Bude eingenommen (${s.building})`
+                : `Gegner-Bude eingenommen (${s.building})`,
+            );
+          } else {
+            this.toast(`KI übernimmt Bude (${s.building})`);
+            this.aiGold += 15;
+          }
+          ultra.armSwing = 1;
+        }
+      }
+    }
+
+    // decay capture on abandoned stands
+    for (const key of Object.keys(this.captureAcc)) {
+      if (!activeKeys.has(key)) {
+        this.captureAcc[key] = Math.max(0, (this.captureAcc[key] ?? 0) - dt * 0.5);
+      }
     }
   }
 
@@ -1006,8 +1119,14 @@ export class Match {
 
   private tickAi(dt: number): void {
     this.aiAcc += dt;
-    if (this.aiAcc < 12 / diffMul(this.cfg.settings.difficulty)) return;
+    const interval = 7 / diffMul(this.cfg.settings.difficulty);
+    if (this.aiAcc < interval) return;
     this.aiAcc = 0;
+
+    // 1) Build / claim a stand
+    this.aiTryBuild();
+
+    // 2) Send ultras toward enemy / neutrals to capture
     const ultras = this.fans.filter(
       (f) =>
         f.team === this.aiTeam &&
@@ -1016,7 +1135,42 @@ export class Match {
         f.state === "block" &&
         f.blockId === GAST_BLOCK,
     );
-    if (ultras.length) this.sendToGang(ultras[0]);
+    const onGang = this.fans.filter(
+      (f) => f.team === this.aiTeam && f.state === "gang" && f.hp > 0,
+    ).length;
+    if (ultras.length && onGang < 2) this.sendToGang(ultras[0]);
+  }
+
+  private aiTryBuild(): void {
+    const kinds: BuildingKind[] = ["bier", "ordner", "fanshop"];
+    const kind = kinds[this.aiBuildRot % kinds.length];
+    this.aiBuildRot++;
+
+    let s =
+      this.slots.find((x) => x.blockId === GAST_BLOCK && !x.building) ??
+      this.slots.find(
+        (x) =>
+          (x.blockId === 1 || x.blockId === 2) &&
+          x.building &&
+          (x.owner === "neutral" || x.greyNeutral),
+      ) ??
+      this.slots.find(
+        (x) => (x.blockId === 1 || x.blockId === 2) && !x.building,
+      );
+    if (!s) return;
+
+    const claim = s.blockId !== GAST_BLOCK;
+    const cost = claim
+      ? Math.floor(BUILD_COST[kind] * 0.65)
+      : BUILD_COST[kind];
+    if (this.aiGold < cost) return;
+    this.aiGold -= cost;
+    if (!s.building) s.building = kind;
+    s.owner = this.aiTeam;
+    s.greyNeutral = false;
+    if (s.building === "bier" && s.beer < 20) s.beer = 45;
+    this.floatAtSlot(s, claim ? "KI Claim" : "KI baut", false);
+    this.toast(`KI: ${s.building}${claim ? " übernommen" : " gebaut"}`);
   }
 
   private tickDefection(dt: number): void {

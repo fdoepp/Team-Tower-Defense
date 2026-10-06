@@ -266,7 +266,7 @@ function renderMatchScreen(): void {
         (s) => s.blockId === hit.blockId && s.index === hit.index,
       );
       m.selectedSlot = hit;
-      if (slot && !slot.building) {
+      if (slot && (!slot.building || slot.greyNeutral || slot.owner === "neutral")) {
         showBuildMenu(hit.blockId, hit.index);
       } else {
         hideMenus();
