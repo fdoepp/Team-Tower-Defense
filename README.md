@@ -4,7 +4,7 @@ Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fu�
 
 ## Spielen (Handy-Link)
 
-**Live:** https://prayers-expects-safe-insured.trycloudflare.com  
+**Live:** https://beautifully-former-decorative-indianapolis.trycloudflare.com  
 
 ### Vollbild (wichtig)
 
