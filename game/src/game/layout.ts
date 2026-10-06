@@ -127,7 +127,8 @@ export function boothRect(blockId: number, index: number): {
     return { x: bx, y: bodyBot, w: bwBooth, h: Math.max(0.04, gy - bodyBot) };
   }
   const y0 = gy + L.gangH;
-  return { x: bx, y: y0, w: bwBooth, h: Math.max(0.08, 1 - y0) };
+  // Keep lower booths compact — avoid "hand of cards" band at screen bottom
+  return { x: bx, y: y0, w: bwBooth, h: Math.min(0.15, Math.max(0.08, 1 - y0)) };
 }
 
 export function boothCenter(blockId: number, index: number): { x: number; y: number } {

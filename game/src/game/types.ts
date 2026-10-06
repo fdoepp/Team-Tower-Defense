@@ -78,7 +78,7 @@ export type BuildSlot = {
   prodFlash: number;
 };
 
-/** Player currencies (0..100). Sicherheit gates Familien. */
+/** Currencies — uncapped (display as integers) */
 export type Currencies = {
   beer: number;
   merch: number;

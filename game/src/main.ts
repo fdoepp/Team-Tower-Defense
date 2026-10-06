@@ -187,68 +187,72 @@ function renderMatchScreen(): void {
   app.innerHTML = `
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell a2c">
-      <div class="top-chrome currency-chrome">
-        <div class="cur-row">
-          <div class="cur-pill gold-pill"><span>Geld</span><b id="gold">0</b></div>
-          <div class="cur-pill bier-pill" title="Bier → Ultras / Pyro">
-            <span>BIER</span><b id="cur-beer">0</b><i>/100</i>
-          </div>
-          <div class="cur-pill shop-pill" title="Fanartikel → Normalos / Gesang">
-            <span>FANARTIKEL</span><b id="cur-merch">0</b><i>/100</i>
-          </div>
-          <div class="cur-pill ord-pill" title="Sicherheit → Familien ab 25">
-            <span>SICHERHEIT</span><b id="cur-sec">0</b><i>/100</i>
-          </div>
-          <div class="speed-btns">
-            <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
-            <button data-spd="0" class="on">⏸</button>
-            <button data-spd="1">▶</button>
-            <button data-spd="2">2×</button>
-          </div>
+      <aside class="wallet-rail" aria-label="Ressourcen">
+        <div class="wallet-item gold-pill"><span>Geld</span><b id="gold">0</b></div>
+        <div class="wallet-item bier-pill" title="Bier → Ultras / Pyro">
+          <span>Bier</span><b id="cur-beer">0</b>
         </div>
-        <div class="match-hud" id="match-hud">
-          <div class="match-hud-score">
-            <div class="hud-crest ksc" id="hud-crest-ksc">K</div>
-            <div class="hud-scoreline">
-              <b id="hud-score">0:0</b>
-              <span id="hud-minute">0′</span>
-            </div>
-            <div class="hud-crest vfb" id="hud-crest-vfb">V</div>
-          </div>
-          <div class="momentum-bar" title="Momentum / Torchance">
-            <div class="mom-fill heim" id="mom-heim"></div>
-            <div class="mom-fill gast" id="mom-gast"></div>
-            <div class="mom-knob" id="mom-knob"></div>
-          </div>
-          <div class="mom-labels">
-            <span id="mom-p-heim">Tor Heim 50%</span>
-            <span id="mom-p-tor">Chance 28%</span>
-            <span id="mom-p-gast">Tor Gast 50%</span>
-          </div>
+        <div class="wallet-item shop-pill" title="Fanartikel → Normalos / Gesang">
+          <span>Fanartikel</span><b id="cur-merch">0</b>
         </div>
+        <div class="wallet-item ord-pill" title="Sicherheit → Familien ab 25">
+          <span>Sicherheit</span><b id="cur-sec">0</b>
+        </div>
+      </aside>
+      <div class="match-hud" id="match-hud">
+        <div class="match-hud-score">
+          <div class="hud-crest ksc">K</div>
+          <div class="hud-scoreline">
+            <b id="hud-score">0:0</b>
+            <span id="hud-minute">0′</span>
+          </div>
+          <div class="hud-crest vfb">V</div>
+        </div>
+        <div class="momentum-bar" title="Momentum / Torchance">
+          <div class="mom-fill heim" id="mom-heim"></div>
+          <div class="mom-fill gast" id="mom-gast"></div>
+          <div class="mom-knob" id="mom-knob"></div>
+        </div>
+        <div class="mom-labels">
+          <span id="mom-p-heim">Heim drückt 50%</span>
+          <span id="mom-p-tor">Torchance 28%</span>
+          <span id="mom-p-gast">Gast drückt 50%</span>
+        </div>
+        <div class="combat-banner hidden" id="combat-banner"></div>
+      </div>
+      <div class="speed-btns top-speed">
+        <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
+        <button data-spd="0" class="on">⏸</button>
+        <button data-spd="1">▶</button>
+        <button data-spd="2">2×</button>
       </div>
       <div id="game-wrap">
         <canvas id="c"></canvas>
         <div class="toast" id="toast"></div>
-        <aside class="control-rail">
-          <div class="mood-stack">
-            <button class="mood-btn" data-mood="gesang" id="btn-gesang">Gesang <small>FANARTIKEL</small><span></span></button>
-            <button class="mood-btn" data-mood="pyro" id="btn-pyro">Pyro <small>BIER</small><span></span></button>
-          </div>
-          <button class="ultra-btn" id="btn-ultra">1 Ultra → Gang <small>5 BIER</small><span></span></button>
+        <div class="pause-badge hidden" id="pause-badge">PAUSE</div>
+        <aside class="action-rail">
+          <button class="mood-btn" data-mood="gesang" id="btn-gesang">
+            <strong>Gesang</strong><small>Fanartikel</small><span></span>
+          </button>
+          <button class="mood-btn" data-mood="pyro" id="btn-pyro">
+            <strong>Pyro</strong><small>Bier</small><span></span>
+          </button>
+          <button class="ultra-btn" id="btn-ultra">
+            <strong>Ultra → Gang</strong><small>5 Bier</small><span></span>
+          </button>
         </aside>
         <div class="popup-menu hidden" id="seat-menu">
           <p class="popup-title">Fan kaufen</p>
-          <button data-buy="ultras" id="buy-ultras">Ultra <small>35 BIER</small></button>
-          <button data-buy="normalos" id="buy-normalos">Normalo <small>30 FANARTIKEL</small></button>
+          <button data-buy="ultras" id="buy-ultras">Ultra <small>35 Bier</small></button>
+          <button data-buy="normalos" id="buy-normalos">Normalo <small>30 Fanartikel</small></button>
           <button data-buy="familie" id="buy-familie">Familie <small>40€ · Sicherheit≥25</small></button>
           <button class="popup-cancel" id="seat-cancel">Abbrechen</button>
         </div>
         <div class="popup-menu hidden" id="build-menu">
           <p class="popup-title" id="build-title">Gebäude</p>
           <div id="build-options">
-            <button data-build="bier">Bierstand <small>+Bier / Fass</small></button>
-            <button data-build="ordner">Ordnerposten <small>+Sicherheit · €/s</small></button>
+            <button data-build="bier">Bierstand <small>+Bier</small></button>
+            <button data-build="ordner">Ordnerposten <small>+Sicherheit</small></button>
             <button data-build="fanshop">Fanshop <small>+Fanartikel</small></button>
           </div>
           <div id="upgrade-options" class="hidden">
@@ -522,9 +526,21 @@ function renderMatchScreen(): void {
       const lpH = app.querySelector("#mom-p-heim");
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
-      if (lpH) lpH.textContent = `Heim ${pH}%`;
+      if (lpH) lpH.textContent = `Heim drückt ${pH}%`;
       if (lpT) lpT.textContent = `Torchance ${Math.round(ch.pTor * 100)}%`;
-      if (lpG) lpG.textContent = `Gast ${pG}%`;
+      if (lpG) lpG.textContent = `Gast drückt ${pG}%`;
+      const banner = app.querySelector("#combat-banner");
+      if (banner) {
+        const st = m.combatStatus();
+        if (st) {
+          banner.textContent = st;
+          banner.classList.remove("hidden");
+        } else banner.classList.add("hidden");
+      }
+      const pauseBadge = app.querySelector("#pause-badge");
+      if (pauseBadge) {
+        pauseBadge.classList.toggle("hidden", m.speed !== 0 || !!m.result);
+      }
       const toast = app.querySelector("#toast");
       if (toast) {
         const t = m.toasts[0];

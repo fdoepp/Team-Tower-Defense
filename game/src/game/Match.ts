@@ -325,7 +325,7 @@ export class Match {
     label?: string,
   ): boolean {
     if (this.currency[key] < amount) return false;
-    this.currency[key] = clamp(this.currency[key] - amount, 0, 100);
+    this.currency[key] = Math.max(0, this.currency[key] - amount);
     if (at) {
       const tag = label ?? key.toUpperCase();
       this.floatAt(at.x, at.y, `−${Math.round(amount)} ${tag}`, false);
@@ -339,7 +339,7 @@ export class Match {
     at?: { x: number; y: number },
     label?: string,
   ): void {
-    this.currency[key] = clamp(this.currency[key] + amount, 0, 100);
+    this.currency[key] = Math.max(0, this.currency[key] + amount);
     if (at) {
       const tag = label ?? key.toUpperCase();
       this.floatAt(at.x, at.y, `+${Math.round(amount)} ${tag}`, true);
@@ -351,7 +351,36 @@ export class Match {
   }
 
   currencyPct(key: keyof Currencies): number {
-    return Math.min(100, Math.floor(this.currency[key]));
+    return Math.floor(this.currency[key]);
+  }
+
+  /** Short status for combat banner */
+  combatStatus(): string | null {
+    const pInv = this.fans.filter(
+      (f) =>
+        f.hp > 0 &&
+        f.team === this.playerTeam &&
+        f.kind === "ultras" &&
+        f.blockId === GAST_BLOCK &&
+        (f.invading || f.state === "block"),
+    ).length;
+    const aInv = this.fans.filter(
+      (f) =>
+        f.hp > 0 &&
+        f.team === this.aiTeam &&
+        f.kind === "ultras" &&
+        f.blockId === HEIM_BLOCK &&
+        (f.invading || f.state === "block"),
+    ).length;
+    if (this.stormAccPlayer > 0) {
+      return `BLOCKSTURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccPlayer)}s · ${pInv}/3 Ultras`;
+    }
+    if (this.stormAccAi > 0) {
+      return `GEGEN-STURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccAi)}s · ${aInv}/3`;
+    }
+    if (pInv > 0) return `ANGRIFF im Gästeblock · ${pInv} Ultra${pInv > 1 ? "s" : ""} — Verteidigung!`;
+    if (aInv > 0) return `VERTEIDIGUNG · ${aInv} Feind-Ultra${aInv > 1 ? "s" : ""} im Heimblock`;
+    return null;
   }
 
   securityOk(): boolean {

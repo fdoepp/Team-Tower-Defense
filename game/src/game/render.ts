@@ -42,34 +42,10 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawGang(ctx, m, w, h);
   drawSlots(ctx, m, w, h);
   drawFans(ctx, m, w, h);
+  drawCombatOverlays(ctx, m, w, h);
   drawMoodMeter(ctx, m, w, h);
   drawFloats(ctx, m, w, h);
-
-  if (m.speed === 0 && !m.result) {
-    const gy = gangY();
-    ctx.fillStyle = "rgba(8,16,12,0.35)";
-    ctx.fillRect(0, h * gy, w, h * L.gangH);
-    ctx.fillStyle = "#f3f0e7";
-    ctx.font = `700 ${Math.floor(h * 0.055)}px Archivo Black, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText("PAUSE", w / 2, h * (gy + L.gangH / 2) + 6);
-  }
-
-  // Blocksturm progress
-  if (m.stormAccPlayer > 0.05 || m.stormAccAi > 0.05) {
-    const acc = Math.max(m.stormAccPlayer, m.stormAccAi);
-    const pct = Math.min(1, acc / 5);
-    ctx.fillStyle = "rgba(0,0,0,0.55)";
-    roundRect(ctx, w * 0.35, h * 0.42, w * 0.3, 18, 6);
-    ctx.fill();
-    ctx.fillStyle = "#ef4444";
-    roundRect(ctx, w * 0.35, h * 0.42, w * 0.3 * pct, 18, 6);
-    ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.font = `700 ${Math.floor(h * 0.022)}px DM Sans`;
-    ctx.textAlign = "center";
-    ctx.fillText(`Blocksturm ${Math.ceil(5 - acc)}s`, w / 2, h * 0.42 + 13);
-  }
+  // Pause is HTML badge — keep gang readable
 }
 
 function blockFill(m: Match, id: number): string {
@@ -157,6 +133,11 @@ function drawBlocks(
       ctx.font = `700 ${Math.floor(h * 0.018)}px Archivo Black, DM Sans`;
       ctx.textAlign = "left";
       ctx.fillText(owner === "ksc" ? "KSC" : "VfB", cx - bw * 0.08, y + 17);
+    } else if (b.side === "neutral") {
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = `700 ${Math.floor(h * 0.016)}px Archivo Black, DM Sans`;
+      ctx.textAlign = "center";
+      ctx.fillText("NEUTRAL · einnehmbar", cx, y + 17);
     } else {
       ctx.fillStyle = "#fff";
       ctx.font = `700 ${Math.floor(h * 0.02)}px Archivo Black, DM Sans`;
@@ -230,7 +211,7 @@ function drawSeats(
 
 function drawGang(
   ctx: CanvasRenderingContext2D,
-  _m: Match,
+  m: Match,
   w: number,
   h: number,
 ): void {
@@ -241,7 +222,6 @@ function drawGang(
   g.addColorStop(0.5, "#1e242c");
   g.addColorStop(1, "#171c22");
   ctx.fillStyle = g;
-  // flush under booths — full width of booth band
   ctx.fillRect(w * L.blocksLeft, y, w * (L.blocksRight - L.blocksLeft), gh);
   ctx.strokeStyle = "rgba(243,240,231,0.18)";
   ctx.lineWidth = 2;
@@ -255,17 +235,42 @@ function drawGang(
     ctx.lineTo(tx, y + gh - 4);
     ctx.stroke();
   }
-  ctx.setLineDash([10, 8]);
-  ctx.strokeStyle = "rgba(255,255,255,0.14)";
-  ctx.beginPath();
-  ctx.moveTo(w * L.blocksLeft + 8, y + gh / 2);
-  ctx.lineTo(w * L.blocksRight - 8, y + gh / 2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = "rgba(243,240,231,0.4)";
-  ctx.font = `600 ${Math.floor(h * 0.022)}px DM Sans`;
+  // Battle line markers (vorderste Ultras)
+  const left = w * L.blocksLeft;
+  const span = w * (L.blocksRight - L.blocksLeft);
+  const px = left + span * m.linePlayer;
+  const ax = left + span * m.lineAi;
+  ctx.fillStyle = "rgba(59,130,246,0.85)";
+  ctx.fillRect(px - 2, y + 2, 4, gh - 4);
+  ctx.fillStyle = "rgba(239,68,68,0.85)";
+  ctx.fillRect(ax - 2, y + 2, 4, gh - 4);
+  ctx.fillStyle = "rgba(243,240,231,0.45)";
+  ctx.font = `600 ${Math.floor(h * 0.018)}px DM Sans`;
   ctx.textAlign = "center";
-  ctx.fillText("GANG", w / 2, y + 13);
+  ctx.fillText("GANG · Kampflinie", w / 2, y + 12);
+}
+
+function drawCombatOverlays(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  for (const f of m.fans) {
+    if (f.hp <= 0 || !f.invading) continue;
+    const x = f.x * w;
+    const y = f.y * h;
+    const pulse = 0.5 + 0.5 * Math.sin(m.realElapsed * 8);
+    ctx.strokeStyle = f.team === "ksc" ? `rgba(59,130,246,${0.4 + pulse * 0.5})` : `rgba(239,68,68,${0.4 + pulse * 0.5})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(x, y, 16 + pulse * 4, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "#fbbf24";
+    ctx.font = `700 ${Math.floor(h * 0.02)}px Archivo Black, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText("KAMPF", x, y - 22);
+  }
 }
 
 function drawSlots(
@@ -308,27 +313,21 @@ function drawBuilding(
   const r = Math.min(8, Math.min(bw, bh) * 0.12);
 
   if (!s.building) {
-    ctx.fillStyle = "rgba(12, 18, 22, 0.85)";
+    ctx.fillStyle = "rgba(12, 18, 22, 0.75)";
     roundRect(ctx, x, y, bw, bh, r);
     ctx.fill();
-    ctx.setLineDash([6, 5]);
-    ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.28)";
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.35)";
     ctx.lineWidth = 2;
     roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
     ctx.stroke();
     ctx.setLineDash([]);
-    // only a plus — no BAU text
-    ctx.strokeStyle = "rgba(255,255,255,0.45)";
-    ctx.lineWidth = 2.5;
-    const cx = x + bw / 2;
-    const cy = y + bh / 2;
-    const arm = Math.min(bw, bh) * 0.18;
-    ctx.beginPath();
-    ctx.moveTo(cx - arm, cy);
-    ctx.lineTo(cx + arm, cy);
-    ctx.moveTo(cx, cy - arm);
-    ctx.lineTo(cx, cy + arm);
-    ctx.stroke();
+    ctx.fillStyle = "rgba(243,240,231,0.7)";
+    ctx.font = `700 ${Math.max(9, Math.floor(bh * 0.22))}px Archivo Black, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("BUDE", x + bw / 2, y + bh / 2);
+    ctx.textBaseline = "alphabetic";
     return;
   }
 
@@ -355,9 +354,17 @@ function drawBuilding(
   const cy = y + bh * 0.48;
   const iconS = Math.min(bw, bh) * 0.42;
 
-  if (s.building === "bier") drawBeerMug(ctx, cx, cy - bh * 0.06, iconS * 0.85, grey);
-  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy - bh * 0.06, iconS * 0.85, grey);
-  else drawShopJersey(ctx, cx, cy - bh * 0.06, iconS * 0.85, grey, player);
+  if (s.building === "bier") drawBeerMug(ctx, cx, cy - bh * 0.1, iconS * 0.75, grey);
+  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy - bh * 0.1, iconS * 0.75, grey);
+  else drawShopJersey(ctx, cx, cy - bh * 0.1, iconS * 0.75, grey, player);
+
+  // Clear type label
+  const label =
+    s.building === "bier" ? "BIER" : s.building === "ordner" ? "ORDNER" : "SHOP";
+  ctx.fillStyle = grey ? "rgba(255,255,255,0.55)" : "#f3f0e7";
+  ctx.font = `700 ${Math.max(8, Math.floor(bh * 0.16))}px Archivo Black, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText(label, cx, y + bh - 6);
 
   // Club crest when stand is owned (not grey neutral)
   if (!grey && (player || ai)) {
