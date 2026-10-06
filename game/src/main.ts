@@ -188,21 +188,43 @@ function renderMatchScreen(): void {
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell a2c">
       <div class="top-chrome currency-chrome">
-        <div class="cur-pill gold-pill"><span>Geld</span><b id="gold">0</b></div>
-        <div class="cur-pill bier-pill" title="Bier → Ultras / Pyro">
-          <span>BIER</span><b id="cur-beer">0</b><i>/100</i>
+        <div class="cur-row">
+          <div class="cur-pill gold-pill"><span>Geld</span><b id="gold">0</b></div>
+          <div class="cur-pill bier-pill" title="Bier → Ultras / Pyro">
+            <span>BIER</span><b id="cur-beer">0</b><i>/100</i>
+          </div>
+          <div class="cur-pill shop-pill" title="Fanartikel → Normalos / Gesang">
+            <span>FANARTIKEL</span><b id="cur-merch">0</b><i>/100</i>
+          </div>
+          <div class="cur-pill ord-pill" title="Sicherheit → Familien ab 25">
+            <span>SICHERHEIT</span><b id="cur-sec">0</b><i>/100</i>
+          </div>
+          <div class="speed-btns">
+            <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
+            <button data-spd="0" class="on">⏸</button>
+            <button data-spd="1">▶</button>
+            <button data-spd="2">2×</button>
+          </div>
         </div>
-        <div class="cur-pill shop-pill" title="Fanartikel → Normalos / Gesang">
-          <span>FANARTIKEL</span><b id="cur-merch">0</b><i>/100</i>
-        </div>
-        <div class="cur-pill ord-pill" title="Sicherheit → Familien ab 25">
-          <span>SICHERHEIT</span><b id="cur-sec">0</b><i>/100</i>
-        </div>
-        <div class="speed-btns">
-          <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
-          <button data-spd="0" class="on">⏸</button>
-          <button data-spd="1">▶</button>
-          <button data-spd="2">2×</button>
+        <div class="match-hud" id="match-hud">
+          <div class="match-hud-score">
+            <div class="hud-crest ksc" id="hud-crest-ksc">K</div>
+            <div class="hud-scoreline">
+              <b id="hud-score">0:0</b>
+              <span id="hud-minute">0′</span>
+            </div>
+            <div class="hud-crest vfb" id="hud-crest-vfb">V</div>
+          </div>
+          <div class="momentum-bar" title="Momentum / Torchance">
+            <div class="mom-fill heim" id="mom-heim"></div>
+            <div class="mom-fill gast" id="mom-gast"></div>
+            <div class="mom-knob" id="mom-knob"></div>
+          </div>
+          <div class="mom-labels">
+            <span id="mom-p-heim">Tor Heim 50%</span>
+            <span id="mom-p-tor">Chance 28%</span>
+            <span id="mom-p-gast">Tor Gast 50%</span>
+          </div>
         </div>
       </div>
       <div id="game-wrap">
@@ -484,6 +506,25 @@ function renderMatchScreen(): void {
       if (beer) beer.textContent = String(m.currencyPct("beer"));
       if (merch) merch.textContent = String(m.currencyPct("merch"));
       if (sec) sec.textContent = String(m.currencyPct("security"));
+      const hudScore = app.querySelector("#hud-score");
+      const hudMin = app.querySelector("#hud-minute");
+      if (hudScore) hudScore.textContent = `${m.scoreKsc}:${m.scoreVfb}`;
+      if (hudMin) hudMin.textContent = `${Math.floor(m.minute)}′`;
+      const ch = m.goalChance();
+      const momHeim = app.querySelector<HTMLElement>("#mom-heim");
+      const momGast = app.querySelector<HTMLElement>("#mom-gast");
+      const momKnob = app.querySelector<HTMLElement>("#mom-knob");
+      const pH = Math.round(ch.pHeim * 100);
+      const pG = 100 - pH;
+      if (momHeim) momHeim.style.width = `${pH}%`;
+      if (momGast) momGast.style.width = `${pG}%`;
+      if (momKnob) momKnob.style.left = `${((ch.momentum + 1) / 2) * 100}%`;
+      const lpH = app.querySelector("#mom-p-heim");
+      const lpT = app.querySelector("#mom-p-tor");
+      const lpG = app.querySelector("#mom-p-gast");
+      if (lpH) lpH.textContent = `Heim ${pH}%`;
+      if (lpT) lpT.textContent = `Torchance ${Math.round(ch.pTor * 100)}%`;
+      if (lpG) lpG.textContent = `Gast ${pG}%`;
       const toast = app.querySelector("#toast");
       if (toast) {
         const t = m.toasts[0];

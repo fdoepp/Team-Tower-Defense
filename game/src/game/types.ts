@@ -74,6 +74,8 @@ export type BuildSlot = {
   stewardCd: number;
   /** seconds of foreign battle-line dominance toward conversion */
   convertAcc: number;
+  /** visual production flash 0..1 */
+  prodFlash: number;
 };
 
 /** Player currencies (0..100). Sicherheit gates Familien. */

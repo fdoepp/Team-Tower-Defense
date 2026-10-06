@@ -160,6 +160,7 @@ export class Match {
           level: 1,
           stewardCd: 2 + Math.random() * 3,
           convertAcc: 0,
+          prodFlash: 0,
         });
       }
     }
@@ -300,6 +301,7 @@ export class Match {
     s.level = 1;
     s.stewardCd = kind === "ordner" ? 1.5 : 8;
     s.convertAcc = 0;
+    s.prodFlash = 0;
     if (kind === "bier") s.beer = 40;
   }
 
@@ -308,7 +310,7 @@ export class Match {
   }
 
   floatAt(x: number, y: number, text: string, good: boolean): void {
-    this.floats.push({ x, y, text, good, t: 1.35, vy: 0.045 });
+    this.floats.push({ x, y, text, good, t: 1.6, vy: 0.05 });
   }
 
   floatAtSlot(s: BuildSlot, text: string, good: boolean): void {
@@ -708,6 +710,7 @@ export class Match {
     this.tickEconomy(step);
     this.tickStewards(step);
     this.tickFans(step);
+    this.tickAutoDefend(step);
     this.updateBattleLines();
     this.tickCaptureConvert(step);
     this.tickCombat(step);
@@ -724,8 +727,9 @@ export class Match {
       if (f.armSwing > 0) f.armSwing = Math.max(0, f.armSwing - step * 2.2);
       if (f.attackCd > 0) f.attackCd = Math.max(0, f.attackCd - step);
     }
-    this.fans = this.fans.filter((f) => f.hp > 0 || f.hp === 0);
-    // remove dead after short? keep corpses 0 — filter dead for economy
+    for (const s of this.slots) {
+      if (s.prodFlash > 0) s.prodFlash = Math.max(0, s.prodFlash - step * 1.2);
+    }
     this.fans = this.fans.filter((f) => f.hp > 0);
   }
 
@@ -784,14 +788,33 @@ export class Match {
       }
     }
 
-    if (this.buildPulse >= 2.8) {
+    if (this.buildPulse >= 2.5) {
       this.buildPulse = 0;
       for (const s of this.slots) {
-        if (!s.building || s.owner !== this.playerTeam || s.greyNeutral) continue;
+        if (!s.building || s.greyNeutral) continue;
+        if (s.owner !== this.playerTeam && s.owner !== this.aiTeam) continue;
         const n = Math.max(1, Math.round(productionRate(s.level || 1)));
-        if (s.building === "bier") this.floatAtSlot(s, `+${n} Bier`, true);
-        else if (s.building === "ordner") this.floatAtSlot(s, `+${n} Sicherheit`, true);
-        else if (s.building === "fanshop") this.floatAtSlot(s, `+${n} Fanartikel`, true);
+        s.prodFlash = 1;
+        if (s.owner === this.playerTeam) {
+          if (s.building === "bier") this.floatAtSlot(s, `+${n} Bier`, true);
+          else if (s.building === "ordner")
+            this.floatAtSlot(s, `+${n} Sicherheit`, true);
+          else if (s.building === "fanshop") {
+            this.floatAtSlot(s, `+${n} Fanartikel`, true);
+            this.floatAt(
+              this.standWorld(s).x,
+              this.standWorld(s).y - 0.04,
+              "+Stimmung",
+              true,
+            );
+          }
+        } else {
+          // AI stands also show production so both sides are readable
+          if (s.building === "bier") this.floatAtSlot(s, `+${n} Bier`, false);
+          else if (s.building === "ordner")
+            this.floatAtSlot(s, `+${n} Ordner`, false);
+          else this.floatAtSlot(s, `+${n} Shop`, false);
+        }
       }
     }
   }
@@ -1068,11 +1091,14 @@ export class Match {
     } else if (after === "invade") {
       f.state = "block";
       f.invading = true;
-      // keep seatIndex = home reservation; stand in enemy block visually
+      // Fight at door/front — no seat claim while defenders remain
+      const door = doorPos(f.blockId);
+      f.x = door.x;
+      f.y = door.y + 0.04;
       this.toast(
         f.team === this.playerTeam
-          ? "Ultra im Gästeblock!"
-          : "Ultra im Heimblock!",
+          ? "Ultra im Gästeblock — Kampf!"
+          : "Ultra im Heimblock — Kampf!",
       );
     } else {
       f.state = "block";
@@ -1130,13 +1156,11 @@ export class Match {
         : f.gangX <= goalGx + 0.02;
     if (reached && !blocker) {
       const door = doorPos(goalBlock);
-      // Visual gather point in enemy block — home seatIndex stays reserved
-      const gather = seatPos(goalBlock, Math.min(2, SEATS_PER_BLOCK - 1));
       f.blockId = goalBlock;
       f.path = [
         { x: gangLanePos(goalBlock).x, y: gangLanePos(goalBlock).y },
         { x: door.x, y: door.y },
-        { x: gather.x, y: gather.y },
+        { x: door.x, y: door.y + 0.05 },
       ];
       f.pathI = 0;
       f.state = "moving";
@@ -1232,8 +1256,104 @@ export class Match {
         f.team !== defenderTeam &&
         f.team !== "neutral" &&
         f.blockId === blockId &&
-        (f.state === "block" || f.invading),
+        (f.state === "block" || f.invading || f.state === "moving"),
     );
+  }
+
+  /** Own ultras leave seats to defend when enemy Ultra is in / approaching home */
+  private tickAutoDefend(dt: number): void {
+    void dt;
+    for (const team of [this.playerTeam, this.aiTeam] as TeamId[]) {
+      const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+      const underAttack = this.enemyUltraInBlock(home, team);
+      // Also react when enemy front line enters home third
+      const lineThreat =
+        team === this.playerTeam
+          ? this.lineAi < blockIdToGangX(HEIM_BLOCK) + 0.18
+          : this.linePlayer > blockIdToGangX(GAST_BLOCK) - 0.18;
+      if (!underAttack && !lineThreat) continue;
+
+      const defenders = this.fans.filter(
+        (f) =>
+          f.hp > 0 &&
+          f.team === team &&
+          f.kind === "ultras" &&
+          f.state === "block" &&
+          !f.invading &&
+          f.blockId === home,
+      );
+      // Send up to 2 ultras out when threatened
+      let sent = 0;
+      for (const u of defenders) {
+        if (sent >= 2) break;
+        if (underAttack) {
+          // Stay in block and fight — they'll engage via combat; nudge toward invader
+          const inv = this.fans.find(
+            (e) =>
+              e.hp > 0 &&
+              e.kind === "ultras" &&
+              e.team !== team &&
+              e.blockId === home &&
+              (e.invading || e.state === "block"),
+          );
+          if (inv) {
+            u.x += (inv.x - u.x) * 0.15;
+            u.y += (inv.y - u.y) * 0.15;
+            u.aggro = 100;
+          }
+        } else if (lineThreat) {
+          this.sendToGang(u);
+          sent++;
+        }
+      }
+
+      // Normalos in block under attack: move toward invader
+      if (underAttack) {
+        const inv = this.fans.find(
+          (e) =>
+            e.hp > 0 &&
+            e.kind === "ultras" &&
+            e.team !== team &&
+            e.blockId === home &&
+            (e.invading || e.state === "block"),
+        );
+        if (inv) {
+          for (const n of this.fans) {
+            if (
+              n.hp <= 0 ||
+              n.team !== team ||
+              n.blockId !== home ||
+              n.state !== "block" ||
+              n.kind === "familie" ||
+              n.isSteward
+            )
+              continue;
+            n.x += (inv.x - n.x) * 0.08;
+            n.y += (inv.y - n.y) * 0.08;
+          }
+        }
+      }
+    }
+
+    // Invading ultras hunt nearest living defender in block (no idle standing)
+    for (const inv of this.fans) {
+      if (!inv.invading || inv.hp <= 0) continue;
+      const foes = this.fans.filter(
+        (d) =>
+          d.hp > 0 &&
+          d.team !== inv.team &&
+          d.team !== "neutral" &&
+          d.blockId === inv.blockId &&
+          d.state === "block" &&
+          !d.invading &&
+          d.kind !== "familie",
+      );
+      if (!foes.length) continue;
+      foes.sort((a, b) => dist(inv.x, inv.y, a.x, a.y) - dist(inv.x, inv.y, b.x, b.y));
+      const t = foes[0];
+      inv.x += (t.x - inv.x) * 0.12;
+      inv.y += (t.y - inv.y) * 0.12;
+    }
   }
 
   private tickCombat(dt: number): void {
@@ -1242,36 +1362,52 @@ export class Match {
       if (a.hp <= 0) continue;
       if (a.team === "neutral" && !a.isSteward) continue;
 
-      // Who may actively attack?
+      const home = a.team === this.playerTeam ? HEIM_BLOCK : a.team === this.aiTeam ? GAST_BLOCK : -1;
+      const blockInvaded =
+        home >= 0 && this.enemyUltraInBlock(home, a.team as TeamId);
+
       let canAttack = false;
-      if (a.isSteward || a.kind === "ultras") {
-        canAttack = a.state === "gang" || a.invading || a.state === "block";
+      if (a.isSteward) {
+        canAttack = true;
+      } else if (a.kind === "ultras") {
+        canAttack =
+          a.state === "gang" ||
+          a.invading ||
+          (a.state === "block" && (blockInvaded || a.blockId === home));
       } else if (a.kind === "normalos" && a.state === "block" && !a.isSteward) {
-        // Active only when enemy ultra entered block; otherwise only counter later
-        canAttack = this.enemyUltraInBlock(a.blockId, a.team as TeamId);
-      } else if (a.kind === "familie") {
-        canAttack = false;
+        // Always defend actively when any enemy Ultra is in THIS block
+        canAttack =
+          a.team !== "neutral" &&
+          this.enemyUltraInBlock(a.blockId, a.team as TeamId);
       }
 
       if (!canAttack && a.state !== "gang" && !a.isSteward) continue;
 
       let best: FanUnit | null = null;
-      let bestD = 0.07;
+      // Large range inside same block so terrace fights always connect
+      let bestD = a.invading || blockInvaded || a.state === "block" ? 0.42 : 0.08;
+
       for (const b of this.fans) {
         if (b.hp <= 0 || b === a) continue;
         const hostile =
           b.team !== a.team && (b.team !== "neutral" || b.isSteward);
         if (!hostile) continue;
+
+        const sameBlockFight =
+          a.blockId === b.blockId &&
+          (a.state === "block" || a.invading) &&
+          (b.state === "block" || b.invading) &&
+          a.kind !== "familie" &&
+          b.kind !== "familie";
+
         const sameLane =
-          (a.state === "gang" || a.isSteward) &&
-          (b.state === "gang" || b.isSteward || b.state === "stand") ||
-          (a.invading && b.blockId === a.blockId && b.state === "block") ||
-          (a.state === "block" &&
-            b.invading &&
-            b.blockId === a.blockId) ||
+          sameBlockFight ||
+          ((a.state === "gang" || a.isSteward) &&
+            (b.state === "gang" || b.isSteward || b.state === "stand")) ||
           (a.state === "gang" &&
             b.state === "block" &&
-            Math.abs(blockIdToGangX(b.blockId) - a.gangX) < 0.1);
+            Math.abs(blockIdToGangX(b.blockId) - a.gangX) < 0.12);
+
         if (!sameLane) continue;
         const d = dist(a.x, a.y, b.x, b.y);
         if (d < bestD) {
@@ -1285,7 +1421,6 @@ export class Match {
       a.attackCd = HIT_CD / Math.max(0.4, this.attackOf(a));
       this.applyHit(a, best);
 
-      // Defender counter (Normalos always when hit; Familie does not fight back)
       if (best.hp > 0 && best.kind !== "familie" && best.attackCd <= 0) {
         best.armSwing = 1;
         best.attackCd = HIT_CD / Math.max(0.4, this.attackOf(best));
@@ -1381,7 +1516,22 @@ export class Match {
         f.captureProg = clamp(f.captureProg - rate * dt, -1, 0);
       else f.captureProg *= 1 - 0.15 * dt;
 
+      // Einzelplätze: no capture while opposing team still has fans in this block
+      const foesInBlock = (team: TeamId) =>
+        this.fans.some(
+          (o) =>
+            o.hp > 0 &&
+            !o.isSteward &&
+            o.team === team &&
+            o.blockId === f.blockId &&
+            (o.state === "block" || o.invading),
+        );
+
       if (f.captureProg >= 1) {
+        if (foesInBlock(this.aiTeam)) {
+          f.captureProg = 0.9;
+          continue;
+        }
         const seat = this.freeSeat(HEIM_BLOCK);
         if (seat == null) {
           f.captureProg = 0.85;
@@ -1399,6 +1549,10 @@ export class Match {
         this.toast("Neutraler Fan → Heim");
         this.floatAt(p.x, p.y, "+Fan", true);
       } else if (f.captureProg <= -1) {
+        if (foesInBlock(this.playerTeam)) {
+          f.captureProg = -0.9;
+          continue;
+        }
         const seat = this.freeSeat(GAST_BLOCK);
         if (seat == null) {
           f.captureProg = -0.85;
@@ -1524,15 +1678,17 @@ export class Match {
     this.chanceAcc += dt;
     if (this.chanceAcc < 16 / fever) return;
     this.chanceAcc = 0;
+    const ch = this.goalChance();
+    if (Math.random() > ch.pTor) return;
+    this.scoreGoal(Math.random() < ch.pHeim ? this.playerTeam : this.aiTeam);
+  }
+
+  /** Public HUD: next-goal probability from momentum */
+  goalChance(): { pTor: number; pHeim: number; pGast: number; momentum: number } {
     const M = this.momentum;
-    const P0 = 0.28;
-    const P1 = 0.35;
-    const pTor = P0 + P1 * Math.abs(M);
-    if (Math.random() > pTor) return;
-    const pHeim = 0.5 + 0.5 * M;
-    const scorer =
-      Math.random() < pHeim ? this.playerTeam : this.aiTeam;
-    this.scoreGoal(scorer);
+    const pTor = clamp(0.28 + 0.35 * Math.abs(M), 0.15, 0.85);
+    const pHeim = clamp(0.5 + 0.5 * M, 0.05, 0.95);
+    return { pTor, pHeim, pGast: 1 - pHeim, momentum: M };
   }
 
   private scoreGoal(team: TeamId): void {

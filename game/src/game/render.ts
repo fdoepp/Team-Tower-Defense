@@ -81,7 +81,7 @@ function blockFill(m: Match, id: number): string {
 
 function drawPitch(
   ctx: CanvasRenderingContext2D,
-  m: Match,
+  _m: Match,
   w: number,
   h: number,
 ): void {
@@ -103,63 +103,14 @@ function drawPitch(
   ctx.arc(w / 2, ph, ph * 0.32, Math.PI, 0);
   ctx.stroke();
 
-  // A2c scoreboard plate — mockup: score + minute, team badges
-  const bx = w * 0.36;
-  const by = ph * 0.06;
-  const bw = w * 0.28;
-  const bh = ph * 0.72;
-  ctx.fillStyle = "rgba(15,22,18,0.78)";
-  roundRect(ctx, bx, by, bw, bh, 10);
+  // Pitch only — match score/momentum live in HTML HUD (prominent)
+  ctx.fillStyle = "rgba(15,22,18,0.55)";
+  roundRect(ctx, w * 0.42, ph * 0.2, w * 0.16, ph * 0.45, 6);
   ctx.fill();
-  ctx.strokeStyle = "rgba(243,240,231,0.28)";
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-
-  // team badges
-  const badgeY = by + bh * 0.28;
-  ctx.fillStyle = "#1d4ed8";
-  ctx.beginPath();
-  ctx.arc(bx + bw * 0.18, badgeY, ph * 0.14, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  ctx.font = `700 ${Math.floor(ph * 0.16)}px Archivo Black, sans-serif`;
+  ctx.fillStyle = "rgba(243,240,231,0.5)";
+  ctx.font = `600 ${Math.floor(ph * 0.18)}px DM Sans`;
   ctx.textAlign = "center";
-  ctx.fillText("H", bx + bw * 0.18, badgeY + ph * 0.06);
-  ctx.fillStyle = "#dc2626";
-  ctx.beginPath();
-  ctx.arc(bx + bw * 0.82, badgeY, ph * 0.14, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  ctx.fillText("G", bx + bw * 0.82, badgeY + ph * 0.06);
-
-  ctx.fillStyle = "#f3f0e7";
-  ctx.font = `700 ${Math.floor(ph * 0.32)}px Archivo Black, sans-serif`;
-  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w / 2, by + bh * 0.38);
-  ctx.fillStyle = "#f5d76e";
-  ctx.font = `700 ${Math.floor(ph * 0.2)}px Archivo Black, sans-serif`;
-  ctx.fillText(`${Math.floor(m.minute)}′`, w / 2, by + bh * 0.72);
-
-  // momentum
-  const mx = w * 0.24;
-  const mw = w * 0.52;
-  const my = ph * 0.94;
-  ctx.fillStyle = "rgba(0,0,0,0.35)";
-  roundRect(ctx, mx, my - 5, mw, 8, 4);
-  ctx.fill();
-  ctx.fillStyle = "rgba(37,99,235,0.55)";
-  ctx.fillRect(mx, my - 5, mw / 3, 8);
-  ctx.fillStyle = "rgba(156,163,175,0.4)";
-  ctx.fillRect(mx + mw / 3, my - 5, mw / 3, 8);
-  ctx.fillStyle = "rgba(220,38,38,0.55)";
-  ctx.fillRect(mx + (2 * mw) / 3, my - 5, mw / 3, 8);
-  const knob = mx + mw * ((m.momentum + 1) / 2);
-  ctx.fillStyle = "#fff";
-  ctx.beginPath();
-  ctx.moveTo(knob, my - 10);
-  ctx.lineTo(knob - 5, my - 2);
-  ctx.lineTo(knob + 5, my - 2);
-  ctx.closePath();
-  ctx.fill();
+  ctx.fillText("SPIELFELD", w / 2, ph * 0.5);
 }
 
 function drawBlocks(
@@ -417,6 +368,18 @@ function drawBuilding(
       Math.min(bw, bh) * 0.32,
       s.owner === "ksc" ? "ksc" : "vfb",
     );
+  }
+
+  // Visible production pulse (Ertrag)
+  if (s.prodFlash > 0.05) {
+    const flash = s.prodFlash;
+    ctx.save();
+    ctx.globalAlpha = 0.35 + flash * 0.55;
+    ctx.strokeStyle = s.building === "bier" ? "#fbbf24" : s.building === "ordner" ? "#60a5fa" : "#c084fc";
+    ctx.lineWidth = 3 + flash * 4;
+    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
+    ctx.stroke();
+    ctx.restore();
   }
 
   // conversion progress
