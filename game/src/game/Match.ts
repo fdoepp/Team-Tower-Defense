@@ -156,7 +156,7 @@ export class Match {
           blockId: b.id,
           index: i,
           building: null,
-          greyNeutral: isNeutral && i < 2,
+          greyNeutral: false,
           beer: 0,
           capacity: 100,
           owner: isNeutral ? "neutral" : null,
@@ -168,18 +168,28 @@ export class Match {
       }
     }
 
-    // Neutrale Buden als graue Claims (noch niemand)
+    // Neutrale Zone: Bier-Claims (grau) + aktiver Ordnerposten mit 2 Ordnern als Puffer
     for (const blockId of [1, 2]) {
       this.placeBuilding(blockId, 0, "bier", true, "neutral");
-      this.placeBuilding(blockId, 1, "ordner", true, "neutral");
       const s0 = this.slots.find((x) => x.blockId === blockId && x.index === 0);
-      const s1 = this.slots.find((x) => x.blockId === blockId && x.index === 1);
       if (s0) {
         s0.greyNeutral = true;
         s0.beer = 25;
       }
-      if (s1) s1.greyNeutral = true;
     }
+    // Ein Ordnerposten in der Neutralzone (Block 1) mit zwei Ordnern ab Start
+    this.placeBuilding(1, 1, "ordner", true, "neutral");
+    const bufferPost = this.slots.find((x) => x.blockId === 1 && x.index === 1);
+    if (bufferPost) {
+      bufferPost.greyNeutral = false;
+      bufferPost.owner = "neutral";
+      bufferPost.level = 3; // cap = 2 Ordner
+      bufferPost.stewardCd = 4;
+      this.fans.push(this.makeSteward("neutral", bufferPost));
+      this.fans.push(this.makeSteward("neutral", bufferPost));
+    }
+    // Zweites Neutral-Slot-Index 1 bleibt freier Bauplatz (Claim später möglich)
+    // Block 2 Index 1: freier + Slot ohne vorgebautes Gebäude
 
     const homeKinds = expandMix(cfg.playerSetup.mix);
     homeKinds.forEach((kind, i) => {
@@ -873,7 +883,7 @@ export class Match {
       this.fans.push(this.makeSteward(s.owner, s));
     }
 
-    // Hold stewards at post
+    // Hold stewards at post (spread when several share a stand)
     for (const f of this.fans) {
       if (!f.isSteward || f.hp <= 0 || f.state === "moving") continue;
       const stand = this.slots.find(
@@ -881,9 +891,19 @@ export class Match {
       );
       if (!stand) continue;
       const p = this.stewardPostPos(stand);
-      f.x += (p.x - f.x) * Math.min(1, 4 * dt);
-      f.y += (p.y - f.y) * Math.min(1, 4 * dt);
-      f.gangX = blockIdToGangX(stand.blockId);
+      const siblings = this.fans.filter(
+        (o) =>
+          o.hp > 0 &&
+          o.isSteward &&
+          o.homeStandKey === f.homeStandKey,
+      );
+      const idx = siblings.findIndex((o) => o.id === f.id);
+      const spread = siblings.length > 1 ? (idx - (siblings.length - 1) / 2) * 0.028 : 0;
+      const tx = p.x + spread;
+      const ty = p.y;
+      f.x += (tx - f.x) * Math.min(1, 4 * dt);
+      f.y += (ty - f.y) * Math.min(1, 4 * dt);
+      f.gangX = blockIdToGangX(stand.blockId) + spread * 0.35;
       f.state = "gang";
       f.blockId = stand.blockId;
     }

@@ -344,11 +344,11 @@ function drawBuilding(
     roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
     ctx.stroke();
     ctx.setLineDash([]);
-    ctx.fillStyle = "rgba(243,240,231,0.7)";
-    ctx.font = `700 ${Math.max(9, Math.floor(bh * 0.22))}px Archivo Black, sans-serif`;
+    ctx.fillStyle = sel ? "#6bcb77" : "rgba(243,240,231,0.75)";
+    ctx.font = `700 ${Math.max(16, Math.floor(bh * 0.36))}px Archivo Black, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("BUDE", x + bw / 2, y + bh / 2);
+    ctx.fillText("+", x + bw / 2, y + bh / 2 + 1);
     ctx.textBaseline = "alphabetic";
     return;
   }
@@ -373,20 +373,12 @@ function drawBuilding(
   ctx.fill();
 
   const cx = x + bw / 2;
-  const cy = y + bh * 0.48;
-  const iconS = Math.min(bw, bh) * 0.42;
+  const cy = y + bh * 0.52;
+  const iconS = Math.min(bw, bh) * 0.48;
 
-  if (s.building === "bier") drawBeerMug(ctx, cx, cy - bh * 0.1, iconS * 0.75, grey);
-  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy - bh * 0.1, iconS * 0.75, grey);
-  else drawShopJersey(ctx, cx, cy - bh * 0.1, iconS * 0.75, grey, player);
-
-  // Clear type label
-  const label =
-    s.building === "bier" ? "BIER" : s.building === "ordner" ? "ORDNER" : "SHOP";
-  ctx.fillStyle = grey ? "rgba(255,255,255,0.55)" : "#f3f0e7";
-  ctx.font = `700 ${Math.max(8, Math.floor(bh * 0.16))}px Archivo Black, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.fillText(label, cx, y + bh - 6);
+  if (s.building === "bier") drawBeerMug(ctx, cx, cy, iconS * 0.8, grey);
+  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy, iconS * 0.8, grey);
+  else drawShopJersey(ctx, cx, cy, iconS * 0.8, grey, player);
 
   // Club crest when stand is owned (not grey neutral)
   if (!grey && (player || ai)) {

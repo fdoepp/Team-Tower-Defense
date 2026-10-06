@@ -213,9 +213,14 @@ function renderMatchScreen(): void {
             <div class="hud-crest vfb">V</div>
           </div>
           <div class="mom-row">
-            <button class="mood-chip gesang" data-mood="gesang" id="btn-gesang" type="button">
-              Gesang<small>Fanartikel</small><span></span>
-            </button>
+            <div class="mood-stack">
+              <button class="mood-chip gesang" data-mood="gesang" id="btn-gesang" type="button">
+                Gesang<small>Fanartikel</small><span></span>
+              </button>
+              <button class="mood-chip pyro" data-mood="pyro" id="btn-pyro" type="button">
+                Pyro<small>Bier</small><span></span>
+              </button>
+            </div>
             <div class="momentum-wrap">
               <div class="momentum-bar" id="momentum-bar" title="Momentum / Torchance">
                 <div class="mom-fill heim" id="mom-heim"></div>
@@ -229,9 +234,6 @@ function renderMatchScreen(): void {
                 <span id="mom-p-gast">Gast 50%</span>
               </div>
             </div>
-            <button class="mood-chip pyro" data-mood="pyro" id="btn-pyro" type="button">
-              Pyro<small>Bier</small><span></span>
-            </button>
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
@@ -487,6 +489,7 @@ function renderMatchScreen(): void {
         if (pulse) {
           pulse.classList.remove("from-gesang", "from-pyro", "run");
           void (pulse as HTMLElement).offsetWidth;
+          // Both Heim actions push from the left into the bar
           pulse.classList.add(act === "gesang" ? "from-gesang" : "from-pyro", "run");
         }
       }

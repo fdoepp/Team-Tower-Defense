@@ -283,6 +283,14 @@ select {
   background: rgba(8, 16, 12, 0.45);
 }
 
+/* Both Heim mood actions sit left of the bar (they push left/home side) */
+.mood-stack {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  align-self: stretch;
+}
+
 .momentum-wrap {
   flex: 1;
   min-width: 0;
@@ -360,27 +368,18 @@ select {
 }
 
 .mom-pulse.from-pyro {
-  right: 0;
-  left: auto;
-  background: linear-gradient(270deg, rgba(251, 191, 36, 0.95), rgba(234, 88, 12, 0));
+  left: 0;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.95), rgba(234, 88, 12, 0));
 }
 
-.mom-pulse.run.from-gesang {
-  animation: mom-sweep-right 0.55s ease-out forwards;
-}
-
+.mom-pulse.run.from-gesang,
 .mom-pulse.run.from-pyro {
-  animation: mom-sweep-left 0.55s ease-out forwards;
+  animation: mom-sweep-right 0.55s ease-out forwards;
 }
 
 @keyframes mom-sweep-right {
   0% { opacity: 1; transform: translateX(0); }
   100% { opacity: 0; transform: translateX(180%); }
-}
-
-@keyframes mom-sweep-left {
-  0% { opacity: 1; transform: translateX(0); }
-  100% { opacity: 0; transform: translateX(-180%); }
 }
 
 .mom-labels {
@@ -396,20 +395,21 @@ select {
 .mom-labels span:nth-child(2) { color: #f3f0e7; }
 .mom-labels span:nth-child(3) { color: #fecaca; }
 
-/* Mood chips = colored end-caps of the momentum bar (not floating cards) */
+/* Mood chips = colored stack left of the momentum bar (Heim push) */
 .mood-chip {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-width: 64px;
-  max-width: 78px;
+  max-width: 84px;
+  width: 100%;
   border-radius: 0;
-  padding: 4px 8px;
+  padding: 3px 8px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   gap: 0;
   font-family: "Archivo Black", sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   line-height: 1.05;
   border: 0;
   cursor: pointer;
@@ -433,12 +433,13 @@ select {
   background: linear-gradient(180deg, #60a5fa, #1d4ed8);
   color: #eff6ff;
   border-right: 1px solid rgba(243, 240, 231, 0.2);
+  border-bottom: 1px solid rgba(243, 240, 231, 0.15);
 }
 
 .mood-chip.pyro {
   background: linear-gradient(180deg, #fbbf24, #ea580c);
   color: #1c1917;
-  border-left: 1px solid rgba(243, 240, 231, 0.2);
+  border-right: 1px solid rgba(243, 240, 231, 0.2);
 }
 
 .mood-chip.cd {
