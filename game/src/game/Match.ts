@@ -4,6 +4,7 @@ import {
   FAN_STATS,
   FEVER_FROM_MIN,
   MOOD_CD,
+  RECRUIT,
   REGULAR_REAL_SEC,
   ULTRA_ORDER_CD,
   type AiDifficulty,
@@ -67,6 +68,9 @@ export class Match {
   chanceAcc = 0;
   aiAcc = 0;
   recruitAcc = 0;
+  /** progress meters 0..need */
+  recruit = { beer: 0, security: 0, fight: 0 };
+  defectAcc = 0;
   width = 960;
   height = 440;
   pensRound = 0;
@@ -80,20 +84,23 @@ export class Match {
 
     for (const b of BLOCK_META) {
       for (let i = 0; i < 4; i++) {
+        const isNeutralBlock = b.id >= 1 && b.id <= 3;
         this.slots.push({
           blockId: b.id,
           index: i,
           hasBier: false,
+          greyNeutral: isNeutralBlock && (i === 0 || i === 1),
           beer: 0,
           capacity: 100,
+          owner: isNeutralBlock ? "neutral" : null,
         });
       }
     }
-    // start bier in heim + gaeste
-    this.placeBier(0, 0, true);
-    this.placeBier(0, 2, true);
-    this.placeBier(4, 0, true);
-    this.placeBier(4, 2, true);
+    // start bier in heim + gaeste (colored)
+    this.placeBier(0, 0, true, this.playerTeam);
+    this.placeBier(0, 2, true, this.playerTeam);
+    this.placeBier(4, 0, true, this.aiTeam);
+    this.placeBier(4, 2, true, this.aiTeam);
 
     const homeKinds = expandMix(cfg.playerSetup.mix);
     homeKinds.forEach((kind, i) => {
@@ -103,6 +110,15 @@ export class Match {
     awayKinds.forEach((kind, i) => {
       this.fans.push(this.makeFan(kind, this.aiTeam, 4, i));
     });
+    // Neutrals populate blocks 1-3
+    for (const blockId of [1, 2, 3]) {
+      const count = 4 + (blockId === 2 ? 2 : 0);
+      for (let i = 0; i < count; i++) {
+        const kind: FanKind =
+          i % 3 === 0 ? "normalos" : i % 3 === 1 ? "familie" : "ultras";
+        this.fans.push(this.makeFan(kind, "neutral", blockId, i));
+      }
+    }
 
     this.toast(`${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)} — ▶ starten`);
     this.speed = 0;
@@ -110,7 +126,7 @@ export class Match {
 
   private makeFan(
     kind: FanKind,
-    team: TeamId,
+    team: TeamId | "neutral",
     blockId: number,
     idx: number,
   ): FanUnit {
@@ -127,19 +143,27 @@ export class Match {
       maxHp: FAN_STATS[kind].maxHp,
       thirst: 20 + Math.random() * 20,
       aggro: kind === "ultras" ? 30 : 10,
+      lean: 0,
       gangX: blockId / 4,
-      x: 0.12 + blockId * 0.19 + col * 0.025,
+      x: 0.18 + blockId * 0.17 + col * 0.022,
       y: 0.28 + row * 0.05,
     };
   }
 
-  private placeBier(blockId: number, index: number, free: boolean): void {
+  private placeBier(
+    blockId: number,
+    index: number,
+    free: boolean,
+    owner: TeamId | "neutral",
+  ): void {
     const s = this.slots.find((x) => x.blockId === blockId && x.index === index);
     if (!s || s.hasBier) return;
     if (!free && this.gold < 50) return;
     if (!free) this.gold -= 50;
     s.hasBier = true;
+    s.greyNeutral = false;
     s.beer = 60;
+    s.owner = owner;
   }
 
   toast(text: string): void {
@@ -195,6 +219,10 @@ export class Match {
     } else {
       this.moodHeim = clamp(this.moodHeim + 0.25 * effect, 0, 3);
       this.gold += 4 * n;
+      // Familie: Sicherheit + Spielstand/Stimmung
+      const scoreLead =
+        (this.playerTeam === "ksc" ? this.scoreKsc - this.scoreVfb : this.scoreVfb - this.scoreKsc);
+      this.recruit.security += n * (1.2 + Math.max(0, scoreLead) * 0.4 + this.moodHeim * 0.35);
       this.toast(`Klatschen ×${n} (+Gold)`);
     }
     return true;
@@ -229,15 +257,13 @@ export class Match {
       this.toast("Keine Ultras im Block");
       return false;
     }
-    const take = ultras.slice(0, Math.min(3, ultras.length));
-    for (const f of take) {
-      f.state = "gang";
-      f.standKey = null;
-      f.gangX = 0.12;
-      f.blockId = 0;
-    }
+    const take = ultras[0];
+    take.state = "gang";
+    take.standKey = null;
+    take.gangX = 0.12;
+    take.blockId = 0;
     this.cd.ultraOrder = ULTRA_ORDER_CD;
-    this.toast(`Ultras → Gang (${take.length})`);
+    this.toast("1 Ultra → Gang");
     return true;
   }
 
@@ -247,26 +273,28 @@ export class Match {
       return false;
     }
     const { blockId, index } = this.selectedSlot;
-    if (blockId !== 0 && blockId !== 1 && blockId !== 2 && blockId !== 3) {
-      // player can build in heim + neutrals
-    }
     if (blockId === 4) {
       this.toast("Gäste-Slots gesperrt");
       return false;
     }
     const s = this.slots.find((x) => x.blockId === blockId && x.index === index);
-    if (!s || s.hasBier) {
+    if (!s) return false;
+    if (s.hasBier) {
       this.toast("Slot belegt");
       return false;
     }
-    if (this.gold < 50) {
-      this.toast("50g nötig");
+    // grey neutral buildings: claim for 35g (cheaper convert)
+    const cost = s.greyNeutral ? 35 : 50;
+    if (this.gold < cost) {
+      this.toast(`${cost}g nötig`);
       return false;
     }
-    this.gold -= 50;
+    this.gold -= cost;
     s.hasBier = true;
+    s.greyNeutral = false;
     s.beer = 40;
-    this.toast("Bierstand gebaut");
+    s.owner = this.playerTeam;
+    this.toast(s.blockId >= 1 && s.blockId <= 3 ? "Neutral-Stand übernommen" : "Bierstand gebaut");
     return true;
   }
 
@@ -313,6 +341,7 @@ export class Match {
     this.tickMatch(dt);
     this.tickAi(dt);
     this.tickRecruit(dt);
+    this.tickDefection(dt);
     this.checkCurva();
   }
 
@@ -324,13 +353,16 @@ export class Match {
   }
 
   private nearestBier(
-    team: TeamId,
+    team: TeamId | "neutral",
     fromBlock: number,
   ): BuildSlot | null {
     const owned = this.slots.filter((s) => {
-      if (!s.hasBier || s.beer <= 0) return false;
-      if (team === this.playerTeam) return s.blockId <= 3;
-      return s.blockId >= 1;
+      if ((!s.hasBier && !s.greyNeutral) || (s.hasBier && s.beer <= 0)) return false;
+      if (!s.hasBier && s.greyNeutral) return false; // grey = no beer yet
+      if (team === "neutral") return s.blockId >= 1 && s.blockId <= 3;
+      if (team === this.playerTeam)
+        return s.owner === this.playerTeam || s.owner === "neutral";
+      return s.owner === this.aiTeam || s.owner === "neutral";
     });
     if (!owned.length) return null;
     owned.sort(
@@ -347,7 +379,7 @@ export class Match {
       if (f.state === "block") {
         // idle drift in block
         f.y = 0.26 + (f.id % 5) * 0.035 + Math.sin(this.realElapsed + f.id) * 0.004;
-        f.x = 0.11 + f.blockId * 0.19 + (f.id % 5) * 0.028;
+        f.x = 0.18 + f.blockId * 0.17 + (f.id % 5) * 0.024;
         if (f.thirst > 55) {
           const stand = this.nearestBier(f.team, f.blockId);
           if (stand) {
@@ -379,7 +411,8 @@ export class Match {
               -1,
               1,
             );
-          } else {
+            this.recruit.beer += drink * 0.45;
+          } else if (f.team === this.aiTeam) {
             this.momentum = clamp(
               this.momentum - drink * 0.002 * FAN_STATS[f.kind].mood,
               -1,
@@ -435,6 +468,10 @@ export class Match {
         b.hp -= FAN_STATS[a.kind].fight * 12 * dt;
         a.aggro = clamp(a.aggro + 5 * dt, 0, 100);
         b.aggro = clamp(b.aggro + 5 * dt, 0, 100);
+        if (a.team === this.playerTeam)
+          this.recruit.fight += FAN_STATS[a.kind].fight * 4 * dt;
+        if (b.team === this.playerTeam)
+          this.recruit.fight += FAN_STATS[b.kind].fight * 4 * dt;
       }
     }
     // pressure from gang occupancy
@@ -505,17 +542,81 @@ export class Match {
     }
   }
 
-  private tickRecruit(dt: number): void {
-    this.recruitAcc += dt;
-    if (this.recruitAcc < 45) return;
-    this.recruitAcc = 0;
-    // free small recruit into heim if under 14
+  private tickRecruit(_dt: number): void {
+    const homeCount = this.fans.filter(
+      (f) => f.team === this.playerTeam && f.hp > 0,
+    ).length;
+    if (homeCount >= 18) return;
+
+    if (this.recruit.beer >= RECRUIT.normalosBeer) {
+      this.recruit.beer = 0;
+      this.spawnHomeFan("normalos");
+      this.toast("Neuer Normalo (Bier)");
+    }
+    if (this.recruit.security >= RECRUIT.familieSecurity) {
+      this.recruit.security = 0;
+      this.spawnHomeFan("familie");
+      this.toast("Neue Familie (Sicherheit/Stimmung)");
+    }
+    if (this.recruit.fight >= RECRUIT.ultrasFight) {
+      this.recruit.fight = 0;
+      this.spawnHomeFan("ultras");
+      this.toast("Neuer Ultra (Gang-Kampf)");
+    }
+  }
+
+  private spawnHomeFan(kind: FanKind): void {
     const home = this.fans.filter((f) => f.team === this.playerTeam && f.hp > 0);
-    if (home.length >= 14) return;
-    const kinds: FanKind[] = ["normalos", "familie", "ultras"];
-    const kind = kinds[Math.floor(Math.random() * 3)];
     this.fans.push(this.makeFan(kind, this.playerTeam, 0, home.length));
-    this.toast(`Neuer Fan: ${FAN_STATS[kind].label}`);
+  }
+
+  /**
+   * Neutrals lean and eventually defect to Heim or Gäste.
+   * Lean rises with nearby claimed beer, mood, momentum, score.
+   */
+  private tickDefection(dt: number): void {
+    this.defectAcc += dt;
+    const scoreLead =
+      this.playerTeam === "ksc"
+        ? this.scoreKsc - this.scoreVfb
+        : this.scoreVfb - this.scoreKsc;
+
+    for (const f of this.fans) {
+      if (f.team !== "neutral" || f.hp <= 0) continue;
+      // pull toward heim (+)
+      let pull = this.momentum * 0.35 + (this.moodHeim - this.moodGaeste) * 0.12;
+      pull += scoreLead * 0.08;
+      const nearHeimStand = this.slots.some(
+        (s) =>
+          s.hasBier &&
+          s.owner === this.playerTeam &&
+          Math.abs(s.blockId - f.blockId) <= 1,
+      );
+      const nearGuestStand = this.slots.some(
+        (s) =>
+          s.hasBier &&
+          s.owner === this.aiTeam &&
+          Math.abs(s.blockId - f.blockId) <= 1,
+      );
+      if (nearHeimStand) pull += 0.25;
+      if (nearGuestStand) pull -= 0.25;
+      // pyro/mood actions leave residual via mood meters already
+      f.lean = clamp(f.lean + pull * dt * 0.15, -1, 1);
+
+      if (this.defectAcc < 1.2) continue;
+      if (f.lean > 0.72 && Math.random() < 0.08) {
+        f.team = this.playerTeam;
+        f.blockId = 0;
+        f.state = "block";
+        this.toast("Überläufer → Heim");
+      } else if (f.lean < -0.72 && Math.random() < 0.08) {
+        f.team = this.aiTeam;
+        f.blockId = 4;
+        f.state = "block";
+        this.toast("Überläufer → Gäste");
+      }
+    }
+    if (this.defectAcc >= 1.2) this.defectAcc = 0;
   }
 
   private checkCurva(): void {

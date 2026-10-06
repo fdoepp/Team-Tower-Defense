@@ -11,7 +11,7 @@ export const L = {
 };
 
 export function blockCenterX(blockId: number): number {
-  return 0.12 + blockId * 0.19;
+  return 0.2 + blockId * 0.155;
 }
 
 export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
@@ -169,11 +169,27 @@ function drawSlots(
       m.selectedSlot?.index === s.index;
     ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.3)";
     ctx.lineWidth = sel ? 2 : 1;
-    ctx.fillStyle = s.hasBier ? "#c9a227" : "rgba(0,0,0,0.25)";
+    if (s.greyNeutral && !s.hasBier) {
+      ctx.fillStyle = "#6b7280";
+    } else if (s.hasBier) {
+      ctx.fillStyle =
+        s.owner === m.playerTeam
+          ? "#c9a227"
+          : s.owner === m.aiTeam
+            ? "#b45309"
+            : "#9ca3af";
+    } else {
+      ctx.fillStyle = "rgba(0,0,0,0.25)";
+    }
     roundRect(ctx, p.x - 14, p.y - 10, 28, 20, 4);
     ctx.fill();
     ctx.stroke();
-    if (s.hasBier) {
+    if (s.greyNeutral && !s.hasBier) {
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "700 7px DM Sans";
+      ctx.textAlign = "center";
+      ctx.fillText("GRAU", p.x, p.y + 2);
+    } else if (s.hasBier) {
       ctx.fillStyle = "#0a1410";
       ctx.font = "700 8px DM Sans";
       ctx.textAlign = "center";
@@ -229,7 +245,8 @@ function drawMannchen(
   h: number,
 ): void {
   const r = Math.max(5, h * 0.015);
-  const col = FAN_STATS[f.kind].color;
+  let col = FAN_STATS[f.kind].color;
+  if (f.team === "neutral") col = "#9ca3af";
   ctx.fillStyle = col;
   if (f.kind === "ultras") {
     // angular
@@ -259,9 +276,9 @@ function drawMoodMeter(
   w: number,
   h: number,
 ): void {
-  const x = w * 0.015;
+  const x = w * 0.012;
   const y = h * 0.2;
-  const segH = h * 0.06;
+  const segH = h * 0.055;
   const filled = Math.floor(m.moodHeim) + 1; // 1..4 visual
   for (let i = 0; i < 4; i++) {
     const sy = y + (3 - i) * (segH + 4);

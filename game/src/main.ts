@@ -145,6 +145,11 @@ function renderMatchScreen(): void {
     <div class="match-shell a2c">
       <div class="top-chrome">
         <div class="stat"><span>Gold</span><b id="gold">0</b></div>
+        <div class="stat recruit-stat" title="Fan-Gewinnung">
+          <span>N <b id="rec-n">0</b></span>
+          <span>F <b id="rec-f">0</b></span>
+          <span>U <b id="rec-u">0</b></span>
+        </div>
         <div class="speed-btns">
           <button data-spd="0" class="on">⏸</button>
           <button data-spd="1">▶</button>
@@ -154,13 +159,15 @@ function renderMatchScreen(): void {
       <div id="game-wrap">
         <canvas id="c"></canvas>
         <div class="toast" id="toast"></div>
-        <div class="overlay-mood">
-          <button class="mood-btn" data-mood="gesang" id="btn-gesang">Gesang<span></span></button>
-          <button class="mood-btn" data-mood="pyro" id="btn-pyro">Pyro<span></span></button>
-          <button class="mood-btn" data-mood="klatschen" id="btn-klatschen">Klatschen<span></span></button>
-        </div>
-        <button class="ultra-btn" id="btn-ultra">Ultras → Gang<span></span></button>
-        <button class="build-fab" id="btn-build">Bierstand 50g</button>
+        <aside class="control-rail">
+          <div class="mood-stack">
+            <button class="mood-btn" data-mood="gesang" id="btn-gesang">Gesang<span></span></button>
+            <button class="mood-btn" data-mood="pyro" id="btn-pyro">Pyro<span></span></button>
+            <button class="mood-btn" data-mood="klatschen" id="btn-klatschen">Klatschen<span></span></button>
+          </div>
+          <button class="ultra-btn" id="btn-ultra">1 Ultra → Gang<span></span></button>
+        </aside>
+        <button class="build-fab" id="btn-build">Bierstand / Claim</button>
       </div>
     </div>`;
 
@@ -257,6 +264,15 @@ function renderMatchScreen(): void {
     drawMatch(ctx, m);
     const gold = app.querySelector("#gold");
     if (gold) gold.textContent = String(Math.floor(m.gold));
+    const rn = app.querySelector("#rec-n");
+    const rf = app.querySelector("#rec-f");
+    const ru = app.querySelector("#rec-u");
+    if (rn)
+      rn.textContent = `${Math.floor((m.recruit.beer / 28) * 100)}%`;
+    if (rf)
+      rf.textContent = `${Math.floor((m.recruit.security / 32) * 100)}%`;
+    if (ru)
+      ru.textContent = `${Math.floor((m.recruit.fight / 24) * 100)}%`;
     const toast = app.querySelector("#toast");
     if (toast) {
       const t = m.toasts[0];

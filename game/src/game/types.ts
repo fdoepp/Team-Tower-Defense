@@ -27,7 +27,7 @@ export type FanState = "block" | "stand" | "gang" | "moving";
 export type FanUnit = {
   id: number;
   kind: FanKind;
-  team: TeamId;
+  team: TeamId | "neutral";
   /** 0 Heim, 1-3 Neutral, 4 Gäste */
   blockId: number;
   state: FanState;
@@ -37,6 +37,8 @@ export type FanUnit = {
   maxHp: number;
   thirst: number;
   aggro: number;
+  /** leaning toward a side while neutral: -1 gaeste .. +1 heim */
+  lean: number;
   /** 0..1 along gang when in gang/moving */
   gangX: number;
   x: number;
@@ -48,9 +50,19 @@ export type BuildSlot = {
   /** 0,1 = above gang; 2,3 = below gang */
   index: number;
   hasBier: boolean;
+  /** grey inactive building in front of neutrals at start */
+  greyNeutral: boolean;
   beer: number;
   capacity: number;
+  /** who claimed the stand */
+  owner: TeamId | "neutral" | null;
 };
+
+export const RECRUIT = {
+  normalosBeer: 28,
+  familieSecurity: 32,
+  ultrasFight: 24,
+} as const;
 
 export type MoodAction = "gesang" | "pyro" | "klatschen";
 

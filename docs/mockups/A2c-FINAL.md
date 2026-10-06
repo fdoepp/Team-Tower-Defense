@@ -1,27 +1,24 @@
-# A2c — Final Screen (Konzept, noch nicht im Spiel)
-
-Ein Screen. Clean Flat.
+# A2c — Final Screen + aktuelle Spielregeln
 
 ## Layout
-- Oben: kleines halbes Spielfeld mit Spielstand, Minute, Momentum (L/Mitte/R)
-- 5 Blöcke im Bogen, zum Spielfeld ausgerichtet  
-  Heim (blau/weiß) · 3× Neutral (grau) · Gäste (rot/weiß)
-- Pro Block: 4 Bauslots — 2 über / 2 unter dem Gang
-- Gang unten = Kampfzone
-- Links: Stimmungsmeter (4 Segmente)
+- Oben: kleines Spielfeld (Score, Minute, Momentum)
+- 5 Blöcke zum Feld: Heim · N1 · N2 · N3 · Gäste
+- 4 Slots/Block (2 über / 2 unter dem Gang)
+- Neutrale Gebäude vor Neutral-Blöcken starten **grau** (Claim möglich)
+- Gang = Kampf
+- Links: Stimmungsmeter + Gesang/Pyro/Klatschen (CD, kein Gold)
+- Links unten an der Rail: **1 Ultra → Gang**
 
-## Buttons links am Stimmungsmeter
-| Aktion | Fan-Typ | Kosten | Sonst |
-|---|---|---|---|
-| Gesang | Normalos | kein Gold | Abklingzeit; Effekt × Anzahl im Block |
-| Pyro | Ultras | kein Gold | Abklingzeit; Effekt × Anzahl im Block |
-| Klatschen | Familie | kein Gold | Abklingzeit; Effekt × Anzahl im Block |
+## Fan-Gewinnung
+| Sorte | Quelle |
+|---|---|
+| Normalos | Bier trinken an Ständen |
+| Familie | Klatschen + Sicherheit/Spielstand/Stimmung |
+| Ultras | Kampfgeschehen im Gang |
 
-## Button links am Gang
-- **Ultras → Gang** — Ultras aus dem Block aktiv in den Gang beordern
+Progress oben als N/F/U %-Anzeige.
 
-## Einheiten
-- Start: 10 gewählte Männchen im Heimblock (Ultra/Normal/Familie klar unterschiedlich)
-- Wandern Block ↔ Bierstand ↔ Kampf
-- Auto: Durst → Stand; Stand verteidigen oder zum nächsten bestückten Stand durchkämpfen
-- Wachstum: Einheiten im Block erhalten/kaufen
+## Neutrale
+- Blöcke N1–N3 starten **belebt**
+- Überläufer-Logik über Lean (Momentum, Stimmung, Score, nahe Stände)
+- Wechsel → Heimblock oder Gästeblock

@@ -150,6 +150,7 @@ select {
   justify-content: space-between;
   align-items: center;
   padding: 2px 6px;
+  gap: 8px;
 }
 
 .top-chrome .stat {
@@ -162,8 +163,18 @@ select {
 
 .top-chrome .stat b {
   font-family: "Archivo Black", sans-serif;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   color: var(--text);
+}
+
+.recruit-stat {
+  gap: 10px !important;
+  flex: 1;
+  justify-content: center;
+}
+
+.recruit-stat span {
+  white-space: nowrap;
 }
 
 .speed-btns {
@@ -207,7 +218,7 @@ select {
 .toast {
   position: absolute;
   left: 50%;
-  top: 16%;
+  top: 14%;
   transform: translate(-50%, -50%);
   background: rgba(0, 0, 0, 0.8);
   padding: 8px 12px;
@@ -223,14 +234,30 @@ select {
   opacity: 1;
 }
 
-.overlay-mood {
+/* Left rail: mood + ultra, no overlap with each other */
+.control-rail {
   position: absolute;
-  left: 3.5%;
-  top: 22%;
+  left: 4px;
+  top: 18%;
+  bottom: 10%;
+  width: 86px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.control-rail .mood-stack,
+.control-rail .ultra-btn {
+  pointer-events: auto;
+}
+
+.mood-stack {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  z-index: 4;
 }
 
 .mood-btn,
@@ -243,7 +270,7 @@ select {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 72px;
+  width: 100%;
   color: #0a1410;
 }
 
@@ -268,17 +295,17 @@ select {
 }
 
 .ultra-btn {
-  position: absolute;
-  left: 4%;
-  bottom: 18%;
-  z-index: 4;
+  position: static;
+  margin-top: auto;
 }
 
 .build-fab {
   position: absolute;
-  right: 2%;
-  bottom: 3%;
+  right: 8px;
+  bottom: 8px;
   z-index: 4;
+  width: auto;
+  min-width: 110px;
 }
 
 .rotate-hint {
