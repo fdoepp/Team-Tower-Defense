@@ -8,18 +8,23 @@ export const SEATS_PER_BLOCK = 12;
 export const SEAT_COLS = 3;
 export const SEAT_ROWS = 4;
 
+/**
+ * Vertical pack that fills the canvas top→bottom (no empty footer).
+ * Lower booths stretch from gang bottom to y=1.
+ */
 export const L = {
-  pitchH: 0.1,
-  blockTop: 0.12,
-  blockH: 0.33,
-  /** booth strip height between block and gang / under gang */
-  boothH: 0.1,
-  gangH: 0.15,
-  blocksLeft: 0.12,
-  blocksRight: 0.98,
-  blockGap: 0.028,
+  pitchH: 0.09,
+  blockTop: 0.095,
+  /** drawn terrace body height */
+  blockBodyH: 0.3,
+  /** upper booth strip between block and gang */
+  boothH: 0.13,
+  gangH: 0.17,
+  blocksLeft: 0.1,
+  blocksRight: 0.99,
+  blockGap: 0.022,
   /** door gap as fraction of block width — path into block only */
-  doorFrac: 0.16,
+  doorFrac: 0.15,
 };
 
 export function blockWidthNorm(): number {
@@ -44,14 +49,21 @@ export function gangXToWorld(gangX: number): number {
   return left + t * (right - left);
 }
 
-export function blockBodyBottom(blockId: number): number {
-  const top = L.blockTop + Math.abs(blockId - 1.5) * 0.008;
-  return top + L.blockH * 0.7;
+export function blockTopY(blockId: number): number {
+  return L.blockTop + Math.abs(blockId - 1.5) * 0.006;
 }
 
-/** Gang starts flush under the upper booth strip */
+export function blockBodyBottom(blockId: number): number {
+  return blockTopY(blockId) + L.blockBodyH;
+}
+
+/** Gang starts flush under the upper booth strip (base, ignore tiny block stagger) */
 export function gangY(): number {
-  return L.blockTop + L.blockH * 0.7 + L.boothH;
+  return L.blockTop + L.blockBodyH + L.boothH;
+}
+
+export function gangMidY(): number {
+  return gangY() + L.gangH * 0.5;
 }
 
 /** Door at bottom center of a block (normalized) */
@@ -68,8 +80,8 @@ export function seatPos(blockId: number, seatIndex: number): { x: number; y: num
   const row = Math.floor(seatIndex / SEAT_COLS);
   const cx = blockCenterX(blockId);
   const bw = blockWidthNorm();
-  const top = L.blockTop + Math.abs(blockId - 1.5) * 0.008 + 0.035;
-  const usableH = L.blockH * 0.52;
+  const top = blockTopY(blockId) + L.blockBodyH * 0.12;
+  const usableH = L.blockBodyH * 0.72;
   const left = cx - bw * 0.38;
   const stepX = (bw * 0.76) / (SEAT_COLS - 1 || 1);
   const stepY = usableH / (SEAT_ROWS - 1 || 1);
@@ -83,13 +95,13 @@ export function seatPos(blockId: number, seatIndex: number): { x: number; y: num
 export function gangLanePos(blockId: number): { x: number; y: number } {
   return {
     x: blockCenterX(blockId),
-    y: gangY() + L.gangH * 0.5,
+    y: gangMidY(),
   };
 }
 
 /**
  * Booth rect flush to block/gang, full width except door path.
- * index 0,1 = above gang (L/R); 2,3 = below gang (L/R)
+ * index 0,1 = above gang (L/R); 2,3 = below gang (L/R) — lower fills to canvas bottom
  */
 export function boothRect(blockId: number, index: number): {
   x: number;
@@ -112,10 +124,10 @@ export function boothRect(blockId: number, index: number): {
   const bodyBot = blockBodyBottom(blockId);
   const gy = gangY();
   if (above) {
-    return { x: bx, y: bodyBot, w: bwBooth, h: gy - bodyBot };
+    return { x: bx, y: bodyBot, w: bwBooth, h: Math.max(0.04, gy - bodyBot) };
   }
   const y0 = gy + L.gangH;
-  return { x: bx, y: y0, w: bwBooth, h: L.boothH };
+  return { x: bx, y: y0, w: bwBooth, h: Math.max(0.08, 1 - y0) };
 }
 
 export function boothCenter(blockId: number, index: number): { x: number; y: number } {

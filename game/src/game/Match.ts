@@ -35,8 +35,8 @@ import {
   boothCenter,
   doorPos,
   gangLanePos,
+  gangMidY,
   gangXToWorld,
-  gangY,
   seatPos,
 } from "./layout";
 
@@ -823,7 +823,7 @@ export class Match {
     f.x += (t.x - f.x) * step;
     f.y += (t.y - f.y) * step;
     // track gangX while on lane
-    if (Math.abs(f.y - (gangY() + 0.075)) < 0.06) {
+    if (Math.abs(f.y - gangMidY()) < 0.06) {
       const left = blockCenterX(0);
       const right = blockCenterX(BLOCK_COUNT - 1);
       f.gangX = clamp((f.x - left) / (right - left || 1), 0, 1);
@@ -837,7 +837,7 @@ export class Match {
     if (after === "gang") {
       f.state = "gang";
       f.gangX = blockIdToGangX(f.blockId);
-      f.y = gangY() + 0.075;
+      f.y = gangMidY();
       f.x = gangXToWorld(f.gangX);
     } else if (after === "stand") {
       f.state = "stand";
@@ -884,10 +884,10 @@ export class Match {
     if (!foeNear && !capturing) {
       f.gangX = clamp(f.gangX + dir * 0.07 * FAN_STATS[f.kind].fight * dt, 0, 1);
       f.x = gangXToWorld(f.gangX);
-      f.y = gangY() + 0.075 + Math.sin(this.realElapsed * 3 + f.id) * 0.008;
+      f.y = gangMidY() + Math.sin(this.realElapsed * 3 + f.id) * 0.008;
     } else if (capturing) {
       f.x = gangXToWorld(f.gangX);
-      f.y = gangY() + 0.075;
+      f.y = gangMidY();
     }
 
     // reach enemy door → enter block

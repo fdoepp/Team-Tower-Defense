@@ -135,18 +135,18 @@ function drawBlocks(
   h: number,
 ): void {
   const top = h * L.blockTop;
-  const bh = h * L.blockH;
+  const bh = h * L.blockBodyH;
   const bw = blockWidthNorm() * w;
   const gapPx = L.blockGap * w;
   for (let i = 0; i < BLOCK_COUNT - 1; i++) {
     const rightEdge = (blockCenterX(i) + blockWidthNorm() / 2) * w;
     ctx.fillStyle = "#0a1410";
-    ctx.fillRect(rightEdge, top, gapPx, bh * 0.72);
+    ctx.fillRect(rightEdge, top, gapPx, bh);
   }
   for (const b of BLOCK_META) {
     const cx = blockCenterX(b.id) * w;
-    const y = top + Math.abs(b.id - 1.5) * h * 0.008;
-    const bodyH = bh * 0.7;
+    const y = top + Math.abs(b.id - 1.5) * h * 0.006;
+    const bodyH = bh;
     const left = cx - bw / 2;
     // terrace body — square bottom so booths sit flush (no corner gaps)
     ctx.fillStyle = blockFill(m, b.id);
