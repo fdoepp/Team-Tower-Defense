@@ -234,6 +234,31 @@ function drawFans(
   w: number,
   h: number,
 ): void {
+  // clash sparks between opposing gang Ultras
+  const gang = m.fans.filter((f) => f.hp > 0 && f.state === "gang");
+  for (let i = 0; i < gang.length; i++) {
+    for (let j = i + 1; j < gang.length; j++) {
+      const a = gang[i];
+      const b = gang[j];
+      if (a.team === b.team || a.team === "neutral" || b.team === "neutral")
+        continue;
+      if (Math.abs(a.gangX - b.gangX) > 0.09) continue;
+      const x = ((a.x + b.x) / 2) * w;
+      const y = ((a.y + b.y) / 2) * h;
+      ctx.fillStyle = "#f5d76e";
+      ctx.beginPath();
+      ctx.arc(x, y, 10 + Math.sin(Date.now() / 80) * 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#0a1410";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x - 8, y - 8);
+      ctx.lineTo(x + 8, y + 8);
+      ctx.moveTo(x + 8, y - 8);
+      ctx.lineTo(x - 8, y + 8);
+      ctx.stroke();
+    }
+  }
   for (const f of m.fans) {
     if (f.hp <= 0) continue;
     const x = f.x * w;
