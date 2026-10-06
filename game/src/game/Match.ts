@@ -52,6 +52,7 @@ import {
   gangMidY,
   gangXToWorld,
   seatPos,
+  slotIndicesForBlock,
 } from "./layout";
 
 export type MatchConfig = {
@@ -110,6 +111,8 @@ export class Match {
   /** short jubel multipliers from gesang/pyro */
   jubelMulHeim = { ultras: 1, normalos: 1, familie: 1 };
   jubelMulGast = { ultras: 1, normalos: 1, familie: 1 };
+  /** UI: brief momentum pulse after Gesang/Pyro (0..1) */
+  moodKick = 0;
   speed: SpeedMode = 0;
   toasts: { text: string; t: number }[] = [];
   result: MatchResult | null = null;
@@ -147,7 +150,7 @@ export class Match {
     this.blockOwner = [this.playerTeam, "neutral", "neutral", this.aiTeam];
 
     for (const b of BLOCK_META) {
-      for (let i = 0; i < 4; i++) {
+      for (const i of slotIndicesForBlock(b.id)) {
         const isNeutral = b.id === 1 || b.id === 2;
         this.slots.push({
           blockId: b.id,
@@ -478,6 +481,9 @@ export class Match {
       }
       this.moodHeim = clamp(this.moodHeim + 0.3 * n, 0, 3);
       this.jubelMulHeim.normalos = 1.4;
+      const before = this.momentum;
+      this.momentum = clamp(this.momentum + 0.06 * n, -1, 1);
+      this.moodKick = Math.min(1, 0.7 + Math.abs(this.momentum - before));
       this.toast(`Gesang ×${n}`);
     } else {
       if (!this.spend("beer", cost, door, "BIER")) {
@@ -487,6 +493,9 @@ export class Match {
       this.moodHeim = clamp(this.moodHeim + 0.4 * n, 0, 3);
       this.moodGaeste = clamp(this.moodGaeste - 0.12 * n, 0, 3);
       this.jubelMulHeim.ultras = 1.5;
+      const before = this.momentum;
+      this.momentum = clamp(this.momentum + 0.09 * n, -1, 1);
+      this.moodKick = Math.min(1, 0.8 + Math.abs(this.momentum - before));
       this.toast(`Pyro ×${n}`);
     }
     this.cd[act] = MOOD_CD[act];
@@ -735,6 +744,7 @@ export class Match {
       this.jubelMulHeim[t] = Math.max(1, this.jubelMulHeim[t] - step * 0.08);
       this.jubelMulGast[t] = Math.max(1, this.jubelMulGast[t] - step * 0.08);
     }
+    if (this.moodKick > 0) this.moodKick = Math.max(0, this.moodKick - step * 0.9);
 
     this.tickEconomy(step);
     this.tickStewards(step);

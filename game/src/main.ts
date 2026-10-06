@@ -10,6 +10,7 @@ import {
   onFullscreenChange,
 } from "./game/fullscreen";
 import { drawMatch, hitSeat, hitSlot } from "./game/render";
+import { boothRect, HEIM_BLOCK, L, ULTRA_PAD_INDEX } from "./game/layout";
 import {
   BUILD_COST,
   MIX_MAX,
@@ -181,66 +182,63 @@ function cdLabel(left: number): string {
 
 function renderMatchScreen(): void {
   const m = state.match!;
-  m.setSpeed(0);
+  m.setSpeed(1);
   const needFs = needsFullscreenGate();
   const iosHint = isIos() && !isStandalone();
   app.innerHTML = `
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell a2c">
-      <aside class="wallet-rail" aria-label="Ressourcen">
-        <div class="wallet-item gold-pill"><span>Geld</span><b id="gold">0</b></div>
-        <div class="wallet-item bier-pill" title="Bier → Ultras / Pyro">
-          <span>Bier</span><b id="cur-beer">0</b>
-        </div>
-        <div class="wallet-item shop-pill" title="Fanartikel → Normalos / Gesang">
-          <span>Fanartikel</span><b id="cur-merch">0</b>
-        </div>
-        <div class="wallet-item ord-pill" title="Sicherheit → Familien ab 25">
-          <span>Sicherheit</span><b id="cur-sec">0</b>
-        </div>
-      </aside>
-      <div class="match-hud" id="match-hud">
-        <div class="match-hud-score">
-          <div class="hud-crest ksc">K</div>
-          <div class="hud-scoreline">
-            <b id="hud-score">0:0</b>
-            <span id="hud-minute">0′</span>
-          </div>
-          <div class="hud-crest vfb">V</div>
-        </div>
-        <div class="momentum-bar" title="Momentum / Torchance">
-          <div class="mom-fill heim" id="mom-heim"></div>
-          <div class="mom-fill gast" id="mom-gast"></div>
-          <div class="mom-knob" id="mom-knob"></div>
-        </div>
-        <div class="mom-labels">
-          <span id="mom-p-heim">Heim drückt 50%</span>
-          <span id="mom-p-tor">Torchance 28%</span>
-          <span id="mom-p-gast">Gast drückt 50%</span>
-        </div>
-        <div class="combat-banner hidden" id="combat-banner"></div>
-      </div>
-      <div class="speed-btns top-speed">
-        <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
-        <button data-spd="0" class="on">⏸</button>
-        <button data-spd="1">▶</button>
-        <button data-spd="2">2×</button>
-      </div>
       <div id="game-wrap">
         <canvas id="c"></canvas>
+        <div class="pitch-hud" id="pitch-hud">
+          <div class="pitch-top">
+            <div class="wallet-inline" aria-label="Ressourcen">
+              <span class="wi gold"><i>Geld</i><b id="gold">0</b></span>
+              <span class="wi bier"><i>Bier</i><b id="cur-beer">0</b></span>
+              <span class="wi merch"><i>Fanartikel</i><b id="cur-merch">0</b></span>
+              <span class="wi sec"><i>Sicherheit</i><b id="cur-sec">0</b></span>
+            </div>
+            <div class="speed-btns top-speed">
+              <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
+              <button data-spd="1" class="on">▶</button>
+              <button data-spd="2">2×</button>
+            </div>
+          </div>
+          <div class="match-hud-score">
+            <div class="hud-crest ksc">K</div>
+            <div class="hud-scoreline">
+              <b id="hud-score">0:0</b>
+              <span id="hud-minute">0′</span>
+            </div>
+            <div class="hud-crest vfb">V</div>
+          </div>
+          <div class="mom-row">
+            <button class="mood-chip gesang" data-mood="gesang" id="btn-gesang" type="button">
+              Gesang<small>Fanartikel</small><span></span>
+            </button>
+            <div class="momentum-wrap">
+              <div class="momentum-bar" id="momentum-bar" title="Momentum / Torchance">
+                <div class="mom-fill heim" id="mom-heim"></div>
+                <div class="mom-fill gast" id="mom-gast"></div>
+                <div class="mom-knob" id="mom-knob"></div>
+                <div class="mom-pulse" id="mom-pulse" aria-hidden="true"></div>
+              </div>
+              <div class="mom-labels">
+                <span id="mom-p-heim">Heim 50%</span>
+                <span id="mom-p-tor">Torchance 28%</span>
+                <span id="mom-p-gast">Gast 50%</span>
+              </div>
+            </div>
+            <button class="mood-chip pyro" data-mood="pyro" id="btn-pyro" type="button">
+              Pyro<small>Bier</small><span></span>
+            </button>
+          </div>
+          <div class="combat-banner hidden" id="combat-banner"></div>
+        </div>
+        <button type="button" class="ultra-pad" id="btn-ultra">
+          <strong>Ultra → Gang</strong><small>5 Bier</small><span></span>
+        </button>
         <div class="toast" id="toast"></div>
-        <div class="pause-badge hidden" id="pause-badge">PAUSE</div>
-        <aside class="action-rail">
-          <button class="mood-btn" data-mood="gesang" id="btn-gesang">
-            <strong>Gesang</strong><small>Fanartikel</small><span></span>
-          </button>
-          <button class="mood-btn" data-mood="pyro" id="btn-pyro">
-            <strong>Pyro</strong><small>Bier</small><span></span>
-          </button>
-          <button class="ultra-btn" id="btn-ultra">
-            <strong>Ultra → Gang</strong><small>5 Bier</small><span></span>
-          </button>
-        </aside>
         <div class="popup-menu hidden" id="seat-menu">
           <p class="popup-title">Fan kaufen</p>
           <button data-buy="ultras" id="buy-ultras">Ultra <small>35 Bier</small></button>
@@ -285,16 +283,32 @@ function renderMatchScreen(): void {
   const buildTitle = app.querySelector<HTMLParagraphElement>("#build-title")!;
   const btnUpgrade = app.querySelector<HTMLButtonElement>("#btn-upgrade")!;
   const fsGate = app.querySelector<HTMLDivElement>("#fs-gate")!;
+  const pitchHud = app.querySelector<HTMLDivElement>("#pitch-hud")!;
+  const ultraPad = app.querySelector<HTMLButtonElement>("#btn-ultra")!;
+
+  const layoutHud = () => {
+    const rect = wrap.getBoundingClientRect();
+    if (rect.width < 32 || rect.height < 32) return;
+    const pitchPx = rect.height * L.pitchH;
+    pitchHud.style.top = "0";
+    pitchHud.style.left = "0";
+    pitchHud.style.width = "100%";
+    pitchHud.style.height = `${Math.floor(pitchPx)}px`;
+
+    const ur = boothRect(HEIM_BLOCK, ULTRA_PAD_INDEX);
+    ultraPad.style.left = `${ur.x * rect.width}px`;
+    ultraPad.style.top = `${ur.y * rect.height}px`;
+    ultraPad.style.width = `${ur.w * rect.width}px`;
+    ultraPad.style.height = `${ur.h * rect.height}px`;
+  };
 
   const resize = () => {
-    // Prefer visualViewport on iOS PWA — layout viewport can letterbox
     const vv = window.visualViewport;
     if (vv && (isStandalone() || document.documentElement.classList.contains("is-fs"))) {
       document.documentElement.style.setProperty("--vvw", `${Math.floor(vv.width)}px`);
       document.documentElement.style.setProperty("--vvh", `${Math.floor(vv.height)}px`);
     }
     const rect = wrap.getBoundingClientRect();
-    // Zero-size wrap (e.g. old portrait display:none) — keep last good size, skip draw
     if (rect.width < 32 || rect.height < 32) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const cssW = Math.floor(rect.width);
@@ -304,6 +318,7 @@ function renderMatchScreen(): void {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     m.width = cssW;
     m.height = cssH;
+    layoutHud();
     try {
       drawMatch(ctx, m);
     } catch (err) {
@@ -458,7 +473,23 @@ function renderMatchScreen(): void {
 
   app.querySelectorAll<HTMLButtonElement>("[data-mood]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      m.tryMoodAction(btn.dataset.mood as MoodAction);
+      const act = btn.dataset.mood as MoodAction;
+      const ok = m.tryMoodAction(act);
+      if (ok) {
+        const bar = app.querySelector("#momentum-bar");
+        const pulse = app.querySelector("#mom-pulse");
+        if (bar) {
+          bar.classList.remove("kick-gesang", "kick-pyro");
+          // reflow so animation restarts
+          void (bar as HTMLElement).offsetWidth;
+          bar.classList.add(act === "gesang" ? "kick-gesang" : "kick-pyro", "kick");
+        }
+        if (pulse) {
+          pulse.classList.remove("from-gesang", "from-pyro", "run");
+          void (pulse as HTMLElement).offsetWidth;
+          pulse.classList.add(act === "gesang" ? "from-gesang" : "from-pyro", "run");
+        }
+      }
       syncOverlay();
     });
   });
@@ -522,13 +553,25 @@ function renderMatchScreen(): void {
       const pG = 100 - pH;
       if (momHeim) momHeim.style.width = `${pH}%`;
       if (momGast) momGast.style.width = `${pG}%`;
-      if (momKnob) momKnob.style.left = `${((ch.momentum + 1) / 2) * 100}%`;
+      if (momKnob) {
+        momKnob.style.left = `${((ch.momentum + 1) / 2) * 100}%`;
+        momKnob.style.transform =
+          m.moodKick > 0.08 ? `scale(${1 + m.moodKick * 0.85})` : "";
+      }
       const lpH = app.querySelector("#mom-p-heim");
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
-      if (lpH) lpH.textContent = `Heim drückt ${pH}%`;
+      if (lpH) lpH.textContent = `Heim ${pH}%`;
       if (lpT) lpT.textContent = `Torchance ${Math.round(ch.pTor * 100)}%`;
-      if (lpG) lpG.textContent = `Gast drückt ${pG}%`;
+      if (lpG) lpG.textContent = `Gast ${pG}%`;
+      const bar = app.querySelector("#momentum-bar");
+      if (bar) {
+        const kicking = m.moodKick > 0.08;
+        bar.classList.toggle("kick", kicking);
+        if (!kicking) {
+          bar.classList.remove("kick-gesang", "kick-pyro");
+        }
+      }
       const banner = app.querySelector("#combat-banner");
       if (banner) {
         const st = m.combatStatus();
@@ -536,10 +579,6 @@ function renderMatchScreen(): void {
           banner.textContent = st;
           banner.classList.remove("hidden");
         } else banner.classList.add("hidden");
-      }
-      const pauseBadge = app.querySelector("#pause-badge");
-      if (pauseBadge) {
-        pauseBadge.classList.toggle("hidden", m.speed !== 0 || !!m.result);
       }
       const toast = app.querySelector("#toast");
       if (toast) {

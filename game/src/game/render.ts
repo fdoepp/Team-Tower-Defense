@@ -41,11 +41,10 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawSeats(ctx, m, w, h);
   drawGang(ctx, m, w, h);
   drawSlots(ctx, m, w, h);
+  drawReservedPads(ctx, m, w, h);
   drawFans(ctx, m, w, h);
   drawCombatOverlays(ctx, m, w, h);
-  drawMoodMeter(ctx, m, w, h);
   drawFloats(ctx, m, w, h);
-  // Pause is HTML badge — keep gang readable
 }
 
 function blockFill(m: Match, id: number): string {
@@ -78,15 +77,7 @@ function drawPitch(
   ctx.beginPath();
   ctx.arc(w / 2, ph, ph * 0.32, Math.PI, 0);
   ctx.stroke();
-
-  // Pitch only — match score/momentum live in HTML HUD (prominent)
-  ctx.fillStyle = "rgba(15,22,18,0.55)";
-  roundRect(ctx, w * 0.42, ph * 0.2, w * 0.16, ph * 0.45, 6);
-  ctx.fill();
-  ctx.fillStyle = "rgba(243,240,231,0.5)";
-  ctx.font = `600 ${Math.floor(ph * 0.18)}px DM Sans`;
-  ctx.textAlign = "center";
-  ctx.fillText("SPIELFELD", w / 2, ph * 0.5);
+  // Match score / momentum live only in the HTML pitch-hud over this band
 }
 
 function drawBlocks(
@@ -295,6 +286,37 @@ function drawSlots(
       m,
     );
   }
+}
+
+/** Heim Ultra pad + Gast empty pad (index 0) so booth row stays flush */
+function drawReservedPads(
+  ctx: CanvasRenderingContext2D,
+  _m: Match,
+  w: number,
+  h: number,
+): void {
+  // Gast top-left: empty dark pad (no build) so the row still reads as 3+gap
+  const gast = boothRect(GAST_BLOCK, 0);
+  ctx.fillStyle = "rgba(8, 12, 16, 0.55)";
+  roundRect(ctx, gast.x * w, gast.y * h, gast.w * w, gast.h * h, 8);
+  ctx.fill();
+
+  // Heim Ultra pad backdrop under the HTML button
+  const heim = boothRect(HEIM_BLOCK, 0);
+  const hx = heim.x * w;
+  const hy = heim.y * h;
+  const hw = heim.w * w;
+  const hh = heim.h * h;
+  const g = ctx.createLinearGradient(hx, hy, hx + hw, hy + hh);
+  g.addColorStop(0, "#1e3a8a");
+  g.addColorStop(1, "#172554");
+  ctx.fillStyle = g;
+  roundRect(ctx, hx, hy, hw, hh, 8);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(147, 197, 253, 0.45)";
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, hx + 1, hy + 1, hw - 2, hh - 2, 7);
+  ctx.stroke();
 }
 
 function drawBuilding(
@@ -898,29 +920,6 @@ function drawSteward(
   ctx.fillRect(x - bw / 2, y + s * 1.25, bw, 3);
   ctx.fillStyle = "#facc15";
   ctx.fillRect(x - bw / 2, y + s * 1.25, bw * Math.max(0, f.hp / f.maxHp), 3);
-}
-
-function drawMoodMeter(
-  ctx: CanvasRenderingContext2D,
-  m: Match,
-  w: number,
-  h: number,
-): void {
-  const x = w * 0.01;
-  const y = h * 0.18;
-  const segH = h * 0.05;
-  const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e"];
-  const filled = Math.min(4, Math.floor(m.moodHeim) + 1);
-  ctx.fillStyle = "rgba(243,240,231,0.45)";
-  ctx.font = `600 ${Math.floor(h * 0.014)}px DM Sans`;
-  ctx.textAlign = "left";
-  ctx.fillText("STIMMUNG", x, y - 6);
-  for (let i = 0; i < 4; i++) {
-    const sy = y + (3 - i) * (segH + 3);
-    ctx.fillStyle = i < filled ? colors[i] : "rgba(255,255,255,0.1)";
-    roundRect(ctx, x, sy, w * 0.026, segH, 4);
-    ctx.fill();
-  }
 }
 
 function drawFloats(
