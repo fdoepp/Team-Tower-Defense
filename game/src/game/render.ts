@@ -35,6 +35,7 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawSlots(ctx, m, w, h);
   drawFans(ctx, m, w, h);
   drawMoodMeter(ctx, m, w, h);
+  drawFloats(ctx, m, w, h);
 
   if (m.speed === 0 && !m.result) {
     ctx.fillStyle = "rgba(0,0,0,0.25)";
@@ -377,6 +378,28 @@ function drawMoodMeter(
     roundRect(ctx, x, sy, w * 0.028, segH, 4);
     ctx.fill();
   }
+}
+
+function drawFloats(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  for (const f of m.floats) {
+    const alpha = Math.min(1, f.t / 0.35);
+    ctx.globalAlpha = alpha;
+    ctx.font = `700 ${Math.floor(h * 0.028)}px DM Sans`;
+    ctx.textAlign = "center";
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(0,0,0,0.55)";
+    ctx.fillStyle = f.good ? "#6bcb77" : "#f87171";
+    const x = f.x * w;
+    const y = f.y * h;
+    ctx.strokeText(f.text, x, y);
+    ctx.fillText(f.text, x, y);
+  }
+  ctx.globalAlpha = 1;
 }
 
 export function hitSlot(

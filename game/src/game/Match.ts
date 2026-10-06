@@ -67,6 +67,15 @@ function dist(ax: number, ay: number, bx: number, by: number): number {
   return Math.hypot(ax - bx, ay - by);
 }
 
+export type FloatFx = {
+  x: number;
+  y: number;
+  text: string;
+  good: boolean;
+  t: number;
+  vy: number;
+};
+
 export class Match {
   readonly cfg: MatchConfig;
   readonly playerTeam: TeamId;
@@ -95,15 +104,21 @@ export class Match {
   chanceAcc = 0;
   aiAcc = 0;
   defectAcc = 0;
+  /** accumulate building income for float pulses */
+  buildPulse = 0;
+  /** drink float accumulators per stand key */
+  drinkAcc: Record<string, number> = {};
   width = 960;
   height = 440;
   pensRound = 0;
   pens: { ksc: boolean | null; vfb: boolean | null }[] = [];
   pensTimer = 0;
-  /** capped currencies 0..100 */
-  currency: Currencies = { beer: 0, ordner: 0, shop: 0 };
-  /** block ownership for capture visuals: null = default meta */
+  /** capped currencies 0..100 — rise slowly, fall via actions */
+  currency: Currencies = { beer: 12, ordner: 10, shop: 10 };
+  /** block ownership for capture visuals */
   blockOwner: (TeamId | "neutral" | null)[] = [null, null, null, null];
+  /** floating +/− numbers at buildings / seats */
+  floats: FloatFx[] = [];
 
   constructor(cfg: MatchConfig) {
     this.cfg = cfg;
@@ -205,6 +220,49 @@ export class Match {
     this.toasts.push({ text, t: 2.2 });
   }
 
+  /** Spawn a floating green (+) or red (−) number in normalized coords */
+  floatAt(x: number, y: number, text: string, good: boolean): void {
+    this.floats.push({ x, y, text, good, t: 1.35, vy: 0.045 });
+  }
+
+  floatAtSlot(s: BuildSlot, text: string, good: boolean): void {
+    const p = this.standWorld(s);
+    this.floatAt(p.x, p.y - 0.02, text, good);
+  }
+
+  floatAtSeat(blockId: number, seatIndex: number, text: string, good: boolean): void {
+    const p = seatPos(blockId, seatIndex);
+    this.floatAt(p.x, p.y - 0.02, text, good);
+  }
+
+  private spend(
+    key: keyof Currencies,
+    amount: number,
+    at?: { x: number; y: number },
+    label?: string,
+  ): boolean {
+    if (this.currency[key] < amount) return false;
+    this.currency[key] = clamp(this.currency[key] - amount, 0, 100);
+    if (at) {
+      const tag = label ?? key.toUpperCase();
+      this.floatAt(at.x, at.y, `−${Math.round(amount)} ${tag}`, false);
+    }
+    return true;
+  }
+
+  private gain(
+    key: keyof Currencies,
+    amount: number,
+    at?: { x: number; y: number },
+    label?: string,
+  ): void {
+    this.currency[key] = clamp(this.currency[key] + amount, 0, 100);
+    if (at) {
+      const tag = label ?? key.toUpperCase();
+      this.floatAt(at.x, at.y, `+${Math.round(amount)} ${tag}`, true);
+    }
+  }
+
   setSpeed(s: SpeedMode): void {
     this.speed = s;
   }
@@ -253,7 +311,23 @@ export class Match {
   }
 
   moodActionReady(act: MoodAction): boolean {
-    return this.cd[act] <= 0;
+    if (this.cd[act] > 0) return false;
+    const kind: FanKind =
+      act === "gesang" ? "normalos" : act === "pyro" ? "ultras" : "familie";
+    if (this.countInBlock(this.playerTeam, HEIM_BLOCK, kind) <= 0) return false;
+    const cost = this.moodCost(act);
+    if (act === "gesang") return this.currency.shop >= cost;
+    if (act === "pyro") return this.currency.beer >= cost;
+    return this.currency.ordner >= cost;
+  }
+
+  private moodCost(act: MoodAction): number {
+    const kind: FanKind =
+      act === "gesang" ? "normalos" : act === "pyro" ? "ultras" : "familie";
+    const n = Math.max(1, this.countInBlock(this.playerTeam, HEIM_BLOCK, kind));
+    if (act === "gesang") return 6 + n * 2; // SHOP
+    if (act === "pyro") return 8 + n * 2; // BIER
+    return 5 + n * 2; // ORDNER
   }
 
   tryMoodAction(act: MoodAction): boolean {
@@ -268,29 +342,44 @@ export class Match {
       this.toast(`Keine ${FAN_STATS[kind].label}s im Block`);
       return false;
     }
-    this.cd[act] = MOOD_CD[act];
+    const cost = this.moodCost(act);
+    const door = doorPos(HEIM_BLOCK);
     if (act === "gesang") {
+      if (!this.spend("shop", cost, door, "SHOP")) {
+        this.toast(`Gesang braucht ${cost} SHOP`);
+        return false;
+      }
       this.moodHeim = clamp(this.moodHeim + 0.35 * n, 0, 3);
       this.momentum = clamp(this.momentum + 0.04 * n, -1, 1);
-      this.currency.shop = clamp(this.currency.shop + 2 * n, 0, 100);
       this.toast(`Gesang ×${n}`);
     } else if (act === "pyro") {
+      if (!this.spend("beer", cost, door, "BIER")) {
+        this.toast(`Pyro braucht ${cost} BIER`);
+        return false;
+      }
       this.moodHeim = clamp(this.moodHeim + 0.45 * n, 0, 3);
       this.momentum = clamp(this.momentum + 0.05 * n, -1, 1);
       this.moodGaeste = clamp(this.moodGaeste - 0.15 * n, 0, 3);
       this.toast(`Pyro ×${n}`);
     } else {
+      if (!this.spend("ordner", cost, door, "ORDNER")) {
+        this.toast(`Klatschen braucht ${cost} ORDNER`);
+        return false;
+      }
       this.moodHeim = clamp(this.moodHeim + 0.25 * n, 0, 3);
-      this.gold += 4 * n;
-      this.currency.ordner = clamp(this.currency.ordner + 1.5 * n, 0, 100);
-      this.toast(`Klatschen ×${n} (+Gold)`);
+      const goldGain = 4 * n;
+      this.gold += goldGain;
+      this.floatAt(door.x, door.y - 0.03, `+${goldGain}€`, true);
+      this.toast(`Klatschen ×${n}`);
     }
+    this.cd[act] = MOOD_CD[act];
     return true;
   }
 
   ultraOrderReady(): boolean {
     return (
       this.cd.ultraOrder <= 0 &&
+      this.currency.beer >= 5 &&
       this.fans.some(
         (f) =>
           f.team === this.playerTeam &&
@@ -315,6 +404,12 @@ export class Match {
     );
     if (!ultras.length) {
       this.toast("Keine Ultras im Block");
+      return false;
+    }
+    const beerCost = 5;
+    const door = doorPos(HEIM_BLOCK);
+    if (!this.spend("beer", beerCost, door, "BIER")) {
+      this.toast(`Ultra braucht ${beerCost} BIER`);
       return false;
     }
     const take = ultras[0];
@@ -362,11 +457,13 @@ export class Match {
       return false;
     }
     const c = BUY_COST[kind];
-    this.currency.beer = clamp(this.currency.beer - c.beer, 0, 100);
-    this.currency.ordner = clamp(this.currency.ordner - c.ordner, 0, 100);
-    this.currency.shop = clamp(this.currency.shop - c.shop, 0, 100);
+    const p = seatPos(blockId, seatIndex);
+    if (c.beer > 0) this.spend("beer", c.beer, p, "BIER");
+    if (c.ordner > 0) this.spend("ordner", c.ordner, p, "ORDNER");
+    if (c.shop > 0) this.spend("shop", c.shop, p, "SHOP");
     this.fans.push(this.makeFan(kind, this.playerTeam, blockId, seatIndex));
     this.seatMenu = null;
+    this.floatAt(p.x, p.y + 0.02, `+${FAN_STATS[kind].label}`, true);
     this.toast(`${FAN_STATS[kind].label} gekauft`);
     return true;
   }
@@ -399,7 +496,18 @@ export class Match {
     s.owner = this.playerTeam;
     if (kind === "bier") s.beer = 40;
     this.buildMenu = null;
-    this.toast(`${kind === "bier" ? "Bierstand" : kind === "ordner" ? "Ordnerposten" : "Fanshop"} gebaut`);
+    const p = this.standWorld(s);
+    this.floatAt(p.x, p.y, `−${cost}€`, false);
+    if (kind === "bier") {
+      this.gain("beer", 4, { x: p.x, y: p.y - 0.025 }, "BIER");
+    } else if (kind === "ordner") {
+      this.gain("ordner", 6, { x: p.x, y: p.y - 0.025 }, "ORDNER");
+    } else {
+      this.gain("shop", 6, { x: p.x, y: p.y - 0.025 }, "SHOP");
+    }
+    this.toast(
+      `${kind === "bier" ? "Bierstand" : kind === "ordner" ? "Ordnerposten" : "Fanshop"} gebaut`,
+    );
     return true;
   }
 
@@ -409,6 +517,10 @@ export class Match {
     this.toasts = this.toasts
       .map((t) => ({ ...t, t: t.t - dtRaw }))
       .filter((t) => t.t > 0);
+    // floats animate even while paused (short)
+    this.floats = this.floats
+      .map((f) => ({ ...f, t: f.t - dtRaw, y: f.y - f.vy * dtRaw }))
+      .filter((f) => f.t > 0);
 
     if (dt > 0) {
       (Object.keys(this.cd) as (keyof typeof this.cd)[]).forEach((k) => {
@@ -458,20 +570,35 @@ export class Match {
   }
 
   private tickEconomy(dt: number): void {
-    this.gold += (3 + this.countInBlock(this.playerTeam, HEIM_BLOCK, "familie") * 0.8) * dt;
+    this.gold += (1.2 + this.countInBlock(this.playerTeam, HEIM_BLOCK, "familie") * 0.35) * dt;
+    this.buildPulse += dt;
+
     for (const s of this.slots) {
-      if (!s.building || s.owner !== this.playerTeam) {
-        if (s.building === "bier") s.beer = clamp(s.beer + 1.2 * dt, 0, s.capacity);
-        continue;
-      }
+      if (!s.building) continue;
+      // stock refill for any bier stand
       if (s.building === "bier") {
-        s.beer = clamp(s.beer + 2.2 * dt, 0, s.capacity);
-        this.currency.beer = clamp(this.currency.beer + 1.8 * dt, 0, 100);
+        s.beer = clamp(s.beer + 0.9 * dt, 0, s.capacity);
+      }
+      if (s.owner !== this.playerTeam) continue;
+
+      // slow currency drip — pulse floats every ~2.8s
+      if (s.building === "bier") {
+        this.currency.beer = clamp(this.currency.beer + 0.22 * dt, 0, 100);
       } else if (s.building === "ordner") {
-        this.currency.ordner = clamp(this.currency.ordner + 1.6 * dt, 0, 100);
+        this.currency.ordner = clamp(this.currency.ordner + 0.2 * dt, 0, 100);
       } else if (s.building === "fanshop") {
-        this.currency.shop = clamp(this.currency.shop + 1.6 * dt, 0, 100);
-        this.moodHeim = clamp(this.moodHeim + 0.02 * dt, 0, 3);
+        this.currency.shop = clamp(this.currency.shop + 0.2 * dt, 0, 100);
+        this.moodHeim = clamp(this.moodHeim + 0.012 * dt, 0, 3);
+      }
+    }
+
+    if (this.buildPulse >= 2.8) {
+      this.buildPulse = 0;
+      for (const s of this.slots) {
+        if (!s.building || s.owner !== this.playerTeam) continue;
+        if (s.building === "bier") this.floatAtSlot(s, "+1 BIER", true);
+        else if (s.building === "ordner") this.floatAtSlot(s, "+1 ORDNER", true);
+        else if (s.building === "fanshop") this.floatAtSlot(s, "+1 SHOP", true);
       }
     }
   }
@@ -553,7 +680,7 @@ export class Match {
           (s) => slotKey(s.blockId, s.index) === f.standKey,
         );
         if (stand && stand.building === "bier" && stand.beer > 0) {
-          const drink = Math.min(10 * dt * FAN_STATS[f.kind].drink, stand.beer);
+          const drink = Math.min(8 * dt * FAN_STATS[f.kind].drink, stand.beer);
           stand.beer -= drink;
           f.thirst -= drink * 1.3;
           if (f.team === this.playerTeam) {
@@ -562,7 +689,22 @@ export class Match {
               -1,
               1,
             );
-            this.currency.beer = clamp(this.currency.beer + drink * 0.08, 0, 100);
+            // accumulate drinks → discrete float events (+5€, −1 Bier-Vorrat)
+            const key = slotKey(stand.blockId, stand.index);
+            this.drinkAcc[key] = (this.drinkAcc[key] ?? 0) + drink;
+            while (this.drinkAcc[key] >= 1) {
+              this.drinkAcc[key] -= 1;
+              this.gold += 5;
+              const p = this.standWorld(stand);
+              this.floatAt(p.x - 0.02, p.y - 0.01, "+5€", true);
+              this.floatAt(p.x + 0.02, p.y - 0.025, "−1 Bier", false);
+              // Vorrat-trinken zehrt auch die Bier-Währung
+              const before = this.currency.beer;
+              this.currency.beer = clamp(this.currency.beer - 1, 0, 100);
+              if (before > 0) {
+                this.floatAt(p.x, p.y - 0.04, "−1 BIER", false);
+              }
+            }
           } else if (f.team === this.aiTeam) {
             this.momentum = clamp(
               this.momentum - drink * 0.002 * FAN_STATS[f.kind].mood,
@@ -852,7 +994,10 @@ export class Match {
     else this.scoreVfb++;
     if (team === this.playerTeam) {
       this.moodHeim = clamp(this.moodHeim + 0.4, 0, 3);
-      this.currency.beer = clamp(this.currency.beer + 8, 0, 100);
+      // Tor-Jubel: etwas SHOP, kostet etwas BIER (Pyro-Feeling)
+      const door = doorPos(HEIM_BLOCK);
+      this.gain("shop", 3, door, "SHOP");
+      this.spend("beer", 2, { x: door.x, y: door.y - 0.03 }, "BIER");
     } else {
       this.moodGaeste = clamp(this.moodGaeste + 0.4, 0, 3);
     }

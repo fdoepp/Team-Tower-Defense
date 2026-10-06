@@ -168,11 +168,11 @@ function renderMatchScreen(): void {
         <div class="toast" id="toast"></div>
         <aside class="control-rail">
           <div class="mood-stack">
-            <button class="mood-btn" data-mood="gesang" id="btn-gesang">Gesang<span></span></button>
-            <button class="mood-btn" data-mood="pyro" id="btn-pyro">Pyro<span></span></button>
-            <button class="mood-btn" data-mood="klatschen" id="btn-klatschen">Klatschen<span></span></button>
+            <button class="mood-btn" data-mood="gesang" id="btn-gesang">Gesang <small>SHOP</small><span></span></button>
+            <button class="mood-btn" data-mood="pyro" id="btn-pyro">Pyro <small>BIER</small><span></span></button>
+            <button class="mood-btn" data-mood="klatschen" id="btn-klatschen">Klatschen <small>ORDNER</small><span></span></button>
           </div>
-          <button class="ultra-btn" id="btn-ultra">1 Ultra → Gang<span></span></button>
+          <button class="ultra-btn" id="btn-ultra">1 Ultra → Gang <small>5 BIER</small><span></span></button>
         </aside>
         <div class="popup-menu hidden" id="seat-menu">
           <p class="popup-title">Fan kaufen</p>
