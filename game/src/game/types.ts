@@ -94,15 +94,19 @@ export type Currencies = {
 export const START_GOLD = 75;
 
 export const BUY_COST = {
-  ultras: { beer: 35, merch: 0, gold: 0 },
-  normalos: { beer: 0, merch: 30, gold: 0 },
-  familie: { beer: 0, merch: 0, gold: 40 },
+  /** Ultra-Gang-Pfad: teurer Einstieg */
+  ultras: { beer: 45, merch: 0, gold: 0 },
+  /** Gesang-Pfad: günstigere Normalos */
+  normalos: { beer: 0, merch: 24, gold: 0 },
+  /** Familie/Shop-Pfad etwas günstiger */
+  familie: { beer: 0, merch: 0, gold: 35 },
 } as const;
 
+/** Differentiated building costs — Bier feeds Ultra loop, Shop feeds Gesang */
 export const BUILD_COST: Record<BuildingKind, number> = {
-  bier: 50,
-  ordner: 50,
-  fanshop: 50,
+  bier: 65,
+  ordner: 45,
+  fanshop: 35,
 };
 
 export const BUILD_LABEL: Record<BuildingKind, string> = {
@@ -128,27 +132,38 @@ export const ET_REAL_SEC = 70;
 export const FEVER_FROM_MIN = 80;
 
 export const MOOD_CD = {
-  gesang: 12,
-  pyro: 16,
+  /** Gesang oft / stark — Gegenpol zum Ultra-Rush */
+  gesang: 10,
+  /** Pyro seltener — teilt Bier-Pool mit Ultra-Befehl */
+  pyro: 18,
 } as const;
 
-export const ULTRA_ORDER_CD = 14;
-export const ULTRA_ORDER_BEER = 5;
+/** Ultra-Befehl: teurer + längere CD (nerft Bier→Ultra→Gang) */
+export const ULTRA_ORDER_CD = 18;
+export const ULTRA_ORDER_BEER = 8;
 
 /** Combat */
 export const HIT_DAMAGE = 22;
 export const HIT_CD = 0.6;
 export const BLOCK_STORM_COUNT = 3;
 export const BLOCK_STORM_SEC = 5;
-/** Medium stand conversion under battle-line dominance */
-export const STAND_CONVERT_SEC = 8;
+/** Stand convert only with seat majority — longer timer */
+export const STAND_CONVERT_SEC = 11;
+/** Convert requires strict seat majority in the booth's block */
+export const STAND_CONVERT_SEAT_MAJORITY = true;
 export const STEWARD_GOLD_PER_SEC = 0.55;
 export const SECURITY_FAMILY_GATE = 25;
 /** Familie shop visit: gold gained per purchase */
-export const FAMILY_SHOP_GOLD = 10;
-export const FAMILY_SHOP_INTERVAL = 30;
-export const ULTRA_BEER_INTERVAL = 18;
-export const NORMALO_BEER_INTERVAL = 28;
+export const FAMILY_SHOP_GOLD = 14;
+export const FAMILY_SHOP_INTERVAL = 26;
+export const ULTRA_BEER_INTERVAL = 22;
+export const NORMALO_BEER_INTERVAL = 26;
+
+/** Economy production multipliers (currency /s at level rate) */
+export const PROD_BEER = 0.2;
+export const PROD_SECURITY = 0.3;
+export const PROD_MERCH = 0.34;
+export const PROD_SHOP_MOOD = 0.018;
 
 export type MoodAction = "gesang" | "pyro";
 
@@ -170,12 +185,12 @@ export const FAN_STATS: Record<
   }
 > = {
   ultras: {
-    maxHp: 110,
-    attack: 1.45,
-    defense: 0.9,
-    fight: 1.45,
+    maxHp: 105,
+    attack: 1.3,
+    defense: 0.85,
+    fight: 1.35,
     drink: 0.9,
-    jubel: 0.85,
+    jubel: 0.75,
     color: "#1f6feb",
     label: "Ultra",
   },
@@ -185,7 +200,7 @@ export const FAN_STATS: Record<
     defense: 0.55,
     fight: 0.7,
     drink: 1.2,
-    jubel: 1.0,
+    jubel: 1.2,
     color: "#3ecf6a",
     label: "Normal",
   },
@@ -195,22 +210,24 @@ export const FAN_STATS: Record<
     defense: 0.4,
     fight: 0.35,
     drink: 0.5,
-    jubel: 0.7,
+    jubel: 0.9,
     color: "#e6b422",
     label: "Familie",
   },
 };
 
-/** Steward (Ordner) combat profile — same for all teams / neutral */
+/** Steward (Ordner) — anti-rush buffer vs Ultra */
 export const STEWARD_STATS = {
-  maxHpBase: 90,
-  maxHpPerLevel: 12,
-  attack: 0.7,
-  defense: 0.95,
+  maxHpBase: 105,
+  maxHpPerLevel: 14,
+  attack: 0.9,
+  defense: 1.2,
+  /** bonus multiplier when fighting Ultras */
+  vsUltraMul: 1.35,
   /** slow patrol along own gang band */
-  patrolSpeed: 0.04,
+  patrolSpeed: 0.045,
   /** rush toward infiltrating Ultra */
-  chaseSpeed: 0.14,
+  chaseSpeed: 0.18,
 };
 
 export const BLOCK_META = [

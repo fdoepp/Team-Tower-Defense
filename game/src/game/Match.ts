@@ -13,9 +13,14 @@ import {
   HIT_DAMAGE,
   MOOD_CD,
   NORMALO_BEER_INTERVAL,
+  PROD_BEER,
+  PROD_MERCH,
+  PROD_SECURITY,
+  PROD_SHOP_MOOD,
   REGULAR_REAL_SEC,
   SECURITY_FAMILY_GATE,
   STAND_CONVERT_SEC,
+  STAND_CONVERT_SEAT_MAJORITY,
   START_GOLD,
   STEWARD_GOLD_PER_SEC,
   STEWARD_STATS,
@@ -524,8 +529,9 @@ export class Match {
   private moodCost(act: MoodAction): number {
     const kind: FanKind = act === "gesang" ? "normalos" : "ultras";
     const n = Math.max(1, this.countInBlock(this.playerTeam, HEIM_BLOCK, kind));
-    if (act === "gesang") return Math.round(5 + n * 1.5);
-    return Math.round(7 + n * 1.5);
+    // Gesang günstiger (Shop-Pfad), Pyro teurer (teilt Bier mit Ultra)
+    if (act === "gesang") return Math.round(4 + n * 1.2);
+    return Math.round(9 + n * 1.8);
   }
 
   tryMoodAction(act: MoodAction): boolean {
@@ -546,11 +552,11 @@ export class Match {
         this.toast(`Gesang braucht ${cost} Fanartikel`);
         return false;
       }
-      this.moodHeim = clamp(this.moodHeim + 0.3 * n, 0, 3);
-      this.jubelMulHeim.normalos = 1.4;
-      this.jubelMulHeim.familie = 1.25;
+      this.moodHeim = clamp(this.moodHeim + 0.38 * n, 0, 3);
+      this.jubelMulHeim.normalos = 1.65;
+      this.jubelMulHeim.familie = 1.4;
       const before = this.momentum;
-      this.momentum = clamp(this.momentum + 0.06 * n, -1, 1);
+      this.momentum = clamp(this.momentum + 0.095 * n, -1, 1);
       this.moodKick = Math.min(1, 0.7 + Math.abs(this.momentum - before));
       this.triggerCheer("gesang", this.playerTeam, HEIM_BLOCK);
       this.toast(`Gesang ×${n}`);
@@ -559,11 +565,11 @@ export class Match {
         this.toast(`Pyro braucht ${cost} Bier`);
         return false;
       }
-      this.moodHeim = clamp(this.moodHeim + 0.4 * n, 0, 3);
-      this.moodGaeste = clamp(this.moodGaeste - 0.12 * n, 0, 3);
-      this.jubelMulHeim.ultras = 1.5;
+      this.moodHeim = clamp(this.moodHeim + 0.32 * n, 0, 3);
+      this.moodGaeste = clamp(this.moodGaeste - 0.1 * n, 0, 3);
+      this.jubelMulHeim.ultras = 1.35;
       const before = this.momentum;
-      this.momentum = clamp(this.momentum + 0.09 * n, -1, 1);
+      this.momentum = clamp(this.momentum + 0.065 * n, -1, 1);
       this.moodKick = Math.min(1, 0.8 + Math.abs(this.momentum - before));
       this.triggerCheer("pyro", this.playerTeam, HEIM_BLOCK);
       this.toast(`Pyro ×${n}`);
@@ -970,12 +976,12 @@ export class Match {
       if (s.owner === this.playerTeam) {
         const p = this.standWorld(s);
         if (s.building === "bier") {
-          this.gain("beer", 0.28 * rate * dt, undefined, "BIER");
+          this.gain("beer", PROD_BEER * rate * dt, undefined, "BIER");
         } else if (s.building === "ordner") {
-          this.gain("security", 0.26 * rate * dt, undefined, "SICHERHEIT");
+          this.gain("security", PROD_SECURITY * rate * dt, undefined, "SICHERHEIT");
         } else if (s.building === "fanshop") {
-          this.gain("merch", 0.26 * rate * dt, undefined, "FANARTIKEL");
-          this.moodHeim = clamp(this.moodHeim + 0.01 * rate * dt, 0, 3);
+          this.gain("merch", PROD_MERCH * rate * dt, undefined, "FANARTIKEL");
+          this.moodHeim = clamp(this.moodHeim + PROD_SHOP_MOOD * rate * dt, 0, 3);
         }
         void p;
       } else if (s.owner === this.aiTeam) {
@@ -1030,7 +1036,7 @@ export class Match {
       s.stewardCd -= dt;
       if (aliveAtPost >= cap) continue;
       if (s.stewardCd > 0) continue;
-      s.stewardCd = 9 / productionRate(s.level || 1);
+      s.stewardCd = 7.5 / productionRate(s.level || 1);
       this.fans.push(this.makeSteward(s.owner, s));
     }
 
@@ -1465,7 +1471,35 @@ export class Match {
       : blockIdToGangX(GAST_BLOCK);
   }
 
-  /** Stand conversion by battle-line dominance — colored zone timer */
+  /** Seated fans in a block belonging to a team (for convert majority gate) */
+  private seatCountInBlock(blockId: number, team: TeamId | "neutral"): number {
+    let n = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.isSteward) continue;
+      if (f.blockId !== blockId || f.state !== "block" || f.seatIndex == null) continue;
+      if (f.team === team) n++;
+    }
+    return n;
+  }
+
+  private totalSeatsInBlock(blockId: number): number {
+    let n = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.isSteward) continue;
+      if (f.blockId !== blockId || f.state !== "block" || f.seatIndex == null) continue;
+      n++;
+    }
+    return n;
+  }
+
+  /** True when team holds strict seat majority in the booth's block */
+  private hasSeatMajority(blockId: number, team: TeamId): boolean {
+    const total = this.totalSeatsInBlock(blockId);
+    if (total <= 0) return false;
+    return this.seatCountInBlock(blockId, team) > total / 2;
+  }
+
+  /** Stand conversion: battle-line zone + seat majority required */
   private tickCaptureConvert(dt: number): void {
     for (const s of this.slots) {
       if (!s.building) continue;
@@ -1476,6 +1510,14 @@ export class Match {
         dominant = this.playerTeam;
       } else if (this.lineAi < mid - 0.02 && this.lineAi <= this.linePlayer + 0.02) {
         dominant = this.aiTeam;
+      }
+      // Gang pressure alone is not enough — need seat majority in that block
+      if (
+        dominant &&
+        STAND_CONVERT_SEAT_MAJORITY &&
+        !this.hasSeatMajority(s.blockId, dominant)
+      ) {
+        dominant = null;
       }
       if (!dominant || dominant === s.owner) {
         s.convertAcc = Math.max(0, s.convertAcc - dt * 0.7);
@@ -1717,18 +1759,27 @@ export class Match {
   }
 
   private applyHit(attacker: FanUnit, target: FanUnit): void {
+    let atkMul = 1;
+    let defMul = 1;
+    // Ordner anti-rush: stewards hit Ultras harder / take less from them
+    if (attacker.isSteward && target.kind === "ultras" && !target.isSteward) {
+      atkMul = STEWARD_STATS.vsUltraMul;
+    }
+    if (target.isSteward && attacker.kind === "ultras" && !attacker.isSteward) {
+      defMul = STEWARD_STATS.vsUltraMul;
+    }
     if (target.kind === "familie" && !target.isSteward) {
       // Don't insta-kill — family flight system handles unsafe blocks
       const dmg =
-        (HIT_DAMAGE * this.attackOf(attacker) * this.neighborBonus(attacker)) /
-        Math.max(0.35, this.defenseOf(target));
+        (HIT_DAMAGE * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
+        Math.max(0.35, this.defenseOf(target) * defMul);
       target.hp -= dmg * 0.5;
       if (target.hp <= 0) target.hp = 0;
       return;
     }
     const dmg =
-      (HIT_DAMAGE * this.attackOf(attacker) * this.neighborBonus(attacker)) /
-      Math.max(0.35, this.defenseOf(target) / this.neighborBonus(target));
+      (HIT_DAMAGE * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
+      Math.max(0.35, (this.defenseOf(target) * defMul) / this.neighborBonus(target));
     target.hp -= dmg;
     target.aggro = clamp(target.aggro + 12, 0, 100);
     if (target.hp <= 0) {
@@ -1893,7 +1944,7 @@ export class Match {
     };
     const jH = jubel(this.playerTeam, HEIM_BLOCK, this.jubelMulHeim);
     const jG = jubel(this.aiTeam, GAST_BLOCK, this.jubelMulGast);
-    const k = 0.035;
+    const k = 0.042;
     const lambda = 0.07;
     const sign = this.playerTeam === "ksc" ? 1 : 1;
     // momentum + = player advantage
@@ -2069,9 +2120,9 @@ export class Match {
       diff === "easy" ? 0.22 : diff === "hard" ? 0.72 : 0.45;
     if (Math.random() > chance) return;
 
-    // Prefer action that helps when behind on momentum
+    // Prefer Gesang slightly over Pyro when catching up (RPS balance)
     const behind = this.momentum > 0.08; // player (heim) ahead → AI should push
-    const preferPyro = behind || Math.random() < 0.45;
+    const preferPyro = behind && Math.random() < 0.4;
     const act: MoodAction = preferPyro ? "pyro" : "gesang";
     if (this.aiCd[act] > 0) {
       const alt: MoodAction = act === "pyro" ? "gesang" : "pyro";
@@ -2089,26 +2140,27 @@ export class Match {
     const kind: FanKind = act === "gesang" ? "normalos" : "ultras";
     const n = this.countInBlock(this.aiTeam, GAST_BLOCK, kind);
     if (n <= 0) return;
-    const cost = act === "gesang" ? Math.round(5 + n * 1.5) : Math.round(7 + n * 1.5);
+    const cost =
+      act === "gesang" ? Math.round(4 + n * 1.2) : Math.round(9 + n * 1.8);
     if (act === "gesang") {
       if (this.aiMerch < cost) return;
       this.aiMerch -= cost;
-      this.moodGaeste = clamp(this.moodGaeste + 0.3 * n, 0, 3);
-      this.jubelMulGast.normalos = 1.4;
-      this.jubelMulGast.familie = 1.25;
+      this.moodGaeste = clamp(this.moodGaeste + 0.38 * n, 0, 3);
+      this.jubelMulGast.normalos = 1.65;
+      this.jubelMulGast.familie = 1.4;
       const before = this.momentum;
-      this.momentum = clamp(this.momentum - 0.06 * n, -1, 1);
+      this.momentum = clamp(this.momentum - 0.095 * n, -1, 1);
       this.moodKick = Math.min(1, 0.55 + Math.abs(this.momentum - before));
       this.triggerCheer("gesang", this.aiTeam, GAST_BLOCK);
       this.toast(`KI Gesang ×${n}`);
     } else {
       if (this.aiBeer < cost) return;
       this.aiBeer -= cost;
-      this.moodGaeste = clamp(this.moodGaeste + 0.4 * n, 0, 3);
-      this.moodHeim = clamp(this.moodHeim - 0.12 * n, 0, 3);
-      this.jubelMulGast.ultras = 1.5;
+      this.moodGaeste = clamp(this.moodGaeste + 0.32 * n, 0, 3);
+      this.moodHeim = clamp(this.moodHeim - 0.1 * n, 0, 3);
+      this.jubelMulGast.ultras = 1.35;
       const before = this.momentum;
-      this.momentum = clamp(this.momentum - 0.09 * n, -1, 1);
+      this.momentum = clamp(this.momentum - 0.065 * n, -1, 1);
       this.moodKick = Math.min(1, 0.65 + Math.abs(this.momentum - before));
       this.triggerCheer("pyro", this.aiTeam, GAST_BLOCK);
       this.toast(`KI Pyro ×${n}`);

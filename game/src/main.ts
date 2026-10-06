@@ -13,8 +13,10 @@ import { drawMatch, hitSeat, hitSlot } from "./game/render";
 import { boothRect, HEIM_BLOCK, L, ULTRA_PAD_INDEX } from "./game/layout";
 import {
   BUILD_COST,
+  BUY_COST,
   MIX_MAX,
   MIX_MIN,
+  ULTRA_ORDER_BEER,
   UPGRADE_MAX,
   type BuildingKind,
   type FanKind,
@@ -238,22 +240,22 @@ function renderMatchScreen(): void {
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
         <button type="button" class="ultra-pad" id="btn-ultra">
-          <strong>Ultra → Gang</strong><small>5 Bier</small><span></span>
+          <strong>Ultra → Gang</strong><small>${ULTRA_ORDER_BEER} Bier</small><span></span>
         </button>
         <div class="toast" id="toast"></div>
         <div class="popup-menu hidden" id="seat-menu">
           <p class="popup-title">Fan kaufen</p>
-          <button data-buy="ultras" id="buy-ultras">Ultra <small>35 Bier</small></button>
-          <button data-buy="normalos" id="buy-normalos">Normalo <small>30 Fanartikel</small></button>
-          <button data-buy="familie" id="buy-familie">Familie <small>40€ · Sicherheit≥25</small></button>
+          <button data-buy="ultras" id="buy-ultras">Ultra <small>${BUY_COST.ultras.beer} Bier</small></button>
+          <button data-buy="normalos" id="buy-normalos">Normalo <small>${BUY_COST.normalos.merch} Fanartikel</small></button>
+          <button data-buy="familie" id="buy-familie">Familie <small>${BUY_COST.familie.gold}€ · Sicherheit≥25</small></button>
           <button class="popup-cancel" id="seat-cancel">Abbrechen</button>
         </div>
         <div class="popup-menu hidden" id="build-menu">
           <p class="popup-title" id="build-title">Gebäude</p>
           <div id="build-options">
-            <button data-build="bier">Bierstand <small>+Bier</small></button>
-            <button data-build="ordner">Ordnerposten <small>+Sicherheit</small></button>
-            <button data-build="fanshop">Fanshop <small>+Fanartikel</small></button>
+            <button data-build="bier">Bierstand <small>${BUILD_COST.bier}g · +Bier</small></button>
+            <button data-build="ordner">Ordnerposten <small>${BUILD_COST.ordner}g · Anti-Rush</small></button>
+            <button data-build="fanshop">Fanshop <small>${BUILD_COST.fanshop}g · +Gesang</small></button>
           </div>
           <div id="upgrade-options" class="hidden">
             <button id="btn-upgrade">Upgrade <small></small></button>
@@ -398,7 +400,7 @@ function renderMatchScreen(): void {
     } else {
       buildOptions.classList.remove("hidden");
       upgradeOptions.classList.add("hidden");
-      buildTitle.textContent = `Gebäude (${BUILD_COST.bier}g+)`;
+      buildTitle.textContent = `Gebäude · Shop ${BUILD_COST.fanshop}g · Ordner ${BUILD_COST.ordner}g · Bier ${BUILD_COST.bier}g`;
     }
     buildMenu.classList.remove("hidden");
   };
