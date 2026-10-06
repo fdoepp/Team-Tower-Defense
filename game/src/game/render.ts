@@ -1,18 +1,12 @@
 import { Match } from "./Match";
 import { BLOCK_META, FAN_STATS, type BuildSlot, type FanUnit } from "./types";
+import {
+  L,
+  blockCenterX,
+  blockWidthNorm,
+} from "./layout";
 
-/** Layout in normalized canvas space */
-export const L = {
-  pitchH: 0.13,
-  blockTop: 0.15,
-  blockH: 0.38,
-  gangY: 0.58,
-  gangH: 0.16,
-};
-
-export function blockCenterX(blockId: number): number {
-  return 0.2 + blockId * 0.155;
-}
+export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX } from "./layout";
 
 export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   const w = m.width;
@@ -99,31 +93,36 @@ function drawBlocks(
 ): void {
   const top = h * L.blockTop;
   const bh = h * L.blockH;
+  const bw = blockWidthNorm() * w;
   for (const b of BLOCK_META) {
     const cx = blockCenterX(b.id) * w;
-    const bw = w * 0.17;
-    // arc bow: outer blocks slightly lower? facing pitch = flat top toward pitch
-    const y = top + Math.abs(b.id - 2) * h * 0.012;
-    // block body
-    ctx.fillStyle = b.fill;
-    roundRect(ctx, cx - bw / 2, y, bw, bh * 0.72, 10);
-    ctx.fill();
-    // stripes
-    ctx.fillStyle = b.stripe;
-    ctx.globalAlpha = 0.25;
-    for (let i = 0; i < 4; i++) {
-      ctx.fillRect(cx - bw / 2 + 6 + i * (bw / 4), y + 6, bw / 10, bh * 0.72 - 12);
-    }
+    const y = top + Math.abs(b.id - 2) * h * 0.01;
+    // opaque body — no overlapping alpha wash
     ctx.globalAlpha = 1;
-    // label
+    ctx.fillStyle = b.fill;
+    roundRect(ctx, cx - bw / 2, y, bw, bh * 0.7, 10);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(10,20,16,0.55)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // light inner stripe only inside block
+    ctx.save();
+    roundRect(ctx, cx - bw / 2, y, bw, bh * 0.7, 10);
+    ctx.clip();
+    ctx.fillStyle = b.stripe;
+    ctx.globalAlpha = 0.22;
+    for (let i = 0; i < 5; i++) {
+      ctx.fillRect(cx - bw / 2 + 4 + i * (bw / 5), y + 4, bw / 12, bh * 0.7 - 8);
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
     ctx.fillStyle = "#fff";
-    ctx.font = `700 ${Math.floor(h * 0.028)}px DM Sans`;
+    ctx.font = `700 ${Math.floor(h * 0.026)}px DM Sans`;
     ctx.textAlign = "center";
-    ctx.fillText(b.label, cx, y + 16);
-    // door at bottom of block (toward gang)
-    const doorY = y + bh * 0.72 - 4;
+    ctx.fillText(b.label, cx, y + 15);
+    const doorY = y + bh * 0.7 - 2;
     ctx.fillStyle = "#0a1410";
-    roundRect(ctx, cx - 14, doorY, 28, 16, 4);
+    roundRect(ctx, cx - 12, doorY, 24, 14, 4);
     ctx.fill();
   }
 }
@@ -217,9 +216,10 @@ export function slotPos(
   const above = s.index < 2;
   const side = s.index % 2 === 0 ? -1 : 1;
   const gangMid = h * (L.gangY + L.gangH / 2);
+  const inset = blockWidthNorm() * w * 0.28;
   return {
-    x: cx + side * w * 0.045,
-    y: above ? gangMid - h * 0.09 : gangMid + h * 0.09,
+    x: cx + side * inset,
+    y: above ? gangMid - h * 0.085 : gangMid + h * 0.085,
   };
 }
 
@@ -244,12 +244,22 @@ function drawMannchen(
   y: number,
   h: number,
 ): void {
-  const r = Math.max(5, h * 0.015);
+  const onGang = f.state === "gang";
+  const r = Math.max(5, h * (onGang ? 0.022 : 0.015));
   let col = FAN_STATS[f.kind].color;
   if (f.team === "neutral") col = "#9ca3af";
+  else if (f.team === "ksc") col = f.kind === "ultras" ? "#1f6feb" : col;
+  else if (f.team === "vfb") col = f.kind === "ultras" ? "#dc2626" : col;
+
+  if (onGang) {
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    ctx.beginPath();
+    ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   ctx.fillStyle = col;
   if (f.kind === "ultras") {
-    // angular
     ctx.beginPath();
     ctx.moveTo(x, y - r);
     ctx.lineTo(x + r, y + r);
@@ -257,17 +267,24 @@ function drawMannchen(
     ctx.closePath();
     ctx.fill();
   } else if (f.kind === "familie") {
-    ctx.fillRect(x - r * 0.7, y - r, r * 1.4, r * 2);
+    ctx.fillRect(x - r * 0.8, y - r * 0.8, r * 1.6, r * 1.6);
   } else {
     ctx.beginPath();
     ctx.arc(x, y, r, 0, Math.PI * 2);
     ctx.fill();
   }
-  // mini hp
-  ctx.fillStyle = "rgba(0,0,0,0.35)";
-  ctx.fillRect(x - 8, y + r + 2, 16, 2);
+
+  // mini bars
+  const bw = r * 2.2;
+  const bx = x - bw / 2;
+  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  ctx.fillRect(bx, y + r + 2, bw, 6);
   ctx.fillStyle = "#6bcb77";
-  ctx.fillRect(x - 8, y + r + 2, 16 * (f.hp / f.maxHp), 2);
+  ctx.fillRect(bx, y + r + 2, bw * (f.hp / f.maxHp), 2);
+  ctx.fillStyle = "#60a5fa";
+  ctx.fillRect(bx, y + r + 4, bw * (f.thirst / 100), 2);
+  ctx.fillStyle = "#f97316";
+  ctx.fillRect(bx, y + r + 6, bw * (f.aggro / 100), 2);
 }
 
 function drawMoodMeter(

@@ -19,6 +19,7 @@ import {
   type TeamId,
 } from "./types";
 import { clamp, expandMix, slotKey, teamLabel } from "./util";
+import { blockCenterX, blockIdToGangX, gangXToWorld } from "./layout";
 
 export type MatchConfig = {
   settings: SoloSettings;
@@ -144,8 +145,8 @@ export class Match {
       thirst: 20 + Math.random() * 20,
       aggro: kind === "ultras" ? 30 : 10,
       lean: 0,
-      gangX: blockId / 4,
-      x: 0.18 + blockId * 0.17 + col * 0.022,
+      gangX: blockIdToGangX(blockId),
+      x: blockCenterX(blockId) - 0.04 + col * 0.02,
       y: 0.28 + row * 0.05,
     };
   }
@@ -260,10 +261,12 @@ export class Match {
     const take = ultras[0];
     take.state = "gang";
     take.standKey = null;
-    take.gangX = 0.12;
+    take.gangX = blockIdToGangX(0) + 0.02;
     take.blockId = 0;
+    take.x = gangXToWorld(take.gangX);
+    take.y = 0.64;
     this.cd.ultraOrder = ULTRA_ORDER_CD;
-    this.toast("1 Ultra → Gang");
+    this.toast("1 Ultra → Gang (greift Stände an)");
     return true;
   }
 
@@ -379,21 +382,21 @@ export class Match {
       if (f.state === "block") {
         // idle drift in block
         f.y = 0.26 + (f.id % 5) * 0.035 + Math.sin(this.realElapsed + f.id) * 0.004;
-        f.x = 0.18 + f.blockId * 0.17 + (f.id % 5) * 0.024;
+        f.x = blockCenterX(f.blockId) - 0.045 + (f.id % 5) * 0.02;
         if (f.thirst > 55) {
           const stand = this.nearestBier(f.team, f.blockId);
           if (stand) {
             f.state = "moving";
             f.standKey = slotKey(stand.blockId, stand.index);
-            f.gangX = stand.blockId / 4;
+            f.gangX = blockIdToGangX(stand.blockId);
           }
         }
       } else if (f.state === "moving") {
         const targetX = f.gangX;
         // move toward gang then to stand x
         f.y += (0.62 - f.y) * Math.min(1, 2.2 * dt);
-        f.x += (0.12 + targetX * 0.76 - f.x) * Math.min(1, 1.8 * dt);
-        if (Math.abs(f.y - 0.62) < 0.03 && Math.abs(f.x - (0.12 + targetX * 0.76)) < 0.04) {
+        f.x += (gangXToWorld(targetX) - f.x) * Math.min(1, 1.8 * dt);
+        if (Math.abs(f.y - 0.62) < 0.03 && Math.abs(f.x - gangXToWorld(targetX)) < 0.04) {
           f.state = "stand";
           f.blockId = Math.round(targetX * 4);
         }
@@ -422,7 +425,7 @@ export class Match {
           // defend / push toward next stand if thirsty low and aggro
           if (f.thirst < 35 && f.kind === "ultras" && Math.random() < 0.01) {
             f.state = "gang";
-            f.gangX = f.blockId / 4;
+            f.gangX = blockIdToGangX(f.blockId);
           } else if (f.thirst < 25) {
             f.state = "block";
             f.standKey = null;
@@ -434,23 +437,26 @@ export class Match {
           if (next) {
             f.state = "moving";
             f.standKey = slotKey(next.blockId, next.index);
-            f.gangX = next.blockId / 4;
+            f.gangX = blockIdToGangX(next.blockId);
           } else {
             f.state = "block";
             f.standKey = null;
           }
         }
         f.y = 0.58 + (f.id % 3) * 0.01;
-        f.x = 0.12 + (f.blockId / 4) * 0.76 + (f.id % 3) * 0.015;
+        f.x = gangXToWorld(blockIdToGangX(f.blockId)) + (f.id % 3) * 0.012;
       } else if (f.state === "gang") {
         const dir = f.team === this.playerTeam ? 1 : -1;
-        f.gangX = clamp(f.gangX + dir * 0.04 * dt * FAN_STATS[f.kind].fight, 0, 1);
-        f.x = 0.12 + f.gangX * 0.76;
-        f.y = 0.64 + Math.sin(this.realElapsed * 3 + f.id) * 0.01;
-        // return if low hp
-        if (f.hp < f.maxHp * 0.25) {
+        // slower when engaged in stand fight (handled in combat)
+        const speed = 0.055 * FAN_STATS[f.kind].fight;
+        f.gangX = clamp(f.gangX + dir * speed * dt, 0, 1);
+        f.x = gangXToWorld(f.gangX);
+        f.y = 0.655 + Math.sin(this.realElapsed * 4 + f.id) * 0.012;
+        if (f.hp < f.maxHp * 0.22) {
           f.state = "block";
           f.blockId = f.team === this.playerTeam ? 0 : 4;
+          f.x = blockCenterX(f.blockId);
+          f.y = 0.3;
         }
       }
     }
@@ -458,28 +464,114 @@ export class Match {
 
   private tickCombat(dt: number): void {
     const onGang = this.fans.filter((f) => f.hp > 0 && f.state === "gang");
+
+    // 1) Gang vs Gang
     for (let i = 0; i < onGang.length; i++) {
       for (let j = i + 1; j < onGang.length; j++) {
         const a = onGang[i];
         const b = onGang[j];
-        if (a.team === b.team) continue;
-        if (Math.abs(a.gangX - b.gangX) > 0.07) continue;
-        a.hp -= FAN_STATS[b.kind].fight * 12 * dt;
-        b.hp -= FAN_STATS[a.kind].fight * 12 * dt;
-        a.aggro = clamp(a.aggro + 5 * dt, 0, 100);
-        b.aggro = clamp(b.aggro + 5 * dt, 0, 100);
+        if (a.team === b.team || a.team === "neutral" || b.team === "neutral")
+          continue;
+        if (Math.abs(a.gangX - b.gangX) > 0.08) continue;
+        a.hp -= FAN_STATS[b.kind].fight * 14 * dt;
+        b.hp -= FAN_STATS[a.kind].fight * 14 * dt;
+        // push stalemate slightly
+        if (FAN_STATS[a.kind].fight >= FAN_STATS[b.kind].fight) b.gangX -= 0.01 * dt;
+        else a.gangX += 0.01 * dt;
         if (a.team === this.playerTeam)
-          this.recruit.fight += FAN_STATS[a.kind].fight * 4 * dt;
+          this.recruit.fight += FAN_STATS[a.kind].fight * 5 * dt;
         if (b.team === this.playerTeam)
-          this.recruit.fight += FAN_STATS[b.kind].fight * 4 * dt;
+          this.recruit.fight += FAN_STATS[b.kind].fight * 5 * dt;
       }
     }
-    // pressure from gang occupancy
+
+    // 2) Ultras on gang attack fans at stands they pass
+    for (const attacker of onGang) {
+      if (attacker.team === "neutral") continue;
+      const enemyTeam =
+        attacker.team === this.playerTeam ? this.aiTeam : this.playerTeam;
+      for (const stand of this.slots) {
+        if (!stand.hasBier) continue;
+        const standGx = blockIdToGangX(stand.blockId);
+        if (Math.abs(attacker.gangX - standGx) > 0.09) continue;
+        // attack defenders at this stand
+        const defenders = this.fans.filter(
+          (f) =>
+            f.hp > 0 &&
+            f.state === "stand" &&
+            f.blockId === stand.blockId &&
+            f.team !== attacker.team,
+        );
+        if (defenders.length) {
+          for (const d of defenders) {
+            d.hp -= FAN_STATS[attacker.kind].fight * 16 * dt;
+            attacker.hp -= FAN_STATS[d.kind].fight * 6 * dt;
+          }
+          // slow down while fighting the stand
+          attacker.gangX -= (attacker.team === this.playerTeam ? 1 : -1) * 0.02 * dt;
+          if (attacker.team === this.playerTeam)
+            this.recruit.fight += 6 * dt;
+          if (Math.random() < 0.01)
+            this.toast("Stand-Kampf!");
+        } else if (stand.owner === enemyTeam || stand.owner === "neutral") {
+          // smash unattended / enemy beer
+          stand.beer = Math.max(0, stand.beer - 18 * dt);
+          if (stand.beer <= 0 && stand.owner === enemyTeam) {
+            stand.hasBier = false;
+            stand.owner = null;
+            this.toast("Stand zerstört!");
+          }
+        }
+      }
+
+      // 3) Reach enemy block → pressure / damage curva
+      const goal = attacker.team === this.playerTeam ? 0.92 : 0.08;
+      const reached =
+        attacker.team === this.playerTeam
+          ? attacker.gangX >= goal
+          : attacker.gangX <= goal;
+      if (reached) {
+        const targetBlock = attacker.team === this.playerTeam ? 4 : 0;
+        const victims = this.fans.filter(
+          (f) =>
+            f.hp > 0 &&
+            f.blockId === targetBlock &&
+            f.team !== attacker.team &&
+            (f.state === "block" || f.state === "stand"),
+        );
+        for (const v of victims.slice(0, 3)) {
+          v.hp -= FAN_STATS[attacker.kind].fight * 10 * dt;
+        }
+        if (attacker.team === this.playerTeam) {
+          this.momentum = clamp(this.momentum + 0.08 * dt, -1, 1);
+          this.moodGaeste = clamp(this.moodGaeste - 0.05 * dt, 0, 3);
+          this.recruit.fight += 8 * dt;
+        } else {
+          this.momentum = clamp(this.momentum - 0.08 * dt, -1, 1);
+          this.moodHeim = clamp(this.moodHeim - 0.05 * dt, 0, 3);
+        }
+        // bounce back a bit so they don't stick forever
+        if (Math.random() < 0.02) {
+          attacker.gangX = clamp(
+            attacker.gangX + (attacker.team === this.playerTeam ? -0.15 : 0.15),
+            0,
+            1,
+          );
+          this.toast(
+            attacker.team === this.playerTeam
+              ? "Ultra stürmt Gästeblock!"
+              : "Gegner-Ultra im Heimblock!",
+          );
+        }
+      }
+    }
+
     let p = 0;
     for (const f of onGang) {
+      if (f.team === "neutral") continue;
       p += f.team === this.playerTeam ? FAN_STATS[f.kind].fight : -FAN_STATS[f.kind].fight;
     }
-    this.momentum = clamp(this.momentum + p * 0.01 * dt, -1, 1);
+    this.momentum = clamp(this.momentum + p * 0.012 * dt, -1, 1);
   }
 
   private tickMatch(dt: number): void {
@@ -538,7 +630,11 @@ export class Match {
     if (ultras.length) {
       const f = ultras[0];
       f.state = "gang";
-      f.gangX = 0.88;
+      f.standKey = null;
+      f.gangX = blockIdToGangX(4) - 0.02;
+      f.blockId = 4;
+      f.x = gangXToWorld(f.gangX);
+      f.y = 0.64;
     }
   }
 
