@@ -24,6 +24,8 @@ export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } 
 export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   const w = m.width;
   const h = m.height;
+  // Skip when shell is display:none / zero-sized — arcTo crashes on tiny/negative rects
+  if (w < 32 || h < 32) return;
   ctx.clearRect(0, 0, w, h);
 
   // A2c atmosphere: cool stadium night → pitch glow
@@ -940,7 +942,12 @@ function roundRect(
   h: number,
   r: number,
 ): void {
-  const rr = Math.min(r, w / 2, h / 2);
+  if (!(w > 0) || !(h > 0)) {
+    ctx.beginPath();
+    if (w !== 0 && h !== 0) ctx.rect(x, y, Math.max(0, w), Math.max(0, h));
+    return;
+  }
+  const rr = Math.max(0, Math.min(r, w / 2, h / 2));
   ctx.beginPath();
   ctx.moveTo(x + rr, y);
   ctx.arcTo(x + w, y, x + w, y + h, rr);
@@ -959,7 +966,12 @@ function roundRectTop(
   h: number,
   r: number,
 ): void {
-  const rr = Math.min(r, w / 2, h / 2);
+  if (!(w > 0) || !(h > 0)) {
+    ctx.beginPath();
+    if (w !== 0 && h !== 0) ctx.rect(x, y, Math.max(0, w), Math.max(0, h));
+    return;
+  }
+  const rr = Math.max(0, Math.min(r, w / 2, h / 2));
   ctx.beginPath();
   ctx.moveTo(x + rr, y);
   ctx.arcTo(x + w, y, x + w, y + h, rr);

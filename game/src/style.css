@@ -351,21 +351,29 @@ select {
 
 .rotate-hint {
   display: none;
-  flex: 1;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
   align-items: center;
   justify-content: center;
   text-align: center;
   font-family: "Archivo Black", sans-serif;
   font-size: 1.3rem;
   padding: 24px;
+  background: rgba(8, 16, 12, 0.94);
+  color: var(--text);
+  pointer-events: auto;
 }
 
+/* Overlay only — never display:none the shell (collapses canvas → arcTo crash) */
 @media (orientation: portrait) and (max-width: 900px) {
   .rotate-hint {
     display: flex;
   }
   .match-shell {
-    display: none !important;
+    display: block !important;
+    /* Keep layout size so resize/draw stay healthy under the rotate overlay */
+    pointer-events: none;
   }
 }
 
@@ -375,6 +383,7 @@ select {
   }
   .match-shell {
     display: block !important;
+    pointer-events: auto;
   }
 }
 

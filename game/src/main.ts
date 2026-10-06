@@ -269,15 +269,21 @@ function renderMatchScreen(): void {
       document.documentElement.style.setProperty("--vvh", `${Math.floor(vv.height)}px`);
     }
     const rect = wrap.getBoundingClientRect();
+    // Zero-size wrap (e.g. old portrait display:none) — keep last good size, skip draw
+    if (rect.width < 32 || rect.height < 32) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const cssW = Math.max(1, Math.floor(rect.width));
-    const cssH = Math.max(1, Math.floor(rect.height));
+    const cssW = Math.floor(rect.width);
+    const cssH = Math.floor(rect.height);
     canvas.width = Math.floor(cssW * dpr);
     canvas.height = Math.floor(cssH * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     m.width = cssW;
     m.height = cssH;
-    drawMatch(ctx, m);
+    try {
+      drawMatch(ctx, m);
+    } catch (err) {
+      console.warn("drawMatch resize", err);
+    }
   };
   resize();
   requestAnimationFrame(resize);
@@ -468,29 +474,33 @@ function renderMatchScreen(): void {
     if (state.screen !== "match" || !state.match) return;
     const dt = Math.min(0.05, (now - state.last) / 1000);
     state.last = now;
-    m.update(dt);
-    drawMatch(ctx, m);
-    const gold = app.querySelector("#gold");
-    if (gold) gold.textContent = String(Math.floor(m.gold));
-    const beer = app.querySelector("#cur-beer");
-    const shop = app.querySelector("#cur-shop");
-    const ord = app.querySelector("#cur-ord");
-    if (beer) beer.textContent = String(m.currencyPct("beer"));
-    if (shop) shop.textContent = String(m.currencyPct("shop"));
-    if (ord) ord.textContent = String(m.currencyPct("ordner"));
-    const toast = app.querySelector("#toast");
-    if (toast) {
-      const t = m.toasts[0];
-      if (t) {
-        toast.textContent = t.text;
-        toast.classList.add("show");
-      } else toast.classList.remove("show");
-    }
-    if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
-    if (m.result) {
-      unFs();
-      setTimeout(() => go("result"), 800);
-      return;
+    try {
+      m.update(dt);
+      drawMatch(ctx, m);
+      const gold = app.querySelector("#gold");
+      if (gold) gold.textContent = String(Math.floor(m.gold));
+      const beer = app.querySelector("#cur-beer");
+      const shop = app.querySelector("#cur-shop");
+      const ord = app.querySelector("#cur-ord");
+      if (beer) beer.textContent = String(m.currencyPct("beer"));
+      if (shop) shop.textContent = String(m.currencyPct("shop"));
+      if (ord) ord.textContent = String(m.currencyPct("ordner"));
+      const toast = app.querySelector("#toast");
+      if (toast) {
+        const t = m.toasts[0];
+        if (t) {
+          toast.textContent = t.text;
+          toast.classList.add("show");
+        } else toast.classList.remove("show");
+      }
+      if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
+      if (m.result) {
+        unFs();
+        setTimeout(() => go("result"), 800);
+        return;
+      }
+    } catch (err) {
+      console.warn("match loop", err);
     }
     state.raf = requestAnimationFrame(loop);
   };
