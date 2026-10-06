@@ -24,47 +24,72 @@ export type SpeedMode = 0 | 1 | 2;
 
 export type FanState = "block" | "stand" | "gang" | "moving";
 
+export type BuildingKind = "bier" | "ordner" | "fanshop";
+
 export type FanUnit = {
   id: number;
   kind: FanKind;
   team: TeamId | "neutral";
-  /** 0 Heim, 1-3 Neutral, 4 Gäste */
   blockId: number;
   state: FanState;
-  /** stand slot key `${blockId}:${slotIndex}` when at stand */
+  seatIndex: number | null;
   standKey: string | null;
   hp: number;
   maxHp: number;
   thirst: number;
   aggro: number;
-  /** leaning toward a side while neutral: -1 gaeste .. +1 heim */
   lean: number;
-  /** 0..1 along gang when in gang/moving */
   gangX: number;
   x: number;
   y: number;
+  /** waypoints for door/lane pathing */
+  path: { x: number; y: number }[];
+  pathI: number;
+  /** 0..1 swing animation for ultras in combat */
+  armSwing: number;
+  /** seconds until next discrete hit */
+  attackCd: number;
+  /** currently invading enemy block */
+  invading: boolean;
+  /** path completion mode */
+  _after?: string;
+  _homeSeat?: number | null;
 };
 
 export type BuildSlot = {
   blockId: number;
-  /** 0,1 = above gang; 2,3 = below gang */
   index: number;
-  hasBier: boolean;
-  /** grey inactive building in front of neutrals at start */
+  building: BuildingKind | null;
   greyNeutral: boolean;
   beer: number;
   capacity: number;
-  /** who claimed the stand */
   owner: TeamId | "neutral" | null;
 };
 
-export const RECRUIT = {
-  normalosBeer: 28,
-  familieSecurity: 32,
-  ultrasFight: 24,
+/** Currencies for buying fans (capped 0..100) */
+export type Currencies = {
+  beer: number;
+  ordner: number;
+  shop: number;
+};
+
+export const BUY_COST = {
+  ultras: { beer: 40, ordner: 0, shop: 0 },
+  normalos: { beer: 0, ordner: 0, shop: 35 },
+  familie: { beer: 0, ordner: 30, shop: 0 },
 } as const;
 
-export type MoodAction = "gesang" | "pyro" | "klatschen";
+export const BUILD_COST: Record<BuildingKind, number> = {
+  bier: 50,
+  ordner: 45,
+  fanshop: 45,
+};
+
+export const BUILD_LABEL: Record<BuildingKind, string> = {
+  bier: "Bier",
+  ordner: "Ordner",
+  fanshop: "Shop",
+};
 
 export const MIX_MIN = { normalos: 2, ultras: 1, familie: 1 } as const;
 export const MIX_MAX = { normalos: 6, ultras: 5, familie: 4 } as const;
@@ -81,6 +106,12 @@ export const MOOD_CD = {
 } as const;
 
 export const ULTRA_ORDER_CD = 14;
+
+export const HIT_DAMAGE = 28;
+export const HIT_CD = 0.55;
+export const INVADE_WIN_COUNT = 3;
+
+export type MoodAction = "gesang" | "pyro" | "klatschen";
 
 export const FAN_STATS: Record<
   FanKind,
@@ -111,7 +142,7 @@ export const FAN_STATS: Record<
   },
   familie: {
     maxHp: 70,
-    fight: 0.45,
+    fight: 0.35,
     drink: 0.85,
     mood: 0.9,
     color: "#e6b422",
@@ -123,6 +154,5 @@ export const BLOCK_META = [
   { id: 0, side: "heim" as const, label: "Heim", fill: "#1f6feb", stripe: "#f3f0e7" },
   { id: 1, side: "neutral" as const, label: "N1", fill: "#9ca3af", stripe: "#e5e7eb" },
   { id: 2, side: "neutral" as const, label: "N2", fill: "#6b7280", stripe: "#d1d5db" },
-  { id: 3, side: "neutral" as const, label: "N3", fill: "#4b5563", stripe: "#9ca3af" },
-  { id: 4, side: "gaeste" as const, label: "Gäste", fill: "#dc2626", stripe: "#f3f0e7" },
+  { id: 3, side: "gaeste" as const, label: "Gäste", fill: "#dc2626", stripe: "#f3f0e7" },
 ];

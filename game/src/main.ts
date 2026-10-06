@@ -1,9 +1,12 @@
 import "./style.css";
 import { Match } from "./game/Match";
-import { drawMatch, hitSlot } from "./game/render";
+import { drawMatch, hitSeat, hitSlot } from "./game/render";
 import {
+  BUILD_COST,
   MIX_MAX,
   MIX_MIN,
+  type BuildingKind,
+  type FanKind,
   type FanMix,
   type MoodAction,
   type SoloSettings,
@@ -143,12 +146,16 @@ function renderMatchScreen(): void {
   app.innerHTML = `
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell a2c">
-      <div class="top-chrome">
-        <div class="stat"><span>Gold</span><b id="gold">0</b></div>
-        <div class="stat recruit-stat" title="Fan-Gewinnung">
-          <span>N <b id="rec-n">0</b></span>
-          <span>F <b id="rec-f">0</b></span>
-          <span>U <b id="rec-u">0</b></span>
+      <div class="top-chrome currency-chrome">
+        <div class="cur-pill gold-pill"><span>Gold</span><b id="gold">0</b></div>
+        <div class="cur-pill bier-pill" title="Bier → Ultras kaufen">
+          <span>BIER</span><b id="cur-beer">0</b><i>/100</i>
+        </div>
+        <div class="cur-pill shop-pill" title="Fanshop → Normalos kaufen">
+          <span>SHOP</span><b id="cur-shop">0</b><i>/100</i>
+        </div>
+        <div class="cur-pill ord-pill" title="Ordner → Familien kaufen">
+          <span>ORDNER</span><b id="cur-ord">0</b><i>/100</i>
         </div>
         <div class="speed-btns">
           <button data-spd="0" class="on">⏸</button>
@@ -167,13 +174,28 @@ function renderMatchScreen(): void {
           </div>
           <button class="ultra-btn" id="btn-ultra">1 Ultra → Gang<span></span></button>
         </aside>
-        <button class="build-fab" id="btn-build">Bierstand / Claim</button>
+        <div class="popup-menu hidden" id="seat-menu">
+          <p class="popup-title">Fan kaufen</p>
+          <button data-buy="ultras" id="buy-ultras">Ultra <small>40 BIER</small></button>
+          <button data-buy="normalos" id="buy-normalos">Normalo <small>35 SHOP</small></button>
+          <button data-buy="familie" id="buy-familie">Familie <small>30 ORDNER</small></button>
+          <button class="popup-cancel" id="seat-cancel">Abbrechen</button>
+        </div>
+        <div class="popup-menu hidden" id="build-menu">
+          <p class="popup-title">Gebäude (${BUILD_COST.bier}g+)</p>
+          <button data-build="bier">Bierstand <small>+BIER</small></button>
+          <button data-build="ordner">Ordnerposten <small>+ORDNER</small></button>
+          <button data-build="fanshop">Fanshop <small>+SHOP</small></button>
+          <button class="popup-cancel" id="build-cancel">Abbrechen</button>
+        </div>
       </div>
     </div>`;
 
   const canvas = app.querySelector<HTMLCanvasElement>("#c")!;
   const wrap = app.querySelector<HTMLDivElement>("#game-wrap")!;
   const ctx = canvas.getContext("2d")!;
+  const seatMenu = app.querySelector<HTMLDivElement>("#seat-menu")!;
+  const buildMenu = app.querySelector<HTMLDivElement>("#build-menu")!;
 
   const resize = () => {
     const rect = wrap.getBoundingClientRect();
@@ -192,14 +214,67 @@ function renderMatchScreen(): void {
   window.addEventListener("resize", resize);
   window.addEventListener("orientationchange", () => setTimeout(resize, 200));
 
+  const hideMenus = () => {
+    m.seatMenu = null;
+    m.buildMenu = null;
+    seatMenu.classList.add("hidden");
+    buildMenu.classList.add("hidden");
+  };
+
+  const showSeatMenu = (blockId: number, seatIndex: number) => {
+    m.seatMenu = { blockId, seatIndex };
+    m.buildMenu = null;
+    buildMenu.classList.add("hidden");
+    seatMenu.classList.remove("hidden");
+    syncBuyButtons();
+  };
+
+  const showBuildMenu = (blockId: number, index: number) => {
+    m.buildMenu = { blockId, index };
+    m.selectedSlot = { blockId, index };
+    m.seatMenu = null;
+    seatMenu.classList.add("hidden");
+    buildMenu.classList.remove("hidden");
+  };
+
+  const syncBuyButtons = () => {
+    (["ultras", "normalos", "familie"] as FanKind[]).forEach((kind) => {
+      const btn = app.querySelector<HTMLButtonElement>(`#buy-${kind}`)!;
+      const ok = m.canBuy(kind);
+      btn.classList.toggle("ready", ok);
+      btn.classList.toggle("cd", !ok);
+      btn.disabled = !ok;
+    });
+  };
+
   canvas.addEventListener("pointerdown", (e) => {
     const rect = canvas.getBoundingClientRect();
-    const hit = hitSlot(m, e.clientX - rect.left, e.clientY - rect.top);
-    if (hit) {
-      m.selectedSlot = hit;
-      m.toast(`Slot ${hit.blockId + 1}.${hit.index + 1}`);
-      syncOverlay();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const seat = hitSeat(m, mx, my);
+    if (seat && !m.seatOccupied(seat.blockId, seat.seatIndex)) {
+      m.selectedSeat = seat;
+      showSeatMenu(seat.blockId, seat.seatIndex);
+      m.toast(`Platz ${seat.seatIndex + 1}`);
+      return;
     }
+
+    const hit = hitSlot(m, mx, my);
+    if (hit) {
+      const slot = m.slots.find(
+        (s) => s.blockId === hit.blockId && s.index === hit.index,
+      );
+      m.selectedSlot = hit;
+      if (slot && !slot.building) {
+        showBuildMenu(hit.blockId, hit.index);
+      } else {
+        hideMenus();
+        m.toast(`Slot ${hit.blockId + 1}.${hit.index + 1}`);
+      }
+      return;
+    }
+    hideMenus();
   });
 
   app.querySelectorAll<HTMLButtonElement>("[data-spd]").forEach((btn) => {
@@ -223,20 +298,7 @@ function renderMatchScreen(): void {
     ub.classList.toggle("ready", uready);
     ub.classList.toggle("cd", !uready);
     ub.querySelector("span")!.textContent = cdLabel(m.cd.ultraOrder);
-
-    const bb = app.querySelector<HTMLButtonElement>("#btn-build")!;
-    const can =
-      !!m.selectedSlot &&
-      m.gold >= 50 &&
-      m.selectedSlot.blockId !== 4 &&
-      !m.slots.find(
-        (s) =>
-          s.blockId === m.selectedSlot!.blockId &&
-          s.index === m.selectedSlot!.index &&
-          s.hasBier,
-      );
-    bb.classList.toggle("ready", can);
-    bb.classList.toggle("cd", !can);
+    if (!seatMenu.classList.contains("hidden")) syncBuyButtons();
   };
 
   app.querySelectorAll<HTMLButtonElement>("[data-mood]").forEach((btn) => {
@@ -249,10 +311,27 @@ function renderMatchScreen(): void {
     m.tryUltraOrder();
     syncOverlay();
   });
-  app.querySelector("#btn-build")!.addEventListener("click", () => {
-    m.tryBuildSelected();
-    syncOverlay();
+  app.querySelectorAll<HTMLButtonElement>("[data-buy]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (!m.seatMenu) return;
+      m.tryBuyFan(
+        btn.dataset.buy as FanKind,
+        m.seatMenu.blockId,
+        m.seatMenu.seatIndex,
+      );
+      hideMenus();
+      syncOverlay();
+    });
   });
+  app.querySelectorAll<HTMLButtonElement>("[data-build]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      m.tryBuild(btn.dataset.build as BuildingKind);
+      hideMenus();
+      syncOverlay();
+    });
+  });
+  app.querySelector("#seat-cancel")!.addEventListener("click", hideMenus);
+  app.querySelector("#build-cancel")!.addEventListener("click", hideMenus);
 
   syncOverlay();
   state.last = performance.now();
@@ -264,15 +343,12 @@ function renderMatchScreen(): void {
     drawMatch(ctx, m);
     const gold = app.querySelector("#gold");
     if (gold) gold.textContent = String(Math.floor(m.gold));
-    const rn = app.querySelector("#rec-n");
-    const rf = app.querySelector("#rec-f");
-    const ru = app.querySelector("#rec-u");
-    if (rn)
-      rn.textContent = `${Math.floor((m.recruit.beer / 28) * 100)}%`;
-    if (rf)
-      rf.textContent = `${Math.floor((m.recruit.security / 32) * 100)}%`;
-    if (ru)
-      ru.textContent = `${Math.floor((m.recruit.fight / 24) * 100)}%`;
+    const beer = app.querySelector("#cur-beer");
+    const shop = app.querySelector("#cur-shop");
+    const ord = app.querySelector("#cur-ord");
+    if (beer) beer.textContent = String(m.currencyPct("beer"));
+    if (shop) shop.textContent = String(m.currencyPct("shop"));
+    if (ord) ord.textContent = String(m.currencyPct("ordner"));
     const toast = app.querySelector("#toast");
     if (toast) {
       const t = m.toasts[0];

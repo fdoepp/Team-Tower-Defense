@@ -336,3 +336,113 @@ select {
     display: grid !important;
   }
 }
+
+.currency-chrome {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cur-pill {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(8, 18, 14, 0.85);
+  border: 1px solid var(--line);
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.cur-pill b {
+  font-family: "Archivo Black", sans-serif;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.cur-pill i {
+  font-style: normal;
+  font-size: 0.62rem;
+  opacity: 0.7;
+}
+
+.cur-pill.bier-pill {
+  border-color: #c9a227;
+}
+.cur-pill.bier-pill b {
+  color: #f5d76e;
+}
+.cur-pill.shop-pill {
+  border-color: #a855f7;
+}
+.cur-pill.shop-pill b {
+  color: #d8b4fe;
+}
+.cur-pill.ord-pill {
+  border-color: #3b82f6;
+}
+.cur-pill.ord-pill b {
+  color: #93c5fd;
+}
+.cur-pill.gold-pill b {
+  color: #f3f0e7;
+}
+
+.popup-menu {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  transform: translateX(-50%);
+  z-index: 8;
+  background: rgba(8, 18, 14, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 200px;
+  max-width: 90%;
+}
+
+.popup-menu.hidden {
+  display: none;
+}
+
+.popup-title {
+  margin: 0 0 4px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.popup-menu button {
+  min-height: 40px;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--ok);
+  color: #0a1410;
+  font-weight: 700;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.popup-menu button.cd,
+.popup-menu button:disabled {
+  background: var(--bad);
+  color: #d7dbe0;
+}
+
+.popup-menu button small {
+  font-size: 0.65rem;
+  opacity: 0.85;
+}
+
+.popup-menu .popup-cancel {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+  justify-content: center;
+}
