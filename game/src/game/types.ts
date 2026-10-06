@@ -199,14 +199,14 @@ export const FAN_STATS: Record<
 
 /** Steward (Ordner) combat profile — same for all teams / neutral */
 export const STEWARD_STATS = {
-  maxHpBase: 100,
-  maxHpPerLevel: 14,
+  maxHpBase: 90,
+  maxHpPerLevel: 12,
   attack: 0.7,
-  defense: 1.15,
+  defense: 0.95,
   /** slow patrol along own gang band */
-  patrolSpeed: 0.045,
+  patrolSpeed: 0.04,
   /** rush toward infiltrating Ultra */
-  chaseSpeed: 0.16,
+  chaseSpeed: 0.14,
 };
 
 export const BLOCK_META = [

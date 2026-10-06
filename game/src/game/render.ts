@@ -177,12 +177,31 @@ function drawSeats(
       const sel =
         m.selectedSeat?.blockId === b.id && m.selectedSeat?.seatIndex === i;
       const emptyHeim = !occ && b.id === HEIM_BLOCK;
-      // seat cushion
-      ctx.fillStyle = emptyHeim
+
+      let cushion = emptyHeim
         ? "rgba(20,50,32,0.85)"
         : occ
           ? "rgba(0,0,0,0.2)"
           : "rgba(0,0,0,0.35)";
+      // Seat tint follows conversion lean / team color in neutral blocks
+      if (occ && (b.id === 1 || b.id === 2)) {
+        if (occ.team === "ksc") cushion = "rgba(37,99,235,0.45)";
+        else if (occ.team === "vfb") cushion = "rgba(220,38,38,0.45)";
+        else {
+          const lean = occ.lean || 0;
+          const prog = occ.captureProg || 0;
+          const t = Math.max(Math.abs(lean), Math.abs(prog));
+          if (t > 0.2) {
+            cushion =
+              lean > 0 || prog > 0
+                ? `rgba(37,99,235,${0.15 + t * 0.35})`
+                : `rgba(220,38,38,${0.15 + t * 0.35})`;
+          } else cushion = "rgba(120,120,128,0.35)";
+        }
+      } else if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.35)";
+      else if (occ?.team === "vfb") cushion = "rgba(220,38,38,0.35)";
+
+      ctx.fillStyle = cushion;
       roundRect(ctx, x - 12, y - 6, 24, 14, 3);
       ctx.fill();
       ctx.strokeStyle = sel
@@ -571,9 +590,32 @@ function drawFans(
 }
 
 function teamJersey(f: FanUnit): string {
-  if (f.team === "neutral") return "#9ca3af";
   if (f.team === "ksc") return "#1f6feb";
-  return "#dc2626";
+  if (f.team === "vfb") return "#dc2626";
+  // Neutral leaning toward a side — slow color shift before full convert
+  const lean = f.lean || 0;
+  const prog = f.captureProg || 0;
+  const t = Math.max(Math.abs(lean) * 0.45, Math.abs(prog) * 0.7);
+  if (t < 0.08) return "#9ca3af";
+  const towardHeim = lean > 0 || prog > 0;
+  return towardHeim
+    ? lerpHex("#9ca3af", "#1f6feb", Math.min(1, t))
+    : lerpHex("#9ca3af", "#dc2626", Math.min(1, t));
+}
+
+function lerpHex(a: string, b: string, t: number): string {
+  const pa = parseInt(a.slice(1), 16);
+  const pb = parseInt(b.slice(1), 16);
+  const ar = (pa >> 16) & 255,
+    ag = (pa >> 8) & 255,
+    ab = pa & 255;
+  const br = (pb >> 16) & 255,
+    bg = (pb >> 8) & 255,
+    bb = pb & 255;
+  const r = Math.round(ar + (br - ar) * t);
+  const g = Math.round(ag + (bg - ag) * t);
+  const bl = Math.round(ab + (bb - ab) * t);
+  return `#${((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1)}`;
 }
 
 function drawMannchen(

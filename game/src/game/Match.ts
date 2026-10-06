@@ -236,8 +236,9 @@ export class Match {
     awayKinds.forEach((kind, i) => {
       this.fans.push(this.makeFan(kind, this.aiTeam, GAST_BLOCK, i));
     });
+    // Neutrale Blöcke: anfangs ¾ der Plätze besetzt (9/12), gemischt
     for (const blockId of [1, 2]) {
-      for (let i = 0; i < 4; i++) {
+      for (let i = 0; i < 9; i++) {
         const kind: FanKind =
           i % 3 === 0 ? "normalos" : i % 3 === 1 ? "familie" : "ultras";
         this.fans.push(this.makeFan(kind, "neutral", blockId, i));
@@ -917,13 +918,17 @@ export class Match {
     for (const s of this.slots) {
       if (s.building !== "ordner" || !s.owner || s.greyNeutral) continue;
       const key = slotKey(s.blockId, s.index);
-      const alive = this.fans.filter(
+      const aliveAtPost = this.fans.filter(
         (f) => f.hp > 0 && f.isSteward && f.homeStandKey === key,
       ).length;
-      // All Ordner posts can field up to 2 (level only affects HP / respawn pace)
+      const neutralAlive = this.fans.filter(
+        (f) => f.hp > 0 && f.isSteward && f.team === "neutral",
+      ).length;
+      // Never more than 2 neutral Ordners total on the gang
+      if (s.owner === "neutral" && neutralAlive >= 2) continue;
       const cap = 2;
       s.stewardCd -= dt;
-      if (alive >= cap) continue;
+      if (aliveAtPost >= cap) continue;
       if (s.stewardCd > 0) continue;
       s.stewardCd = 9 / productionRate(s.level || 1);
       this.fans.push(this.makeSteward(s.owner, s));
@@ -1552,8 +1557,13 @@ export class Match {
       if (!canAttack && a.state !== "gang" && !a.isSteward) continue;
 
       let best: FanUnit | null = null;
-      // Large range inside same block so terrace fights always connect
-      let bestD = a.invading || blockInvaded || a.state === "block" ? 0.42 : 0.08;
+      // Gang/steward fights need enough reach for mutual trades
+      let bestD =
+        a.invading || blockInvaded || a.state === "block"
+          ? 0.42
+          : a.isSteward || a.state === "gang"
+            ? 0.14
+            : 0.08;
 
       for (const b of this.fans) {
         if (b.hp <= 0 || b === a) continue;
@@ -1589,10 +1599,14 @@ export class Match {
       a.attackCd = HIT_CD / Math.max(0.4, this.attackOf(a));
       this.applyHit(a, best);
 
-      if (best.hp > 0 && best.kind !== "familie" && best.attackCd <= 0) {
-        best.armSwing = 1;
-        best.attackCd = HIT_CD / Math.max(0.4, this.attackOf(best));
-        this.applyHit(best, a);
+      // Steward fights always trade — Ultra must deal damage back
+      if (best.hp > 0 && best.kind !== "familie") {
+        const stewardFight = a.isSteward || best.isSteward;
+        if (stewardFight || best.attackCd <= 0) {
+          best.armSwing = 1;
+          best.attackCd = HIT_CD / Math.max(0.4, this.attackOf(best));
+          this.applyHit(best, a);
+        }
       }
     }
   }
@@ -1622,14 +1636,14 @@ export class Match {
     }
   }
 
-  /** Neutral capture: presence (A) + ultra pressure (B) */
+  /** Neutral capture: slow in-place conversion (fans stay in the neutral block) */
   private tickNeutralCapture(dt: number): void {
     this.defectAcc += dt;
     for (const f of this.fans) {
       if (f.team !== "neutral" || f.hp <= 0 || f.isSteward) continue;
+      if (f.state !== "block") continue;
 
       let pull = 0;
-      // Path A: presence — nearby team fans in same/adjacent block, owned stands
       const nearPlayer = this.fans.some(
         (o) =>
           o.hp > 0 &&
@@ -1637,7 +1651,7 @@ export class Match {
           !o.isSteward &&
           Math.abs(o.blockId - f.blockId) <= 1 &&
           (o.state === "block" || o.state === "gang") &&
-          dist(f.x, f.y, o.x, o.y) < 0.25,
+          dist(f.x, f.y, o.x, o.y) < 0.28,
       );
       const nearAi = this.fans.some(
         (o) =>
@@ -1645,99 +1659,90 @@ export class Match {
           o.team === this.aiTeam &&
           !o.isSteward &&
           Math.abs(o.blockId - f.blockId) <= 1 &&
-          dist(f.x, f.y, o.x, o.y) < 0.25,
+          dist(f.x, f.y, o.x, o.y) < 0.28,
       );
-      if (nearPlayer) pull += 0.35;
-      if (nearAi) pull -= 0.35;
+      if (nearPlayer) pull += 0.28;
+      if (nearAi) pull -= 0.28;
       const standP = this.slots.some(
         (s) => s.building && s.owner === this.playerTeam && s.blockId === f.blockId,
       );
       const standA = this.slots.some(
         (s) => s.building && s.owner === this.aiTeam && s.blockId === f.blockId,
       );
-      if (standP) pull += 0.25;
-      if (standA) pull -= 0.25;
-      pull += this.momentum * 0.2;
+      if (standP) pull += 0.2;
+      if (standA) pull -= 0.2;
+      pull += this.momentum * 0.15;
 
-      // Path B: ultra at seat — faster
       const ultraP = this.fans.some(
         (o) =>
           o.hp > 0 &&
           o.team === this.playerTeam &&
           o.kind === "ultras" &&
-          dist(f.x, f.y, o.x, o.y) < 0.08,
+          o.blockId === f.blockId &&
+          dist(f.x, f.y, o.x, o.y) < 0.1,
       );
       const ultraA = this.fans.some(
         (o) =>
           o.hp > 0 &&
           o.team === this.aiTeam &&
           o.kind === "ultras" &&
-          dist(f.x, f.y, o.x, o.y) < 0.08,
+          o.blockId === f.blockId &&
+          dist(f.x, f.y, o.x, o.y) < 0.1,
       );
-      if (ultraP) pull += 0.7;
-      if (ultraA) pull -= 0.7;
+      if (ultraP) pull += 0.45;
+      if (ultraA) pull -= 0.45;
 
-      f.lean = clamp(f.lean + pull * dt * 0.12, -1, 1);
-      const rate = ultraP || ultraA ? 0.22 : 0.08;
-      if (f.lean > 0.35) f.captureProg = clamp(f.captureProg + rate * dt, 0, 1);
-      else if (f.lean < -0.35)
+      // Slow lean — conversion takes noticeable time
+      f.lean = clamp(f.lean + pull * dt * 0.045, -1, 1);
+      const rate = ultraP || ultraA ? 0.055 : 0.022;
+      if (f.lean > 0.45) f.captureProg = clamp(f.captureProg + rate * dt, 0, 1);
+      else if (f.lean < -0.45)
         f.captureProg = clamp(f.captureProg - rate * dt, -1, 0);
-      else f.captureProg *= 1 - 0.15 * dt;
+      else f.captureProg *= 1 - 0.08 * dt;
 
-      // Einzelplätze: no capture while opposing team still has fans in this block
-      const foesInBlock = (team: TeamId) =>
-        this.fans.some(
-          (o) =>
-            o.hp > 0 &&
-            !o.isSteward &&
-            o.team === team &&
-            o.blockId === f.blockId &&
-            (o.state === "block" || o.invading),
-        );
-
+      // Convert in place — stay on the same seat in the neutral block
       if (f.captureProg >= 1) {
-        if (foesInBlock(this.aiTeam)) {
-          f.captureProg = 0.9;
-          continue;
-        }
-        const seat = this.freeSeat(HEIM_BLOCK);
-        if (seat == null) {
-          f.captureProg = 0.85;
-          continue;
-        }
         f.team = this.playerTeam;
-        f.blockId = HEIM_BLOCK;
-        f.state = "block";
-        f.seatIndex = seat;
         f.lean = 0;
         f.captureProg = 0;
-        const p = seatPos(HEIM_BLOCK, seat);
-        f.x = p.x;
-        f.y = p.y;
-        this.toast("Neutraler Fan → Heim");
-        this.floatAt(p.x, p.y, "+Fan", true);
+        this.toast("Platz → Heim");
+        this.floatAt(f.x, f.y, "+Heim", true);
       } else if (f.captureProg <= -1) {
-        if (foesInBlock(this.playerTeam)) {
-          f.captureProg = -0.9;
-          continue;
-        }
-        const seat = this.freeSeat(GAST_BLOCK);
-        if (seat == null) {
-          f.captureProg = -0.85;
-          continue;
-        }
         f.team = this.aiTeam;
-        f.blockId = GAST_BLOCK;
-        f.state = "block";
-        f.seatIndex = seat;
         f.lean = 0;
         f.captureProg = 0;
-        const p = seatPos(GAST_BLOCK, seat);
-        f.x = p.x;
-        f.y = p.y;
-        this.toast("Neutraler Fan → Gäste");
+        this.toast("Platz → Gäste");
+        this.floatAt(f.x, f.y, "+Gäste", false);
       }
     }
+
+    // Soft refill: keep ~¾ occupancy with fresh neutrals on empty seats
+    this.refillNeutralSeats(dt);
+  }
+
+  private refillNeutralSeats(dt: number): void {
+    if (this.defectAcc < 4.5) return;
+    this.defectAcc = 0;
+    for (const blockId of [1, 2]) {
+      if (this.blockOwner[blockId] !== "neutral") continue;
+      const seated = this.fans.filter(
+        (f) =>
+          f.hp > 0 &&
+          !f.isSteward &&
+          f.blockId === blockId &&
+          f.state === "block" &&
+          f.seatIndex != null,
+      ).length;
+      const target = 9; // ¾ of 12
+      if (seated >= target) continue;
+      const seat = this.freeSeat(blockId);
+      if (seat == null) continue;
+      // Only refill as neutral — converted seats stay team-colored
+      const kind: FanKind =
+        seated % 3 === 0 ? "normalos" : seated % 3 === 1 ? "familie" : "ultras";
+      this.fans.push(this.makeFan(kind, "neutral", blockId, seat));
+    }
+    void dt;
   }
 
   /** Block unsafe → families relocate then leave */
