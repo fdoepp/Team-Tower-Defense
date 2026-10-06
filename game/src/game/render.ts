@@ -1,12 +1,12 @@
 import { Match } from "./Match";
 import { FAN_STATS, LANE_SLOTS, type FanUnit } from "./types";
 
-/** Layout fractions */
+/** Layout fractions — phone landscape: more room for lane */
 export const LAYOUT = {
-  topH: 0.16,
-  curvaW: 0.16,
-  laneY: 0.42,
-  laneH: 0.28,
+  topH: 0.02, // HUD is HTML; canvas uses almost full wrap
+  curvaW: 0.15,
+  laneY: 0.32,
+  laneH: 0.42,
 };
 
 export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
@@ -36,8 +36,8 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   const laneX1 = w - curvaW;
   const laneW = laneX1 - laneX0;
 
-  // top panel bg
-  ctx.fillStyle = "rgba(8,20,14,0.75)";
+  // top panel bg — thin strip only (HTML topbar carries stats)
+  ctx.fillStyle = "rgba(8,20,14,0.35)";
   ctx.fillRect(0, 0, w, topH);
 
   // curvas
@@ -45,23 +45,32 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawCurva(ctx, m, laneX1, topH, curvaW, h - topH, m.aiFans, false);
 
   // lane
-  ctx.fillStyle = "rgba(20,40,28,0.9)";
-  roundRect(ctx, laneX0, laneY, laneW, laneH, 16);
+  ctx.fillStyle = "#0f2418";
+  roundRect(ctx, laneX0 + 4, laneY, laneW - 8, laneH, 14);
   ctx.fill();
-  // center line / neutral
-  ctx.fillStyle = "rgba(243,240,231,0.12)";
-  ctx.fillRect(laneX0 + laneW * 0.42, laneY, laneW * 0.16, laneH);
-  ctx.strokeStyle = "rgba(255,255,255,0.25)";
-  ctx.setLineDash([6, 6]);
-  ctx.beginPath();
-  ctx.moveTo(laneX0 + laneW / 2, laneY + 8);
-  ctx.lineTo(laneX0 + laneW / 2, laneY + laneH - 8);
+  ctx.strokeStyle = "rgba(243,240,231,0.35)";
+  ctx.lineWidth = 2;
   ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle = "rgba(243,240,231,0.55)";
-  ctx.font = "600 11px DM Sans";
+  // running track lines
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 3; i++) {
+    const yy = laneY + (laneH * i) / 3;
+    ctx.beginPath();
+    ctx.moveTo(laneX0 + 10, yy);
+    ctx.lineTo(laneX1 - 10, yy);
+    ctx.stroke();
+  }
+  // center / neutral
+  ctx.fillStyle = "rgba(243,240,231,0.14)";
+  ctx.fillRect(laneX0 + laneW * 0.4, laneY, laneW * 0.2, laneH);
+  ctx.fillStyle = "#f3f0e7";
+  ctx.font = "700 13px DM Sans";
   ctx.textAlign = "center";
-  ctx.fillText("NEUTRAL", laneX0 + laneW / 2, laneY + 16);
+  ctx.fillText("NEUTRAL", laneX0 + laneW / 2, laneY + 20);
+  ctx.font = "600 11px DM Sans";
+  ctx.fillStyle = "rgba(243,240,231,0.7)";
+  ctx.fillText("Blöcke laufen hier aufeinander zu", laneX0 + laneW / 2, laneY + laneH - 10);
 
   // pressure arrow
   const px = laneX0 + laneW * (0.5 + m.pressure * 0.35);

@@ -21,13 +21,23 @@
 }
 
 html,
-body,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: #0a1410;
+}
+
 #app {
   margin: 0;
   width: 100%;
   height: 100%;
+  height: 100dvh;
   overflow: hidden;
-  background: linear-gradient(180deg, #102418, #0a1410);
+  display: flex;
+  flex-direction: column;
 }
 
 button {
@@ -134,46 +144,33 @@ select {
   padding: 0 10px;
 }
 
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: #102018;
-  font-size: 0.85rem;
-  color: var(--text);
-}
-
-.chip.active {
-  border-color: var(--ksc);
-  background: rgba(31, 111, 235, 0.2);
-}
-
 .tiny {
   font-size: 0.75rem;
   color: var(--muted);
 }
 
-/* Match shell landscape */
+/* —— Match: Spielfeld dominiert —— */
 .match-shell {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  height: 100%;
-  gap: 6px;
+  flex: 1;
   min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 4px;
+  padding: 4px;
+  width: 100%;
+  height: 100%;
 }
 
 .topbar {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto 1fr auto auto;
   gap: 8px;
   align-items: center;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 8px 12px;
+  border-radius: 10px;
+  padding: 4px 10px;
+  flex-shrink: 0;
 }
 
 .scorebox {
@@ -182,24 +179,25 @@ select {
 
 .scorebox .score {
   font-family: "Archivo Black", sans-serif;
-  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-size: clamp(1.35rem, 3.5vw, 1.9rem);
   line-height: 1;
 }
 
 .scorebox .minute {
   font-family: "Archivo Black", sans-serif;
-  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  font-size: clamp(1.1rem, 3vw, 1.45rem);
   color: #f5d76e;
+  line-height: 1.1;
 }
 
 .stat-big {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 
 .stat-big .label {
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -207,28 +205,24 @@ select {
 
 .stat-big .value {
   font-family: "Archivo Black", sans-serif;
-  font-size: 1.35rem;
-}
-
-.stat-big.right {
-  text-align: right;
-  align-items: flex-end;
+  font-size: 1.15rem;
+  line-height: 1.1;
 }
 
 .speed-btns {
   display: flex;
-  gap: 6px;
-  justify-content: center;
+  gap: 4px;
 }
 
 .speed-btns button {
-  min-width: 48px;
-  min-height: 40px;
-  border-radius: 10px;
+  min-width: 40px;
+  min-height: 34px;
+  border-radius: 8px;
   background: #102018;
   color: var(--text);
   border: 1px solid var(--line);
   font-weight: 700;
+  font-size: 0.85rem;
 }
 
 .speed-btns button.on {
@@ -239,13 +233,16 @@ select {
 #game-wrap {
   position: relative;
   min-height: 0;
-  border-radius: 12px;
+  height: 100%;
+  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid var(--line);
-  background: #143024;
+  border: 2px solid rgba(243, 240, 231, 0.2);
+  background: #1a4d2e;
 }
 
 #game-wrap canvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   display: block;
@@ -255,65 +252,70 @@ select {
 .toast {
   position: absolute;
   left: 50%;
-  top: 18%;
+  top: 12%;
   transform: translate(-50%, -50%);
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.78);
   padding: 8px 12px;
   border-radius: 10px;
   font-weight: 700;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.15s;
-  z-index: 5;
+  z-index: 6;
+  font-size: 0.9rem;
 }
 
 .toast.show {
   opacity: 1;
 }
 
+/* Kompakte Aktionsleiste unter dem Feld */
 .action-dock {
   display: grid;
-  grid-template-columns: 1fr 1.4fr 1fr;
-  gap: 8px;
-  min-height: 0;
+  grid-template-columns: auto 1fr auto;
+  gap: 6px;
+  align-items: stretch;
+  flex-shrink: 0;
+  max-height: 72px;
 }
 
 .action-dock .zone {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 8px;
+  border-radius: 10px;
+  padding: 4px 6px;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .action-dock .zone h3 {
-  margin: 0;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  font-weight: 700;
+  display: none;
 }
 
 .buy {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 2px;
-  min-height: 44px;
-  border-radius: 10px;
-  padding: 6px 10px;
+  gap: 0;
+  min-height: 40px;
+  border-radius: 8px;
+  padding: 4px 8px;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   border: 1px solid transparent;
   color: #0a1410;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .buy .price {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   font-weight: 600;
   opacity: 0.85;
 }
@@ -329,12 +331,23 @@ select {
 }
 
 .buy .need {
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   font-weight: 500;
   opacity: 0.9;
 }
 
-@media (orientation: portrait) {
+.rotate-hint {
+  display: none;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  font-family: "Archivo Black", sans-serif;
+  font-size: 1.3rem;
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
   .rotate-hint {
     display: flex;
   }
@@ -343,19 +356,11 @@ select {
   }
 }
 
-@media (orientation: landscape) {
+@media (orientation: landscape), (min-width: 901px) {
   .rotate-hint {
-    display: none;
+    display: none !important;
   }
-}
-
-.rotate-hint {
-  display: none;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 24px;
-  font-family: "Archivo Black", sans-serif;
-  font-size: 1.4rem;
+  .match-shell {
+    display: grid !important;
+  }
 }

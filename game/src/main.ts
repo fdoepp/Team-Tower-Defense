@@ -165,6 +165,8 @@ function buyClass(ok: boolean): string {
 
 function renderMatchScreen(): void {
   const m = state.match!;
+  // Start paused so die Ansicht erstmal lesbar ist
+  m.setSpeed(0);
   app.innerHTML = `
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell">
@@ -178,35 +180,29 @@ function renderMatchScreen(): void {
           <div class="minute" id="clock">0′</div>
           <div class="tiny" id="phase">Regulär</div>
         </div>
-        <div class="stat-big right">
+        <div class="stat-big">
           <span class="label">Momentum</span>
           <span class="value" id="mom">0</span>
+        </div>
+        <div class="speed-btns">
+          <button data-spd="0" class="on" title="Pause">⏸</button>
+          <button data-spd="1" title="Play">▶</button>
+          <button data-spd="2" title="2x">2×</button>
         </div>
       </div>
       <div id="game-wrap">
         <canvas id="c"></canvas>
         <div class="toast" id="toast"></div>
       </div>
-      <div class="row" style="justify-content:space-between">
-        <div class="speed-btns">
-          <button data-spd="0" title="Pause">⏸</button>
-          <button data-spd="1" class="on" title="Play">▶</button>
-          <button data-spd="2" title="2x">2×</button>
-        </div>
-        <div class="tiny" id="hint">Slot tippen → Bierstand · Kurve → Stimmung · Mitte → Fans schicken</div>
-      </div>
       <div class="action-dock">
         <div class="zone" id="zona-curva">
-          <h3>Kurve · Stimmung</h3>
-          <div id="curva-actions" class="stack"></div>
+          <div id="curva-actions" class="row"></div>
         </div>
         <div class="zone" id="zona-lane">
-          <h3>Lane · Fans schicken</h3>
           <div id="lane-actions" class="row"></div>
         </div>
         <div class="zone" id="zona-build">
-          <h3>Versorgung · Bauen</h3>
-          <div id="build-actions" class="stack"></div>
+          <div id="build-actions" class="row"></div>
         </div>
       </div>
     </div>`;
@@ -218,14 +214,20 @@ function renderMatchScreen(): void {
   const resize = () => {
     const rect = wrap.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.floor(rect.width * dpr);
-    canvas.height = Math.floor(rect.height * dpr);
+    const cssW = Math.max(1, Math.floor(rect.width));
+    const cssH = Math.max(1, Math.floor(rect.height));
+    canvas.width = Math.floor(cssW * dpr);
+    canvas.height = Math.floor(cssH * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    m.width = rect.width;
-    m.height = rect.height;
+    m.width = cssW;
+    m.height = cssH;
+    drawMatch(ctx, m);
   };
   resize();
+  requestAnimationFrame(resize);
   window.addEventListener("resize", resize);
+  window.addEventListener("orientationchange", () => setTimeout(resize, 200));
+
 
   canvas.addEventListener("pointerdown", (e) => {
     const rect = canvas.getBoundingClientRect();
@@ -287,7 +289,7 @@ function renderMatchScreen(): void {
     const build = app.querySelector("#build-actions")!;
     const slot = m.selectedLaneSlot;
     if (slot == null) {
-      build.innerHTML = `<p class="tiny">Leeren Lane-Slot tippen</p>`;
+      build.innerHTML = `<span class="tiny">Slot +</span>`;
     } else {
       const st = m.canBuildBier(slot);
       build.innerHTML = `<button class="${buyClass(st.ok)}" data-build="bier">Bierstand Slot ${slot + 1}<span class="price">${st.cost}g</span>${st.ok ? "" : `<span class="need">${st.reason}</span>`}</button>`;

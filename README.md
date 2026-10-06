@@ -4,7 +4,7 @@ Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fu�
 
 ## Spielen (Handy-Link)
 
-**Live:** https://leather-respect-sympathy-ben.trycloudflare.com  
+**Live:** https://isaac-ant-rice-ceiling.trycloudflare.com  
 
 Handy **quer** halten. Hard-Refresh, falls noch die alte Version cached ist.
 

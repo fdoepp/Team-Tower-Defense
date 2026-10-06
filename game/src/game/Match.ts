@@ -129,7 +129,33 @@ export class Match {
       beer: 55,
       capacity: 100,
     });
-    this.toast(`${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)}`);
+    // Sichtbare Demo-Blöcke, damit die Lane sofort lesbar ist
+    this.blocks.push({
+      id: uid(),
+      team: this.playerTeam,
+      ultras: 1,
+      normalos: 1,
+      familie: 0,
+      x: 0.28,
+      hp: 70,
+      maxHp: 70,
+      thirst: 30,
+      aggro: 40,
+    });
+    this.blocks.push({
+      id: uid(),
+      team: this.aiTeam,
+      ultras: 1,
+      normalos: 0,
+      familie: 1,
+      x: 0.72,
+      hp: 65,
+      maxHp: 65,
+      thirst: 30,
+      aggro: 35,
+    });
+    this.toast(`${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)} — ▶ starten`);
+    this.speed = 0;
   }
 
   toast(text: string): void {
