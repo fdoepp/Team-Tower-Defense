@@ -1,4 +1,4 @@
-import type { FanMix, FanKind } from "./types";
+import type { FanKind, FanMix } from "./types";
 import { MIX_MAX, MIX_MIN, MIX_TOTAL } from "./types";
 
 export function clamp(n: number, a: number, b: number): number {
@@ -25,20 +25,16 @@ export function isValidMix(mix: FanMix): boolean {
   );
 }
 
-export function defaultSoloSettings(): {
-  difficulty: "easy" | "normal" | "hard";
-  behavior: "patient" | "balanced" | "aggro" | "beer" | "earlywin";
-  playerTeam: "ksc" | "vfb";
-} {
+export function defaultSoloSettings() {
   return {
-    difficulty: "easy",
-    behavior: "balanced",
-    playerTeam: "ksc",
+    difficulty: "easy" as const,
+    behavior: "balanced" as const,
+    playerTeam: "ksc" as const,
   };
 }
 
 export function defaultSetup() {
-  return { mix: defaultMix(), startBier: true };
+  return { mix: defaultMix() };
 }
 
 export function teamLabel(team: "ksc" | "vfb"): string {
@@ -55,4 +51,8 @@ export function expandMix(mix: FanMix): FanKind[] {
   for (let i = 0; i < mix.normalos; i++) out.push("normalos");
   for (let i = 0; i < mix.familie; i++) out.push("familie");
   return out;
+}
+
+export function slotKey(blockId: number, index: number): string {
+  return `${blockId}:${index}`;
 }

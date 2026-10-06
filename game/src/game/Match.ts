@@ -1,25 +1,23 @@
 import {
-  COSTS,
+  BLOCK_META,
   ET_REAL_SEC,
   FAN_STATS,
   FEVER_FROM_MIN,
-  LANE_SLOTS,
+  MOOD_CD,
   REGULAR_REAL_SEC,
-  type AiBehavior,
+  ULTRA_ORDER_CD,
   type AiDifficulty,
-  type BierStand,
-  type CurvaAction,
+  type BuildSlot,
   type FanKind,
   type FanUnit,
-  type LaneBlock,
   type MatchPhase,
-  type SendKind,
+  type MoodAction,
   type SetupConfig,
   type SoloSettings,
   type SpeedMode,
   type TeamId,
 } from "./types";
-import { clamp, expandMix, teamLabel } from "./util";
+import { clamp, expandMix, slotKey, teamLabel } from "./util";
 
 export type MatchConfig = {
   settings: SoloSettings;
@@ -29,16 +27,9 @@ export type MatchConfig = {
 
 export type MatchResult = {
   winner: TeamId;
-  reason: "score" | "et" | "pens" | "beer" | "mood" | "curva";
+  reason: "score" | "et" | "pens" | "curva";
   score: [number, number];
   detail: string;
-};
-
-export type BuyState = {
-  ok: boolean;
-  label: string;
-  cost: number;
-  reason?: string;
 };
 
 let nextId = 1;
@@ -47,282 +38,235 @@ function uid(): number {
 }
 
 function diffMul(d: AiDifficulty): number {
-  if (d === "easy") return 0.65;
-  if (d === "hard") return 1.2;
-  return 0.9;
-}
-
-function makeFans(mix: SetupConfig["mix"]): FanUnit[] {
-  return expandMix(mix).map((kind) => ({
-    id: uid(),
-    kind,
-    hp: FAN_STATS[kind].maxHp,
-    maxHp: FAN_STATS[kind].maxHp,
-    thirst: 25 + Math.random() * 15,
-    aggro: kind === "ultras" ? 35 : kind === "normalos" ? 15 : 8,
-    zone: "curva" as const,
-  }));
+  if (d === "easy") return 0.6;
+  if (d === "hard") return 1.15;
+  return 0.85;
 }
 
 export class Match {
   readonly cfg: MatchConfig;
   readonly playerTeam: TeamId;
   readonly aiTeam: TeamId;
-  playerFans: FanUnit[];
-  aiFans: FanUnit[];
-  blocks: LaneBlock[] = [];
-  stands: BierStand[] = [];
+  fans: FanUnit[] = [];
+  slots: BuildSlot[] = [];
   phase: MatchPhase = "regular";
   minute = 0;
   realElapsed = 0;
   etElapsed = 0;
   scoreKsc = 0;
   scoreVfb = 0;
-  gold = 160;
-  aiGold = 150;
-  momentum = 40;
-  aiMomentum = 40;
-  mood = 30;
-  aiMood = 30;
-  beerDrunk = 0;
-  aiBeerDrunk = 0;
-  speed: SpeedMode = 1;
+  gold = 180;
+  momentum = 0; // -1 AI ... +1 player
+  moodHeim = 1; // 0..3 segments filled (display 1-4)
+  moodGaeste = 1;
+  speed: SpeedMode = 0;
   toasts: { text: string; t: number }[] = [];
   result: MatchResult | null = null;
+  cd = { gesang: 0, pyro: 0, klatschen: 0, ultraOrder: 0 };
+  selectedSlot: { blockId: number; index: number } | null = null;
   chanceAcc = 0;
   aiAcc = 0;
+  recruitAcc = 0;
+  width = 960;
+  height = 440;
   pensRound = 0;
   pens: { ksc: boolean | null; vfb: boolean | null }[] = [];
   pensTimer = 0;
-  selectedLaneSlot: number | null = null;
-  width = 900;
-  height = 420;
-  pressure = 0; // -1..1 negative = toward player curva
 
   constructor(cfg: MatchConfig) {
     this.cfg = cfg;
     this.playerTeam = cfg.settings.playerTeam;
     this.aiTeam = cfg.settings.playerTeam === "ksc" ? "vfb" : "ksc";
-    this.playerFans = makeFans(cfg.playerSetup.mix);
-    this.aiFans = makeFans(cfg.aiSetup.mix);
-    if (cfg.playerSetup.startBier) {
-      this.stands.push({
-        id: uid(),
-        slot: 1,
-        owner: this.playerTeam,
-        beer: 40,
-        capacity: 100,
-      });
+
+    for (const b of BLOCK_META) {
+      for (let i = 0; i < 4; i++) {
+        this.slots.push({
+          blockId: b.id,
+          index: i,
+          hasBier: false,
+          beer: 0,
+          capacity: 100,
+        });
+      }
     }
-    this.stands.push({
-      id: uid(),
-      slot: 3,
-      owner: this.aiTeam,
-      beer: 40,
-      capacity: 100,
+    // start bier in heim + gaeste
+    this.placeBier(0, 0, true);
+    this.placeBier(0, 2, true);
+    this.placeBier(4, 0, true);
+    this.placeBier(4, 2, true);
+
+    const homeKinds = expandMix(cfg.playerSetup.mix);
+    homeKinds.forEach((kind, i) => {
+      this.fans.push(this.makeFan(kind, this.playerTeam, 0, i));
     });
-    // neutral middle stand empty-ish
-    this.stands.push({
-      id: uid(),
-      slot: 2,
-      owner: "neutral",
-      beer: 55,
-      capacity: 100,
+    const awayKinds = expandMix(cfg.aiSetup.mix);
+    awayKinds.forEach((kind, i) => {
+      this.fans.push(this.makeFan(kind, this.aiTeam, 4, i));
     });
-    // Sichtbare Demo-Blöcke, damit die Lane sofort lesbar ist
-    this.blocks.push({
-      id: uid(),
-      team: this.playerTeam,
-      ultras: 1,
-      normalos: 1,
-      familie: 0,
-      x: 0.28,
-      hp: 70,
-      maxHp: 70,
-      thirst: 30,
-      aggro: 40,
-    });
-    this.blocks.push({
-      id: uid(),
-      team: this.aiTeam,
-      ultras: 1,
-      normalos: 0,
-      familie: 1,
-      x: 0.72,
-      hp: 65,
-      maxHp: 65,
-      thirst: 30,
-      aggro: 35,
-    });
+
     this.toast(`${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)} — ▶ starten`);
     this.speed = 0;
   }
 
+  private makeFan(
+    kind: FanKind,
+    team: TeamId,
+    blockId: number,
+    idx: number,
+  ): FanUnit {
+    const col = idx % 5;
+    const row = Math.floor(idx / 5);
+    return {
+      id: uid(),
+      kind,
+      team,
+      blockId,
+      state: "block",
+      standKey: null,
+      hp: FAN_STATS[kind].maxHp,
+      maxHp: FAN_STATS[kind].maxHp,
+      thirst: 20 + Math.random() * 20,
+      aggro: kind === "ultras" ? 30 : 10,
+      gangX: blockId / 4,
+      x: 0.12 + blockId * 0.19 + col * 0.025,
+      y: 0.28 + row * 0.05,
+    };
+  }
+
+  private placeBier(blockId: number, index: number, free: boolean): void {
+    const s = this.slots.find((x) => x.blockId === blockId && x.index === index);
+    if (!s || s.hasBier) return;
+    if (!free && this.gold < 50) return;
+    if (!free) this.gold -= 50;
+    s.hasBier = true;
+    s.beer = 60;
+  }
+
   toast(text: string): void {
-    this.toasts.push({ text, t: 2.4 });
+    this.toasts.push({ text, t: 2.2 });
   }
 
   setSpeed(s: SpeedMode): void {
     this.speed = s;
   }
 
-  aliveInCurva(fans: FanUnit[]): FanUnit[] {
-    return fans.filter((f) => f.zone === "curva" && f.hp > 0);
+  countInBlock(team: TeamId, blockId: number, kind?: FanKind): number {
+    return this.fans.filter(
+      (f) =>
+        f.team === team &&
+        f.blockId === blockId &&
+        f.hp > 0 &&
+        (f.state === "block" || f.state === "stand") &&
+        (kind ? f.kind === kind : true),
+    ).length;
   }
 
-  countKind(fans: FanUnit[], kind: FanKind): number {
-    return this.aliveInCurva(fans).filter((f) => f.kind === kind).length;
+  moodActionReady(act: MoodAction): boolean {
+    return this.cd[act] <= 0;
   }
 
-  sendCost(kind: SendKind): number {
-    if (kind === "ultras") return COSTS.sendUltras;
-    if (kind === "normalos") return COSTS.sendNormalos;
-    if (kind === "familie") return COSTS.sendFamilie;
-    return COSTS.sendMix;
-  }
-
-  canSend(kind: SendKind): BuyState {
-    const cost = this.sendCost(kind);
-    if (this.gold < cost)
-      return { ok: false, label: this.sendLabel(kind), cost, reason: "Gold" };
-    if (kind === "mix") {
-      if (this.aliveInCurva(this.playerFans).length < 2)
-        return { ok: false, label: this.sendLabel(kind), cost, reason: "Fans" };
-      return { ok: true, label: this.sendLabel(kind), cost };
-    }
-    if (this.countKind(this.playerFans, kind) < 1)
-      return {
-        ok: false,
-        label: this.sendLabel(kind),
-        cost,
-        reason: "Fan-Typ",
-      };
-    return { ok: true, label: this.sendLabel(kind), cost };
-  }
-
-  sendLabel(kind: SendKind): string {
-    if (kind === "mix") return "Mix-Block";
-    return `${FAN_STATS[kind].label}-Trupp`;
-  }
-
-  canBuildBier(slot: number): BuyState {
-    const cost = COSTS.bierstand;
-    if (this.stands.some((s) => s.slot === slot))
-      return { ok: false, label: "Bierstand", cost, reason: "Belegt" };
-    if (this.gold < cost)
-      return { ok: false, label: "Bierstand", cost, reason: "Gold" };
-    return { ok: true, label: "Bierstand", cost };
-  }
-
-  canCurvaAction(act: CurvaAction): BuyState {
-    if (act === "pyro") {
-      const cost = COSTS.pyro;
-      const ultrasOk = this.countKind(this.playerFans, "ultras") >= 1;
-      if (this.gold < cost)
-        return { ok: false, label: "Pyro", cost, reason: "Gold" };
-      if (!ultrasOk)
-        return { ok: false, label: "Pyro", cost, reason: "Ultra nötig" };
-      return { ok: true, label: "Pyro", cost };
-    }
-    const cost = COSTS.chor;
-    if (this.gold < cost)
-      return { ok: false, label: "Chor", cost, reason: "Gold" };
-    if (this.aliveInCurva(this.playerFans).length < 3)
-      return { ok: false, label: "Chor", cost, reason: "Fans" };
-    return { ok: true, label: "Chor", cost };
-  }
-
-  trySend(kind: SendKind): boolean {
-    const st = this.canSend(kind);
-    if (!st.ok) {
-      this.toast(`${st.label}: fehlt ${st.reason}`);
+  tryMoodAction(act: MoodAction): boolean {
+    if (this.cd[act] > 0) {
+      this.toast(`${act}: Abklingzeit`);
       return false;
     }
-    this.gold -= st.cost;
-    let ultras = 0,
-      normalos = 0,
-      familie = 0;
-    if (kind === "mix") {
-      const pool = this.aliveInCurva(this.playerFans);
-      const take = pool.slice(0, Math.min(3, pool.length));
-      for (const f of take) {
-        if (f.kind === "ultras") ultras++;
-        if (f.kind === "normalos") normalos++;
-        if (f.kind === "familie") familie++;
-        f.zone = "neutral"; // left curva temporarily while on lane represented by block
-        f.hp = Math.max(1, f.hp - 5);
-      }
-    } else {
-      const f = this.aliveInCurva(this.playerFans).find((x) => x.kind === kind);
-      if (!f) return false;
-      if (kind === "ultras") ultras = 1;
-      if (kind === "normalos") normalos = 1;
-      if (kind === "familie") familie = 1;
-      f.zone = "neutral";
+    const kind: FanKind =
+      act === "gesang" ? "normalos" : act === "pyro" ? "ultras" : "familie";
+    const n = this.countInBlock(this.playerTeam, 0, kind);
+    if (n <= 0) {
+      this.toast(`Keine ${FAN_STATS[kind].label}s im Block`);
+      return false;
     }
-    const fight =
-      ultras * FAN_STATS.ultras.fight +
-      normalos * FAN_STATS.normalos.fight +
-      familie * FAN_STATS.familie.fight;
-    const hp = 40 + fight * 35;
-    this.blocks.push({
-      id: uid(),
-      team: this.playerTeam,
-      ultras,
-      normalos,
-      familie,
-      x: 0.12,
-      hp,
-      maxHp: hp,
-      thirst: 30,
-      aggro: 20 + ultras * 25,
-    });
-    this.toast(`${st.label} auf die Lane`);
+    const effect = n;
+    this.cd[act] = MOOD_CD[act];
+    if (act === "gesang") {
+      this.moodHeim = clamp(this.moodHeim + 0.35 * effect, 0, 3);
+      this.momentum = clamp(this.momentum + 0.04 * effect, -1, 1);
+      this.toast(`Gesang ×${n}`);
+    } else if (act === "pyro") {
+      this.moodHeim = clamp(this.moodHeim + 0.45 * effect, 0, 3);
+      this.momentum = clamp(this.momentum + 0.05 * effect, -1, 1);
+      this.moodGaeste = clamp(this.moodGaeste - 0.15 * effect, 0, 3);
+      for (const f of this.fans) {
+        if (f.team === this.playerTeam && f.kind === "ultras")
+          f.aggro = clamp(f.aggro + 8 * effect, 0, 100);
+      }
+      this.toast(`Pyro ×${n}`);
+    } else {
+      this.moodHeim = clamp(this.moodHeim + 0.25 * effect, 0, 3);
+      this.gold += 4 * n;
+      this.toast(`Klatschen ×${n} (+Gold)`);
+    }
     return true;
   }
 
-  tryBuildBier(slot: number): boolean {
-    const st = this.canBuildBier(slot);
-    if (!st.ok) {
-      this.toast(`Bierstand: ${st.reason}`);
+  ultraOrderReady(): boolean {
+    return (
+      this.cd.ultraOrder <= 0 &&
+      this.fans.some(
+        (f) =>
+          f.team === this.playerTeam &&
+          f.kind === "ultras" &&
+          f.hp > 0 &&
+          (f.state === "block" || f.state === "stand"),
+      )
+    );
+  }
+
+  tryUltraOrder(): boolean {
+    if (this.cd.ultraOrder > 0) {
+      this.toast("Ultra-Befehl: CD");
       return false;
     }
-    this.gold -= st.cost;
-    this.stands.push({
-      id: uid(),
-      slot,
-      owner: this.playerTeam,
-      beer: 25,
-      capacity: 100,
-    });
+    const ultras = this.fans.filter(
+      (f) =>
+        f.team === this.playerTeam &&
+        f.kind === "ultras" &&
+        f.hp > 0 &&
+        (f.state === "block" || f.state === "stand"),
+    );
+    if (!ultras.length) {
+      this.toast("Keine Ultras im Block");
+      return false;
+    }
+    const take = ultras.slice(0, Math.min(3, ultras.length));
+    for (const f of take) {
+      f.state = "gang";
+      f.standKey = null;
+      f.gangX = 0.12;
+      f.blockId = 0;
+    }
+    this.cd.ultraOrder = ULTRA_ORDER_CD;
+    this.toast(`Ultras → Gang (${take.length})`);
+    return true;
+  }
+
+  tryBuildSelected(): boolean {
+    if (!this.selectedSlot) {
+      this.toast("Slot wählen");
+      return false;
+    }
+    const { blockId, index } = this.selectedSlot;
+    if (blockId !== 0 && blockId !== 1 && blockId !== 2 && blockId !== 3) {
+      // player can build in heim + neutrals
+    }
+    if (blockId === 4) {
+      this.toast("Gäste-Slots gesperrt");
+      return false;
+    }
+    const s = this.slots.find((x) => x.blockId === blockId && x.index === index);
+    if (!s || s.hasBier) {
+      this.toast("Slot belegt");
+      return false;
+    }
+    if (this.gold < 50) {
+      this.toast("50g nötig");
+      return false;
+    }
+    this.gold -= 50;
+    s.hasBier = true;
+    s.beer = 40;
     this.toast("Bierstand gebaut");
-    return true;
-  }
-
-  tryCurvaAction(act: CurvaAction): boolean {
-    const st = this.canCurvaAction(act);
-    if (!st.ok) {
-      this.toast(`${st.label}: ${st.reason}`);
-      return false;
-    }
-    this.gold -= st.cost;
-    if (act === "pyro") {
-      this.momentum = clamp(this.momentum + 12, 0, 100);
-      this.mood = clamp(this.mood + 14, 0, 100);
-      for (const f of this.aliveInCurva(this.playerFans)) {
-        f.aggro = clamp(f.aggro + (f.kind === "ultras" ? 18 : 6), 0, 100);
-        f.thirst = clamp(f.thirst + 8, 0, 100);
-      }
-      this.aiMood = clamp(this.aiMood - 6, 0, 100);
-      this.toast("Pyro! Stimmung↑");
-    } else {
-      this.momentum = clamp(this.momentum + 8, 0, 100);
-      this.mood = clamp(this.mood + 10, 0, 100);
-      for (const f of this.aliveInCurva(this.playerFans)) {
-        if (f.kind === "normalos") f.thirst = clamp(f.thirst + 5, 0, 100);
-      }
-      this.toast("Chor singt");
-    }
     return true;
   }
 
@@ -332,13 +276,20 @@ export class Match {
     this.toasts = this.toasts
       .map((t) => ({ ...t, t: t.t - dtRaw }))
       .filter((t) => t.t > 0);
+
+    // CDs tick even? only when playing
+    if (dt > 0) {
+      (Object.keys(this.cd) as (keyof typeof this.cd)[]).forEach((k) => {
+        this.cd[k] = Math.max(0, this.cd[k] - dt);
+      });
+    }
+
     if (this.speed === 0) return;
 
     if (this.phase === "pens") {
       this.updatePens(dt);
       return;
     }
-
     if (this.phase === "regular") {
       this.realElapsed += dt;
       this.minute = (this.realElapsed / REGULAR_REAL_SEC) * 90;
@@ -356,326 +307,225 @@ export class Match {
       }
     }
 
-    const fever =
-      this.phase === "et" || this.minute >= FEVER_FROM_MIN
-        ? this.minute >= 85 || this.phase === "et"
-          ? 2
-          : 1.5
-        : 1;
-
-    this.tickFans(dt, fever);
-    this.tickStands(dt);
-    this.tickBlocks(dt, fever);
-    this.tickIncome(dt);
-    this.tickChances(dt, fever);
+    this.tickEconomy(dt);
+    this.tickFans(dt);
+    this.tickCombat(dt);
+    this.tickMatch(dt);
     this.tickAi(dt);
-    this.checkWins();
+    this.tickRecruit(dt);
+    this.checkCurva();
   }
 
-  private tickFans(dt: number, fever: number): void {
-    for (const f of this.playerFans) {
+  private tickEconomy(dt: number): void {
+    this.gold += (3 + this.countInBlock(this.playerTeam, 0, "familie") * 0.8) * dt;
+    for (const s of this.slots) {
+      if (s.hasBier) s.beer = clamp(s.beer + 1.6 * dt, 0, s.capacity);
+    }
+  }
+
+  private nearestBier(
+    team: TeamId,
+    fromBlock: number,
+  ): BuildSlot | null {
+    const owned = this.slots.filter((s) => {
+      if (!s.hasBier || s.beer <= 0) return false;
+      if (team === this.playerTeam) return s.blockId <= 3;
+      return s.blockId >= 1;
+    });
+    if (!owned.length) return null;
+    owned.sort(
+      (a, b) => Math.abs(a.blockId - fromBlock) - Math.abs(b.blockId - fromBlock),
+    );
+    return owned[0];
+  }
+
+  private tickFans(dt: number): void {
+    for (const f of this.fans) {
       if (f.hp <= 0) continue;
-      f.thirst = clamp(f.thirst + 1.1 * dt * fever, 0, 100);
-      // drink from nearest owned/neutral stand if thirsty
-      if (f.thirst > 40 && f.zone === "curva") {
-        const stand = this.stands.find(
-          (s) =>
-            s.beer > 0 &&
-            (s.owner === this.playerTeam || s.owner === "neutral"),
-        );
-        if (stand) {
-          const drink =
-            Math.min(8 * dt * FAN_STATS[f.kind].drink, stand.beer, f.thirst);
-          stand.beer -= drink;
-          f.thirst -= drink * 1.2;
-          this.beerDrunk += drink * 0.2;
-          this.momentum = clamp(
-            this.momentum + drink * 0.08 * FAN_STATS[f.kind].mood * fever,
-            0,
-            100,
-          );
-        } else if (f.thirst > 70) {
-          f.aggro = clamp(f.aggro + 2 * dt, 0, 100);
-          if (f.kind !== "ultras" && f.thirst > 85 && Math.random() < 0.002) {
-            f.zone = "neutral";
-            this.toast(`${FAN_STATS[f.kind].label} → Neutral`);
+      f.thirst = clamp(f.thirst + 1.0 * dt, 0, 100);
+
+      if (f.state === "block") {
+        // idle drift in block
+        f.y = 0.26 + (f.id % 5) * 0.035 + Math.sin(this.realElapsed + f.id) * 0.004;
+        f.x = 0.11 + f.blockId * 0.19 + (f.id % 5) * 0.028;
+        if (f.thirst > 55) {
+          const stand = this.nearestBier(f.team, f.blockId);
+          if (stand) {
+            f.state = "moving";
+            f.standKey = slotKey(stand.blockId, stand.index);
+            f.gangX = stand.blockId / 4;
           }
         }
-      }
-      if (f.zone === "neutral" && f.thirst < 45 && Math.random() < 0.01 * dt) {
-        f.zone = "curva";
-      }
-    }
-    // light AI fan thirst
-    for (const f of this.aiFans) {
-      if (f.hp <= 0) continue;
-      f.thirst = clamp(f.thirst + 1.0 * dt * fever, 0, 100);
-      const stand = this.stands.find(
-        (s) => s.beer > 0 && (s.owner === this.aiTeam || s.owner === "neutral"),
-      );
-      if (stand && f.thirst > 40) {
-        const drink = Math.min(6 * dt, stand.beer);
-        stand.beer -= drink;
-        f.thirst -= drink;
-        this.aiBeerDrunk += drink * 0.2;
-      }
-    }
-  }
-
-  private tickStands(dt: number): void {
-    for (const s of this.stands) {
-      if (s.owner === this.playerTeam) s.beer = clamp(s.beer + 2.2 * dt, 0, s.capacity);
-      else if (s.owner === this.aiTeam) s.beer = clamp(s.beer + 2.0 * dt, 0, s.capacity);
-      else s.beer = clamp(s.beer + 0.6 * dt, 0, s.capacity);
-    }
-  }
-
-  private tickIncome(dt: number): void {
-    let income = 3;
-    for (const f of this.aliveInCurva(this.playerFans)) {
-      income += FAN_STATS[f.kind].income * 0.9;
-    }
-    this.gold += income * dt;
-    this.aiGold += (4 + (this.cfg.settings.difficulty === "easy" ? 1 : 3)) * dt;
-  }
-
-  private blockPower(b: LaneBlock): number {
-    return (
-      b.ultras * FAN_STATS.ultras.fight +
-      b.normalos * FAN_STATS.normalos.fight +
-      b.familie * FAN_STATS.familie.fight +
-      b.aggro / 80
-    );
-  }
-
-  private tickBlocks(dt: number, fever: number): void {
-    const mul = diffMul(this.cfg.settings.difficulty);
-    // move
-    for (const b of this.blocks) {
-      const speed = 0.022 + this.blockPower(b) * 0.005;
-      if (b.team === this.playerTeam) b.x += speed * dt;
-      else b.x -= speed * dt * mul;
-      b.thirst = clamp(b.thirst + 4 * dt, 0, 100);
-      // drink while passing stands
-      const slot = Math.round(b.x * (LANE_SLOTS - 1));
-      const stand = this.stands.find((s) => s.slot === slot && s.beer > 0);
-      if (stand && b.thirst > 25) {
-        const drink = Math.min(10 * dt, stand.beer);
-        stand.beer -= drink;
-        b.thirst -= drink;
-        if (b.team === this.playerTeam) {
-          this.beerDrunk += drink * 0.25;
-          if (b.normalos > 0) this.mood = clamp(this.mood + drink * 0.15, 0, 100);
-          if (b.familie > 0) this.gold += drink * 0.8;
+      } else if (f.state === "moving") {
+        const targetX = f.gangX;
+        // move toward gang then to stand x
+        f.y += (0.62 - f.y) * Math.min(1, 2.2 * dt);
+        f.x += (0.12 + targetX * 0.76 - f.x) * Math.min(1, 1.8 * dt);
+        if (Math.abs(f.y - 0.62) < 0.03 && Math.abs(f.x - (0.12 + targetX * 0.76)) < 0.04) {
+          f.state = "stand";
+          f.blockId = Math.round(targetX * 4);
+        }
+      } else if (f.state === "stand") {
+        const stand = this.slots.find(
+          (s) => slotKey(s.blockId, s.index) === f.standKey,
+        );
+        if (stand && stand.hasBier && stand.beer > 0) {
+          const drink = Math.min(10 * dt * FAN_STATS[f.kind].drink, stand.beer);
+          stand.beer -= drink;
+          f.thirst -= drink * 1.3;
+          if (f.team === this.playerTeam) {
+            this.momentum = clamp(
+              this.momentum + drink * 0.002 * FAN_STATS[f.kind].mood,
+              -1,
+              1,
+            );
+          } else {
+            this.momentum = clamp(
+              this.momentum - drink * 0.002 * FAN_STATS[f.kind].mood,
+              -1,
+              1,
+            );
+          }
+          // defend / push toward next stand if thirsty low and aggro
+          if (f.thirst < 35 && f.kind === "ultras" && Math.random() < 0.01) {
+            f.state = "gang";
+            f.gangX = f.blockId / 4;
+          } else if (f.thirst < 25) {
+            f.state = "block";
+            f.standKey = null;
+            f.blockId = f.team === this.playerTeam ? 0 : 4;
+          }
         } else {
-          this.aiBeerDrunk += drink * 0.25;
+          // fight toward next stocked stand
+          const next = this.nearestBier(f.team, f.blockId);
+          if (next) {
+            f.state = "moving";
+            f.standKey = slotKey(next.blockId, next.index);
+            f.gangX = next.blockId / 4;
+          } else {
+            f.state = "block";
+            f.standKey = null;
+          }
+        }
+        f.y = 0.58 + (f.id % 3) * 0.01;
+        f.x = 0.12 + (f.blockId / 4) * 0.76 + (f.id % 3) * 0.015;
+      } else if (f.state === "gang") {
+        const dir = f.team === this.playerTeam ? 1 : -1;
+        f.gangX = clamp(f.gangX + dir * 0.04 * dt * FAN_STATS[f.kind].fight, 0, 1);
+        f.x = 0.12 + f.gangX * 0.76;
+        f.y = 0.64 + Math.sin(this.realElapsed * 3 + f.id) * 0.01;
+        // return if low hp
+        if (f.hp < f.maxHp * 0.25) {
+          f.state = "block";
+          f.blockId = f.team === this.playerTeam ? 0 : 4;
         }
       }
     }
+  }
 
-    // collide opposing blocks
-    for (let i = 0; i < this.blocks.length; i++) {
-      for (let j = i + 1; j < this.blocks.length; j++) {
-        const a = this.blocks[i];
-        const b = this.blocks[j];
+  private tickCombat(dt: number): void {
+    const onGang = this.fans.filter((f) => f.hp > 0 && f.state === "gang");
+    for (let i = 0; i < onGang.length; i++) {
+      for (let j = i + 1; j < onGang.length; j++) {
+        const a = onGang[i];
+        const b = onGang[j];
         if (a.team === b.team) continue;
-        if (Math.abs(a.x - b.x) > 0.06) continue;
-        const pa = this.blockPower(a);
-        const pb = this.blockPower(b);
-        a.hp -= pb * 10 * dt * fever;
-        b.hp -= pa * 10 * dt * fever;
-        a.aggro = clamp(a.aggro + 10 * dt, 0, 100);
-        b.aggro = clamp(b.aggro + 10 * dt, 0, 100);
-        // push
-        if (pa > pb) {
-          b.x += 0.02 * dt;
-          a.x += 0.01 * dt;
-        } else {
-          a.x -= 0.02 * dt;
-          b.x -= 0.01 * dt;
-        }
+        if (Math.abs(a.gangX - b.gangX) > 0.07) continue;
+        a.hp -= FAN_STATS[b.kind].fight * 12 * dt;
+        b.hp -= FAN_STATS[a.kind].fight * 12 * dt;
+        a.aggro = clamp(a.aggro + 5 * dt, 0, 100);
+        b.aggro = clamp(b.aggro + 5 * dt, 0, 100);
       }
     }
-
-    // overflow into curvas
-    const left: LaneBlock[] = [];
-    for (const b of this.blocks) {
-      if (b.hp <= 0) continue;
-      if (b.team === this.playerTeam && b.x >= 0.92) {
-        this.applyOverflow(b, "intoAi");
-        continue;
-      }
-      if (b.team === this.aiTeam && b.x <= 0.08) {
-        this.applyOverflow(b, "intoPlayer");
-        continue;
-      }
-      left.push(b);
-    }
-    this.blocks = left;
-
-    // pressure meter from blocks on lane
+    // pressure from gang occupancy
     let p = 0;
-    for (const b of this.blocks) {
-      const pow = this.blockPower(b);
-      p += b.team === this.playerTeam ? pow * b.x : -pow * (1 - b.x);
+    for (const f of onGang) {
+      p += f.team === this.playerTeam ? FAN_STATS[f.kind].fight : -FAN_STATS[f.kind].fight;
     }
-    this.pressure = clamp(p / 8, -1, 1);
+    this.momentum = clamp(this.momentum + p * 0.01 * dt, -1, 1);
   }
 
-  private applyOverflow(b: LaneBlock, dir: "intoAi" | "intoPlayer"): void {
-    const power = this.blockPower(b);
-    if (dir === "intoAi") {
-      this.damageCurva(this.aiFans, power * 10);
-      this.momentum = clamp(this.momentum + 5, 0, 100);
-      this.mood = clamp(this.mood + 4, 0, 100);
-      this.aiMood = clamp(this.aiMood - 5, 0, 100);
-      this.toast("Überschwappen in die Gegnerkurve!");
-      // return some fans home
-      this.recallLaneFans(this.playerFans, b);
-    } else {
-      this.damageCurva(this.playerFans, power * 10 * diffMul(this.cfg.settings.difficulty));
-      this.toast("Gegner drängt in eure Kurve!");
-      this.recallLaneFans(this.aiFans, b);
-    }
-  }
-
-  private recallLaneFans(fans: FanUnit[], b: LaneBlock): void {
-    let need =
-      b.ultras + b.normalos + b.familie;
-    for (const f of fans) {
-      if (need <= 0) break;
-      if (f.zone === "neutral" && f.hp > 0) {
-        f.zone = "curva";
-        f.hp = Math.max(10, f.hp - 8);
-        need--;
-      }
-    }
-  }
-
-  private damageCurva(fans: FanUnit[], dmg: number): void {
-    let left = dmg;
-    const targets = fans.filter((f) => f.zone === "curva" && f.hp > 0);
-    if (!targets.length) return;
-    const each = left / targets.length;
-    for (const f of targets) {
-      f.hp -= each;
-      f.aggro = clamp(f.aggro + 8, 0, 100);
-      if (f.hp <= 0) {
-        f.hp = 0;
-        f.zone = "neutral";
-      }
-    }
-  }
-
-  private tickChances(dt: number, fever: number): void {
+  private tickMatch(dt: number): void {
+    const fever = this.minute >= FEVER_FROM_MIN || this.phase === "et" ? 1.5 : 1;
     this.chanceAcc += dt;
-    const interval = fever > 1 ? 14 : 20;
-    if (this.chanceAcc < interval) return;
+    if (this.chanceAcc < 16 / fever) return;
     this.chanceAcc = 0;
-    const p = this.momentum + this.mood * 0.3 + this.pressure * 15;
-    const a = this.aiMomentum + this.aiMood * 0.3 - this.pressure * 15;
-    const total = Math.max(1, p + a);
-    const roll = Math.random();
-    if (roll < (p / total) * 0.45) this.scoreGoal(this.playerTeam);
-    else if (roll > 1 - (a / total) * 0.45) this.scoreGoal(this.aiTeam);
+    // only side with momentum can score when fully swung
+    if (this.momentum > 0.85) {
+      if (Math.random() < 0.55) this.scoreGoal(this.playerTeam);
+    } else if (this.momentum < -0.85) {
+      if (Math.random() < 0.55) this.scoreGoal(this.aiTeam);
+    } else {
+      const bias = (this.momentum + 1) / 2;
+      if (Math.random() < 0.35) {
+        this.scoreGoal(Math.random() < bias ? this.playerTeam : this.aiTeam);
+      }
+    }
   }
 
   private scoreGoal(team: TeamId): void {
     if (team === "ksc") this.scoreKsc++;
     else this.scoreVfb++;
-    const us = team === this.playerTeam;
-    if (us) {
-      this.momentum = clamp(this.momentum + 8, 0, 100);
-      for (const f of this.playerFans) {
-        f.thirst = clamp(f.thirst + 14, 0, 100);
-        f.aggro = clamp(f.aggro + (f.kind === "ultras" ? 10 : 3), 0, 100);
-      }
-      for (const f of this.aiFans) {
-        f.thirst = clamp(f.thirst + 12, 0, 100); // Kummerbier
-        f.aggro = clamp(f.aggro + 8, 0, 100);
+    if (team === this.playerTeam) {
+      this.moodHeim = clamp(this.moodHeim + 0.4, 0, 3);
+      for (const f of this.fans) {
+        if (f.team === this.playerTeam) f.thirst = clamp(f.thirst + 12, 0, 100);
+        else {
+          f.thirst = clamp(f.thirst + 10, 0, 100);
+          f.aggro = clamp(f.aggro + 6, 0, 100);
+        }
       }
     } else {
-      this.aiMomentum = clamp(this.aiMomentum + 8, 0, 100);
-      for (const f of this.playerFans) {
-        f.thirst = clamp(f.thirst + 12, 0, 100);
-        f.aggro = clamp(f.aggro + 6, 0, 100);
+      this.moodGaeste = clamp(this.moodGaeste + 0.4, 0, 3);
+      for (const f of this.fans) {
+        if (f.team === this.playerTeam) {
+          f.thirst = clamp(f.thirst + 10, 0, 100);
+          f.aggro = clamp(f.aggro + 5, 0, 100);
+        }
       }
     }
-    this.toast(`TOR ${teamLabel(team)}!  ${this.scoreKsc}:${this.scoreVfb}`);
+    this.toast(`TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`);
   }
 
   private tickAi(dt: number): void {
     this.aiAcc += dt;
-    const every =
-      this.cfg.settings.difficulty === "easy"
-        ? 14
-        : this.cfg.settings.difficulty === "hard"
-          ? 7
-          : 10;
-    if (this.aiAcc < every) return;
+    if (this.aiAcc < 12 / diffMul(this.cfg.settings.difficulty)) return;
     this.aiAcc = 0;
-    const b: AiBehavior = this.cfg.settings.behavior;
-    // AI send
-    const cost = COSTS.sendMix;
-    if (this.aiGold >= cost && this.aliveInCurva(this.aiFans).length >= 2) {
-      this.aiGold -= cost;
-      const pool = this.aliveInCurva(this.aiFans).slice(0, 2);
-      let ultras = 0,
-        normalos = 0,
-        familie = 0;
-      for (const f of pool) {
-        if (f.kind === "ultras") ultras++;
-        else if (f.kind === "normalos") normalos++;
-        else familie++;
-        f.zone = "neutral";
-      }
-      if (b === "aggro") {
-        ultras++;
-      }
-      const fight =
-        ultras * FAN_STATS.ultras.fight +
-        normalos * FAN_STATS.normalos.fight +
-        familie * FAN_STATS.familie.fight;
-      const hp = 40 + fight * 30;
-      this.blocks.push({
-        id: uid(),
-        team: this.aiTeam,
-        ultras: Math.max(ultras, b === "aggro" ? 1 : ultras),
-        normalos,
-        familie,
-        x: 0.88,
-        hp,
-        maxHp: hp,
-        thirst: 30,
-        aggro: 25,
-      });
+    const ultras = this.fans.filter(
+      (f) =>
+        f.team === this.aiTeam &&
+        f.kind === "ultras" &&
+        f.hp > 0 &&
+        f.state === "block",
+    );
+    if (ultras.length) {
+      const f = ultras[0];
+      f.state = "gang";
+      f.gangX = 0.88;
     }
   }
 
-  private checkWins(): void {
-    if (this.phase === "regular") {
-      if (this.beerDrunk >= 160) {
-        this.finish(this.playerTeam, "beer", "Bier-Early-Win");
-        return;
-      }
-      if (this.aiBeerDrunk >= 160) {
-        this.finish(this.aiTeam, "beer", "KI Bier-Win");
-        return;
-      }
-      if (this.mood >= 90 && this.mood - this.aiMood >= 25) {
-        this.finish(this.playerTeam, "mood", "Stimmungs-Übernahme");
-        return;
-      }
-    }
-    const playerAlive = this.playerFans.some((f) => f.hp > 0 && f.zone === "curva");
-    const aiAlive = this.aiFans.some((f) => f.hp > 0 && f.zone === "curva");
-    if (!playerAlive) {
-      this.finish(this.aiTeam, "curva", "Kurve verloren");
-      return;
-    }
-    if (!aiAlive) {
-      this.finish(this.playerTeam, "curva", "Gegnerkurve übernommen");
-    }
+  private tickRecruit(dt: number): void {
+    this.recruitAcc += dt;
+    if (this.recruitAcc < 45) return;
+    this.recruitAcc = 0;
+    // free small recruit into heim if under 14
+    const home = this.fans.filter((f) => f.team === this.playerTeam && f.hp > 0);
+    if (home.length >= 14) return;
+    const kinds: FanKind[] = ["normalos", "familie", "ultras"];
+    const kind = kinds[Math.floor(Math.random() * 3)];
+    this.fans.push(this.makeFan(kind, this.playerTeam, 0, home.length));
+    this.toast(`Neuer Fan: ${FAN_STATS[kind].label}`);
+  }
+
+  private checkCurva(): void {
+    const homeAlive = this.fans.some(
+      (f) => f.team === this.playerTeam && f.hp > 0,
+    );
+    const awayAlive = this.fans.some((f) => f.team === this.aiTeam && f.hp > 0);
+    if (!homeAlive) this.finish(this.aiTeam, "curva", "Kurve zusammengebrochen");
+    else if (!awayAlive)
+      this.finish(this.playerTeam, "curva", "Gästeblock übernommen");
   }
 
   private endRegular(): void {
@@ -688,7 +538,7 @@ export class Match {
       return;
     }
     this.phase = "et";
-    this.toast("Verlängerung!");
+    this.toast("Verlängerung");
   }
 
   private endEt(): void {
@@ -703,26 +553,24 @@ export class Match {
     this.phase = "pens";
     this.pens = Array.from({ length: 5 }, () => ({ ksc: null, vfb: null }));
     this.pensRound = 0;
-    this.toast("Elfmeterschießen!");
+    this.toast("Elfmeter");
   }
 
   private updatePens(dt: number): void {
     this.pensTimer += dt;
-    if (this.pensTimer < 1.2) return;
+    if (this.pensTimer < 1.1) return;
     this.pensTimer = 0;
     if (this.pensRound >= 5) {
       this.resolvePens();
       return;
     }
-    const round = this.pens[this.pensRound];
-    if (round.ksc == null) {
-      round.ksc = Math.random() < 0.55 + (this.playerTeam === "ksc" ? this.momentum - this.aiMomentum : this.aiMomentum - this.momentum) / 400;
-      this.toast(round.ksc ? "KSC trifft" : "KSC daneben");
+    const r = this.pens[this.pensRound];
+    if (r.ksc == null) {
+      r.ksc = Math.random() < 0.55 + this.momentum * 0.1;
       return;
     }
-    if (round.vfb == null) {
-      round.vfb = Math.random() < 0.55;
-      this.toast(round.vfb ? "VfB trifft" : "VfB daneben");
+    if (r.vfb == null) {
+      r.vfb = Math.random() < 0.55 - this.momentum * 0.1;
       this.pensRound++;
       if (this.pensRound >= 5) this.resolvePens();
     }
@@ -743,7 +591,12 @@ export class Match {
   ): void {
     this.phase = "ended";
     this.speed = 0;
-    this.result = { winner, reason, score: [this.scoreKsc, this.scoreVfb], detail };
+    this.result = {
+      winner,
+      reason,
+      score: [this.scoreKsc, this.scoreVfb],
+      detail,
+    };
     this.toast(detail);
   }
 }

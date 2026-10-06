@@ -1,12 +1,11 @@
 import "./style.css";
 import { Match } from "./game/Match";
-import { drawMatch, hitLaneSlot, hitPlayerCurva } from "./game/render";
+import { drawMatch, hitSlot } from "./game/render";
 import {
   MIX_MAX,
   MIX_MIN,
   type FanMix,
-  type SendKind,
-  type SetupConfig,
+  type MoodAction,
   type SoloSettings,
   type SpeedMode,
   type TeamId,
@@ -27,7 +26,7 @@ type Screen = "menu" | "setup" | "match" | "result";
 
 const state = {
   screen: "menu" as Screen,
-  settings: defaultSoloSettings(),
+  settings: defaultSoloSettings() as SoloSettings,
   setup: defaultSetup(),
   match: null as Match | null,
   raf: 0,
@@ -51,9 +50,9 @@ function renderMenu(): void {
   app.innerHTML = `
     <div class="screen menu">
       <div>
-        <p class="sub">LaneLink · Baden-Derby · Querformat</p>
+        <p class="sub">LaneLink · A2c Stadion</p>
         <h1 class="brand">KSC vs VfB</h1>
-        <p class="sub">Blöcke auf die Lane. Bierstände. Kurven halten.</p>
+        <p class="sub">Blöcke · Gang · Stimmung — Querformat</p>
       </div>
       <div class="card stack">
         <button class="btn ksc" id="solo">Solo vs KI</button>
@@ -62,35 +61,21 @@ function renderMenu(): void {
         <label class="field">Verein
           <select id="team"><option value="ksc">KSC</option><option value="vfb">VfB</option></select>
         </label>
-        <label class="field">KI-Schwierigkeit
+        <label class="field">KI
           <select id="diff">
             <option value="easy" selected>Einfach</option>
             <option value="normal">Normal</option>
             <option value="hard">Schwer</option>
           </select>
         </label>
-        <label class="field">KI-Verhalten
-          <select id="beh">
-            <option value="balanced" selected>Ausgewogen</option>
-            <option value="patient">Geduldig</option>
-            <option value="aggro">Aggro</option>
-            <option value="beer">Bier-Gier</option>
-            <option value="earlywin">Early-Win</option>
-          </select>
-        </label>
       </div>
     </div>`;
-  const team = app.querySelector<HTMLSelectElement>("#team")!;
-  const diff = app.querySelector<HTMLSelectElement>("#diff")!;
-  const beh = app.querySelector<HTMLSelectElement>("#beh")!;
-  team.value = state.settings.playerTeam;
-  diff.value = state.settings.difficulty;
-  beh.value = state.settings.behavior;
   app.querySelector("#solo")!.addEventListener("click", () => {
     state.settings = {
-      playerTeam: team.value as TeamId,
-      difficulty: diff.value as SoloSettings["difficulty"],
-      behavior: beh.value as SoloSettings["behavior"],
+      playerTeam: (app.querySelector("#team") as HTMLSelectElement).value as TeamId,
+      difficulty: (app.querySelector("#diff") as HTMLSelectElement)
+        .value as SoloSettings["difficulty"],
+      behavior: "balanced",
     };
     state.setup = defaultSetup();
     go("setup");
@@ -111,13 +96,13 @@ function renderSetup(): void {
   app.innerHTML = `
     <div class="screen menu">
       <div>
-        <p class="sub">Architect-Setup · ${teamLabel(state.settings.playerTeam)}</p>
-        <h1 class="brand" style="font-size:1.7rem">10 Fans wählen</h1>
+        <p class="sub">10 Fans für den Heimblock</p>
+        <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
       </div>
       <div class="card stack">
-        ${row("normalos", "Normalos (trinken/Stimmung)")}
-        ${row("ultras", "Ultras (Kampf)")}
-        ${row("familie", "Familie (Geld)")}
+        ${row("ultras", "Ultras (Kampf/Pyro)")}
+        ${row("normalos", "Normalos (Gesang/Durst)")}
+        ${row("familie", "Familie (Klatschen/Gold)")}
         <p class="tiny">Summe ${mixSum(mix)} / 10 ${isValidMix(mix) ? "✓" : ""}</p>
       </div>
       <div class="row">
@@ -126,7 +111,14 @@ function renderSetup(): void {
       </div>
     </div>`;
   app.querySelector("#back")!.addEventListener("click", () => go("menu"));
-  app.querySelector("#start")!.addEventListener("click", startMatch);
+  app.querySelector("#start")!.addEventListener("click", () => {
+    state.match = new Match({
+      settings: state.settings,
+      playerSetup: state.setup,
+      aiSetup: { mix: defaultMix() },
+    });
+    go("match");
+  });
   app.querySelectorAll<HTMLButtonElement>("[data-mix]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const key = btn.dataset.mix as keyof FanMix;
@@ -140,70 +132,35 @@ function renderSetup(): void {
   });
 }
 
-function aiSetup(s: SoloSettings): SetupConfig {
-  if (s.behavior === "beer")
-    return { mix: { normalos: 6, ultras: 2, familie: 2 }, startBier: true };
-  if (s.behavior === "aggro")
-    return { mix: { normalos: 3, ultras: 5, familie: 2 }, startBier: true };
-  if (s.behavior === "patient")
-    return { mix: { normalos: 4, ultras: 2, familie: 4 }, startBier: true };
-  return { mix: defaultMix(), startBier: true };
-}
-
-function startMatch(): void {
-  state.match = new Match({
-    settings: state.settings,
-    playerSetup: state.setup,
-    aiSetup: aiSetup(state.settings),
-  });
-  go("match");
-}
-
-function buyClass(ok: boolean): string {
-  return ok ? "buy ready" : "buy locked";
+function cdLabel(left: number): string {
+  if (left <= 0) return "bereit";
+  return `${Math.ceil(left)}s`;
 }
 
 function renderMatchScreen(): void {
   const m = state.match!;
-  // Start paused so die Ansicht erstmal lesbar ist
   m.setSpeed(0);
   app.innerHTML = `
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
-    <div class="match-shell">
-      <div class="topbar">
-        <div class="stat-big">
-          <span class="label">Gold</span>
-          <span class="value" id="gold">0</span>
-        </div>
-        <div class="scorebox">
-          <div class="score" id="score">0:0</div>
-          <div class="minute" id="clock">0′</div>
-          <div class="tiny" id="phase">Regulär</div>
-        </div>
-        <div class="stat-big">
-          <span class="label">Momentum</span>
-          <span class="value" id="mom">0</span>
-        </div>
+    <div class="match-shell a2c">
+      <div class="top-chrome">
+        <div class="stat"><span>Gold</span><b id="gold">0</b></div>
         <div class="speed-btns">
-          <button data-spd="0" class="on" title="Pause">⏸</button>
-          <button data-spd="1" title="Play">▶</button>
-          <button data-spd="2" title="2x">2×</button>
+          <button data-spd="0" class="on">⏸</button>
+          <button data-spd="1">▶</button>
+          <button data-spd="2">2×</button>
         </div>
       </div>
       <div id="game-wrap">
         <canvas id="c"></canvas>
         <div class="toast" id="toast"></div>
-      </div>
-      <div class="action-dock">
-        <div class="zone" id="zona-curva">
-          <div id="curva-actions" class="row"></div>
+        <div class="overlay-mood">
+          <button class="mood-btn" data-mood="gesang" id="btn-gesang">Gesang<span></span></button>
+          <button class="mood-btn" data-mood="pyro" id="btn-pyro">Pyro<span></span></button>
+          <button class="mood-btn" data-mood="klatschen" id="btn-klatschen">Klatschen<span></span></button>
         </div>
-        <div class="zone" id="zona-lane">
-          <div id="lane-actions" class="row"></div>
-        </div>
-        <div class="zone" id="zona-build">
-          <div id="build-actions" class="row"></div>
-        </div>
+        <button class="ultra-btn" id="btn-ultra">Ultras → Gang<span></span></button>
+        <button class="build-fab" id="btn-build">Bierstand 50g</button>
       </div>
     </div>`;
 
@@ -228,79 +185,69 @@ function renderMatchScreen(): void {
   window.addEventListener("resize", resize);
   window.addEventListener("orientationchange", () => setTimeout(resize, 200));
 
-
   canvas.addEventListener("pointerdown", (e) => {
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const slot = hitLaneSlot(m, x, y);
-    if (slot != null) {
-      m.selectedLaneSlot = slot;
-      syncActions();
-      return;
-    }
-    if (hitPlayerCurva(m, x, y)) {
-      // focus curva actions visually via toast
-      m.toast("Kurve gewählt — Pyro/Chor unten");
+    const hit = hitSlot(m, e.clientX - rect.left, e.clientY - rect.top);
+    if (hit) {
+      m.selectedSlot = hit;
+      m.toast(`Slot ${hit.blockId + 1}.${hit.index + 1}`);
+      syncOverlay();
     }
   });
 
   app.querySelectorAll<HTMLButtonElement>("[data-spd]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const spd = Number(btn.dataset.spd) as SpeedMode;
-      m.setSpeed(spd);
+      m.setSpeed(Number(btn.dataset.spd) as SpeedMode);
       app.querySelectorAll("[data-spd]").forEach((b) => b.classList.remove("on"));
       btn.classList.add("on");
     });
   });
 
-  const syncActions = () => {
-    const sends: SendKind[] = ["ultras", "normalos", "familie", "mix"];
-    const lane = app.querySelector("#lane-actions")!;
-    lane.innerHTML = sends
-      .map((k) => {
-        const st = m.canSend(k);
-        return `<button class="${buyClass(st.ok)}" data-send="${k}">
-          ${st.label}<span class="price">${st.cost}g</span>
-          ${st.ok ? "" : `<span class="need">${st.reason ?? ""}</span>`}
-        </button>`;
-      })
-      .join("");
-    lane.querySelectorAll<HTMLButtonElement>("[data-send]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        m.trySend(btn.dataset.send as SendKind);
-        syncActions();
-      });
+  const syncOverlay = () => {
+    (["gesang", "pyro", "klatschen"] as MoodAction[]).forEach((act) => {
+      const btn = app.querySelector<HTMLButtonElement>(`#btn-${act}`)!;
+      const ready = m.moodActionReady(act);
+      btn.classList.toggle("ready", ready);
+      btn.classList.toggle("cd", !ready);
+      btn.querySelector("span")!.textContent = cdLabel(m.cd[act]);
     });
+    const ub = app.querySelector<HTMLButtonElement>("#btn-ultra")!;
+    const uready = m.ultraOrderReady();
+    ub.classList.toggle("ready", uready);
+    ub.classList.toggle("cd", !uready);
+    ub.querySelector("span")!.textContent = cdLabel(m.cd.ultraOrder);
 
-    const curva = app.querySelector("#curva-actions")!;
-    const pyro = m.canCurvaAction("pyro");
-    const chor = m.canCurvaAction("chor");
-    curva.innerHTML = `
-      <button class="${buyClass(pyro.ok)}" data-act="pyro">Pyro<span class="price">${pyro.cost}g</span>${pyro.ok ? "" : `<span class="need">${pyro.reason}</span>`}</button>
-      <button class="${buyClass(chor.ok)}" data-act="chor">Chor<span class="price">${chor.cost}g</span>${chor.ok ? "" : `<span class="need">${chor.reason}</span>`}</button>`;
-    curva.querySelectorAll<HTMLButtonElement>("[data-act]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        m.tryCurvaAction(btn.dataset.act as "pyro" | "chor");
-        syncActions();
-      });
-    });
-
-    const build = app.querySelector("#build-actions")!;
-    const slot = m.selectedLaneSlot;
-    if (slot == null) {
-      build.innerHTML = `<span class="tiny">Slot +</span>`;
-    } else {
-      const st = m.canBuildBier(slot);
-      build.innerHTML = `<button class="${buyClass(st.ok)}" data-build="bier">Bierstand Slot ${slot + 1}<span class="price">${st.cost}g</span>${st.ok ? "" : `<span class="need">${st.reason}</span>`}</button>`;
-      build.querySelector("button")?.addEventListener("click", () => {
-        m.tryBuildBier(slot);
-        syncActions();
-      });
-    }
+    const bb = app.querySelector<HTMLButtonElement>("#btn-build")!;
+    const can =
+      !!m.selectedSlot &&
+      m.gold >= 50 &&
+      m.selectedSlot.blockId !== 4 &&
+      !m.slots.find(
+        (s) =>
+          s.blockId === m.selectedSlot!.blockId &&
+          s.index === m.selectedSlot!.index &&
+          s.hasBier,
+      );
+    bb.classList.toggle("ready", can);
+    bb.classList.toggle("cd", !can);
   };
-  syncActions();
 
+  app.querySelectorAll<HTMLButtonElement>("[data-mood]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      m.tryMoodAction(btn.dataset.mood as MoodAction);
+      syncOverlay();
+    });
+  });
+  app.querySelector("#btn-ultra")!.addEventListener("click", () => {
+    m.tryUltraOrder();
+    syncOverlay();
+  });
+  app.querySelector("#btn-build")!.addEventListener("click", () => {
+    m.tryBuildSelected();
+    syncOverlay();
+  });
+
+  syncOverlay();
   state.last = performance.now();
   const loop = (now: number) => {
     if (state.screen !== "match" || !state.match) return;
@@ -308,8 +255,17 @@ function renderMatchScreen(): void {
     state.last = now;
     m.update(dt);
     drawMatch(ctx, m);
-    syncHud(m);
-    if (Math.floor(now / 400) !== Math.floor((now - dt * 1000) / 400)) syncActions();
+    const gold = app.querySelector("#gold");
+    if (gold) gold.textContent = String(Math.floor(m.gold));
+    const toast = app.querySelector("#toast");
+    if (toast) {
+      const t = m.toasts[0];
+      if (t) {
+        toast.textContent = t.text;
+        toast.classList.add("show");
+      } else toast.classList.remove("show");
+    }
+    if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
     if (m.result) {
       setTimeout(() => go("result"), 800);
       return;
@@ -319,39 +275,15 @@ function renderMatchScreen(): void {
   state.raf = requestAnimationFrame(loop);
 }
 
-function syncHud(m: Match): void {
-  const $ = (id: string) => app.querySelector(`#${id}`)!;
-  $("score").textContent = `${m.scoreKsc} : ${m.scoreVfb}`;
-  $("clock").textContent = formatMinute(m.minute);
-  $("phase").textContent =
-    m.phase === "regular"
-      ? "Regulär"
-      : m.phase === "et"
-        ? "Verlängerung"
-        : m.phase === "pens"
-          ? "Elfmeter"
-          : "Ende";
-  $("gold").textContent = String(Math.floor(m.gold));
-  $("mom").textContent = String(Math.floor(m.momentum));
-  const toast = app.querySelector("#toast")!;
-  const t = m.toasts[0];
-  if (t) {
-    toast.textContent = t.text;
-    toast.classList.add("show");
-  } else toast.classList.remove("show");
-}
-
 function renderResult(): void {
   const m = state.match!;
   const r = m.result!;
   const youWin = r.winner === state.settings.playerTeam;
   app.innerHTML = `
     <div class="screen menu">
-      <div>
-        <p class="sub">${r.detail}</p>
-        <h1 class="brand">${youWin ? "Sieg!" : "Niederlage"}</h1>
-        <p class="sub">${teamLabel(r.winner)} · ${r.score[0]}:${r.score[1]} · ${r.reason}</p>
-      </div>
+      <p class="sub">${r.detail}</p>
+      <h1 class="brand">${youWin ? "Sieg!" : "Niederlage"}</h1>
+      <p class="sub">${teamLabel(r.winner)} · ${r.score[0]}:${r.score[1]} · ${formatMinute(m.minute)}</p>
       <div class="row">
         <button class="btn secondary grow" id="menu">Menü</button>
         <button class="btn ksc grow" id="again">Rematch</button>

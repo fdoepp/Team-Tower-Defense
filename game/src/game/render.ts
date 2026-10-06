@@ -1,215 +1,289 @@
 import { Match } from "./Match";
-import { FAN_STATS, LANE_SLOTS, type FanUnit } from "./types";
+import { BLOCK_META, FAN_STATS, type BuildSlot, type FanUnit } from "./types";
 
-/** Layout fractions — phone landscape: more room for lane */
-export const LAYOUT = {
-  topH: 0.02, // HUD is HTML; canvas uses almost full wrap
-  curvaW: 0.15,
-  laneY: 0.32,
-  laneH: 0.42,
+/** Layout in normalized canvas space */
+export const L = {
+  pitchH: 0.13,
+  blockTop: 0.15,
+  blockH: 0.38,
+  gangY: 0.58,
+  gangH: 0.16,
 };
+
+export function blockCenterX(blockId: number): number {
+  return 0.12 + blockId * 0.19;
+}
 
 export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   const w = m.width;
   const h = m.height;
   ctx.clearRect(0, 0, w, h);
 
-  // pitch-like background
-  const g = ctx.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, "#1a4d2e");
-  g.addColorStop(0.5, "#246b3d");
-  g.addColorStop(1, "#163d28");
-  ctx.fillStyle = g;
+  // background
+  ctx.fillStyle = "#102418";
   ctx.fillRect(0, 0, w, h);
 
-  // mowing stripes
-  ctx.fillStyle = "rgba(255,255,255,0.03)";
-  for (let i = 0; i < 12; i++) {
-    if (i % 2 === 0) ctx.fillRect(0, (h / 12) * i, w, h / 12);
-  }
+  drawPitch(ctx, m, w, h);
+  drawBlocks(ctx, m, w, h);
+  drawGang(ctx, m, w, h);
+  drawSlots(ctx, m, w, h);
+  drawFans(ctx, m, w, h);
+  drawMoodMeter(ctx, m, w, h);
 
-  const topH = h * LAYOUT.topH;
-  const curvaW = w * LAYOUT.curvaW;
-  const laneY = h * LAYOUT.laneY;
-  const laneH = h * LAYOUT.laneH;
-  const laneX0 = curvaW;
-  const laneX1 = w - curvaW;
-  const laneW = laneX1 - laneX0;
-
-  // top panel bg — thin strip only (HTML topbar carries stats)
-  ctx.fillStyle = "rgba(8,20,14,0.35)";
-  ctx.fillRect(0, 0, w, topH);
-
-  // curvas
-  drawCurva(ctx, m, 0, topH, curvaW, h - topH, m.playerFans, true);
-  drawCurva(ctx, m, laneX1, topH, curvaW, h - topH, m.aiFans, false);
-
-  // lane
-  ctx.fillStyle = "#0f2418";
-  roundRect(ctx, laneX0 + 4, laneY, laneW - 8, laneH, 14);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(243,240,231,0.35)";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  // running track lines
-  ctx.strokeStyle = "rgba(255,255,255,0.12)";
-  ctx.lineWidth = 1;
-  for (let i = 1; i < 3; i++) {
-    const yy = laneY + (laneH * i) / 3;
-    ctx.beginPath();
-    ctx.moveTo(laneX0 + 10, yy);
-    ctx.lineTo(laneX1 - 10, yy);
-    ctx.stroke();
-  }
-  // center / neutral
-  ctx.fillStyle = "rgba(243,240,231,0.14)";
-  ctx.fillRect(laneX0 + laneW * 0.4, laneY, laneW * 0.2, laneH);
-  ctx.fillStyle = "#f3f0e7";
-  ctx.font = "700 13px DM Sans";
-  ctx.textAlign = "center";
-  ctx.fillText("NEUTRAL", laneX0 + laneW / 2, laneY + 20);
-  ctx.font = "600 11px DM Sans";
-  ctx.fillStyle = "rgba(243,240,231,0.7)";
-  ctx.fillText("Blöcke laufen hier aufeinander zu", laneX0 + laneW / 2, laneY + laneH - 10);
-
-  // pressure arrow
-  const px = laneX0 + laneW * (0.5 + m.pressure * 0.35);
-  ctx.fillStyle = m.pressure >= 0 ? "#1f6feb" : "#d4a017";
-  ctx.beginPath();
-  ctx.moveTo(px - 10, laneY + laneH - 10);
-  ctx.lineTo(px + 10, laneY + laneH - 10);
-  ctx.lineTo(px, laneY + laneH - 22);
-  ctx.fill();
-
-  // stands
-  for (const s of m.stands) {
-    const sx = laneX0 + ((s.slot + 0.5) / LANE_SLOTS) * laneW;
-    const sy = laneY + laneH * 0.28;
-    ctx.fillStyle =
-      s.owner === "neutral"
-        ? "#5a6a60"
-        : s.owner === m.playerTeam
-          ? "#c9a227"
-          : "#8a7030";
-    roundRect(ctx, sx - 22, sy - 16, 44, 32, 6);
-    ctx.fill();
-    ctx.fillStyle = "#0a1410";
-    ctx.font = "700 9px DM Sans";
-    ctx.textAlign = "center";
-    ctx.fillText("BIER", sx, sy - 2);
-    // beer bar on stand
-    ctx.fillStyle = "rgba(0,0,0,0.4)";
-    ctx.fillRect(sx - 18, sy + 6, 36, 6);
-    ctx.fillStyle = "#f5d76e";
-    ctx.fillRect(sx - 18, sy + 6, 36 * (s.beer / s.capacity), 6);
-  }
-
-  // empty slot markers for build
-  for (let i = 0; i < LANE_SLOTS; i++) {
-    if (m.stands.some((s) => s.slot === i)) continue;
-    const sx = laneX0 + ((i + 0.5) / LANE_SLOTS) * laneW;
-    const sy = laneY + laneH * 0.28;
-    ctx.strokeStyle =
-      m.selectedLaneSlot === i ? "#6bcb77" : "rgba(255,255,255,0.25)";
-    ctx.lineWidth = m.selectedLaneSlot === i ? 2 : 1;
-    ctx.strokeRect(sx - 20, sy - 14, 40, 28);
-    ctx.fillStyle = "rgba(255,255,255,0.35)";
-    ctx.font = "700 14px DM Sans";
-    ctx.fillText("+", sx, sy + 4);
-  }
-
-  // blocks
-  for (const b of m.blocks) {
-    const bx = laneX0 + b.x * laneW;
-    const by = laneY + laneH * 0.72;
-    const mine = b.team === m.playerTeam;
-    ctx.fillStyle = mine ? "#1f6feb" : "#d4a017";
-    roundRect(ctx, bx - 28, by - 18, 56, 36, 8);
-    ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.font = "700 10px DM Sans";
-    ctx.textAlign = "center";
-    const label = `U${b.ultras} N${b.normalos} F${b.familie}`;
-    ctx.fillText(label, bx, by - 2);
-    // hp
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.fillRect(bx - 22, by + 8, 44, 4);
-    ctx.fillStyle = "#6bcb77";
-    ctx.fillRect(bx - 22, by + 8, 44 * (b.hp / b.maxHp), 4);
-  }
-
-  // pause overlay
   if (m.speed === 0 && !m.result) {
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.fillRect(laneX0, laneY, laneW, laneH);
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fillRect(0, h * L.gangY, w, h * L.gangH);
     ctx.fillStyle = "#fff";
-    ctx.font = "700 22px Archivo Black, DM Sans";
-    ctx.fillText("PAUSE", laneX0 + laneW / 2, laneY + laneH / 2);
+    ctx.font = `700 ${Math.floor(h * 0.06)}px Archivo Black, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText("PAUSE", w / 2, h * (L.gangY + L.gangH / 2) + 8);
   }
 }
 
-function drawCurva(
+function drawPitch(
   ctx: CanvasRenderingContext2D,
-  _m: Match,
-  x: number,
-  y: number,
+  m: Match,
   w: number,
   h: number,
-  fans: FanUnit[],
-  player: boolean,
 ): void {
-  ctx.fillStyle = player ? "rgba(31,111,235,0.18)" : "rgba(212,160,23,0.18)";
-  ctx.fillRect(x, y, w, h);
-  ctx.strokeStyle = player ? "#1f6feb" : "#d4a017";
+  const ph = h * L.pitchH;
+  ctx.fillStyle = "#2f8a4a";
+  ctx.fillRect(0, 0, w, ph);
+  // stripes
+  ctx.fillStyle = "rgba(255,255,255,0.06)";
+  for (let i = 0; i < 10; i++) {
+    if (i % 2 === 0) ctx.fillRect((w / 10) * i, 0, w / 10, ph);
+  }
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
   ctx.lineWidth = 2;
-  ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+  ctx.strokeRect(w * 0.28, ph * 0.15, w * 0.44, ph * 0.7);
+  ctx.beginPath();
+  ctx.arc(w / 2, ph, ph * 0.35, Math.PI, 0);
+  ctx.stroke();
 
-  ctx.fillStyle = "#f3f0e7";
-  ctx.font = "700 12px DM Sans";
+  // HUD on pitch
+  ctx.fillStyle = "#0a1410";
+  ctx.font = `700 ${Math.floor(ph * 0.38)}px Archivo Black, sans-serif`;
   ctx.textAlign = "center";
-  ctx.fillText(player ? "EURE KURVE" : "GEGNER", x + w / 2, y + 18);
+  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w / 2, ph * 0.48);
+  ctx.fillStyle = "#f5d76e";
+  ctx.font = `700 ${Math.floor(ph * 0.28)}px Archivo Black, sans-serif`;
+  ctx.fillText(`${Math.floor(m.minute)}′`, w / 2, ph * 0.82);
 
-  const cols = 2;
-  const alive = fans.filter((f) => f.hp > 0);
-  alive.forEach((f, i) => {
-    const col = i % cols;
-    const row = Math.floor(i / cols);
-    const fx = x + 18 + col * ((w - 24) / cols);
-    const fy = y + 36 + row * 34;
-    const dim = f.zone === "neutral";
-    ctx.globalAlpha = dim ? 0.35 : 1;
-    ctx.fillStyle = FAN_STATS[f.kind].color;
-    ctx.beginPath();
-    ctx.arc(fx, fy, 8, 0, Math.PI * 2);
+  // momentum bar
+  const mx = w * 0.22;
+  const mw = w * 0.56;
+  const my = ph * 0.92;
+  ctx.fillStyle = "rgba(0,0,0,0.35)";
+  roundRect(ctx, mx, my - 5, mw, 8, 4);
+  ctx.fill();
+  // three zones
+  ctx.fillStyle = "rgba(31,111,235,0.35)";
+  ctx.fillRect(mx, my - 5, mw / 3, 8);
+  ctx.fillStyle = "rgba(156,163,175,0.35)";
+  ctx.fillRect(mx + mw / 3, my - 5, mw / 3, 8);
+  ctx.fillStyle = "rgba(220,38,38,0.35)";
+  ctx.fillRect(mx + (2 * mw) / 3, my - 5, mw / 3, 8);
+  const knob = mx + mw * ((m.momentum + 1) / 2);
+  ctx.fillStyle = "#f3f0e7";
+  ctx.beginPath();
+  ctx.arc(knob, my - 1, 6, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawBlocks(
+  ctx: CanvasRenderingContext2D,
+  _m: Match,
+  w: number,
+  h: number,
+): void {
+  const top = h * L.blockTop;
+  const bh = h * L.blockH;
+  for (const b of BLOCK_META) {
+    const cx = blockCenterX(b.id) * w;
+    const bw = w * 0.17;
+    // arc bow: outer blocks slightly lower? facing pitch = flat top toward pitch
+    const y = top + Math.abs(b.id - 2) * h * 0.012;
+    // block body
+    ctx.fillStyle = b.fill;
+    roundRect(ctx, cx - bw / 2, y, bw, bh * 0.72, 10);
     ctx.fill();
-    // mini bars: hp, thirst, aggro
-    const barX = fx + 12;
-    drawMini(ctx, barX, fy - 8, 28, f.hp / f.maxHp, "#6bcb77");
-    drawMini(ctx, barX, fy - 2, 28, f.thirst / 100, "#5b8cff");
-    drawMini(ctx, barX, fy + 4, 28, f.aggro / 100, "#e85d4c");
+    // stripes
+    ctx.fillStyle = b.stripe;
+    ctx.globalAlpha = 0.25;
+    for (let i = 0; i < 4; i++) {
+      ctx.fillRect(cx - bw / 2 + 6 + i * (bw / 4), y + 6, bw / 10, bh * 0.72 - 12);
+    }
     ctx.globalAlpha = 1;
-  });
-
-  // hint for curva actions area
-  if (player) {
-    ctx.fillStyle = "rgba(243,240,231,0.4)";
-    ctx.font = "600 10px DM Sans";
-    ctx.fillText("Stimmung hier", x + w / 2, y + h - 10);
+    // label
+    ctx.fillStyle = "#fff";
+    ctx.font = `700 ${Math.floor(h * 0.028)}px DM Sans`;
+    ctx.textAlign = "center";
+    ctx.fillText(b.label, cx, y + 16);
+    // door at bottom of block (toward gang)
+    const doorY = y + bh * 0.72 - 4;
+    ctx.fillStyle = "#0a1410";
+    roundRect(ctx, cx - 14, doorY, 28, 16, 4);
+    ctx.fill();
   }
 }
 
-function drawMini(
+function drawGang(
   ctx: CanvasRenderingContext2D,
+  _m: Match,
+  w: number,
+  h: number,
+): void {
+  const y = h * L.gangY;
+  const gh = h * L.gangH;
+  ctx.fillStyle = "#1a1f24";
+  roundRect(ctx, w * 0.04, y, w * 0.92, gh, 12);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(243,240,231,0.2)";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // lane marks
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.setLineDash([8, 8]);
+  ctx.beginPath();
+  ctx.moveTo(w * 0.08, y + gh / 2);
+  ctx.lineTo(w * 0.92, y + gh / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "rgba(243,240,231,0.55)";
+  ctx.font = `600 ${Math.floor(h * 0.025)}px DM Sans`;
+  ctx.textAlign = "center";
+  ctx.fillText("GANG", w / 2, y + 14);
+}
+
+function drawSlots(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  for (const s of m.slots) {
+    const p = slotPos(s, w, h);
+    const sel =
+      m.selectedSlot?.blockId === s.blockId &&
+      m.selectedSlot?.index === s.index;
+    ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.3)";
+    ctx.lineWidth = sel ? 2 : 1;
+    ctx.fillStyle = s.hasBier ? "#c9a227" : "rgba(0,0,0,0.25)";
+    roundRect(ctx, p.x - 14, p.y - 10, 28, 20, 4);
+    ctx.fill();
+    ctx.stroke();
+    if (s.hasBier) {
+      ctx.fillStyle = "#0a1410";
+      ctx.font = "700 8px DM Sans";
+      ctx.textAlign = "center";
+      ctx.fillText("BIER", p.x, p.y + 2);
+      // beer bar
+      ctx.fillStyle = "rgba(0,0,0,0.35)";
+      ctx.fillRect(p.x - 12, p.y + 6, 24, 3);
+      ctx.fillStyle = "#f5d76e";
+      ctx.fillRect(p.x - 12, p.y + 6, 24 * (s.beer / s.capacity), 3);
+    } else {
+      ctx.fillStyle = "rgba(255,255,255,0.45)";
+      ctx.font = "700 12px DM Sans";
+      ctx.textAlign = "center";
+      ctx.fillText("+", p.x, p.y + 4);
+    }
+  }
+}
+
+export function slotPos(
+  s: BuildSlot,
+  w: number,
+  h: number,
+): { x: number; y: number } {
+  const cx = blockCenterX(s.blockId) * w;
+  const above = s.index < 2;
+  const side = s.index % 2 === 0 ? -1 : 1;
+  const gangMid = h * (L.gangY + L.gangH / 2);
+  return {
+    x: cx + side * w * 0.045,
+    y: above ? gangMid - h * 0.09 : gangMid + h * 0.09,
+  };
+}
+
+function drawFans(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  for (const f of m.fans) {
+    if (f.hp <= 0) continue;
+    const x = f.x * w;
+    const y = f.y * h;
+    drawMannchen(ctx, f, x, y, h);
+  }
+}
+
+function drawMannchen(
+  ctx: CanvasRenderingContext2D,
+  f: FanUnit,
   x: number,
   y: number,
-  w: number,
-  pct: number,
-  color: string,
+  h: number,
 ): void {
+  const r = Math.max(5, h * 0.015);
+  const col = FAN_STATS[f.kind].color;
+  ctx.fillStyle = col;
+  if (f.kind === "ultras") {
+    // angular
+    ctx.beginPath();
+    ctx.moveTo(x, y - r);
+    ctx.lineTo(x + r, y + r);
+    ctx.lineTo(x - r, y + r);
+    ctx.closePath();
+    ctx.fill();
+  } else if (f.kind === "familie") {
+    ctx.fillRect(x - r * 0.7, y - r, r * 1.4, r * 2);
+  } else {
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // mini hp
   ctx.fillStyle = "rgba(0,0,0,0.35)";
-  ctx.fillRect(x, y, w, 4);
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, w * Math.max(0, Math.min(1, pct)), 4);
+  ctx.fillRect(x - 8, y + r + 2, 16, 2);
+  ctx.fillStyle = "#6bcb77";
+  ctx.fillRect(x - 8, y + r + 2, 16 * (f.hp / f.maxHp), 2);
+}
+
+function drawMoodMeter(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  const x = w * 0.015;
+  const y = h * 0.2;
+  const segH = h * 0.06;
+  const filled = Math.floor(m.moodHeim) + 1; // 1..4 visual
+  for (let i = 0; i < 4; i++) {
+    const sy = y + (3 - i) * (segH + 4);
+    ctx.fillStyle = i < filled ? "#1f6feb" : "rgba(255,255,255,0.12)";
+    roundRect(ctx, x, sy, w * 0.028, segH, 4);
+    ctx.fill();
+  }
+}
+
+export function hitSlot(
+  m: Match,
+  mx: number,
+  my: number,
+): { blockId: number; index: number } | null {
+  for (const s of m.slots) {
+    if (s.blockId === 4) continue; // guest locked
+    const p = slotPos(s, m.width, m.height);
+    if (Math.abs(mx - p.x) < 18 && Math.abs(my - p.y) < 14) {
+      return { blockId: s.blockId, index: s.index };
+    }
+  }
+  return null;
 }
 
 function roundRect(
@@ -227,29 +301,4 @@ function roundRect(
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
-}
-
-export function hitLaneSlot(
-  m: Match,
-  mx: number,
-  my: number,
-): number | null {
-  const w = m.width;
-  const h = m.height;
-  const curvaW = w * LAYOUT.curvaW;
-  const laneY = h * LAYOUT.laneY;
-  const laneH = h * LAYOUT.laneH;
-  const laneX0 = curvaW;
-  const laneW = w - 2 * curvaW;
-  if (my < laneY || my > laneY + laneH * 0.55) return null;
-  if (mx < laneX0 || mx > laneX0 + laneW) return null;
-  const t = (mx - laneX0) / laneW;
-  const slot = Math.floor(t * LANE_SLOTS);
-  return Math.max(0, Math.min(LANE_SLOTS - 1, slot));
-}
-
-export function hitPlayerCurva(m: Match, mx: number, my: number): boolean {
-  const topH = m.height * LAYOUT.topH;
-  const curvaW = m.width * LAYOUT.curvaW;
-  return mx >= 0 && mx <= curvaW && my >= topH;
 }
