@@ -4,9 +4,9 @@
   "description": "Stadion Team-TD: Blöcke, Gang, Buden",
   "start_url": "./",
   "scope": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "display_override": ["fullscreen", "standalone"],
-  "orientation": "landscape",
+  "orientation": "any",
   "background_color": "#0a1410",
   "theme_color": "#0a1410",
   "icons": [

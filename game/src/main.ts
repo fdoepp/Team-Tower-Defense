@@ -252,6 +252,12 @@ function renderMatchScreen(): void {
   const fsGate = app.querySelector<HTMLDivElement>("#fs-gate")!;
 
   const resize = () => {
+    // Prefer visualViewport on iOS PWA — layout viewport can letterbox
+    const vv = window.visualViewport;
+    if (vv && (isStandalone() || document.documentElement.classList.contains("is-fs"))) {
+      document.documentElement.style.setProperty("--vvw", `${Math.floor(vv.width)}px`);
+      document.documentElement.style.setProperty("--vvh", `${Math.floor(vv.height)}px`);
+    }
     const rect = wrap.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const cssW = Math.max(1, Math.floor(rect.width));
@@ -266,7 +272,13 @@ function renderMatchScreen(): void {
   resize();
   requestAnimationFrame(resize);
   window.addEventListener("resize", resize);
-  window.addEventListener("orientationchange", () => setTimeout(resize, 200));
+  window.addEventListener("orientationchange", () => {
+    setTimeout(resize, 50);
+    setTimeout(resize, 250);
+    setTimeout(resize, 600);
+  });
+  window.visualViewport?.addEventListener("resize", resize);
+  window.visualViewport?.addEventListener("scroll", resize);
 
   const syncGate = () => {
     const show = needsFullscreenGate();
