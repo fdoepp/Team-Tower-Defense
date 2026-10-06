@@ -163,21 +163,28 @@ function drawSeats(
       const occ = m.seatOccupied(b.id, i);
       const sel =
         m.selectedSeat?.blockId === b.id && m.selectedSeat?.seatIndex === i;
+      const emptyHeim = !occ && b.id === HEIM_BLOCK;
       ctx.strokeStyle = sel
         ? "#6bcb77"
+        : emptyHeim
+          ? "rgba(107,203,119,0.65)"
+          : occ
+            ? "rgba(255,255,255,0.12)"
+            : "rgba(255,255,255,0.28)";
+      ctx.lineWidth = sel || emptyHeim ? 2 : 1;
+      ctx.fillStyle = emptyHeim
+        ? "rgba(15,40,24,0.75)"
         : occ
-          ? "rgba(255,255,255,0.15)"
-          : "rgba(255,255,255,0.4)";
-      ctx.lineWidth = sel ? 2 : 1;
-      ctx.fillStyle = occ ? "rgba(0,0,0,0.15)" : "rgba(0,0,0,0.35)";
-      roundRect(ctx, x - 10, y - 10, 20, 20, 3);
+          ? "rgba(0,0,0,0.12)"
+          : "rgba(0,0,0,0.3)";
+      roundRect(ctx, x - 11, y - 11, 22, 22, 3);
       ctx.fill();
       ctx.stroke();
-      if (!occ && b.id === HEIM_BLOCK) {
-        ctx.fillStyle = "rgba(255,255,255,0.35)";
-        ctx.font = "700 11px DM Sans";
+      if (emptyHeim) {
+        ctx.fillStyle = "#6bcb77";
+        ctx.font = "700 13px DM Sans";
         ctx.textAlign = "center";
-        ctx.fillText("+", x, y + 4);
+        ctx.fillText("+", x, y + 5);
       }
     }
   }
@@ -392,15 +399,17 @@ export function hitSeat(
   mx: number,
   my: number,
 ): { blockId: number; seatIndex: number } | null {
+  let best: { blockId: number; seatIndex: number; d: number } | null = null;
   for (let seatIndex = 0; seatIndex < SEATS_PER_BLOCK; seatIndex++) {
     const p = seatPos(HEIM_BLOCK, seatIndex);
     const x = p.x * m.width;
     const y = p.y * m.height;
-    if (Math.abs(mx - x) < 12 && Math.abs(my - y) < 12) {
-      return { blockId: HEIM_BLOCK, seatIndex };
+    const d = Math.hypot(mx - x, my - y);
+    if (d < 18 && (!best || d < best.d)) {
+      best = { blockId: HEIM_BLOCK, seatIndex, d };
     }
   }
-  return null;
+  return best ? { blockId: best.blockId, seatIndex: best.seatIndex } : null;
 }
 
 function roundRect(
