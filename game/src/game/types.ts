@@ -59,6 +59,8 @@ export type FanUnit = {
   homeStandKey: string | null;
   /** Ordner patrol direction on gang (−1 / +1) */
   patrolDir: number;
+  /** cheer FX timer after Gesang/Pyro */
+  cheerT: number;
   _after?: string;
   _homeSeat?: number | null;
 };
@@ -76,6 +78,8 @@ export type BuildSlot = {
   stewardCd: number;
   /** seconds of foreign battle-line dominance toward conversion */
   convertAcc: number;
+  /** which team is currently converting this stand */
+  convertBy: TeamId | null;
   /** visual production flash 0..1 */
   prodFlash: number;
 };
@@ -137,7 +141,7 @@ export const HIT_CD = 0.6;
 export const BLOCK_STORM_COUNT = 3;
 export const BLOCK_STORM_SEC = 5;
 /** Medium stand conversion under battle-line dominance */
-export const STAND_CONVERT_SEC = 10;
+export const STAND_CONVERT_SEC = 8;
 export const STEWARD_GOLD_PER_SEC = 0.55;
 export const SECURITY_FAMILY_GATE = 25;
 /** Familie shop visit: gold gained per purchase */

@@ -1,6 +1,7 @@
 import { Match } from "./Match";
 import {
   BLOCK_META,
+  STAND_CONVERT_SEC,
   type BuildSlot,
   type FanUnit,
 } from "./types";
@@ -45,6 +46,7 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawFans(ctx, m, w, h);
   drawCombatOverlays(ctx, m, w, h);
   drawConfetti(ctx, m, w, h);
+  drawMoodParticles(ctx, m, w, h);
   drawFloats(ctx, m, w, h);
 }
 
@@ -176,14 +178,15 @@ function drawSeats(
       const occ = m.seatOccupied(b.id, i);
       const sel =
         m.selectedSeat?.blockId === b.id && m.selectedSeat?.seatIndex === i;
-      const emptyHeim = !occ && b.id === HEIM_BLOCK;
+      // "+" only for permanently free Heim seats (buyable) — not temp empty / reserved
+      const buyable =
+        !occ && b.id === HEIM_BLOCK && m.blockOwner[HEIM_BLOCK] === m.playerTeam;
 
-      let cushion = emptyHeim
+      let cushion = buyable
         ? "rgba(20,50,32,0.85)"
         : occ
           ? "rgba(0,0,0,0.2)"
-          : "rgba(0,0,0,0.35)";
-      // Seat tint follows conversion lean / team color in neutral blocks
+          : "rgba(0,0,0,0.28)";
       if (occ && (b.id === 1 || b.id === 2)) {
         if (occ.team === "ksc") cushion = "rgba(37,99,235,0.45)";
         else if (occ.team === "vfb") cushion = "rgba(220,38,38,0.45)";
@@ -191,11 +194,11 @@ function drawSeats(
           const lean = occ.lean || 0;
           const prog = occ.captureProg || 0;
           const t = Math.max(Math.abs(lean), Math.abs(prog));
-          if (t > 0.2) {
+          if (t > 0.15) {
             cushion =
               lean > 0 || prog > 0
-                ? `rgba(37,99,235,${0.15 + t * 0.35})`
-                : `rgba(220,38,38,${0.15 + t * 0.35})`;
+                ? `rgba(37,99,235,${0.12 + t * 0.4})`
+                : `rgba(220,38,38,${0.12 + t * 0.4})`;
           } else cushion = "rgba(120,120,128,0.35)";
         }
       } else if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.35)";
@@ -206,12 +209,26 @@ function drawSeats(
       ctx.fill();
       ctx.strokeStyle = sel
         ? "#6bcb77"
-        : emptyHeim
-          ? "rgba(107,203,119,0.7)"
-          : "rgba(255,255,255,0.18)";
-      ctx.lineWidth = sel || emptyHeim ? 2 : 1;
+        : buyable
+          ? "rgba(107,203,119,0.75)"
+          : "rgba(255,255,255,0.14)";
+      ctx.lineWidth = sel || buyable ? 2 : 1;
       ctx.stroke();
-      if (emptyHeim) {
+
+      // Capture ring on converting neutrals
+      if (occ?.team === "neutral" && Math.abs(occ.captureProg) > 0.08) {
+        const prog = Math.abs(occ.captureProg);
+        ctx.strokeStyle =
+          occ.captureProg > 0
+            ? `rgba(59,130,246,${0.4 + prog * 0.5})`
+            : `rgba(239,68,68,${0.4 + prog * 0.5})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
+        ctx.stroke();
+      }
+
+      if (buyable) {
         ctx.fillStyle = "#6bcb77";
         ctx.font = "700 12px DM Sans";
         ctx.textAlign = "center";
@@ -247,15 +264,31 @@ function drawGang(
     ctx.lineTo(tx, y + gh - 4);
     ctx.stroke();
   }
-  // Battle line markers (vorderste Ultras)
+  // Dashed possession / Kampf frontiers (blau = Heim front, rot = Gast front)
   const left = w * L.blocksLeft;
   const span = w * (L.blocksRight - L.blocksLeft);
   const px = left + span * m.linePlayer;
   const ax = left + span * m.lineAi;
-  ctx.fillStyle = "rgba(59,130,246,0.85)";
-  ctx.fillRect(px - 2, y + 2, 4, gh - 4);
-  ctx.fillStyle = "rgba(239,68,68,0.85)";
-  ctx.fillRect(ax - 2, y + 2, 4, gh - 4);
+  ctx.save();
+  ctx.setLineDash([6, 5]);
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = "rgba(59,130,246,0.95)";
+  ctx.beginPath();
+  ctx.moveTo(px, y + 3);
+  ctx.lineTo(px, y + gh - 3);
+  ctx.stroke();
+  ctx.strokeStyle = "rgba(239,68,68,0.95)";
+  ctx.beginPath();
+  ctx.moveTo(ax, y + 3);
+  ctx.lineTo(ax, y + gh - 3);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // Soft fill between fronts when they haven't crossed
+  if (px < ax) {
+    ctx.fillStyle = "rgba(243,240,231,0.06)";
+    ctx.fillRect(px, y + 4, ax - px, gh - 8);
+  }
+  ctx.restore();
   ctx.fillStyle = "rgba(243,240,231,0.45)";
   ctx.font = `600 ${Math.floor(h * 0.018)}px DM Sans`;
   ctx.textAlign = "center";
@@ -374,7 +407,7 @@ function drawBuilding(
     return;
   }
 
-  // mockup-like panel colors
+  // mockup-like panel colors — blend toward converter while timer runs
   let wall = "#3f4650";
   if (!grey) {
     if (s.building === "bier") wall = player ? "#2f6b45" : ai ? "#7f1d1d" : "#4b5563";
@@ -383,6 +416,11 @@ function drawBuilding(
     else wall = player ? "#4c1d6a" : ai ? "#5b1a3a" : "#44403c";
   } else {
     wall = "#4b5563";
+  }
+  const convT = Math.min(1, s.convertAcc / STAND_CONVERT_SEC);
+  if (s.convertBy && convT > 0.05) {
+    const toward = s.convertBy === "ksc" ? "#1d4ed8" : "#b91c1c";
+    wall = lerpHex(wall, toward, 0.25 + convT * 0.55);
   }
 
   ctx.fillStyle = wall;
@@ -396,10 +434,11 @@ function drawBuilding(
   const cx = x + bw / 2;
   const cy = y + bh * 0.52;
   const iconS = Math.min(bw, bh) * 0.48;
+  const iconGrey = grey && !(s.convertBy && convT > 0.35);
 
-  if (s.building === "bier") drawBeerMug(ctx, cx, cy, iconS * 0.8, grey);
-  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy, iconS * 0.8, grey);
-  else drawShopJersey(ctx, cx, cy, iconS * 0.8, grey, player);
+  if (s.building === "bier") drawBeerMug(ctx, cx, cy, iconS * 0.8, iconGrey);
+  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy, iconS * 0.8, iconGrey);
+  else drawShopJersey(ctx, cx, cy, iconS * 0.8, iconGrey, player);
 
   // Club crest when stand is owned (not grey neutral)
   if (!grey && (player || ai)) {
@@ -424,18 +463,35 @@ function drawBuilding(
     ctx.restore();
   }
 
-  // conversion progress
-  if (s.convertAcc > 0.4) {
-    const pct = Math.min(1, s.convertAcc / 10);
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(x + 4, y + bh * 0.55, bw - 8, 5);
-    ctx.fillStyle = "#fbbf24";
-    ctx.fillRect(x + 4, y + bh * 0.55, (bw - 8) * pct, 5);
+  // Übernahme-Ticker in Teamfarbe (countdown ring)
+  if (s.convertBy && s.convertAcc > 0.15) {
+    const pct = Math.min(1, s.convertAcc / STAND_CONVERT_SEC);
+    const left = Math.max(0, STAND_CONVERT_SEC - s.convertAcc);
+    const col = s.convertBy === "ksc" ? "#3b82f6" : "#ef4444";
+    const rr = Math.min(bw, bh) * 0.22;
+    ctx.save();
+    ctx.strokeStyle = "rgba(0,0,0,0.45)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(cx, y + bh * 0.22, rr, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.arc(cx, y + bh * 0.22, rr, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = col;
+    ctx.font = `700 ${Math.max(9, Math.floor(rr * 0.7))}px Archivo Black, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`${Math.ceil(left)}`, cx, y + bh * 0.22 + 1);
+    ctx.textBaseline = "alphabetic";
+    ctx.restore();
   }
 
   // level pips only — no text labels
   const lv = s.level || 1;
-  if (!grey) {
+  if (!grey || (s.convertBy && convT > 0.5)) {
     const pipW = Math.min(7, (bw - 12) / 5 - 1);
     for (let i = 0; i < 5; i++) {
       ctx.fillStyle = i < lv ? "#fde68a" : "rgba(0,0,0,0.4)";
@@ -585,7 +641,7 @@ function drawFans(
     return za - zb || a.y - b.y;
   });
   for (const f of sorted) {
-    drawMannchen(ctx, f, f.x * w, f.y * h, h);
+    drawMannchen(ctx, m, f, f.x * w, f.y * h, h);
   }
 }
 
@@ -620,6 +676,7 @@ function lerpHex(a: string, b: string, t: number): string {
 
 function drawMannchen(
   ctx: CanvasRenderingContext2D,
+  m: Match,
   f: FanUnit,
   x: number,
   y: number,
@@ -653,6 +710,47 @@ function drawMannchen(
     drawFamilie(ctx, f, s, jersey, skin);
   } else {
     drawNormalo(ctx, f, s, jersey, skin);
+  }
+
+  // Gesang: wave flag; Pyro: hold flare
+  if (f.cheerT > 0.05 && !f.isSteward) {
+    const wave = Math.sin(m.realElapsed * 10 + f.id) * 0.35;
+    if (f.kind === "ultras") {
+      // Pyro flare
+      ctx.save();
+      ctx.translate(s * 0.55, -s * 0.35);
+      ctx.rotate(-0.4 + wave * 0.2);
+      ctx.fillStyle = "#1c1917";
+      ctx.fillRect(-2, 0, 4, s * 0.7);
+      const glow = ctx.createRadialGradient(0, -2, 1, 0, -2, s * 0.35);
+      glow.addColorStop(0, "#fff7ed");
+      glow.addColorStop(0.35, jersey);
+      glow.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(0, -2, s * 0.35, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    } else {
+      // Flag for normalos / familie
+      ctx.save();
+      ctx.translate(-s * 0.55, -s * 0.2);
+      ctx.rotate(-0.5 + wave);
+      ctx.strokeStyle = "#a8a29e";
+      ctx.lineWidth = Math.max(1.5, s * 0.1);
+      ctx.beginPath();
+      ctx.moveTo(0, s * 0.55);
+      ctx.lineTo(0, -s * 0.55);
+      ctx.stroke();
+      ctx.fillStyle = jersey;
+      ctx.beginPath();
+      ctx.moveTo(0, -s * 0.55);
+      ctx.lineTo(s * 0.7, -s * 0.35);
+      ctx.lineTo(0, -s * 0.15);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
   }
 
   ctx.restore();
@@ -1003,6 +1101,43 @@ function drawConfetti(
     const pw = Math.max(3, h * 0.008);
     const ph = Math.max(5, h * 0.014);
     ctx.fillRect(-pw / 2, -ph / 2, pw, ph);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawMoodParticles(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  for (const p of m.moodFx) {
+    const lifeLeft = 1 - p.t / p.life;
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, lifeLeft));
+    const px = p.x * w;
+    const py = p.y * h;
+    if (p.kind === "note") {
+      ctx.fillStyle = p.color;
+      ctx.font = `700 ${Math.max(10, p.size * h * 1.8)}px Archivo Black, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(p.size > 0.014 ? "♫" : "♪", px, py);
+    } else if (p.kind === "smoke") {
+      const rad = Math.max(4, p.size * h);
+      const g = ctx.createRadialGradient(px, py, 0, px, py, rad);
+      g.addColorStop(0, p.color);
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(px, py, rad, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(px, py, Math.max(2, p.size * h), 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
   }
   ctx.globalAlpha = 1;

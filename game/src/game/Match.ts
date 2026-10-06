@@ -106,6 +106,18 @@ export type ConfettiBit = {
   life: number;
 };
 
+export type MoodParticle = {
+  kind: "note" | "smoke" | "spark";
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  t: number;
+  life: number;
+  size: number;
+};
+
 export class Match {
   readonly cfg: MatchConfig;
   readonly playerTeam: TeamId;
@@ -132,6 +144,7 @@ export class Match {
   /** last team that scored — for crest flash */
   lastGoalTeam: TeamId | null = null;
   confetti: ConfettiBit[] = [];
+  moodFx: MoodParticle[] = [];
   speed: SpeedMode = 0;
   toasts: { text: string; t: number }[] = [];
   result: MatchResult | null = null;
@@ -187,6 +200,7 @@ export class Match {
           level: 1,
           stewardCd: 2 + Math.random() * 3,
           convertAcc: 0,
+          convertBy: null,
           prodFlash: 0,
         });
       }
@@ -292,6 +306,7 @@ export class Match {
       isSteward: false,
       homeStandKey: null,
       patrolDir: Math.random() < 0.5 ? 1 : -1,
+      cheerT: 0,
     };
   }
 
@@ -326,6 +341,7 @@ export class Match {
       isSteward: true,
       homeStandKey: slotKey(stand.blockId, stand.index),
       patrolDir: Math.random() < 0.5 ? 1 : -1,
+      cheerT: 0,
       _after: "steward",
     };
   }
@@ -354,6 +370,7 @@ export class Match {
     s.level = 1;
     s.stewardCd = kind === "ordner" ? 1.5 : 8;
     s.convertAcc = 0;
+    s.convertBy = null;
     s.prodFlash = 0;
     if (kind === "bier") s.beer = 40;
   }
@@ -531,9 +548,11 @@ export class Match {
       }
       this.moodHeim = clamp(this.moodHeim + 0.3 * n, 0, 3);
       this.jubelMulHeim.normalos = 1.4;
+      this.jubelMulHeim.familie = 1.25;
       const before = this.momentum;
       this.momentum = clamp(this.momentum + 0.06 * n, -1, 1);
       this.moodKick = Math.min(1, 0.7 + Math.abs(this.momentum - before));
+      this.triggerCheer("gesang", this.playerTeam, HEIM_BLOCK);
       this.toast(`Gesang ×${n}`);
     } else {
       if (!this.spend("beer", cost, door, "BIER")) {
@@ -546,10 +565,69 @@ export class Match {
       const before = this.momentum;
       this.momentum = clamp(this.momentum + 0.09 * n, -1, 1);
       this.moodKick = Math.min(1, 0.8 + Math.abs(this.momentum - before));
+      this.triggerCheer("pyro", this.playerTeam, HEIM_BLOCK);
       this.toast(`Pyro ×${n}`);
     }
     this.cd[act] = MOOD_CD[act];
     return true;
+  }
+
+  /** Wave flags / raise pyro + spawn particles on matching fans */
+  private triggerCheer(
+    act: MoodAction,
+    team: TeamId,
+    blockId: number,
+  ): void {
+    const kinds: FanKind[] =
+      act === "gesang" ? ["normalos", "familie"] : ["ultras"];
+    const color = team === "ksc" ? "#3b82f6" : "#ef4444";
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.team !== team || f.isSteward) continue;
+      if (f.blockId !== blockId && f.state !== "block") continue;
+      if (!kinds.includes(f.kind)) continue;
+      f.cheerT = Math.max(f.cheerT, act === "gesang" ? 3.2 : 3.6);
+      f.armSwing = 1;
+      for (let i = 0; i < (act === "gesang" ? 3 : 5); i++) {
+        if (act === "gesang") {
+          this.moodFx.push({
+            kind: "note",
+            x: f.x + (Math.random() - 0.5) * 0.04,
+            y: f.y - 0.02,
+            vx: (Math.random() - 0.5) * 0.04,
+            vy: -0.06 - Math.random() * 0.05,
+            color: Math.random() < 0.5 ? color : "#f3f0e7",
+            t: 0,
+            life: 1.1 + Math.random() * 0.5,
+            size: 0.012 + Math.random() * 0.008,
+          });
+        } else {
+          this.moodFx.push({
+            kind: "smoke",
+            x: f.x + (Math.random() - 0.5) * 0.03,
+            y: f.y - 0.04,
+            vx: (Math.random() - 0.5) * 0.05,
+            vy: -0.05 - Math.random() * 0.04,
+            color,
+            t: 0,
+            life: 1.4 + Math.random() * 0.6,
+            size: 0.02 + Math.random() * 0.02,
+          });
+          if (Math.random() < 0.4) {
+            this.moodFx.push({
+              kind: "spark",
+              x: f.x,
+              y: f.y - 0.05,
+              vx: (Math.random() - 0.5) * 0.08,
+              vy: -0.08 - Math.random() * 0.06,
+              color: "#fbbf24",
+              t: 0,
+              life: 0.7,
+              size: 0.008,
+            });
+          }
+        }
+      }
+    }
   }
 
   ultraOrderReady(): boolean {
@@ -751,6 +829,7 @@ export class Match {
       this.tickFloats(dt);
       this.tickToasts(dt);
       this.tickConfetti(dt);
+      this.tickMoodFx(dt);
       if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - dt * 1.2);
       return;
     }
@@ -817,10 +896,31 @@ export class Match {
     this.tickFloats(step);
     this.tickToasts(step);
     this.tickConfetti(step);
+    this.tickMoodFx(step);
 
     for (const f of this.fans) {
       if (f.armSwing > 0) f.armSwing = Math.max(0, f.armSwing - step * 2.2);
       if (f.attackCd > 0) f.attackCd = Math.max(0, f.attackCd - step);
+      if (f.cheerT > 0) {
+        f.cheerT = Math.max(0, f.cheerT - step);
+        // Keep emitting notes/smoke while cheering
+        if (Math.random() < 0.35 * step * 8) {
+          const isPyro = f.kind === "ultras";
+          const color =
+            f.team === "ksc" ? "#3b82f6" : f.team === "vfb" ? "#ef4444" : "#9ca3af";
+          this.moodFx.push({
+            kind: isPyro ? "smoke" : "note",
+            x: f.x + (Math.random() - 0.5) * 0.03,
+            y: f.y - 0.03,
+            vx: (Math.random() - 0.5) * 0.04,
+            vy: -0.05 - Math.random() * 0.04,
+            color: isPyro ? color : Math.random() < 0.5 ? color : "#fde68a",
+            t: 0,
+            life: isPyro ? 1.2 : 0.9,
+            size: isPyro ? 0.022 : 0.012,
+          });
+        }
+      }
     }
     for (const s of this.slots) {
       if (s.prodFlash > 0) s.prodFlash = Math.max(0, s.prodFlash - step * 1.2);
@@ -1365,39 +1465,44 @@ export class Match {
       : blockIdToGangX(GAST_BLOCK);
   }
 
-  /** Stand conversion by battle-line dominance (medium time) — no HP attack on stands */
+  /** Stand conversion by battle-line dominance — colored zone timer */
   private tickCaptureConvert(dt: number): void {
     for (const s of this.slots) {
       if (!s.building) continue;
       const mid = blockIdToGangX(s.blockId);
       let dominant: TeamId | null = null;
-      if (this.linePlayer > mid + 0.03 && this.linePlayer > this.lineAi) {
+      // Booth is in a team's "colored zone" when their battle line has passed the booth's block
+      if (this.linePlayer > mid + 0.02 && this.linePlayer >= this.lineAi - 0.02) {
         dominant = this.playerTeam;
-      } else if (this.lineAi < mid - 0.03 && this.lineAi < this.linePlayer) {
+      } else if (this.lineAi < mid - 0.02 && this.lineAi <= this.linePlayer + 0.02) {
         dominant = this.aiTeam;
       }
       if (!dominant || dominant === s.owner) {
-        s.convertAcc = Math.max(0, s.convertAcc - dt * 0.6);
+        s.convertAcc = Math.max(0, s.convertAcc - dt * 0.7);
+        if (s.convertAcc <= 0.05) s.convertBy = null;
         continue;
       }
-      s.convertAcc += dt;
+      // Switching pressure resets progress toward the new team
+      if (s.convertBy && s.convertBy !== dominant) {
+        s.convertAcc = Math.max(0, s.convertAcc - dt * 1.2);
+        if (s.convertAcc <= 0) s.convertBy = dominant;
+      } else {
+        s.convertBy = dominant;
+        s.convertAcc += dt;
+      }
       if (s.convertAcc >= STAND_CONVERT_SEC) {
-        const prev = s.owner;
         s.owner = dominant;
         s.greyNeutral = false;
         s.convertAcc = 0;
+        s.convertBy = null;
         if (s.building === "bier" && s.beer < 20) s.beer = 35;
-        this.floatAtSlot(s, "Konvertiert!", true);
+        this.floatAtSlot(s, "Übernommen!", true);
         this.toast(
           dominant === this.playerTeam
-            ? `Stand übernommen (${s.building})`
-            : `KI übernimmt Stand (${s.building})`,
+            ? `Bude übernommen`
+            : `KI übernimmt Bude`,
         );
         if (dominant === this.aiTeam) this.aiGold += 10;
-        void prev;
-      } else if (Math.random() < 0.015) {
-        const pct = Math.floor((s.convertAcc / STAND_CONVERT_SEC) * 100);
-        this.floatAtSlot(s, `${pct}%`, true);
       }
     }
   }
@@ -1636,87 +1741,82 @@ export class Match {
     }
   }
 
-  /** Neutral capture: slow in-place conversion (fans stay in the neutral block) */
+  /** Neutral capture: spatial wave from battle-line pressure + neighbor seats */
   private tickNeutralCapture(dt: number): void {
     this.defectAcc += dt;
     for (const f of this.fans) {
       if (f.team !== "neutral" || f.hp <= 0 || f.isSteward) continue;
-      if (f.state !== "block") continue;
+      if (f.state !== "block" || f.seatIndex == null) continue;
+      if (f.blockId !== 1 && f.blockId !== 2) continue;
 
-      let pull = 0;
-      const nearPlayer = this.fans.some(
-        (o) =>
-          o.hp > 0 &&
-          o.team === this.playerTeam &&
-          !o.isSteward &&
-          Math.abs(o.blockId - f.blockId) <= 1 &&
-          (o.state === "block" || o.state === "gang") &&
-          dist(f.x, f.y, o.x, o.y) < 0.28,
-      );
-      const nearAi = this.fans.some(
-        (o) =>
-          o.hp > 0 &&
-          o.team === this.aiTeam &&
-          !o.isSteward &&
-          Math.abs(o.blockId - f.blockId) <= 1 &&
-          dist(f.x, f.y, o.x, o.y) < 0.28,
-      );
-      if (nearPlayer) pull += 0.28;
-      if (nearAi) pull -= 0.28;
-      const standP = this.slots.some(
-        (s) => s.building && s.owner === this.playerTeam && s.blockId === f.blockId,
-      );
-      const standA = this.slots.some(
-        (s) => s.building && s.owner === this.aiTeam && s.blockId === f.blockId,
-      );
-      if (standP) pull += 0.2;
-      if (standA) pull -= 0.2;
-      pull += this.momentum * 0.15;
+      const col = f.seatIndex % 3; // 0 left (heimward) … 2 right (gastward)
+      const blockGx = blockIdToGangX(f.blockId);
+      // How far each front has entered this block's zone (−1..1-ish)
+      const playerDepth = clamp((this.linePlayer - (blockGx - 0.18)) / 0.36, 0, 1);
+      const aiDepth = clamp(((blockGx + 0.18) - this.lineAi) / 0.36, 0, 1);
+
+      // Spatial: heim pressure hits left columns first, gast hits right first
+      const colHeimBias = 1 - col / 2; // col0=1, col1=0.5, col2=0
+      const colGastBias = col / 2; // col0=0, col1=0.5, col2=1
+      let pull =
+        playerDepth * (0.35 + 0.55 * colHeimBias) -
+        aiDepth * (0.35 + 0.55 * colGastBias);
+
+      // Neighbor seats already converted push further
+      let nearHeim = 0;
+      let nearGast = 0;
+      for (const o of this.fans) {
+        if (o.hp <= 0 || o.isSteward || o.blockId !== f.blockId) continue;
+        if (o.state !== "block" || o.seatIndex == null) continue;
+        if (Math.abs(o.seatIndex - f.seatIndex) > 2) continue;
+        if (o.team === this.playerTeam) nearHeim++;
+        if (o.team === this.aiTeam) nearGast++;
+      }
+      pull += nearHeim * 0.22 - nearGast * 0.22;
+      pull += this.momentum * 0.12;
 
       const ultraP = this.fans.some(
         (o) =>
           o.hp > 0 &&
           o.team === this.playerTeam &&
           o.kind === "ultras" &&
-          o.blockId === f.blockId &&
-          dist(f.x, f.y, o.x, o.y) < 0.1,
+          (o.blockId === f.blockId ||
+            (o.state === "gang" && Math.abs(o.gangX - blockGx) < 0.12)),
       );
       const ultraA = this.fans.some(
         (o) =>
           o.hp > 0 &&
           o.team === this.aiTeam &&
           o.kind === "ultras" &&
-          o.blockId === f.blockId &&
-          dist(f.x, f.y, o.x, o.y) < 0.1,
+          (o.blockId === f.blockId ||
+            (o.state === "gang" && Math.abs(o.gangX - blockGx) < 0.12)),
       );
-      if (ultraP) pull += 0.45;
-      if (ultraA) pull -= 0.45;
+      if (ultraP) pull += 0.5 * colHeimBias + 0.15;
+      if (ultraA) pull -= 0.5 * colGastBias + 0.15;
 
-      // Slow lean — conversion takes noticeable time
-      f.lean = clamp(f.lean + pull * dt * 0.045, -1, 1);
-      const rate = ultraP || ultraA ? 0.055 : 0.022;
-      if (f.lean > 0.45) f.captureProg = clamp(f.captureProg + rate * dt, 0, 1);
-      else if (f.lean < -0.45)
+      f.lean = clamp(f.lean + pull * dt * 0.07, -1, 1);
+      const pressure = Math.abs(pull);
+      const rate = 0.018 + pressure * 0.04 + (ultraP || ultraA ? 0.03 : 0);
+      if (f.lean > 0.35) f.captureProg = clamp(f.captureProg + rate * dt, 0, 1);
+      else if (f.lean < -0.35)
         f.captureProg = clamp(f.captureProg - rate * dt, -1, 0);
-      else f.captureProg *= 1 - 0.08 * dt;
+      else f.captureProg *= 1 - 0.06 * dt;
 
-      // Convert in place — stay on the same seat in the neutral block
       if (f.captureProg >= 1) {
         f.team = this.playerTeam;
-        f.lean = 0;
+        f.lean = 1;
         f.captureProg = 0;
         this.toast("Platz → Heim");
         this.floatAt(f.x, f.y, "+Heim", true);
       } else if (f.captureProg <= -1) {
         f.team = this.aiTeam;
-        f.lean = 0;
+        f.lean = -1;
         f.captureProg = 0;
         this.toast("Platz → Gäste");
         this.floatAt(f.x, f.y, "+Gäste", false);
       }
     }
 
-    // Soft refill: keep ~¾ occupancy with fresh neutrals on empty seats
     this.refillNeutralSeats(dt);
   }
 
@@ -1914,6 +2014,19 @@ export class Match {
     this.confetti = this.confetti.filter((c) => c.t < c.life);
   }
 
+  private tickMoodFx(dt: number): void {
+    for (const p of this.moodFx) {
+      p.t += dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      if (p.kind === "smoke") {
+        p.vy -= 0.02 * dt;
+        p.size += 0.01 * dt;
+      }
+    }
+    this.moodFx = this.moodFx.filter((p) => p.t < p.life);
+  }
+
   private tickAi(dt: number): void {
     this.aiAcc += dt;
     for (const k of Object.keys(this.aiCd) as (keyof typeof this.aiCd)[]) {
@@ -1982,9 +2095,11 @@ export class Match {
       this.aiMerch -= cost;
       this.moodGaeste = clamp(this.moodGaeste + 0.3 * n, 0, 3);
       this.jubelMulGast.normalos = 1.4;
+      this.jubelMulGast.familie = 1.25;
       const before = this.momentum;
       this.momentum = clamp(this.momentum - 0.06 * n, -1, 1);
       this.moodKick = Math.min(1, 0.55 + Math.abs(this.momentum - before));
+      this.triggerCheer("gesang", this.aiTeam, GAST_BLOCK);
       this.toast(`KI Gesang ×${n}`);
     } else {
       if (this.aiBeer < cost) return;
@@ -1995,6 +2110,7 @@ export class Match {
       const before = this.momentum;
       this.momentum = clamp(this.momentum - 0.09 * n, -1, 1);
       this.moodKick = Math.min(1, 0.65 + Math.abs(this.momentum - before));
+      this.triggerCheer("pyro", this.aiTeam, GAST_BLOCK);
       this.toast(`KI Pyro ×${n}`);
     }
     this.aiCd[act] = MOOD_CD[act] * (this.cfg.settings.difficulty === "easy" ? 1.35 : 1);
