@@ -147,17 +147,18 @@ function drawBlocks(
     const cx = blockCenterX(b.id) * w;
     const y = top + Math.abs(b.id - 1.5) * h * 0.008;
     const bodyH = bh * 0.7;
-    // terrace body
+    const left = cx - bw / 2;
+    // terrace body — square bottom so booths sit flush (no corner gaps)
     ctx.fillStyle = blockFill(m, b.id);
-    roundRect(ctx, cx - bw / 2, y, bw, bodyH, 12);
+    roundRectTop(ctx, left, y, bw, bodyH, 12);
     ctx.fill();
     // seat rows (A2c benches)
     ctx.save();
-    roundRect(ctx, cx - bw / 2, y, bw, bodyH, 12);
+    roundRectTop(ctx, left, y, bw, bodyH, 12);
     ctx.clip();
     for (let row = 0; row < 5; row++) {
       ctx.fillStyle = row % 2 === 0 ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.12)";
-      ctx.fillRect(cx - bw / 2 + 4, y + 22 + row * (bodyH / 6), bw - 8, bodyH / 7);
+      ctx.fillRect(left + 4, y + 22 + row * (bodyH / 6), bw - 8, bodyH / 7);
     }
     ctx.restore();
     // header badge
@@ -334,7 +335,7 @@ function drawBuilding(
 
   const cx = x + bw / 2;
   const cy = y + bh * 0.55;
-  const iconS = Math.min(bw, bh) * 0.38;
+  const iconS = Math.min(bw * 0.55, bh * 0.48);
 
   if (s.building === "bier") drawBeerMug(ctx, cx, cy - 2, iconS, grey);
   else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy - 2, iconS, grey);
@@ -685,6 +686,26 @@ function roundRect(
   ctx.arcTo(x + w, y, x + w, y + h, rr);
   ctx.arcTo(x + w, y + h, x, y + h, rr);
   ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
+/** Rounded top corners only — flat bottom for flush booth seams */
+function roundRectTop(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.lineTo(x, y + rr);
   ctx.arcTo(x, y, x + w, y, rr);
   ctx.closePath();
 }

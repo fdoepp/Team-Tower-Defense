@@ -18,8 +18,8 @@ export const L = {
   blocksLeft: 0.12,
   blocksRight: 0.98,
   blockGap: 0.028,
-  /** door gap as fraction of block width */
-  doorFrac: 0.22,
+  /** door gap as fraction of block width — path into block only */
+  doorFrac: 0.16,
 };
 
 export function blockWidthNorm(): number {
