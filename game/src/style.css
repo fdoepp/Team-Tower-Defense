@@ -442,12 +442,21 @@ select {
 }
 
 .mood-chip.cd {
-  filter: grayscale(0.55);
-  opacity: 0.55;
+  opacity: 0.42;
+  filter: none;
+}
+
+.mood-chip.gesang.cd {
+  background: linear-gradient(180deg, #3b6fb8, #1e3a8a);
+}
+
+.mood-chip.pyro.cd {
+  background: linear-gradient(180deg, #c4a035, #9a3412);
+  color: #292524;
 }
 
 .mood-chip.ready {
-  filter: brightness(1.08);
+  filter: brightness(1.1);
 }
 
 .combat-banner {
