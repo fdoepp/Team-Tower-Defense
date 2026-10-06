@@ -183,13 +183,14 @@ select {
 }
 
 .speed-btns button {
-  min-width: 40px;
-  min-height: 32px;
-  border-radius: 8px;
+  min-width: 48px;
+  min-height: 40px;
+  border-radius: 10px;
   background: #102018;
   color: var(--text);
   border: 1px solid var(--line);
   font-weight: 700;
+  font-size: 0.95rem;
 }
 
 .speed-btns button.on {
@@ -234,17 +235,17 @@ select {
   opacity: 1;
 }
 
-/* Left rail: mood + ultra, no overlap with each other */
+/* Left rail: mood + ultra — large touch targets */
 .control-rail {
   position: absolute;
-  left: 4px;
-  top: 18%;
-  bottom: 10%;
-  width: 86px;
+  left: 6px;
+  top: 14%;
+  bottom: 8%;
+  width: 118px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   z-index: 4;
   pointer-events: none;
 }
@@ -257,28 +258,38 @@ select {
 .mood-stack {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .mood-btn,
 .ultra-btn,
 .build-fab {
-  border-radius: 8px;
-  padding: 6px 8px;
-  font-size: 0.68rem;
+  border-radius: 12px;
+  padding: 12px 10px;
+  min-height: 52px;
+  font-size: 0.82rem;
   font-weight: 700;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
   width: 100%;
   color: #0a1410;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.mood-btn small,
+.ultra-btn small {
+  font-size: 0.65rem;
+  font-weight: 600;
+  opacity: 0.85;
 }
 
 .mood-btn span,
 .ultra-btn span {
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .mood-btn.ready,
@@ -297,6 +308,8 @@ select {
 .ultra-btn {
   position: static;
   margin-top: auto;
+  min-height: 58px;
+  font-size: 0.88rem;
 }
 
 .build-fab {
@@ -305,7 +318,8 @@ select {
   bottom: 8px;
   z-index: 4;
   width: auto;
-  min-width: 110px;
+  min-width: 130px;
+  min-height: 52px;
 }
 
 .rotate-hint {
@@ -346,13 +360,14 @@ select {
   display: flex;
   align-items: baseline;
   gap: 4px;
-  padding: 4px 8px;
-  border-radius: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
   background: rgba(8, 18, 14, 0.85);
   border: 1px solid var(--line);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--muted);
   font-weight: 700;
+  min-height: 36px;
 }
 
 .cur-pill b {
@@ -392,18 +407,18 @@ select {
 .popup-menu {
   position: absolute;
   left: 50%;
-  bottom: 12%;
+  bottom: 10%;
   transform: translateX(-50%);
   z-index: 8;
-  background: rgba(8, 18, 14, 0.95);
+  background: rgba(8, 18, 14, 0.96);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 10px;
+  border-radius: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 200px;
-  max-width: 90%;
+  gap: 8px;
+  min-width: 240px;
+  max-width: 92%;
 }
 
 .popup-menu.hidden {
@@ -413,16 +428,17 @@ select {
 .popup-title {
   margin: 0 0 4px;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
 }
 
 .popup-menu button {
-  min-height: 40px;
-  border-radius: 8px;
-  padding: 8px 10px;
+  min-height: 48px;
+  border-radius: 10px;
+  padding: 10px 12px;
   background: var(--ok);
   color: #0a1410;
   font-weight: 700;
+  font-size: 0.9rem;
   text-align: left;
   display: flex;
   justify-content: space-between;

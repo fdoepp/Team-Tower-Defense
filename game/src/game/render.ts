@@ -12,12 +12,14 @@ import {
   SEATS_PER_BLOCK,
   blockCenterX,
   blockWidthNorm,
+  boothRect,
   doorPos,
+  gangY,
   seatPos,
 } from "./layout";
 
 export { SEATS_PER_BLOCK } from "./layout";
-export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX } from "./layout";
+export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
 
 export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   const w = m.width;
@@ -42,12 +44,13 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawFloats(ctx, m, w, h);
 
   if (m.speed === 0 && !m.result) {
+    const gy = gangY();
     ctx.fillStyle = "rgba(8,16,12,0.35)";
-    ctx.fillRect(0, h * L.gangY, w, h * L.gangH);
+    ctx.fillRect(0, h * gy, w, h * L.gangH);
     ctx.fillStyle = "#f3f0e7";
     ctx.font = `700 ${Math.floor(h * 0.055)}px Archivo Black, sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillText("PAUSE", w / 2, h * (L.gangY + L.gangH / 2) + 6);
+    ctx.fillText("PAUSE", w / 2, h * (gy + L.gangH / 2) + 6);
   }
 }
 
@@ -165,14 +168,16 @@ function drawBlocks(
     ctx.font = `700 ${Math.floor(h * 0.022)}px DM Sans`;
     ctx.textAlign = "center";
     ctx.fillText(b.label, cx, y + 16);
-    // door tunnel
+    // door corridor through upper booth strip into gang
     const d = doorPos(b.id);
+    const doorW = bw * L.doorFrac;
+    const corridorTop = d.y * h;
+    const corridorH = h * gangY() - corridorTop + 2;
     ctx.fillStyle = "#0a0e0c";
-    roundRect(ctx, d.x * w - 16, d.y * h - 2, 32, 18, 5);
-    ctx.fill();
-    ctx.fillStyle = "rgba(243,240,231,0.35)";
-    ctx.fillRect(d.x * w - 6, d.y * h + 2, 4, 10);
-    ctx.fillRect(d.x * w + 2, d.y * h + 2, 4, 10);
+    ctx.fillRect(d.x * w - doorW / 2, corridorTop - 2, doorW, corridorH);
+    ctx.fillStyle = "rgba(243,240,231,0.22)";
+    ctx.fillRect(d.x * w - doorW / 2 + 3, corridorTop, 3, corridorH - 4);
+    ctx.fillRect(d.x * w + doorW / 2 - 6, corridorTop, 3, corridorH - 4);
   }
 }
 
@@ -222,34 +227,32 @@ function drawGang(
   w: number,
   h: number,
 ): void {
-  const y = h * L.gangY;
+  const y = h * gangY();
   const gh = h * L.gangH;
-  // concrete floor
   const g = ctx.createLinearGradient(0, y, 0, y + gh);
   g.addColorStop(0, "#2a3038");
   g.addColorStop(0.5, "#1e242c");
   g.addColorStop(1, "#171c22");
   ctx.fillStyle = g;
-  roundRect(ctx, w * 0.04, y, w * 0.92, gh, 14);
-  ctx.fill();
+  // flush under booths — full width of booth band
+  ctx.fillRect(w * L.blocksLeft, y, w * (L.blocksRight - L.blocksLeft), gh);
   ctx.strokeStyle = "rgba(243,240,231,0.18)";
   ctx.lineWidth = 2;
-  ctx.stroke();
-  // floor tiles
+  ctx.strokeRect(w * L.blocksLeft, y, w * (L.blocksRight - L.blocksLeft), gh);
   ctx.strokeStyle = "rgba(255,255,255,0.05)";
   ctx.lineWidth = 1;
   for (let i = 1; i < 10; i++) {
-    const tx = w * 0.08 + ((w * 0.84) / 10) * i;
+    const tx = w * L.blocksLeft + (w * (L.blocksRight - L.blocksLeft) / 10) * i;
     ctx.beginPath();
-    ctx.moveTo(tx, y + 8);
-    ctx.lineTo(tx, y + gh - 8);
+    ctx.moveTo(tx, y + 4);
+    ctx.lineTo(tx, y + gh - 4);
     ctx.stroke();
   }
   ctx.setLineDash([10, 8]);
   ctx.strokeStyle = "rgba(255,255,255,0.14)";
   ctx.beginPath();
-  ctx.moveTo(w * 0.08, y + gh / 2);
-  ctx.lineTo(w * 0.92, y + gh / 2);
+  ctx.moveTo(w * L.blocksLeft + 8, y + gh / 2);
+  ctx.lineTo(w * L.blocksRight - 8, y + gh / 2);
   ctx.stroke();
   ctx.setLineDash([]);
   ctx.fillStyle = "rgba(243,240,231,0.4)";
@@ -265,11 +268,20 @@ function drawSlots(
   h: number,
 ): void {
   for (const s of m.slots) {
-    const p = slotPos(s, w, h);
+    const r = boothRect(s.blockId, s.index);
     const sel =
       m.selectedSlot?.blockId === s.blockId &&
       m.selectedSlot?.index === s.index;
-    drawBuilding(ctx, s, p.x, p.y, sel, m);
+    drawBuilding(
+      ctx,
+      s,
+      r.x * w,
+      r.y * h,
+      r.w * w,
+      r.h * h,
+      sel,
+      m,
+    );
   }
 }
 
@@ -278,60 +290,63 @@ function drawBuilding(
   s: BuildSlot,
   x: number,
   y: number,
+  bw: number,
+  bh: number,
   sel: boolean,
   m: Match,
 ): void {
-  const bw = 38;
-  const bh = 30;
-  const left = x - bw / 2;
-  const top = y - bh / 2;
-
-  if (!s.building) {
-    ctx.setLineDash([4, 3]);
-    ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.35)";
-    ctx.lineWidth = 1.5;
-    ctx.fillStyle = "rgba(0,0,0,0.28)";
-    roundRect(ctx, left, top, bw, bh, 5);
-    ctx.fill();
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = "rgba(255,255,255,0.55)";
-    ctx.font = "700 14px DM Sans";
-    ctx.textAlign = "center";
-    ctx.fillText("+", x, y + 5);
-    return;
-  }
-
-  const grey = s.greyNeutral && s.owner === "neutral";
+  const grey = !!(s.greyNeutral && s.owner === "neutral");
   const player = s.owner === m.playerTeam;
   const ai = s.owner === m.aiTeam;
 
-  // booth base
-  let wall = "#9ca3af";
+  if (!s.building) {
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = sel ? "#6bcb77" : "rgba(255,255,255,0.4)";
+    ctx.lineWidth = 2;
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.fillRect(x, y, bw, bh);
+    ctx.strokeRect(x + 1, y + 1, bw - 2, bh - 2);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.font = `700 ${Math.max(11, Math.floor(bh * 0.28))}px Archivo Black, DM Sans`;
+    ctx.textAlign = "center";
+    ctx.fillText("BAU", x + bw / 2, y + bh * 0.58);
+    return;
+  }
+
+  let wall = "#78716c";
   if (!grey) {
-    if (s.building === "bier") wall = player ? "#d4a017" : ai ? "#9a3412" : "#a8a29e";
-    else if (s.building === "ordner") wall = player ? "#3b82f6" : ai ? "#1e3a8a" : "#94a3b8";
-    else wall = player ? "#c084fc" : ai ? "#6b21a8" : "#a78bfa";
-  } else wall = "#6b7280";
+    if (s.building === "bier") wall = player ? "#ca8a04" : ai ? "#9a3412" : "#a8a29e";
+    else if (s.building === "ordner")
+      wall = player ? "#2563eb" : ai ? "#1e3a8a" : "#64748b";
+    else wall = player ? "#9333ea" : ai ? "#6b21a8" : "#7c3aed";
+  }
 
+  // flush booth body
   ctx.fillStyle = wall;
-  roundRect(ctx, left, top + 6, bw, bh - 6, 4);
-  ctx.fill();
-  // roof
-  ctx.fillStyle = grey ? "#4b5563" : "rgba(10,14,12,0.55)";
-  ctx.beginPath();
-  ctx.moveTo(left - 2, top + 8);
-  ctx.lineTo(x, top - 2);
-  ctx.lineTo(left + bw + 2, top + 8);
-  ctx.closePath();
-  ctx.fill();
-  // counter / window
-  ctx.fillStyle = "rgba(255,255,255,0.2)";
-  ctx.fillRect(left + 4, top + 14, bw - 8, 3);
+  ctx.fillRect(x, y, bw, bh);
+  // roof strip at top edge (toward block)
+  ctx.fillStyle = grey ? "#44403c" : "rgba(10,14,12,0.5)";
+  ctx.fillRect(x, y, bw, Math.max(4, bh * 0.14));
+  // counter
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  ctx.fillRect(x + 2, y + bh * 0.42, bw - 4, 3);
 
-  if (s.building === "bier") drawBeerMug(ctx, x, y + 4, grey);
-  else if (s.building === "ordner") drawOrdnerBadge(ctx, x, y + 3, grey);
-  else drawShopJersey(ctx, x, y + 3, grey, player);
+  const cx = x + bw / 2;
+  const cy = y + bh * 0.55;
+  const iconS = Math.min(bw, bh) * 0.38;
+
+  if (s.building === "bier") drawBeerMug(ctx, cx, cy - 2, iconS, grey);
+  else if (s.building === "ordner") drawOrdnerBadge(ctx, cx, cy - 2, iconS, grey);
+  else drawShopJersey(ctx, cx, cy - 2, iconS, grey, player);
+
+  // clear label
+  const label =
+    s.building === "bier" ? "BIER" : s.building === "ordner" ? "ORDNER" : "SHOP";
+  ctx.fillStyle = grey ? "#e7e5e4" : "#fff";
+  ctx.font = `700 ${Math.max(9, Math.floor(bh * 0.22))}px Archivo Black, DM Sans`;
+  ctx.textAlign = "center";
+  ctx.fillText(label, cx, y + bh - 5);
 
   ctx.strokeStyle = sel
     ? "#6bcb77"
@@ -339,16 +354,15 @@ function drawBuilding(
       ? "#93c5fd"
       : ai
         ? "#fca5a5"
-        : "rgba(255,255,255,0.25)";
-  ctx.lineWidth = sel ? 2 : 1.2;
-  roundRect(ctx, left, top + 6, bw, bh - 6, 4);
-  ctx.stroke();
+        : "rgba(255,255,255,0.2)";
+  ctx.lineWidth = sel ? 2.5 : 1.5;
+  ctx.strokeRect(x + 0.5, y + 0.5, bw - 1, bh - 1);
 
   if (s.building === "bier" && !grey) {
-    ctx.fillStyle = "rgba(0,0,0,0.4)";
-    ctx.fillRect(left + 4, top + bh - 4, bw - 8, 3);
-    ctx.fillStyle = "#f5d76e";
-    ctx.fillRect(left + 4, top + bh - 4, (bw - 8) * (s.beer / s.capacity), 3);
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillRect(x + 4, y + bh * 0.32, bw - 8, 4);
+    ctx.fillStyle = "#fde68a";
+    ctx.fillRect(x + 4, y + bh * 0.32, (bw - 8) * (s.beer / s.capacity), 4);
   }
 }
 
@@ -356,17 +370,18 @@ function drawBeerMug(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
+  s: number,
   grey: boolean,
 ): void {
-  ctx.fillStyle = grey ? "#d1d5db" : "#f5d76e";
-  roundRect(ctx, x - 7, y - 4, 12, 12, 2);
+  ctx.fillStyle = grey ? "#d6d3d1" : "#fbbf24";
+  roundRect(ctx, x - s * 0.45, y - s * 0.35, s * 0.75, s * 0.9, 2);
   ctx.fill();
-  ctx.fillStyle = grey ? "#e5e7eb" : "#fff8e7";
-  ctx.fillRect(x - 6, y - 6, 10, 4);
-  ctx.strokeStyle = grey ? "#9ca3af" : "#b45309";
-  ctx.lineWidth = 1.5;
+  ctx.fillStyle = grey ? "#f5f5f4" : "#fff7ed";
+  ctx.fillRect(x - s * 0.4, y - s * 0.5, s * 0.65, s * 0.28);
+  ctx.strokeStyle = grey ? "#a8a29e" : "#92400e";
+  ctx.lineWidth = Math.max(2, s * 0.12);
   ctx.beginPath();
-  ctx.arc(x + 7, y + 2, 4, -0.6, 0.6);
+  ctx.arc(x + s * 0.4, y + s * 0.1, s * 0.28, -0.8, 0.8);
   ctx.stroke();
 }
 
@@ -374,22 +389,22 @@ function drawOrdnerBadge(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
+  s: number,
   grey: boolean,
 ): void {
-  // hi-vis vest hint
-  ctx.fillStyle = grey ? "#9ca3af" : "#facc15";
-  ctx.fillRect(x - 8, y - 2, 16, 10);
-  ctx.fillStyle = grey ? "#6b7280" : "#1e293b";
-  ctx.beginPath();
-  ctx.arc(x, y - 6, 4, 0, Math.PI * 2);
+  ctx.fillStyle = grey ? "#a8a29e" : "#facc15";
+  roundRect(ctx, x - s * 0.5, y - s * 0.15, s, s * 0.7, 2);
   ctx.fill();
-  // badge
-  ctx.fillStyle = grey ? "#d1d5db" : "#fff";
+  ctx.fillStyle = grey ? "#57534e" : "#0f172a";
   ctx.beginPath();
-  ctx.moveTo(x, y + 1);
-  ctx.lineTo(x + 4, y + 5);
-  ctx.lineTo(x, y + 9);
-  ctx.lineTo(x - 4, y + 5);
+  ctx.arc(x, y - s * 0.4, s * 0.28, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = grey ? "#e7e5e4" : "#fff";
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + s * 0.28, y + s * 0.28);
+  ctx.lineTo(x, y + s * 0.55);
+  ctx.lineTo(x - s * 0.28, y + s * 0.28);
   ctx.closePath();
   ctx.fill();
 }
@@ -398,25 +413,25 @@ function drawShopJersey(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
+  s: number,
   grey: boolean,
   player: boolean,
 ): void {
-  const col = grey ? "#d1d5db" : player ? "#1f6feb" : "#dc2626";
+  const col = grey ? "#d6d3d1" : player ? "#1d4ed8" : "#b91c1c";
   ctx.fillStyle = col;
-  // jersey body
   ctx.beginPath();
-  ctx.moveTo(x - 8, y - 2);
-  ctx.lineTo(x - 10, y + 2);
-  ctx.lineTo(x - 6, y + 2);
-  ctx.lineTo(x - 6, y + 10);
-  ctx.lineTo(x + 6, y + 10);
-  ctx.lineTo(x + 6, y + 2);
-  ctx.lineTo(x + 10, y + 2);
-  ctx.lineTo(x + 8, y - 2);
+  ctx.moveTo(x - s * 0.55, y - s * 0.2);
+  ctx.lineTo(x - s * 0.75, y + s * 0.15);
+  ctx.lineTo(x - s * 0.4, y + s * 0.15);
+  ctx.lineTo(x - s * 0.4, y + s * 0.65);
+  ctx.lineTo(x + s * 0.4, y + s * 0.65);
+  ctx.lineTo(x + s * 0.4, y + s * 0.15);
+  ctx.lineTo(x + s * 0.75, y + s * 0.15);
+  ctx.lineTo(x + s * 0.55, y - s * 0.2);
   ctx.closePath();
   ctx.fill();
   ctx.fillStyle = "#fff";
-  ctx.fillRect(x - 2, y + 2, 4, 5);
+  ctx.fillRect(x - s * 0.12, y, s * 0.24, s * 0.35);
 }
 
 export function slotPos(
@@ -424,15 +439,8 @@ export function slotPos(
   w: number,
   h: number,
 ): { x: number; y: number } {
-  const cx = blockCenterX(s.blockId) * w;
-  const above = s.index < 2;
-  const side = s.index % 2 === 0 ? -1 : 1;
-  const gangMid = h * (L.gangY + L.gangH / 2);
-  const inset = blockWidthNorm() * w * 0.28;
-  return {
-    x: cx + side * inset,
-    y: above ? gangMid - h * 0.085 : gangMid + h * 0.085,
-  };
+  const r = boothRect(s.blockId, s.index);
+  return { x: (r.x + r.w / 2) * w, y: (r.y + r.h / 2) * h };
 }
 
 function drawFans(
@@ -633,8 +641,12 @@ export function hitSlot(
 ): { blockId: number; index: number } | null {
   for (const s of m.slots) {
     if (s.blockId === GAST_BLOCK) continue;
-    const p = slotPos(s, m.width, m.height);
-    if (Math.abs(mx - p.x) < 22 && Math.abs(my - p.y) < 18) {
+    const r = boothRect(s.blockId, s.index);
+    const x0 = r.x * m.width;
+    const y0 = r.y * m.height;
+    const x1 = (r.x + r.w) * m.width;
+    const y1 = (r.y + r.h) * m.height;
+    if (mx >= x0 && mx <= x1 && my >= y0 && my <= y1) {
       return { blockId: s.blockId, index: s.index };
     }
   }
