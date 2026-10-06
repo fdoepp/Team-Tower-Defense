@@ -344,10 +344,20 @@ function drawBuilding(
   // clear label
   const label =
     s.building === "bier" ? "BIER" : s.building === "ordner" ? "ORDNER" : "SHOP";
+  const lv = s.level || 1;
   ctx.fillStyle = grey ? "#e7e5e4" : "#fff";
-  ctx.font = `700 ${Math.max(9, Math.floor(bh * 0.22))}px Archivo Black, DM Sans`;
+  ctx.font = `700 ${Math.max(9, Math.floor(bh * 0.2))}px Archivo Black, DM Sans`;
   ctx.textAlign = "center";
-  ctx.fillText(label, cx, y + bh - 5);
+  ctx.fillText(lv > 1 ? `${label} Lv${lv}` : label, cx, y + bh - 5);
+
+  // level pips (5)
+  if (!grey && lv >= 1) {
+    const pipW = Math.min(6, (bw - 10) / 5 - 1);
+    for (let i = 0; i < 5; i++) {
+      ctx.fillStyle = i < lv ? "#fde68a" : "rgba(0,0,0,0.35)";
+      ctx.fillRect(x + 4 + i * (pipW + 2), y + 3, pipW, 4);
+    }
+  }
 
   ctx.strokeStyle = sel
     ? "#6bcb77"
@@ -474,120 +484,355 @@ function drawMannchen(
   y: number,
   h: number,
 ): void {
+  if (f.isSteward) {
+    drawSteward(ctx, f, x, y, h);
+    return;
+  }
   const onGang = f.state === "gang" || f.invading;
-  const scale = Math.max(0.85, h * (onGang ? 0.028 : 0.018) / 10);
+  const base = Math.max(0.9, h * (onGang ? 0.03 : 0.02) / 10);
+  // size by kind — ultras bulkier, familie smaller
+  const scale =
+    f.kind === "ultras" ? base * 1.15 : f.kind === "familie" ? base * 0.88 : base;
   const s = 10 * scale;
   const jersey = teamJersey(f);
   const skin = f.team === "neutral" ? "#c4c4c4" : "#e8c4a0";
-  const pants = f.kind === "ultras" ? "#111827" : "#1f2937";
 
   ctx.save();
   ctx.translate(x, y);
 
   // shadow
-  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
   ctx.beginPath();
-  ctx.ellipse(0, s * 1.15, s * 0.7, s * 0.22, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, s * 1.2, s * 0.75, s * 0.22, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // legs
-  ctx.strokeStyle = pants;
-  ctx.lineWidth = Math.max(2, s * 0.22);
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(-s * 0.25, s * 0.35);
-  ctx.lineTo(-s * 0.35, s * 1.05);
-  ctx.moveTo(s * 0.25, s * 0.35);
-  ctx.lineTo(s * 0.4, s * 1.05);
-  ctx.stroke();
-
-  // body / jersey
-  ctx.fillStyle = jersey;
-  roundRect(ctx, -s * 0.55, -s * 0.35, s * 1.1, s * 0.85, 3);
-  ctx.fill();
-  // jersey stripes for teams
-  if (f.team !== "neutral") {
-    ctx.fillStyle = "rgba(255,255,255,0.35)";
-    ctx.fillRect(-s * 0.15, -s * 0.3, s * 0.3, s * 0.75);
-  }
-
-  // kind accents
   if (f.kind === "ultras") {
-    // beanie
-    ctx.fillStyle = "#0f172a";
-    ctx.beginPath();
-    ctx.arc(0, -s * 0.75, s * 0.42, Math.PI, 0);
-    ctx.fill();
-    ctx.fillRect(-s * 0.42, -s * 0.75, s * 0.84, s * 0.18);
-    // scarf
-    ctx.fillStyle = jersey;
-    ctx.fillRect(-s * 0.5, -s * 0.05, s, s * 0.18);
-    ctx.fillRect(s * 0.35, -s * 0.05, s * 0.18, s * 0.55);
+    drawUltra(ctx, f, s, jersey, skin, onGang);
   } else if (f.kind === "familie") {
-    // backpack
-    ctx.fillStyle = "#ca8a04";
-    roundRect(ctx, s * 0.35, -s * 0.2, s * 0.35, s * 0.45, 2);
-    ctx.fill();
+    drawFamilie(ctx, f, s, jersey, skin);
   } else {
-    // normalo scarf wave
-    ctx.strokeStyle = jersey;
-    ctx.lineWidth = Math.max(1.5, s * 0.15);
-    ctx.beginPath();
-    ctx.moveTo(s * 0.4, -s * 0.1);
-    ctx.quadraticCurveTo(s * 0.9, -s * 0.4, s * 0.75, s * 0.2);
-    ctx.stroke();
+    drawNormalo(ctx, f, s, jersey, skin);
   }
-
-  // head
-  ctx.fillStyle = skin;
-  ctx.beginPath();
-  ctx.arc(0, -s * 0.7, s * 0.38, 0, Math.PI * 2);
-  ctx.fill();
-
-  // swinging arm (combat)
-  const face = f.team === "vfb" ? -1 : 1;
-  const swing = f.armSwing > 0 ? f.armSwing : f.kind === "ultras" && onGang ? 0.15 : 0;
-  const ang = (-0.7 + swing * 1.6) * face;
-  ctx.strokeStyle = skin;
-  ctx.lineWidth = Math.max(2, s * 0.2);
-  ctx.beginPath();
-  ctx.moveTo(face * s * 0.45, -s * 0.05);
-  ctx.lineTo(face * s * 0.45 + Math.cos(ang) * s * 1.1, -s * 0.05 + Math.sin(ang) * s * 1.1);
-  ctx.stroke();
-  if (swing > 0.35) {
-    const ix = face * s * 0.45 + Math.cos(ang) * s * 1.1;
-    const iy = -s * 0.05 + Math.sin(ang) * s * 1.1;
-    ctx.fillStyle = "rgba(245,215,110,0.85)";
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
-      const r = i % 2 === 0 ? s * 0.45 : s * 0.2;
-      const px = ix + Math.cos(a) * r;
-      const py = iy + Math.sin(a) * r;
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  // other arm down
-  ctx.strokeStyle = skin;
-  ctx.beginPath();
-  ctx.moveTo(-face * s * 0.4, 0);
-  ctx.lineTo(-face * s * 0.55, s * 0.45);
-  ctx.stroke();
 
   ctx.restore();
 
   // HP bar
   const bw = s * 2.2;
   const bx = x - bw / 2;
-  const by = y + s * 1.25;
+  const by = y + s * 1.35;
   ctx.fillStyle = "rgba(0,0,0,0.5)";
   ctx.fillRect(bx, by, bw, 3);
   ctx.fillStyle = f.hp / f.maxHp > 0.35 ? "#6bcb77" : "#f87171";
   ctx.fillRect(bx, by, bw * Math.max(0, f.hp / f.maxHp), 3);
+
+  // kind tag — color-coded
+  ctx.font = `700 ${Math.max(9, Math.floor(s * 0.6))}px Archivo Black, DM Sans`;
+  ctx.textAlign = "center";
+  if (f.kind === "ultras") {
+    ctx.fillStyle = "#f97316";
+    ctx.fillText("ULTRA", x, by + 12);
+  } else if (f.kind === "familie") {
+    ctx.fillStyle = "#fbbf24";
+    ctx.fillText("FAM", x, by + 12);
+  } else {
+    ctx.fillStyle = "#4ade80";
+    ctx.fillText("NORM", x, by + 12);
+  }
+}
+
+function drawUltra(
+  ctx: CanvasRenderingContext2D,
+  f: FanUnit,
+  s: number,
+  jersey: string,
+  skin: string,
+  onGang: boolean,
+): void {
+  // black cargo pants
+  ctx.strokeStyle = "#0a0a0a";
+  ctx.lineWidth = Math.max(2.5, s * 0.28);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.28, s * 0.35);
+  ctx.lineTo(-s * 0.4, s * 1.1);
+  ctx.moveTo(s * 0.28, s * 0.35);
+  ctx.lineTo(s * 0.42, s * 1.1);
+  ctx.stroke();
+
+  // hoodie body (darker overlay)
+  ctx.fillStyle = jersey;
+  roundRect(ctx, -s * 0.6, -s * 0.4, s * 1.2, s * 0.95, 4);
+  ctx.fill();
+  ctx.fillStyle = "rgba(0,0,0,0.35)";
+  roundRect(ctx, -s * 0.6, -s * 0.4, s * 1.2, s * 0.35, 4);
+  ctx.fill();
+
+  // thick team scarf
+  ctx.fillStyle = jersey;
+  ctx.fillRect(-s * 0.55, -s * 0.08, s * 1.1, s * 0.22);
+  ctx.fillStyle = "#0a0a0a";
+  ctx.fillRect(-s * 0.55, s * 0.02, s * 1.1, s * 0.08);
+  ctx.fillStyle = jersey;
+  ctx.fillRect(s * 0.4, -s * 0.08, s * 0.22, s * 0.7);
+
+  // head
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.arc(0, -s * 0.72, s * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // BLACK BEANIE on top of head (drawn after head)
+  ctx.fillStyle = "#020617";
+  ctx.beginPath();
+  ctx.arc(0, -s * 0.85, s * 0.48, Math.PI, 0);
+  ctx.fill();
+  ctx.fillRect(-s * 0.48, -s * 0.9, s * 0.96, s * 0.28);
+  // pompon
+  ctx.fillStyle = jersey;
+  ctx.beginPath();
+  ctx.arc(0, -s * 1.22, s * 0.16, 0, Math.PI * 2);
+  ctx.fill();
+
+  // swinging arm / pyro stick
+  const face = f.team === "vfb" ? -1 : 1;
+  const swing = f.armSwing > 0 ? f.armSwing : onGang ? 0.2 : 0;
+  const ang = (-0.8 + swing * 1.7) * face;
+  ctx.strokeStyle = skin;
+  ctx.lineWidth = Math.max(2.2, s * 0.22);
+  ctx.beginPath();
+  ctx.moveTo(face * s * 0.5, -s * 0.05);
+  const ix = face * s * 0.5 + Math.cos(ang) * s * 1.15;
+  const iy = -s * 0.05 + Math.sin(ang) * s * 1.15;
+  ctx.lineTo(ix, iy);
+  ctx.stroke();
+  // other arm
+  ctx.beginPath();
+  ctx.moveTo(-face * s * 0.45, 0);
+  ctx.lineTo(-face * s * 0.6, s * 0.5);
+  ctx.stroke();
+  if (swing > 0.3) {
+    ctx.fillStyle = "rgba(251,146,60,0.9)";
+    ctx.beginPath();
+    ctx.arc(ix, iy, s * 0.28, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawNormalo(
+  ctx: CanvasRenderingContext2D,
+  _f: FanUnit,
+  s: number,
+  jersey: string,
+  skin: string,
+): void {
+  // blue jeans
+  ctx.strokeStyle = "#1d4ed8";
+  ctx.lineWidth = Math.max(2, s * 0.24);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.25, s * 0.35);
+  ctx.lineTo(-s * 0.32, s * 1.05);
+  ctx.moveTo(s * 0.25, s * 0.35);
+  ctx.lineTo(s * 0.35, s * 1.05);
+  ctx.stroke();
+
+  // jersey body
+  ctx.fillStyle = jersey;
+  roundRect(ctx, -s * 0.5, -s * 0.3, s, s * 0.8, 3);
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(-s * 0.12, -s * 0.15, s * 0.24, s * 0.45);
+
+  // waving scarf in hand
+  ctx.strokeStyle = jersey;
+  ctx.lineWidth = Math.max(2, s * 0.18);
+  ctx.beginPath();
+  ctx.moveTo(s * 0.45, -s * 0.05);
+  ctx.quadraticCurveTo(s * 1.05, -s * 0.55, s * 0.85, s * 0.35);
+  ctx.stroke();
+  ctx.strokeStyle = "#fff";
+  ctx.lineWidth = Math.max(1.2, s * 0.1);
+  ctx.beginPath();
+  ctx.moveTo(s * 0.5, 0);
+  ctx.quadraticCurveTo(s * 0.95, -s * 0.4, s * 0.8, s * 0.25);
+  ctx.stroke();
+
+  // head
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.arc(0, -s * 0.65, s * 0.36, 0, Math.PI * 2);
+  ctx.fill();
+
+  // baseball cap — white/green so NOT team-colored like ultra beanie
+  ctx.fillStyle = "#f3f0e7";
+  ctx.beginPath();
+  ctx.ellipse(0, -s * 0.78, s * 0.4, s * 0.2, 0, Math.PI, 0);
+  ctx.fill();
+  ctx.fillRect(-s * 0.42, -s * 0.82, s * 0.84, s * 0.14);
+  // brim
+  ctx.fillStyle = "#22c55e";
+  ctx.beginPath();
+  ctx.ellipse(s * 0.28, -s * 0.72, s * 0.35, s * 0.11, 0.15, 0, Math.PI * 2);
+  ctx.fill();
+
+  // arms
+  ctx.strokeStyle = skin;
+  ctx.lineWidth = Math.max(2, s * 0.18);
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.45, 0);
+  ctx.lineTo(-s * 0.55, s * 0.4);
+  ctx.moveTo(s * 0.45, -s * 0.05);
+  ctx.lineTo(s * 0.7, -s * 0.25);
+  ctx.stroke();
+}
+
+function drawFamilie(
+  ctx: CanvasRenderingContext2D,
+  _f: FanUnit,
+  s: number,
+  jersey: string,
+  skin: string,
+): void {
+  // light beige pants
+  ctx.strokeStyle = "#d6d3d1";
+  ctx.lineWidth = Math.max(2, s * 0.2);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.22, s * 0.3);
+  ctx.lineTo(-s * 0.28, s * 0.95);
+  ctx.moveTo(s * 0.22, s * 0.3);
+  ctx.lineTo(s * 0.3, s * 0.95);
+  ctx.stroke();
+
+  // body
+  ctx.fillStyle = jersey;
+  roundRect(ctx, -s * 0.45, -s * 0.25, s * 0.9, s * 0.7, 3);
+  ctx.fill();
+
+  // yellow backpack (behind / side — drawn large and clear)
+  ctx.fillStyle = "#eab308";
+  roundRect(ctx, s * 0.28, -s * 0.2, s * 0.42, s * 0.55, 3);
+  ctx.fill();
+  ctx.fillStyle = "#a16207";
+  ctx.fillRect(s * 0.32, s * 0.05, s * 0.34, s * 0.08);
+
+  // head
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.arc(0, -s * 0.58, s * 0.34, 0, Math.PI * 2);
+  ctx.fill();
+
+  // soft hair / no beanie
+  ctx.fillStyle = "#78716c";
+  ctx.beginPath();
+  ctx.arc(0, -s * 0.7, s * 0.34, Math.PI, 0);
+  ctx.fill();
+
+  // program / flag stick
+  ctx.strokeStyle = "#a8a29e";
+  ctx.lineWidth = Math.max(1.5, s * 0.12);
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.4, s * 0.1);
+  ctx.lineTo(-s * 0.55, -s * 0.55);
+  ctx.stroke();
+  ctx.fillStyle = "#fef3c7";
+  ctx.fillRect(-s * 0.72, -s * 0.7, s * 0.35, s * 0.28);
+
+  // arms
+  ctx.strokeStyle = skin;
+  ctx.lineWidth = Math.max(1.8, s * 0.16);
+  ctx.beginPath();
+  ctx.moveTo(s * 0.4, 0);
+  ctx.lineTo(s * 0.5, s * 0.35);
+  ctx.moveTo(-s * 0.4, 0);
+  ctx.lineTo(-s * 0.5, -s * 0.2);
+  ctx.stroke();
+}
+
+function drawSteward(
+  ctx: CanvasRenderingContext2D,
+  f: FanUnit,
+  x: number,
+  y: number,
+  h: number,
+): void {
+  const s = 10 * Math.max(1, h * 0.028 / 10);
+  const skin = "#e8c4a0";
+  ctx.save();
+  ctx.translate(x, y);
+
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(0, s * 1.15, s * 0.7, s * 0.2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // dark pants
+  ctx.strokeStyle = "#1e293b";
+  ctx.lineWidth = Math.max(2.2, s * 0.24);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.25, s * 0.35);
+  ctx.lineTo(-s * 0.32, s * 1.05);
+  ctx.moveTo(s * 0.25, s * 0.35);
+  ctx.lineTo(s * 0.35, s * 1.05);
+  ctx.stroke();
+
+  // hi-vis vest
+  ctx.fillStyle = "#facc15";
+  roundRect(ctx, -s * 0.55, -s * 0.3, s * 1.1, s * 0.85, 3);
+  ctx.fill();
+  ctx.fillStyle = "#0f172a";
+  ctx.fillRect(-s * 0.55, -s * 0.05, s * 1.1, s * 0.12);
+  ctx.fillRect(-s * 0.08, -s * 0.3, s * 0.16, s * 0.85);
+
+  // head + cap
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.arc(0, -s * 0.65, s * 0.36, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#1e293b";
+  ctx.beginPath();
+  ctx.ellipse(0, -s * 0.78, s * 0.4, s * 0.18, 0, Math.PI, 0);
+  ctx.fill();
+  ctx.fillRect(-s * 0.4, -s * 0.8, s * 0.8, s * 0.14);
+
+  // badge
+  ctx.fillStyle = "#fff";
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.05);
+  ctx.lineTo(s * 0.22, s * 0.12);
+  ctx.lineTo(0, s * 0.28);
+  ctx.lineTo(-s * 0.22, s * 0.12);
+  ctx.closePath();
+  ctx.fill();
+
+  // arms
+  const face = f.team === "vfb" ? -1 : 1;
+  const swing = f.armSwing > 0 ? f.armSwing : 0.1;
+  const ang = (-0.5 + swing * 1.2) * face;
+  ctx.strokeStyle = skin;
+  ctx.lineWidth = Math.max(2, s * 0.2);
+  ctx.beginPath();
+  ctx.moveTo(face * s * 0.5, 0);
+  ctx.lineTo(
+    face * s * 0.5 + Math.cos(ang) * s,
+    Math.sin(ang) * s,
+  );
+  ctx.moveTo(-face * s * 0.45, 0);
+  ctx.lineTo(-face * s * 0.55, s * 0.4);
+  ctx.stroke();
+
+  ctx.restore();
+
+  const bw = s * 2.2;
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(x - bw / 2, y + s * 1.25, bw, 3);
+  ctx.fillStyle = "#facc15";
+  ctx.fillRect(x - bw / 2, y + s * 1.25, bw * Math.max(0, f.hp / f.maxHp), 3);
+  ctx.fillStyle = "#fde68a";
+  ctx.font = `700 ${Math.max(8, Math.floor(s * 0.5))}px Archivo Black, DM Sans`;
+  ctx.textAlign = "center";
+  ctx.fillText("ORD", x, y + s * 1.25 + 12);
 }
 
 function drawMoodMeter(

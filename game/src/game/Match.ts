@@ -11,6 +11,9 @@ import {
   MOOD_CD,
   REGULAR_REAL_SEC,
   ULTRA_ORDER_CD,
+  UPGRADE_COST,
+  UPGRADE_MAX,
+  productionRate,
   type AiDifficulty,
   type BuildSlot,
   type BuildingKind,
@@ -143,6 +146,8 @@ export class Match {
           beer: 0,
           capacity: 100,
           owner: isNeutral ? "neutral" : null,
+          level: 1,
+          stewardCd: 2 + Math.random() * 3,
         });
       }
     }
@@ -205,6 +210,7 @@ export class Match {
       hp: FAN_STATS[kind].maxHp,
       maxHp: FAN_STATS[kind].maxHp,
       thirst: 20 + Math.random() * 20,
+      satisfiedUntil: 0,
       aggro: kind === "ultras" ? 30 : 10,
       lean: 0,
       gangX: blockIdToGangX(blockId),
@@ -215,6 +221,39 @@ export class Match {
       armSwing: 0,
       attackCd: 0,
       invading: false,
+      isSteward: false,
+      homeStandKey: null,
+    };
+  }
+
+  private makeSteward(team: TeamId, stand: BuildSlot): FanUnit {
+    const sp = this.standWorld(stand);
+    const gx = blockIdToGangX(stand.blockId);
+    return {
+      id: uid(),
+      kind: "normalos",
+      team,
+      blockId: stand.blockId,
+      state: "moving",
+      seatIndex: null,
+      standKey: null,
+      hp: 90 + stand.level * 12,
+      maxHp: 90 + stand.level * 12,
+      thirst: 0,
+      satisfiedUntil: 1e9,
+      aggro: 80,
+      lean: 0,
+      gangX: gx,
+      x: sp.x,
+      y: sp.y,
+      path: [gangLanePos(stand.blockId)],
+      pathI: 0,
+      armSwing: 0,
+      attackCd: 0,
+      invading: false,
+      isSteward: true,
+      homeStandKey: slotKey(stand.blockId, stand.index),
+      _after: "steward",
     };
   }
 
@@ -233,6 +272,8 @@ export class Match {
     s.building = kind;
     s.greyNeutral = false;
     s.owner = owner;
+    s.level = 1;
+    s.stewardCd = kind === "ordner" ? 1.5 : 8;
     if (kind === "bier") s.beer = 60;
   }
 
@@ -523,7 +564,9 @@ export class Match {
     }
     s.greyNeutral = false;
     s.owner = this.playerTeam;
+    if (!s.level) s.level = 1;
     if (s.building === "bier" && s.beer < 20) s.beer = 40;
+    if (s.building === "ordner") s.stewardCd = Math.min(s.stewardCd || 8, 2);
     this.buildMenu = null;
     const p = this.standWorld(s);
     this.floatAt(p.x, p.y, `−${cost}€`, false);
@@ -536,6 +579,51 @@ export class Match {
     }
     this.toast(
       `${s.building === "bier" ? "Bierstand" : s.building === "ordner" ? "Ordnerposten" : "Fanshop"} ${cost < BUILD_COST[kind] ? "übernommen" : "gebaut"}`,
+    );
+    return true;
+  }
+
+  upgradeCost(s: BuildSlot): number | null {
+    if (!s.building || s.level >= UPGRADE_MAX) return null;
+    if (s.owner !== this.playerTeam || s.greyNeutral) return null;
+    return UPGRADE_COST[s.level + 1] ?? null;
+  }
+
+  tryUpgrade(): boolean {
+    const sel = this.buildMenu ?? this.selectedSlot;
+    if (!sel) {
+      this.toast("Bude wählen");
+      return false;
+    }
+    const s = this.slots.find(
+      (x) => x.blockId === sel.blockId && x.index === sel.index,
+    );
+    if (!s?.building) {
+      this.toast("Keine Bude");
+      return false;
+    }
+    const cost = this.upgradeCost(s);
+    if (cost == null) {
+      this.toast(s.level >= UPGRADE_MAX ? "Max. Stufe 5" : "Nicht upgradebar");
+      return false;
+    }
+    if (this.gold < cost) {
+      this.toast(`${cost}g nötig`);
+      return false;
+    }
+    this.gold -= cost;
+    s.level += 1;
+    if (s.building === "bier") {
+      s.capacity = 100 + s.level * 20;
+      s.beer = Math.min(s.capacity, s.beer + 15);
+    }
+    if (s.building === "ordner") s.stewardCd = Math.min(s.stewardCd, 1.2);
+    this.buildMenu = null;
+    const p = this.standWorld(s);
+    this.floatAt(p.x, p.y, `−${cost}€`, false);
+    this.floatAt(p.x, p.y - 0.03, `Lv${s.level}!`, true);
+    this.toast(
+      `${s.building === "bier" ? "Bierstand" : s.building === "ordner" ? "Ordnerposten" : "Fanshop"} → Stufe ${s.level}`,
     );
     return true;
   }
@@ -580,6 +668,7 @@ export class Match {
     }
 
     this.tickEconomy(dt);
+    this.tickStewards(dt);
     this.tickFans(dt);
     this.tickCombat(dt);
     this.tickCapture(dt);
@@ -606,23 +695,23 @@ export class Match {
 
     for (const s of this.slots) {
       if (!s.building) continue;
+      const rate = productionRate(s.level || 1);
       if (s.building === "bier") {
-        s.beer = clamp(s.beer + 0.9 * dt, 0, s.capacity);
+        s.beer = clamp(s.beer + 0.9 * rate * dt, 0, s.capacity);
       }
       // only owned (non-neutral) buildings produce for that side
       if (s.owner === this.playerTeam) {
         if (s.building === "bier") {
-          this.currency.beer = clamp(this.currency.beer + 0.22 * dt, 0, 100);
+          this.currency.beer = clamp(this.currency.beer + 0.22 * rate * dt, 0, 100);
         } else if (s.building === "ordner") {
-          this.currency.ordner = clamp(this.currency.ordner + 0.2 * dt, 0, 100);
+          this.currency.ordner = clamp(this.currency.ordner + 0.2 * rate * dt, 0, 100);
         } else if (s.building === "fanshop") {
-          this.currency.shop = clamp(this.currency.shop + 0.2 * dt, 0, 100);
-          this.moodHeim = clamp(this.moodHeim + 0.012 * dt, 0, 3);
+          this.currency.shop = clamp(this.currency.shop + 0.2 * rate * dt, 0, 100);
+          this.moodHeim = clamp(this.moodHeim + 0.012 * rate * dt, 0, 3);
         }
       } else if (s.owner === this.aiTeam) {
-        // AI gets soft income (no UI) — stronger if many stands
-        if (s.building === "bier") this.aiGold += 0.15 * dt;
-        else this.aiGold += 0.1 * dt;
+        if (s.building === "bier") this.aiGold += 0.15 * rate * dt;
+        else this.aiGold += 0.1 * rate * dt;
       }
     }
 
@@ -630,9 +719,69 @@ export class Match {
       this.buildPulse = 0;
       for (const s of this.slots) {
         if (!s.building || s.owner !== this.playerTeam) continue;
-        if (s.building === "bier") this.floatAtSlot(s, "+1 BIER", true);
-        else if (s.building === "ordner") this.floatAtSlot(s, "+1 ORDNER", true);
-        else if (s.building === "fanshop") this.floatAtSlot(s, "+1 SHOP", true);
+        const n = Math.max(1, Math.round(productionRate(s.level || 1)));
+        if (s.building === "bier") this.floatAtSlot(s, `+${n} BIER`, true);
+        else if (s.building === "ordner") this.floatAtSlot(s, `+${n} ORDNER`, true);
+        else if (s.building === "fanshop") this.floatAtSlot(s, `+${n} SHOP`, true);
+      }
+    }
+  }
+
+  /** Ordnerstände entsenden Steward-Einheiten, die den Gang blockieren */
+  private tickStewards(dt: number): void {
+    for (const s of this.slots) {
+      if (s.building !== "ordner" || !s.owner || s.owner === "neutral" || s.greyNeutral) {
+        continue;
+      }
+      const team = s.owner;
+      const key = slotKey(s.blockId, s.index);
+      const alive = this.fans.filter(
+        (f) => f.hp > 0 && f.isSteward && f.homeStandKey === key,
+      ).length;
+      const cap = s.level || 1;
+      s.stewardCd = Math.max(0, (s.stewardCd ?? 0) - dt);
+      if (alive >= cap) continue;
+      if (s.stewardCd > 0) continue;
+      const steward = this.makeSteward(team, s);
+      this.fans.push(steward);
+      s.stewardCd = Math.max(4, 14 / Math.max(1, s.level));
+      const p = this.standWorld(s);
+      this.floatAt(p.x, p.y - 0.02, "+Ordner", true);
+      if (team === this.playerTeam) this.toast("Ordner in den Gang");
+    }
+
+    // patrol: stay near home block gang X
+    for (const f of this.fans) {
+      if (!f.isSteward || f.hp <= 0) continue;
+      f.armSwing = Math.max(0, f.armSwing - dt * 2.2);
+      f.attackCd = Math.max(0, f.attackCd - dt);
+      if (f.state === "moving") continue;
+      if (f.state !== "gang") {
+        f.state = "gang";
+        f.y = gangMidY();
+      }
+      const homeGx = f.homeStandKey
+        ? blockIdToGangX(Number(f.homeStandKey.split(":")[0]))
+        : blockIdToGangX(f.blockId);
+      const target = homeGx + Math.sin(this.realElapsed * 1.2 + f.id) * 0.04;
+      const foe = this.fans.find(
+        (o) =>
+          o.hp > 0 &&
+          !o.isSteward &&
+          o.team !== f.team &&
+          o.team !== "neutral" &&
+          o.state === "gang" &&
+          Math.abs(o.gangX - f.gangX) < 0.12,
+      );
+      if (foe) {
+        // hold position — combat tick handles hits
+        f.x = gangXToWorld(f.gangX);
+        f.y = gangMidY();
+      } else {
+        f.gangX += clamp(target - f.gangX, -0.04 * dt, 0.04 * dt);
+        f.gangX = clamp(f.gangX, 0, 1);
+        f.x = gangXToWorld(f.gangX);
+        f.y = gangMidY() + Math.sin(this.realElapsed * 2 + f.id) * 0.006;
       }
     }
   }
@@ -685,7 +834,10 @@ export class Match {
   private tickFans(dt: number): void {
     for (const f of this.fans) {
       if (f.hp <= 0) continue;
-      f.thirst = clamp(f.thirst + 1.0 * dt, 0, 100);
+      if (f.isSteward) continue;
+      if (this.realElapsed >= (f.satisfiedUntil || 0)) {
+        f.thirst = clamp(f.thirst + 1.0 * dt, 0, 100);
+      }
       f.armSwing = Math.max(0, f.armSwing - dt * 2.2);
       f.attackCd = Math.max(0, f.attackCd - dt);
 
@@ -695,7 +847,11 @@ export class Match {
           f.x = p.x;
           f.y = p.y;
         }
-        if (f.thirst > 55 && f.kind !== "familie") {
+        if (
+          f.thirst > 55 &&
+          f.kind !== "familie" &&
+          this.realElapsed >= (f.satisfiedUntil || 0)
+        ) {
           const stand = this.nearestBierStand(f.team, f.blockId);
           if (stand) {
             const sp = this.standWorld(stand);
@@ -713,61 +869,47 @@ export class Match {
         const stand = this.slots.find(
           (s) => slotKey(s.blockId, s.index) === f.standKey,
         );
-        if (stand && stand.building === "bier" && stand.beer > 0) {
-          const drink = Math.min(8 * dt * FAN_STATS[f.kind].drink, stand.beer);
-          stand.beer -= drink;
-          f.thirst -= drink * 1.3;
+        if (stand && stand.building === "bier" && stand.beer >= 1) {
+          // genau 1 Bier → Durst gestillt, zurück in den Block
+          stand.beer -= 1;
+          f.thirst = 5;
+          f.satisfiedUntil = this.realElapsed + 28;
           if (f.team === this.playerTeam) {
             this.momentum = clamp(
-              this.momentum + drink * 0.002 * FAN_STATS[f.kind].mood,
+              this.momentum + 0.015 * FAN_STATS[f.kind].mood,
               -1,
               1,
             );
-            // accumulate drinks → discrete float events (+5€, −1 Bier-Vorrat)
-            const key = slotKey(stand.blockId, stand.index);
-            this.drinkAcc[key] = (this.drinkAcc[key] ?? 0) + drink;
-            while (this.drinkAcc[key] >= 1) {
-              this.drinkAcc[key] -= 1;
-              this.gold += 5;
-              const p = this.standWorld(stand);
-              this.floatAt(p.x - 0.02, p.y - 0.01, "+5€", true);
-              this.floatAt(p.x + 0.02, p.y - 0.025, "−1 Bier", false);
-              // Vorrat-trinken zehrt auch die Bier-Währung
-              const before = this.currency.beer;
-              this.currency.beer = clamp(this.currency.beer - 1, 0, 100);
-              if (before > 0) {
-                this.floatAt(p.x, p.y - 0.04, "−1 BIER", false);
-              }
+            this.gold += 5;
+            const p = this.standWorld(stand);
+            this.floatAt(p.x - 0.02, p.y - 0.01, "+5€", true);
+            this.floatAt(p.x + 0.02, p.y - 0.025, "−1 Bier", false);
+            const before = this.currency.beer;
+            this.currency.beer = clamp(this.currency.beer - 1, 0, 100);
+            if (before > 0) {
+              this.floatAt(p.x, p.y - 0.04, "−1 BIER", false);
             }
           } else if (f.team === this.aiTeam) {
             this.momentum = clamp(
-              this.momentum - drink * 0.002 * FAN_STATS[f.kind].mood,
+              this.momentum - 0.015 * FAN_STATS[f.kind].mood,
               -1,
               1,
             );
           }
-          if (f.thirst < 25) {
-            const seat = this.freeSeat(
-              f.team === this.playerTeam
-                ? HEIM_BLOCK
-                : f.team === this.aiTeam
-                  ? GAST_BLOCK
-                  : f.blockId,
-            );
-            const home =
-              f.team === this.playerTeam
-                ? HEIM_BLOCK
-                : f.team === this.aiTeam
-                  ? GAST_BLOCK
-                  : f.blockId;
-            const end =
-              seat != null ? seatPos(home, seat) : doorPos(home);
-            this.startPath(f, this.pathViaDoors(f.blockId, home, end), "home");
-            f._homeSeat = seat;
-          }
+          const home =
+            f.team === this.playerTeam
+              ? HEIM_BLOCK
+              : f.team === this.aiTeam
+                ? GAST_BLOCK
+                : f.blockId;
+          const seat = this.freeSeat(home);
+          const end = seat != null ? seatPos(home, seat) : doorPos(home);
+          this.startPath(f, this.pathViaDoors(f.blockId, home, end), "home");
+          f._homeSeat = seat;
+          f.standKey = null;
         } else {
           const next = this.nearestBierStand(f.team, f.blockId);
-          if (next) {
+          if (next && (!stand || slotKey(next.blockId, next.index) !== f.standKey)) {
             const sp = this.standWorld(next);
             this.startPath(
               f,
@@ -775,7 +917,7 @@ export class Match {
               "stand",
             );
             f.standKey = slotKey(next.blockId, next.index);
-          } else {
+          } else if (!next) {
             const home =
               f.team === this.playerTeam
                 ? HEIM_BLOCK
@@ -789,11 +931,13 @@ export class Match {
               "home",
             );
             f._homeSeat = seat;
+            f.standKey = null;
+          } else if (stand) {
+            const sp = this.standWorld(stand);
+            f.x = sp.x;
+            f.y = sp.y;
           }
         }
-        const sp = stand ? this.standWorld(stand) : { x: f.x, y: f.y };
-        f.x = sp.x;
-        f.y = sp.y;
       } else if (f.state === "gang") {
         this.tickGangMove(f, dt);
       }
@@ -839,6 +983,12 @@ export class Match {
       f.gangX = blockIdToGangX(f.blockId);
       f.y = gangMidY();
       f.x = gangXToWorld(f.gangX);
+    } else if (after === "steward") {
+      f.state = "gang";
+      f.gangX = blockIdToGangX(f.blockId);
+      f.y = gangMidY();
+      f.x = gangXToWorld(f.gangX);
+      f.isSteward = true;
     } else if (after === "stand") {
       f.state = "stand";
       if (f.standKey) {
@@ -876,9 +1026,9 @@ export class Match {
         o.hp > 0 &&
         o.team !== f.team &&
         o.team !== "neutral" &&
-        (o.state === "gang" || o.state === "stand" || o.state === "block") &&
-        Math.abs(o.x - f.x) < 0.06 &&
-        Math.abs(o.y - f.y) < 0.08,
+        (o.state === "gang" || o.state === "stand" || o.isSteward) &&
+        Math.abs(o.x - f.x) < 0.07 &&
+        Math.abs(o.y - f.y) < 0.09,
     );
     const capturing = this.isCapturingNear(f);
     if (!foeNear && !capturing) {
@@ -1034,18 +1184,19 @@ export class Match {
   }
 
   private applyHit(attacker: FanUnit, target: FanUnit): void {
-    if (target.kind === "familie") {
+    if (target.kind === "familie" && !target.isSteward) {
       // leave stadium immediately
       target.hp = 0;
       this.toast("Familie verlässt das Stadion!");
       return;
     }
-    const dmg = HIT_DAMAGE * FAN_STATS[attacker.kind].fight;
+    const atkMul = attacker.isSteward ? 1.15 : FAN_STATS[attacker.kind].fight;
+    const dmg = HIT_DAMAGE * atkMul;
     target.hp -= dmg;
     target.aggro = clamp(target.aggro + 12, 0, 100);
     if (target.hp <= 0) {
       target.hp = 0;
-      this.toast(`${FAN_STATS[target.kind].label} besiegt`);
+      this.toast(target.isSteward ? "Ordner besiegt" : `${FAN_STATS[target.kind].label} besiegt`);
     }
   }
 

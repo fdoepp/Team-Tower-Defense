@@ -14,6 +14,7 @@ import {
   BUILD_COST,
   MIX_MAX,
   MIX_MIN,
+  UPGRADE_MAX,
   type BuildingKind,
   type FanKind,
   type FanMix,
@@ -223,10 +224,15 @@ function renderMatchScreen(): void {
           <button class="popup-cancel" id="seat-cancel">Abbrechen</button>
         </div>
         <div class="popup-menu hidden" id="build-menu">
-          <p class="popup-title">Gebäude (${BUILD_COST.bier}g+)</p>
-          <button data-build="bier">Bierstand <small>+BIER</small></button>
-          <button data-build="ordner">Ordnerposten <small>+ORDNER</small></button>
-          <button data-build="fanshop">Fanshop <small>+SHOP</small></button>
+          <p class="popup-title" id="build-title">Gebäude</p>
+          <div id="build-options">
+            <button data-build="bier">Bierstand <small>+BIER</small></button>
+            <button data-build="ordner">Ordnerposten <small>+ORDNER</small></button>
+            <button data-build="fanshop">Fanshop <small>+SHOP</small></button>
+          </div>
+          <div id="upgrade-options" class="hidden">
+            <button id="btn-upgrade">Upgrade <small></small></button>
+          </div>
           <button class="popup-cancel" id="build-cancel">Abbrechen</button>
         </div>
         <div class="fs-gate ${needFs ? "" : "hidden"}" id="fs-gate">
@@ -249,6 +255,10 @@ function renderMatchScreen(): void {
   const ctx = canvas.getContext("2d")!;
   const seatMenu = app.querySelector<HTMLDivElement>("#seat-menu")!;
   const buildMenu = app.querySelector<HTMLDivElement>("#build-menu")!;
+  const buildOptions = app.querySelector<HTMLDivElement>("#build-options")!;
+  const upgradeOptions = app.querySelector<HTMLDivElement>("#upgrade-options")!;
+  const buildTitle = app.querySelector<HTMLParagraphElement>("#build-title")!;
+  const btnUpgrade = app.querySelector<HTMLButtonElement>("#btn-upgrade")!;
   const fsGate = app.querySelector<HTMLDivElement>("#fs-gate")!;
 
   const resize = () => {
@@ -319,6 +329,29 @@ function renderMatchScreen(): void {
     m.selectedSlot = { blockId, index };
     m.seatMenu = null;
     seatMenu.classList.add("hidden");
+    const slot = m.slots.find((s) => s.blockId === blockId && s.index === index);
+    const owned =
+      slot?.building &&
+      slot.owner === m.playerTeam &&
+      !slot.greyNeutral;
+    if (owned && slot) {
+      buildOptions.classList.add("hidden");
+      upgradeOptions.classList.remove("hidden");
+      const cost = m.upgradeCost(slot);
+      const next = (slot.level || 1) + 1;
+      buildTitle.textContent = `${slot.building === "bier" ? "Bierstand" : slot.building === "ordner" ? "Ordner" : "Fanshop"} Lv${slot.level}`;
+      if (cost == null || slot.level >= UPGRADE_MAX) {
+        btnUpgrade.disabled = true;
+        btnUpgrade.innerHTML = `Max. Stufe ${UPGRADE_MAX}`;
+      } else {
+        btnUpgrade.disabled = m.gold < cost;
+        btnUpgrade.innerHTML = `Upgrade → Lv${next} <small>${cost}g</small>`;
+      }
+    } else {
+      buildOptions.classList.remove("hidden");
+      upgradeOptions.classList.add("hidden");
+      buildTitle.textContent = `Gebäude (${BUILD_COST.bier}g+)`;
+    }
     buildMenu.classList.remove("hidden");
   };
 
@@ -352,6 +385,12 @@ function renderMatchScreen(): void {
       );
       m.selectedSlot = hit;
       if (slot && (!slot.building || slot.greyNeutral || slot.owner === "neutral")) {
+        showBuildMenu(hit.blockId, hit.index);
+      } else if (
+        slot?.building &&
+        slot.owner === m.playerTeam &&
+        !slot.greyNeutral
+      ) {
         showBuildMenu(hit.blockId, hit.index);
       } else {
         hideMenus();
@@ -414,6 +453,11 @@ function renderMatchScreen(): void {
       hideMenus();
       syncOverlay();
     });
+  });
+  btnUpgrade.addEventListener("click", () => {
+    m.tryUpgrade();
+    hideMenus();
+    syncOverlay();
   });
   app.querySelector("#seat-cancel")!.addEventListener("click", hideMenus);
   app.querySelector("#build-cancel")!.addEventListener("click", hideMenus);

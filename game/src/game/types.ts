@@ -37,6 +37,8 @@ export type FanUnit = {
   hp: number;
   maxHp: number;
   thirst: number;
+  /** realElapsed until thirst rises again after a beer */
+  satisfiedUntil: number;
   aggro: number;
   lean: number;
   gangX: number;
@@ -51,6 +53,10 @@ export type FanUnit = {
   attackCd: number;
   /** currently invading enemy block */
   invading: boolean;
+  /** Ordner from a steward stand — patrols/blocks the gang */
+  isSteward: boolean;
+  /** slotKey of the ordner stand that spawned this steward */
+  homeStandKey: string | null;
   /** path completion mode */
   _after?: string;
   _homeSeat?: number | null;
@@ -64,6 +70,10 @@ export type BuildSlot = {
   beer: number;
   capacity: number;
   owner: TeamId | "neutral" | null;
+  /** 1..UPGRADE_MAX — higher = more production / more stewards */
+  level: number;
+  /** cooldown until next steward spawn */
+  stewardCd: number;
 };
 
 /** Currencies for buying fans (capped 0..100) */
@@ -90,6 +100,17 @@ export const BUILD_LABEL: Record<BuildingKind, string> = {
   ordner: "Ordner",
   fanshop: "Shop",
 };
+
+/** Max booth upgrade level */
+export const UPGRADE_MAX = 5;
+
+/** Gold cost to reach level N (index = level). Level 1 = built. */
+export const UPGRADE_COST = [0, 0, 55, 95, 150, 220] as const;
+
+/** Production multiplier by level */
+export function productionRate(level: number): number {
+  return 0.55 + level * 0.45;
+}
 
 export const MIX_MIN = { normalos: 2, ultras: 1, familie: 1 } as const;
 export const MIX_MAX = { normalos: 6, ultras: 5, familie: 4 } as const;
