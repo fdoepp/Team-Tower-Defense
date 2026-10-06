@@ -362,7 +362,7 @@ export class Match {
             Math.min(8 * dt * FAN_STATS[f.kind].drink, stand.beer, f.thirst);
           stand.beer -= drink;
           f.thirst -= drink * 1.2;
-          this.beerDrunk += drink * 0.35;
+          this.beerDrunk += drink * 0.2;
           this.momentum = clamp(
             this.momentum + drink * 0.08 * FAN_STATS[f.kind].mood * fever,
             0,
@@ -391,7 +391,7 @@ export class Match {
         const drink = Math.min(6 * dt, stand.beer);
         stand.beer -= drink;
         f.thirst -= drink;
-        this.aiBeerDrunk += drink * 0.35;
+        this.aiBeerDrunk += drink * 0.2;
       }
     }
   }
@@ -426,7 +426,7 @@ export class Match {
     const mul = diffMul(this.cfg.settings.difficulty);
     // move
     for (const b of this.blocks) {
-      const speed = 0.035 + this.blockPower(b) * 0.008;
+      const speed = 0.022 + this.blockPower(b) * 0.005;
       if (b.team === this.playerTeam) b.x += speed * dt;
       else b.x -= speed * dt * mul;
       b.thirst = clamp(b.thirst + 4 * dt, 0, 100);
@@ -438,11 +438,11 @@ export class Match {
         stand.beer -= drink;
         b.thirst -= drink;
         if (b.team === this.playerTeam) {
-          this.beerDrunk += drink * 0.5;
+          this.beerDrunk += drink * 0.25;
           if (b.normalos > 0) this.mood = clamp(this.mood + drink * 0.15, 0, 100);
           if (b.familie > 0) this.gold += drink * 0.8;
         } else {
-          this.aiBeerDrunk += drink * 0.5;
+          this.aiBeerDrunk += drink * 0.25;
         }
       }
     }
@@ -456,8 +456,8 @@ export class Match {
         if (Math.abs(a.x - b.x) > 0.06) continue;
         const pa = this.blockPower(a);
         const pb = this.blockPower(b);
-        a.hp -= pb * 18 * dt * fever;
-        b.hp -= pa * 18 * dt * fever;
+        a.hp -= pb * 10 * dt * fever;
+        b.hp -= pa * 10 * dt * fever;
         a.aggro = clamp(a.aggro + 10 * dt, 0, 100);
         b.aggro = clamp(b.aggro + 10 * dt, 0, 100);
         // push
@@ -499,7 +499,7 @@ export class Match {
   private applyOverflow(b: LaneBlock, dir: "intoAi" | "intoPlayer"): void {
     const power = this.blockPower(b);
     if (dir === "intoAi") {
-      this.damageCurva(this.aiFans, power * 18);
+      this.damageCurva(this.aiFans, power * 10);
       this.momentum = clamp(this.momentum + 5, 0, 100);
       this.mood = clamp(this.mood + 4, 0, 100);
       this.aiMood = clamp(this.aiMood - 5, 0, 100);
@@ -507,7 +507,7 @@ export class Match {
       // return some fans home
       this.recallLaneFans(this.playerFans, b);
     } else {
-      this.damageCurva(this.playerFans, power * 18 * diffMul(this.cfg.settings.difficulty));
+      this.damageCurva(this.playerFans, power * 10 * diffMul(this.cfg.settings.difficulty));
       this.toast("Gegner drängt in eure Kurve!");
       this.recallLaneFans(this.aiFans, b);
     }
@@ -582,10 +582,10 @@ export class Match {
     this.aiAcc += dt;
     const every =
       this.cfg.settings.difficulty === "easy"
-        ? 9
+        ? 14
         : this.cfg.settings.difficulty === "hard"
-          ? 5
-          : 7;
+          ? 7
+          : 10;
     if (this.aiAcc < every) return;
     this.aiAcc = 0;
     const b: AiBehavior = this.cfg.settings.behavior;
@@ -628,15 +628,15 @@ export class Match {
 
   private checkWins(): void {
     if (this.phase === "regular") {
-      if (this.beerDrunk >= 100) {
+      if (this.beerDrunk >= 160) {
         this.finish(this.playerTeam, "beer", "Bier-Early-Win");
         return;
       }
-      if (this.aiBeerDrunk >= 100) {
+      if (this.aiBeerDrunk >= 160) {
         this.finish(this.aiTeam, "beer", "KI Bier-Win");
         return;
       }
-      if (this.mood >= 85 && this.mood - this.aiMood >= 20) {
+      if (this.mood >= 90 && this.mood - this.aiMood >= 25) {
         this.finish(this.playerTeam, "mood", "Stimmungs-Übernahme");
         return;
       }

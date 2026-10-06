@@ -67,9 +67,9 @@ export const MIX_MIN = { normalos: 2, ultras: 1, familie: 1 } as const;
 export const MIX_MAX = { normalos: 6, ultras: 5, familie: 4 } as const;
 export const MIX_TOTAL = 10;
 
-/** Slower: ~5 real minutes for 90' */
-export const REGULAR_REAL_SEC = 300;
-export const ET_REAL_SEC = 60;
+/** Slower: ~6.5 real minutes for 90' */
+export const REGULAR_REAL_SEC = 390;
+export const ET_REAL_SEC = 70;
 export const FEVER_FROM_MIN = 80;
 
 export const LANE_SLOTS = 5; // buildable bierstand positions along lane
