@@ -8,7 +8,7 @@ export const L = {
   gangH: 0.17,
   blocksLeft: 0.14,
   blocksRight: 0.98,
-  blockGap: 0.012,
+  blockGap: 0.022,
 };
 
 export function blockWidthNorm(): number {

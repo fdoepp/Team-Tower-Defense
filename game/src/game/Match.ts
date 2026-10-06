@@ -443,8 +443,15 @@ export class Match {
             f.standKey = null;
           }
         }
-        f.y = 0.58 + (f.id % 3) * 0.01;
-        f.x = gangXToWorld(blockIdToGangX(f.blockId)) + (f.id % 3) * 0.012;
+        // spread around the stand slot instead of stacking
+        const slotIdx = stand?.index ?? f.id % 4;
+        const side = slotIdx % 2 === 0 ? -1 : 1;
+        const above = slotIdx < 2 ? -1 : 1;
+        f.x =
+          gangXToWorld(blockIdToGangX(f.blockId)) +
+          side * 0.035 +
+          ((f.id % 3) - 1) * 0.012;
+        f.y = 0.655 + above * 0.045 + (f.id % 2) * 0.008;
       } else if (f.state === "gang") {
         const dir = f.team === this.playerTeam ? 1 : -1;
         // slower when engaged in stand fight (handled in combat)
