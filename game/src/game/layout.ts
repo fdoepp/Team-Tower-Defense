@@ -6,9 +6,9 @@ export const L = {
   blockH: 0.36,
   gangY: 0.575,
   gangH: 0.17,
-  blocksLeft: 0.14,
-  blocksRight: 0.98,
-  blockGap: 0.022,
+  blocksLeft: 0.13,
+  blocksRight: 0.97,
+  blockGap: 0.03,
 };
 
 export function blockWidthNorm(): number {

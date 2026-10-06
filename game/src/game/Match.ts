@@ -454,9 +454,31 @@ export class Match {
         f.y = 0.655 + above * 0.045 + (f.id % 2) * 0.008;
       } else if (f.state === "gang") {
         const dir = f.team === this.playerTeam ? 1 : -1;
-        // slower when engaged in stand fight (handled in combat)
-        const speed = 0.055 * FAN_STATS[f.kind].fight;
-        f.gangX = clamp(f.gangX + dir * speed * dt, 0, 1);
+        // hold position while locked in melee with an enemy on gang
+        const foeNear = this.fans.some(
+          (o) =>
+            o !== f &&
+            o.hp > 0 &&
+            o.state === "gang" &&
+            o.team !== f.team &&
+            o.team !== "neutral" &&
+            Math.abs(o.gangX - f.gangX) < 0.09,
+        );
+        const standFight = this.slots.some((s) => {
+          if (!s.hasBier) return false;
+          if (Math.abs(f.gangX - blockIdToGangX(s.blockId)) > 0.09) return false;
+          return this.fans.some(
+            (d) =>
+              d.hp > 0 &&
+              d.state === "stand" &&
+              d.blockId === s.blockId &&
+              d.team !== f.team,
+          );
+        });
+        if (!foeNear && !standFight) {
+          const speed = 0.05 * FAN_STATS[f.kind].fight;
+          f.gangX = clamp(f.gangX + dir * speed * dt, 0, 1);
+        }
         f.x = gangXToWorld(f.gangX);
         f.y = 0.655 + Math.sin(this.realElapsed * 4 + f.id) * 0.012;
         if (f.hp < f.maxHp * 0.22) {

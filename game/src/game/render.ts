@@ -102,17 +102,17 @@ function drawBlocks(
     ctx.fillStyle = b.fill;
     roundRect(ctx, cx - bw / 2, y, bw, bh * 0.7, 10);
     ctx.fill();
-    ctx.strokeStyle = "rgba(10,20,16,0.55)";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(10,20,16,0.75)";
+    ctx.lineWidth = 2.5;
     ctx.stroke();
     // light inner stripe only inside block
     ctx.save();
-    roundRect(ctx, cx - bw / 2, y, bw, bh * 0.7, 10);
+    roundRect(ctx, cx - bw / 2 + 1, y + 1, bw - 2, bh * 0.7 - 2, 9);
     ctx.clip();
     ctx.fillStyle = b.stripe;
-    ctx.globalAlpha = 0.22;
-    for (let i = 0; i < 5; i++) {
-      ctx.fillRect(cx - bw / 2 + 4 + i * (bw / 5), y + 4, bw / 12, bh * 0.7 - 8);
+    ctx.globalAlpha = 0.18;
+    for (let i = 0; i < 4; i++) {
+      ctx.fillRect(cx - bw / 2 + 6 + i * (bw / 4), y + 5, bw / 14, bh * 0.7 - 10);
     }
     ctx.restore();
     ctx.globalAlpha = 1;
