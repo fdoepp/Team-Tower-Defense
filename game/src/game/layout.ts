@@ -1,4 +1,4 @@
-/** Shared normalized layout — pitch HUD zone + blocks + gang + flush bottom booths */
+/** Matchday Comic layout — stadium stands, open gang, 2×6 build plots */
 
 export const BLOCK_COUNT = 4;
 export const HEIM_BLOCK = 0;
@@ -9,33 +9,35 @@ export const SEAT_COLS = 3;
 export const SEAT_ROWS = 4;
 
 /**
- * Vertical pack:
- * - Large green pitch (HUD only here) — blocks must not cover Gesang/Pyro
- * - Blocks
- * - Upper booth + gang + lower booth ≈ 1/3 height, equal booth rows, lower flush to y=1
+ * Vertical pack (canvas is the center stadium column between side rails):
+ * - Night sky / floodlights
+ * - Bleacher blocks (Heim | Neutral | Neutral | Gäste)
+ * - Open gang / concourse
+ * - 2×6 fenced build plots
  */
 export const L = {
-  /** Green pitch — match HUD sits only in this band */
-  pitchH: 0.445,
-  blockTop: 0.45,
-  blockBodyH: 0.22,
-  /**
-   * Upper & lower booth rows share height.
-   * booth*2 + gang ≈ 0.33 of canvas height.
-   */
-  boothH: 0.125,
-  gangH: 0.08,
-  blocksLeft: 0.04,
-  blocksRight: 0.99,
-  blockGap: 0.018,
-  doorFrac: 0.15,
+  skyH: 0.11,
+  blockTop: 0.12,
+  blockBodyH: 0.3,
+  /** Open street between stands and plot grid */
+  gangPadTop: 0.02,
+  gangH: 0.2,
+  plotPadTop: 0.01,
+  plotAreaH: 0.32,
+  blocksLeft: 0.03,
+  blocksRight: 0.97,
+  blockGap: 0.014,
+  doorFrac: 0.12,
+  plotCols: 6,
+  plotRows: 2,
+  plotGapX: 0.012,
+  plotGapY: 0.018,
 };
 
-/** Colored blocks: skip index 0 (Ultra pad on Heim / unused on Gast) → 3 bauplätze */
+/** Colored blocks: 3 plots; neutrals also 3 → 12 total */
 export const SLOTS_PER_BLOCK = 4;
 export const BUILDABLE_INDICES_COLORED = [1, 2, 3] as const;
-export const BUILDABLE_INDICES_NEUTRAL = [0, 1, 2, 3] as const;
-/** Heim top-left booth index reserved for Ultra → Gang control */
+export const BUILDABLE_INDICES_NEUTRAL = [0, 1, 2] as const;
 export const ULTRA_PAD_INDEX = 0;
 
 export function blockWidthNorm(): number {
@@ -60,8 +62,7 @@ export function gangXToWorld(gangX: number): number {
   return left + t * (right - left);
 }
 
-export function blockTopY(blockId: number): number {
-  void blockId;
+export function blockTopY(_blockId: number): number {
   return L.blockTop;
 }
 
@@ -69,12 +70,13 @@ export function blockBodyBottom(blockId: number): number {
   return blockTopY(blockId) + L.blockBodyH;
 }
 
+/** Top of open gang band */
 export function gangY(): number {
-  return L.blockTop + L.blockBodyH + L.boothH;
+  return L.blockTop + L.blockBodyH + L.gangPadTop;
 }
 
 export function gangMidY(): number {
-  return gangY() + L.gangH * 0.5;
+  return gangY() + L.gangH * 0.55;
 }
 
 export function doorPos(blockId: number): { x: number; y: number } {
@@ -89,10 +91,10 @@ export function seatPos(blockId: number, seatIndex: number): { x: number; y: num
   const row = Math.floor(seatIndex / SEAT_COLS);
   const cx = blockCenterX(blockId);
   const bw = blockWidthNorm();
-  const top = blockTopY(blockId) + L.blockBodyH * 0.12;
-  const usableH = L.blockBodyH * 0.72;
-  const left = cx - bw * 0.38;
-  const stepX = (bw * 0.76) / (SEAT_COLS - 1 || 1);
+  const top = blockTopY(blockId) + L.blockBodyH * 0.18;
+  const usableH = L.blockBodyH * 0.7;
+  const left = cx - bw * 0.36;
+  const stepX = (bw * 0.72) / (SEAT_COLS - 1 || 1);
   const stepY = usableH / (SEAT_ROWS - 1 || 1);
   return {
     x: left + col * stepX,
@@ -107,35 +109,56 @@ export function gangLanePos(blockId: number): { x: number; y: number } {
   };
 }
 
-/**
- * Booth rect: index 0,1 = above gang (L/R); 2,3 = below gang (L/R).
- * Upper and lower heights match (L.boothH); lower row flush to y=1.
- */
-export function boothRect(blockId: number, index: number): {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-} {
-  const cx = blockCenterX(blockId);
-  const bw = blockWidthNorm();
-  const left = cx - bw / 2;
-  const doorW = bw * L.doorFrac;
-  const doorL = cx - doorW / 2;
-  const doorR = cx + doorW / 2;
-  const sideLeft = index % 2 === 0;
-  const above = index < 2;
+export function slotIndicesForBlock(blockId: number): readonly number[] {
+  if (blockId === HEIM_BLOCK || blockId === GAST_BLOCK) return BUILDABLE_INDICES_COLORED;
+  return BUILDABLE_INDICES_NEUTRAL;
+}
 
-  const bx = sideLeft ? left : doorR;
-  const bwBooth = sideLeft ? doorL - left : left + bw - doorR;
+export function isUltraPad(blockId: number, index: number): boolean {
+  return blockId === HEIM_BLOCK && index === ULTRA_PAD_INDEX;
+}
 
-  const bodyBot = blockBodyBottom(blockId);
-  const gy = gangY();
-  if (above) {
-    return { x: bx, y: bodyBot, w: bwBooth, h: Math.max(0.04, gy - bodyBot) };
+/** Flat 0..11 index for the 2×6 plot grid */
+export function slotFlatIndex(blockId: number, index: number): number {
+  let n = 0;
+  for (let b = 0; b < BLOCK_COUNT; b++) {
+    for (const i of slotIndicesForBlock(b)) {
+      if (b === blockId && i === index) return n;
+      n++;
+    }
   }
-  const y0 = gy + L.gangH;
-  return { x: bx, y: y0, w: bwBooth, h: Math.max(0.04, 1 - y0) };
+  return 0;
+}
+
+/**
+ * All buildable plots sit in a 2×6 grid in the lower open area
+ * (Matchday Comic: umzäunte Rechtecke auf dem Gang).
+ */
+export function boothRect(
+  blockId: number,
+  index: number,
+): { x: number; y: number; w: number; h: number } {
+  const flat = slotFlatIndex(blockId, index);
+  const cols = L.plotCols;
+  const rows = L.plotRows;
+  const col = flat % cols;
+  const row = Math.floor(flat / cols) % rows;
+
+  const left = L.blocksLeft;
+  const right = L.blocksRight;
+  const gapX = L.plotGapX;
+  const gapY = L.plotGapY;
+  const areaW = right - left;
+  const cellW = (areaW - gapX * (cols - 1)) / cols;
+  const y0 = gangY() + L.gangH + L.plotPadTop;
+  const cellH = (L.plotAreaH - gapY * (rows - 1)) / rows;
+
+  return {
+    x: left + col * (cellW + gapX),
+    y: y0 + row * (cellH + gapY),
+    w: cellW,
+    h: cellH,
+  };
 }
 
 export function boothCenter(blockId: number, index: number): { x: number; y: number } {
@@ -143,11 +166,8 @@ export function boothCenter(blockId: number, index: number): { x: number; y: num
   return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
 }
 
-export function isUltraPad(blockId: number, index: number): boolean {
-  return blockId === HEIM_BLOCK && index === ULTRA_PAD_INDEX;
-}
-
-export function slotIndicesForBlock(blockId: number): readonly number[] {
-  if (blockId === HEIM_BLOCK || blockId === GAST_BLOCK) return BUILDABLE_INDICES_COLORED;
-  return BUILDABLE_INDICES_NEUTRAL;
+/** Territory pennant anchor near a plot */
+export function pennantPos(blockId: number, index: number): { x: number; y: number } {
+  const r = boothRect(blockId, index);
+  return { x: r.x + r.w * 0.12, y: r.y + r.h * 0.15 };
 }

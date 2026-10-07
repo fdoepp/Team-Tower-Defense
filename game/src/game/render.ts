@@ -6,7 +6,6 @@ import {
   type FanUnit,
 } from "./types";
 import {
-  BLOCK_COUNT,
   GAST_BLOCK,
   HEIM_BLOCK,
   L,
@@ -36,21 +35,12 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   if (w < 32 || h < 32) return;
   ctx.clearRect(0, 0, w, h);
 
-  // Clean stadium shell — soft cool daylight, Apple Sports clarity
-  const bg = ctx.createLinearGradient(0, 0, 0, h);
-  bg.addColorStop(0, "#dce6ee");
-  bg.addColorStop(0.28, "#cfd9e3");
-  bg.addColorStop(0.55, "#b8c5d1");
-  bg.addColorStop(1, "#9aabba");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, w, h);
-
-  drawPitch(ctx, m, w, h);
+  drawStadiumAtmosphere(ctx, m, w, h);
   drawBlocks(ctx, m, w, h);
   drawSeats(ctx, m, w, h);
   drawGang(ctx, m, w, h);
   drawSlots(ctx, m, w, h);
-  drawReservedPads(ctx, m, w, h);
+  drawTerritoryPennants(ctx, m, w, h);
   drawFans(ctx, m, w, h);
   drawPyroShots(ctx, m, w, h);
   drawConfetti(ctx, m, w, h);
@@ -58,44 +48,129 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawFloats(ctx, m, w, h);
 }
 
-function blockFill(m: Match, id: number): string {
-  const owner = m.blockOwner[id];
-  if (owner === "ksc") return "#3b82f6";
-  if (owner === "vfb") return "#ef4444";
-  return BLOCK_META.find((b) => b.id === id)!.fill;
-}
-
-function drawPitch(
+/** Night stadium bowl + floodlights behind the stands (Matchday Comic) */
+function drawStadiumAtmosphere(
   ctx: CanvasRenderingContext2D,
-  _m: Match,
+  m: Match,
   w: number,
   h: number,
 ): void {
-  const ph = h * L.pitchH;
-  // crisp daylight grass
-  const g = ctx.createLinearGradient(0, 0, 0, ph);
-  g.addColorStop(0, "#4ade80");
-  g.addColorStop(0.45, "#22c55e");
-  g.addColorStop(1, "#16a34a");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, w, ph);
-  ctx.fillStyle = "rgba(255,255,255,0.08)";
-  for (let i = 0; i < 12; i++) {
-    if (i % 2 === 0) ctx.fillRect((w / 12) * i, 0, w / 12, ph);
-  }
-  // soft pitch frame
-  ctx.strokeStyle = "rgba(255,255,255,0.55)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(w * 0.3, ph * 0.12, w * 0.4, ph * 0.72);
+  const skyH = h * (L.blockTop + L.blockBodyH * 0.42);
+  const sky = ctx.createLinearGradient(0, 0, 0, skyH);
+  sky.addColorStop(0, "#060a14");
+  sky.addColorStop(0.35, "#0f1a2e");
+  sky.addColorStop(0.7, "#1a2740");
+  sky.addColorStop(1, "#243044");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, skyH);
+
+  // distant upper tier (packed bowl)
+  const rimY = skyH * 0.55;
+  ctx.fillStyle = "#1a2233";
   ctx.beginPath();
-  ctx.arc(w / 2, ph, ph * 0.32, Math.PI, 0);
+  ctx.ellipse(w * 0.5, rimY + h * 0.06, w * 0.72, h * 0.1, 0, Math.PI, 0);
+  ctx.fill();
+  // crowd speckles (blue | grey | red thirds)
+  for (let i = 0; i < 90; i++) {
+    const t = i / 90;
+    const x = w * (0.08 + t * 0.84);
+    const y = rimY + Math.sin(i * 2.7) * h * 0.018 + (i % 5) * h * 0.006;
+    const side = t < 0.33 ? 0 : t < 0.66 ? 1 : 2;
+    ctx.fillStyle =
+      side === 0
+        ? `rgba(59,130,246,${0.35 + (i % 3) * 0.15})`
+        : side === 2
+          ? `rgba(239,68,68,${0.35 + (i % 3) * 0.15})`
+          : `rgba(148,163,184,${0.3 + (i % 3) * 0.12})`;
+    ctx.fillRect(x, y, 2.2, 3.5);
+  }
+
+  // floodlight masts + beams
+  for (const lx of [0.1, 0.32, 0.68, 0.9]) {
+    const x = w * lx;
+    const y = h * 0.015;
+    ctx.fillStyle = "#334155";
+    ctx.fillRect(x - 2.5, y, 5, h * 0.055);
+    ctx.fillStyle = "rgba(255,251,235,0.95)";
+    ctx.beginPath();
+    ctx.arc(x, y + h * 0.055, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    const beam = ctx.createRadialGradient(x, y + h * 0.06, 2, x, y + h * 0.22, h * 0.28);
+    beam.addColorStop(0, "rgba(255,250,220,0.42)");
+    beam.addColorStop(0.45, "rgba(255,250,220,0.12)");
+    beam.addColorStop(1, "rgba(255,250,220,0)");
+    ctx.fillStyle = beam;
+    ctx.beginPath();
+    ctx.moveTo(x - 6, y + h * 0.055);
+    ctx.lineTo(x + 6, y + h * 0.055);
+    ctx.lineTo(x + w * 0.12, y + h * 0.32);
+    ctx.lineTo(x - w * 0.12, y + h * 0.32);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // pyro / flare glow — guest side always warm, scales with mood
+  {
+    const gx = blockCenterX(GAST_BLOCK) * w;
+    const gy = h * L.blockTop * 0.85;
+    const a = 0.18 + Math.min(0.45, m.moodGaeste * 0.18);
+    const g = ctx.createRadialGradient(gx, gy, 8, gx, gy, w * 0.28);
+    g.addColorStop(0, `rgba(251,146,60,${a})`);
+    g.addColorStop(0.4, `rgba(239,68,68,${a * 0.55})`);
+    g.addColorStop(1, "rgba(239,68,68,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(gx - w * 0.28, gy - h * 0.12, w * 0.56, h * 0.28);
+    // drifting smoke wisps
+    ctx.fillStyle = `rgba(248,113,113,${0.08 + a * 0.2})`;
+    for (let i = 0; i < 5; i++) {
+      const ox = Math.sin(m.realElapsed * 0.7 + i) * w * 0.04;
+      ctx.beginPath();
+      ctx.ellipse(
+        gx + ox + (i - 2) * w * 0.03,
+        gy - h * 0.04 - i * h * 0.012,
+        w * 0.05,
+        h * 0.03,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      ctx.fill();
+    }
+  }
+  if (m.moodHeim > 0.35) {
+    const hx = blockCenterX(HEIM_BLOCK) * w;
+    const hy = h * L.blockTop * 0.85;
+    const a = 0.12 + m.moodHeim * 0.14;
+    const g = ctx.createRadialGradient(hx, hy, 8, hx, hy, w * 0.22);
+    g.addColorStop(0, `rgba(96,165,250,${a})`);
+    g.addColorStop(1, "rgba(96,165,250,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(hx - w * 0.22, hy - h * 0.1, w * 0.44, h * 0.24);
+  }
+
+  // open concourse / gang asphalt
+  const floorY = h * gangY();
+  const floor = ctx.createLinearGradient(0, floorY - h * 0.03, 0, h);
+  floor.addColorStop(0, "#8b9199");
+  floor.addColorStop(0.2, "#6b7280");
+  floor.addColorStop(0.55, "#78716c");
+  floor.addColorStop(1, "#57534e");
+  ctx.fillStyle = floor;
+  ctx.fillRect(0, floorY - h * 0.03, w, h - floorY + h * 0.03);
+
+  // asphalt grain + lane marks
+  ctx.fillStyle = "rgba(15,23,42,0.07)";
+  for (let i = 0; i < 22; i++) {
+    ctx.fillRect(0, floorY + (i / 22) * (h - floorY), w, 1);
+  }
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([10, 14]);
+  ctx.beginPath();
+  ctx.moveTo(w * L.blocksLeft, floorY + h * L.gangH * 0.5);
+  ctx.lineTo(w * L.blocksRight, floorY + h * L.gangH * 0.5);
   ctx.stroke();
-  // subtle bottom vignette into stands
-  const vig = ctx.createLinearGradient(0, ph * 0.7, 0, ph);
-  vig.addColorStop(0, "rgba(15,23,42,0)");
-  vig.addColorStop(1, "rgba(15,23,42,0.12)");
-  ctx.fillStyle = vig;
-  ctx.fillRect(0, ph * 0.7, w, ph * 0.3);
+  ctx.setLineDash([]);
 }
 
 function drawBlocks(
@@ -107,75 +182,91 @@ function drawBlocks(
   const top = h * L.blockTop;
   const bh = h * L.blockBodyH;
   const bw = blockWidthNorm() * w;
-  const gapPx = L.blockGap * w;
-  for (let i = 0; i < BLOCK_COUNT - 1; i++) {
-    const rightEdge = (blockCenterX(i) + blockWidthNorm() / 2) * w;
-    ctx.fillStyle = "rgba(148,163,184,0.35)";
-    ctx.fillRect(rightEdge, top, gapPx, bh);
-  }
+
   for (const b of BLOCK_META) {
     const cx = blockCenterX(b.id) * w;
-    const y = top;
-    const bodyH = bh;
     const left = cx - bw / 2;
-    ctx.fillStyle = "rgba(15,23,42,0.12)";
-    roundRectTop(ctx, left + 2, y + 3, bw, bodyH, 14);
-    ctx.fill();
-    ctx.fillStyle = blockFill(m, b.id);
-    roundRectTop(ctx, left, y, bw, bodyH, 14);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.14)";
-    roundRectTop(ctx, left + 3, y + 3, bw - 6, bodyH * 0.22, 10);
-    ctx.fill();
-    ctx.save();
-    roundRectTop(ctx, left, y, bw, bodyH, 14);
-    ctx.clip();
-    for (let row = 0; row < 5; row++) {
-      ctx.fillStyle =
-        row % 2 === 0 ? "rgba(255,255,255,0.12)" : "rgba(15,23,42,0.1)";
-      ctx.fillRect(left + 4, y + 22 + row * (bodyH / 6), bw - 8, bodyH / 7);
-    }
-    ctx.restore();
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    roundRect(ctx, cx - bw * 0.34, y + 5, bw * 0.68, 18, 9);
-    ctx.fill();
     const owner = m.blockOwner[b.id];
-    if (owner === "ksc" || owner === "vfb") {
-      drawClubCrest(ctx, cx - bw * 0.2, y + 14, 11, owner);
-      ctx.fillStyle = "#0f172a";
-      ctx.font = `800 ${Math.floor(h * 0.016)}px Outfit, Manrope, sans-serif`;
-      ctx.textAlign = "left";
-      ctx.fillText(owner === "ksc" ? "KSC" : "VfB", cx - bw * 0.1, y + 18);
-    } else if (b.side === "neutral") {
-      ctx.fillStyle = "#64748b";
-      ctx.font = `700 ${Math.floor(h * 0.014)}px Manrope, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText("NEUTRAL", cx, y + 18);
-    } else {
-      ctx.fillStyle = "#0f172a";
-      ctx.font = `800 ${Math.floor(h * 0.016)}px Outfit, Manrope, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText(b.label, cx, y + 18);
+    const base =
+      owner === "ksc" ? "#1d4ed8" : owner === "vfb" ? "#b91c1c" : "#64748b";
+    const deep =
+      owner === "ksc" ? "#1e3a8a" : owner === "vfb" ? "#7f1d1d" : "#475569";
+
+    // stand shell with depth lip
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    roundRect(ctx, left + 5, top + 8, bw, bh, 18);
+    ctx.fill();
+
+    const shell = ctx.createLinearGradient(left, top, left + bw, top + bh);
+    shell.addColorStop(0, base);
+    shell.addColorStop(0.4, deep);
+    shell.addColorStop(0.85, "#0f172a");
+    shell.addColorStop(1, "#020617");
+    ctx.fillStyle = shell;
+    roundRect(ctx, left, top, bw, bh, 18);
+    ctx.fill();
+
+    // bright rim / canopy edge
+    ctx.strokeStyle = "rgba(255,255,255,0.22)";
+    ctx.lineWidth = 2;
+    roundRect(ctx, left + 1.5, top + 1.5, bw - 3, bh - 3, 16);
+    ctx.stroke();
+
+    // terrace steps
+    ctx.save();
+    roundRect(ctx, left, top, bw, bh, 18);
+    ctx.clip();
+    for (let row = 0; row < 6; row++) {
+      const ry = top + bh * 0.16 + row * (bh * 0.13);
+      ctx.fillStyle = row % 2 === 0 ? "rgba(255,255,255,0.18)" : "rgba(15,23,42,0.28)";
+      ctx.fillRect(left + 8, ry, bw - 16, bh * 0.1);
+      ctx.strokeStyle = "rgba(255,255,255,0.12)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(left + 10, ry + bh * 0.1);
+      ctx.lineTo(left + bw - 10, ry + bh * 0.1);
+      ctx.stroke();
     }
+    // top canopy
+    const canopy = ctx.createLinearGradient(left, top, left, top + bh * 0.14);
+    canopy.addColorStop(0, "rgba(15,23,42,0.55)");
+    canopy.addColorStop(1, "rgba(15,23,42,0.05)");
+    ctx.fillStyle = canopy;
+    ctx.fillRect(left, top, bw, bh * 0.14);
+    ctx.restore();
+
+    // badge
+    ctx.fillStyle = "rgba(255,255,255,0.94)";
+    roundRect(ctx, cx - bw * 0.32, top + 6, bw * 0.64, Math.max(18, h * 0.028), 10);
+    ctx.fill();
+    if (owner === "ksc" || owner === "vfb") {
+      drawClubCrest(ctx, cx - bw * 0.18, top + 15, Math.max(10, h * 0.016), owner);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = `800 ${Math.floor(h * 0.015)}px Outfit, Manrope, sans-serif`;
+      ctx.textAlign = "left";
+      ctx.fillText(owner === "ksc" ? "KSC" : "VfB", cx - bw * 0.08, top + 19);
+    } else {
+      ctx.fillStyle = "#64748b";
+      ctx.font = `700 ${Math.floor(h * 0.013)}px Manrope, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("NEUTRAL", cx, top + 19);
+    }
+
+    // exit tunnel into open gang
     const d = doorPos(b.id);
     const doorW = bw * L.doorFrac;
     const corridorTop = d.y * h;
-    const corridorH = h * gangY() - corridorTop + 2;
+    const corridorH = Math.max(8, h * gangY() - corridorTop + 4);
     const dx = d.x * w - doorW / 2;
-    ctx.fillStyle = "#334155";
-    ctx.beginPath();
-    ctx.moveTo(dx, corridorTop + 8);
-    ctx.lineTo(dx, corridorTop);
-    ctx.quadraticCurveTo(d.x * w, corridorTop - doorW * 0.35, dx + doorW, corridorTop);
-    ctx.lineTo(dx + doorW, corridorTop + 8);
-    ctx.closePath();
+    const tunnel = ctx.createLinearGradient(dx, corridorTop, dx, corridorTop + corridorH);
+    tunnel.addColorStop(0, "#1f2937");
+    tunnel.addColorStop(1, "#111827");
+    ctx.fillStyle = tunnel;
+    roundRect(ctx, dx, corridorTop - 2, doorW, corridorH + 2, 6);
     ctx.fill();
-    ctx.fillRect(dx, corridorTop, doorW, Math.max(4, corridorH));
-    ctx.strokeStyle = "rgba(255,255,255,0.28)";
+    ctx.strokeStyle = "rgba(255,255,255,0.25)";
     ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(dx + 3, corridorTop + 6);
-    ctx.quadraticCurveTo(d.x * w, corridorTop - doorW * 0.28, dx + doorW - 3, corridorTop + 6);
+    roundRect(ctx, dx + 1, corridorTop, doorW - 2, Math.min(corridorH, h * 0.04), 5);
     ctx.stroke();
   }
 }
@@ -266,70 +357,29 @@ function drawGang(
   const px = left + span * m.linePlayer;
   const ax = left + span * m.lineAi;
 
-  // Dauerhafte Besitz-/Bauzonen (solid tint) — blau bis Heim-Front, rot ab Gast-Front
+  // Soft open concourse — light territory wash only
   const pEdge = Math.min(px, ax);
   const aEdge = Math.max(px, ax);
-
-  ctx.fillStyle = "#1e3a8a";
+  ctx.fillStyle = "rgba(59,130,246,0.18)";
   ctx.fillRect(left, y, Math.max(0, pEdge - left), gh);
-  ctx.fillStyle = "rgba(59,130,246,0.55)";
-  ctx.fillRect(left, y, Math.max(0, pEdge - left), gh);
-
-  ctx.fillStyle = "#7f1d1d";
-  ctx.fillRect(aEdge, y, left + span - aEdge, gh);
-  ctx.fillStyle = "rgba(239,68,68,0.55)";
+  ctx.fillStyle = "rgba(239,68,68,0.18)";
   ctx.fillRect(aEdge, y, left + span - aEdge, gh);
 
-  if (aEdge > pEdge) {
-    ctx.fillStyle = "#475569";
-    ctx.fillRect(pEdge, y, aEdge - pEdge, gh);
-    ctx.fillStyle = "rgba(148,163,184,0.35)";
-    ctx.fillRect(pEdge, y, aEdge - pEdge, gh);
-  }
-
-  // Block-Trennlinien im Gang
-  ctx.strokeStyle = "rgba(255,255,255,0.12)";
-  ctx.lineWidth = 1;
-  for (let b = 1; b < BLOCK_COUNT; b++) {
-    const tx = left + span * (b / (BLOCK_COUNT - 1));
-    ctx.beginPath();
-    ctx.moveTo(tx, y + 2);
-    ctx.lineTo(tx, y + gh - 2);
-    ctx.stroke();
-  }
-
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(left, y, span, gh);
-
-  // Dynamische Kampfgrenzen (Frontlinien)
+  // Front lines
   ctx.save();
-  ctx.setLineDash([7, 5]);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "rgba(59,130,246,0.95)";
+  ctx.setLineDash([6, 5]);
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = "rgba(59,130,246,0.85)";
   ctx.beginPath();
-  ctx.moveTo(px, y + 2);
-  ctx.lineTo(px, y + gh - 2);
+  ctx.moveTo(px, y + 4);
+  ctx.lineTo(px, y + gh - 4);
   ctx.stroke();
-  ctx.strokeStyle = "rgba(239,68,68,0.95)";
+  ctx.strokeStyle = "rgba(239,68,68,0.85)";
   ctx.beginPath();
-  ctx.moveTo(ax, y + 2);
-  ctx.lineTo(ax, y + gh - 2);
+  ctx.moveTo(ax, y + 4);
+  ctx.lineTo(ax, y + gh - 4);
   ctx.stroke();
-  ctx.setLineDash([]);
   ctx.restore();
-  // Center corridor label pill
-  const label = "GANG";
-  ctx.font = `800 ${Math.floor(h * 0.016)}px Outfit, Manrope, sans-serif`;
-  const tw = ctx.measureText(label).width;
-  const lx = w / 2 - tw / 2 - 10;
-  const ly = y + 4;
-  ctx.fillStyle = "rgba(15,23,42,0.72)";
-  roundRect(ctx, lx, ly, tw + 20, 16, 8);
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  ctx.textAlign = "center";
-  ctx.fillText(label, w / 2, y + 16);
 }
 
 function drawPyroShots(
@@ -382,35 +432,29 @@ function drawSlots(
   }
 }
 
-/** Heim Ultra pad + Gast empty pad (index 0) so booth row stays flush */
-function drawReservedPads(
+function drawTerritoryPennants(
   ctx: CanvasRenderingContext2D,
-  _m: Match,
+  m: Match,
   w: number,
   h: number,
 ): void {
-  // Gast top-left: empty dark pad (no build) so the row still reads as 3+gap
-  const gast = boothRect(GAST_BLOCK, 0);
-  ctx.fillStyle = "rgba(8, 12, 16, 0.55)";
-  roundRect(ctx, gast.x * w, gast.y * h, gast.w * w, gast.h * h, 8);
-  ctx.fill();
-
-  // Heim Ultra pad backdrop under the HTML button
-  const heim = boothRect(HEIM_BLOCK, 0);
-  const hx = heim.x * w;
-  const hy = heim.y * h;
-  const hw = heim.w * w;
-  const hh = heim.h * h;
-  const g = ctx.createLinearGradient(hx, hy, hx + hw, hy + hh);
-  g.addColorStop(0, "#1e3a8a");
-  g.addColorStop(1, "#172554");
-  ctx.fillStyle = g;
-  roundRect(ctx, hx, hy, hw, hh, 8);
-  ctx.fill();
-  ctx.strokeStyle = "rgba(147, 197, 253, 0.45)";
-  ctx.lineWidth = 1.5;
-  roundRect(ctx, hx + 1, hy + 1, hw - 2, hh - 2, 7);
-  ctx.stroke();
+  for (const s of m.slots) {
+    if (!s.building || s.greyNeutral) continue;
+    if (s.owner !== "ksc" && s.owner !== "vfb") continue;
+    const r = boothRect(s.blockId, s.index);
+    const src = s.owner === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
+    const pw = Math.min(r.w * w * 0.42, h * 0.07);
+    const ph = pw * 1.15;
+    drawIcon(
+      ctx,
+      src,
+      r.x * w + r.w * w * 0.02,
+      r.y * h - ph * 0.15,
+      pw,
+      ph,
+      0.02,
+    );
+  }
 }
 
 function drawBuilding(
@@ -649,22 +693,25 @@ function drawMannchen(
     return;
   }
   const onGang = f.state === "gang" || f.invading;
-  const base = Math.max(0.9, h * (onGang ? 0.034 : 0.024) / 10);
+  const base = Math.max(0.9, h * (onGang ? 0.042 : 0.032) / 10);
   const scale =
-    f.kind === "ultras" ? base * 1.2 : f.kind === "hooligans" ? base * 1.05 : base;
+    f.kind === "ultras" ? base * 1.25 : f.kind === "hooligans" ? base * 1.1 : base;
   const s = 10 * scale;
-  const size = s * 2.6;
+  const size = s * 2.85;
   const color = teamColor(f.team);
   const lv = unitVisualLevel(m, f.team);
   const src = unitIconPath(f.kind, color, lv);
+  const bob = Math.sin(m.realElapsed * 5.2 + f.id * 0.85) * s * 0.12;
+  const sway = Math.sin(m.realElapsed * 2.4 + f.id) * 0.04;
 
   ctx.save();
-  ctx.translate(x, y);
+  ctx.translate(x, y + bob);
+  ctx.rotate(sway);
 
   // shadow
   ctx.fillStyle = "rgba(0,0,0,0.28)";
   ctx.beginPath();
-  ctx.ellipse(0, s * 1.15, s * 0.7, s * 0.2, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, s * 1.15 - bob * 0.3, s * 0.7, s * 0.2, 0, 0, Math.PI * 2);
   ctx.fill();
 
   if (Math.abs(f.captureProg) > 0.12 && f.team === "neutral") {
@@ -1240,31 +1287,6 @@ function roundRect(
   ctx.arcTo(x + w, y, x + w, y + h, rr);
   ctx.arcTo(x + w, y + h, x, y + h, rr);
   ctx.arcTo(x, y + h, x, y, rr);
-  ctx.arcTo(x, y, x + w, y, rr);
-  ctx.closePath();
-}
-
-/** Rounded top corners only — flat bottom for flush booth seams */
-function roundRectTop(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number,
-): void {
-  if (!(w > 0) || !(h > 0)) {
-    ctx.beginPath();
-    if (w !== 0 && h !== 0) ctx.rect(x, y, Math.max(0, w), Math.max(0, h));
-    return;
-  }
-  const rr = Math.max(0, Math.min(r, w / 2, h / 2));
-  ctx.beginPath();
-  ctx.moveTo(x + rr, y);
-  ctx.arcTo(x + w, y, x + w, y + h, rr);
-  ctx.lineTo(x + w, y + h);
-  ctx.lineTo(x, y + h);
-  ctx.lineTo(x, y + rr);
   ctx.arcTo(x, y, x + w, y, rr);
   ctx.closePath();
 }

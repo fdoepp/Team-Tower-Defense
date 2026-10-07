@@ -10,7 +10,6 @@ import {
   onFullscreenChange,
 } from "./game/fullscreen";
 import { drawMatch, hitSeat, hitSlot } from "./game/render";
-import { L } from "./game/layout";
 import { UI_ICONS, preloadIcons, teamColor, unitIconPath } from "./game/assets";
 import {
   BUILD_COST,
@@ -24,7 +23,6 @@ import {
   type BuildingKind,
   type FanKind,
   type FanMix,
-  type MoodAction,
   type SoloSettings,
   type TeamId,
 } from "./game/types";
@@ -51,6 +49,8 @@ const state = {
   match: null as Match | null,
   raf: 0,
   last: 0,
+  /** Right-rail build mode: pick a plot to place this building */
+  pendingBuild: null as BuildingKind | null,
 };
 
 document.documentElement.classList.toggle("standalone", isStandalone());
@@ -148,8 +148,8 @@ function renderSetup(): void {
         <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
       </div>
       <div class="card stack">
-        ${row("normalos", "Fans (Gesang · Sicherheit)")}
-        ${row("ultras", "Ultras (Pyro · Fanartikel)")}
+        ${row("normalos", "Fans (Momentum · Sicherheit)")}
+        ${row("ultras", "Ultras (Senden · Fanartikel)")}
         ${row("hooligans", "Hooligans (Nahkampf · Bier)")}
         <p class="tiny">Summe ${mixSum(mix)} / 8 ${isValidMix(mix) ? "✓" : ""}</p>
       </div>
@@ -181,100 +181,88 @@ function renderSetup(): void {
   });
 }
 
-function cdLabel(left: number): string {
-  if (left <= 0) return "bereit";
-  return `${Math.ceil(left)}s`;
-}
-
 function renderMatchScreen(): void {
   const m = state.match!;
   m.setSpeed(1);
   const needFs = needsFullscreenGate();
   const iosHint = isIos() && !isStandalone();
+  const tc = teamColor(m.playerTeam);
+  state.pendingBuild = null;
   app.innerHTML = `
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
-    <div class="match-shell a2c">
+    <div class="match-shell matchday">
+      <aside class="side-rail left-rail" aria-label="Personen">
+        <header class="rail-head">Personen</header>
+        <p class="freie-plaetze">Freie Plätze <b id="free-seats">0</b></p>
+        <div class="unit-rows">
+          <div class="ur-row">
+            <img class="ur-icon" src="${unitIconPath("normalos", tc, 1)}" alt="">
+            <div class="ur-meta"><span class="ur-name">Fans</span><b class="ur-count" id="fb-n">0</b></div>
+            <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="normalos" title="${BUY_COST.normalos.security} Sicherheit">
+              <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+              <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+            </button>
+          </div>
+          <div class="ur-row">
+            <img class="ur-icon" src="${unitIconPath("ultras", tc, 1)}" alt="">
+            <div class="ur-meta"><span class="ur-name">Ultras</span><b class="ur-count" id="fb-u">0</b></div>
+            <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="ultras" title="${BUY_COST.ultras.merch} Fanartikel">
+              <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+              <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+            </button>
+            <button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Senden">
+              <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
+              <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
+            </button>
+          </div>
+          <div class="ur-row">
+            <img class="ur-icon" src="${unitIconPath("hooligans", tc, 1)}" alt="">
+            <div class="ur-meta"><span class="ur-name">Hooligans</span><b class="ur-count" id="fb-h">0</b></div>
+            <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="hooligans" title="${BUY_COST.hooligans.beer} Bier">
+              <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+              <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+            </button>
+            <button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Senden">
+              <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
+              <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
+            </button>
+          </div>
+          <div class="ur-row ur-row-ordner">
+            <img class="ur-icon" src="${unitIconPath("ordner", tc, 1)}" alt="">
+            <div class="ur-meta"><span class="ur-name">Ordner</span><b class="ur-count" id="fb-o">0</b></div>
+          </div>
+        </div>
+        <div class="fanbase-col gast" aria-label="Gegner">
+          <span class="fb"><i>N</i><b id="fb-en">0</b></span>
+          <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
+          <span class="fb"><i>H</i><b id="fb-eh">0</b></span>
+          <span class="fb"><i>O</i><b id="fb-eo">0</b></span>
+        </div>
+      </aside>
       <div id="game-wrap">
-        <canvas id="c"></canvas>
-        <div class="pitch-hud" id="pitch-hud">
-          <div class="pitch-top">
-            <div class="heim-panel matchday-rail" aria-label="Heim-Steuerung">
-              <div class="wallet-row" aria-label="Ressourcen">
-                <span class="wi gold chip"><img src="${UI_ICONS.currencyGold}" alt=""><b id="gold">0</b></span>
-                <span class="wi bier chip"><img src="${UI_ICONS.currencyBier}" alt=""><b id="cur-beer">0</b></span>
-                <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
-                <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
+        <div class="top-hud" id="pitch-hud">
+          <div class="wallet-row" aria-label="Ressourcen">
+            <span class="wi gold chip"><img src="${UI_ICONS.currencyGold}" alt=""><b id="gold">0</b></span>
+            <span class="wi bier chip"><img src="${UI_ICONS.currencyBier}" alt=""><b id="cur-beer">0</b></span>
+            <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
+            <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
+          </div>
+          <div class="pitch-score" aria-label="Spielstand">
+            <div class="match-hud-score">
+              <div class="hud-crest ksc">K</div>
+              <div class="hud-scoreline">
+                <b id="hud-score">0:0</b>
+                <span id="hud-minute">0′</span>
               </div>
-              <p class="freie-plaetze">Freie Plätze <b id="free-seats">0</b></p>
-              <div class="unit-rows">
-                <div class="ur-row">
-                  <img class="ur-icon" src="${unitIconPath("normalos", teamColor(m.playerTeam), 1)}" alt="">
-                  <span class="ur-name">Fans</span>
-                  <b class="ur-count" id="fb-n">0</b>
-                  <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="normalos" title="${BUY_COST.normalos.security} Sicherheit">
-                    <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                    <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-                  </button>
-                  <button class="ar-btn gesang" data-mood="gesang" id="btn-gesang" type="button">Gesang<span></span></button>
-                </div>
-                <div class="ur-row">
-                  <img class="ur-icon" src="${unitIconPath("ultras", teamColor(m.playerTeam), 1)}" alt="">
-                  <span class="ur-name">Ultras</span>
-                  <b class="ur-count" id="fb-u">0</b>
-                  <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="ultras" title="${BUY_COST.ultras.merch} Fanartikel">
-                    <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                    <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-                  </button>
-                  <button class="ar-btn pyro" data-mood="pyro" id="btn-pyro" type="button">Pyro<span></span></button>
-                  <button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Pyro Wurf">
-                    <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
-                    <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
-                  </button>
-                </div>
-                <div class="ur-row">
-                  <img class="ur-icon" src="${unitIconPath("hooligans", teamColor(m.playerTeam), 1)}" alt="">
-                  <span class="ur-name">Hooligans</span>
-                  <b class="ur-count" id="fb-h">0</b>
-                  <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="hooligans" title="${BUY_COST.hooligans.beer} Bier">
-                    <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                    <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-                  </button>
-                  <button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Angriff">
-                    <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
-                    <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
-                  </button>
-                </div>
-                <div class="ur-row ur-row-ordner">
-                  <img class="ur-icon" src="${unitIconPath("ordner", teamColor(m.playerTeam), 1)}" alt="">
-                  <span class="ur-name">Ordner</span>
-                  <b class="ur-count" id="fb-o">0</b>
-                </div>
-              </div>
-            </div>
-            <div class="pitch-score" aria-label="Spielstand">
-              <div class="match-hud-score">
-                <div class="hud-crest ksc">K</div>
-                <div class="hud-scoreline">
-                  <b id="hud-score">0:0</b>
-                  <span id="hud-minute">0′</span>
-                </div>
-                <div class="hud-crest vfb">V</div>
-              </div>
-            </div>
-            <div class="fanbase-col gast" aria-label="Gegner-Fanbase">
-              <span class="fb"><i>N</i><b id="fb-en">0</b></span>
-              <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
-              <span class="fb"><i>H</i><b id="fb-eh">0</b></span>
-              <span class="fb"><i>O</i><b id="fb-eo">0</b></span>
+              <div class="hud-crest vfb">V</div>
             </div>
           </div>
           <div class="pitch-momentum" aria-label="Momentum">
             <div class="momentum-wrap">
-              <div class="momentum-bar" id="momentum-bar" title="Momentum / Torchance">
+              <div class="momentum-bar" id="momentum-bar" title="Momentum aus Block-Besetzung">
                 <div class="mom-fill heim" id="mom-heim"></div>
                 <div class="mom-fill gast" id="mom-gast"></div>
                 <div class="mom-knob" id="mom-knob"></div>
-                <div class="mom-pulse" id="mom-pulse" aria-hidden="true"></div>
               </div>
               <div class="mom-labels">
                 <span id="mom-p-heim">Heim 50%</span>
@@ -285,42 +273,30 @@ function renderMatchScreen(): void {
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
+        <canvas id="c"></canvas>
         <div class="toast" id="toast"></div>
         <div class="popup-menu hidden" id="seat-menu">
           <p class="popup-title">Fan kaufen</p>
           <button data-buy="normalos" id="buy-normalos" class="popup-buy">
-            <img src="${unitIconPath("normalos", teamColor(m.playerTeam), 1)}" alt="">
+            <img src="${unitIconPath("normalos", tc, 1)}" alt="">
             <span>Fan <small>${BUY_COST.normalos.security} Sicherheit</small></span>
           </button>
           <button data-buy="ultras" id="buy-ultras" class="popup-buy">
-            <img src="${unitIconPath("ultras", teamColor(m.playerTeam), 1)}" alt="">
+            <img src="${unitIconPath("ultras", tc, 1)}" alt="">
             <span>Ultra <small>${BUY_COST.ultras.merch} Fanartikel</small></span>
           </button>
           <button data-buy="hooligans" id="buy-hooligans" class="popup-buy">
-            <img src="${unitIconPath("hooligans", teamColor(m.playerTeam), 1)}" alt="">
+            <img src="${unitIconPath("hooligans", tc, 1)}" alt="">
             <span>Hooligan <small>${BUY_COST.hooligans.beer} Bier</small></span>
           </button>
           <button class="popup-cancel" id="seat-cancel">Abbrechen</button>
         </div>
         <div class="popup-menu hidden" id="build-menu">
           <p class="popup-title" id="build-title">Gebäude</p>
-          <div id="build-options">
-            <button data-build="bier" class="popup-buy">
-              <img src="icons/stands/bier-${teamColor(m.playerTeam)}-1.png" alt="">
-              <span>Bierstand <small>${BUILD_COST.bier}g · +Bier</small></span>
-            </button>
-            <button data-build="ordner" class="popup-buy">
-              <img src="icons/stands/ordner-${teamColor(m.playerTeam)}-1.png" alt="">
-              <span>Ordnerposten <small>${BUILD_COST.ordner}g · Anti-Rush</small></span>
-            </button>
-            <button data-build="fanshop" class="popup-buy">
-              <img src="icons/stands/fanshop-${teamColor(m.playerTeam)}-1.png" alt="">
-              <span>Fanshop <small>${BUILD_COST.fanshop}g · +Gesang</small></span>
-            </button>
-          </div>
+          <div id="build-options" class="hidden"></div>
           <div id="upgrade-options" class="hidden">
             <button id="btn-hire-steward" class="hidden popup-buy">
-              <img src="${unitIconPath("ordner", teamColor(m.playerTeam), 1)}" alt="">
+              <img src="${unitIconPath("ordner", tc, 1)}" alt="">
               <span>Ordner anheuern <small>${STEWARD_HIRE_GOLD}€</small></span>
             </button>
             <button id="btn-upgrade">Upgrade <small></small></button>
@@ -340,6 +316,30 @@ function renderMatchScreen(): void {
           </div>
         </div>
       </div>
+      <aside class="side-rail right-rail" aria-label="Gebäude">
+        <header class="rail-head">Bauen</header>
+        <p class="rail-hint" id="build-hint">Gebäude tippen, dann Plot wählen</p>
+        <div class="build-rows">
+          <button type="button" class="build-card" data-pending-build="bier">
+            <img src="icons/stands/bier-${tc}-3.png" alt="">
+            <span>Bierstand</span>
+            <small>${BUILD_COST.bier}g</small>
+            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+          </button>
+          <button type="button" class="build-card" data-pending-build="fanshop">
+            <img src="icons/stands/fanshop-${tc}-3.png" alt="">
+            <span>Fanshop</span>
+            <small>${BUILD_COST.fanshop}g</small>
+            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+          </button>
+          <button type="button" class="build-card" data-pending-build="ordner">
+            <img src="icons/stands/ordner-${tc}-3.png" alt="">
+            <span>Ordnerposten</span>
+            <small>${BUILD_COST.ordner}g</small>
+            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+          </button>
+        </div>
+      </aside>
     </div>`;
 
   const canvas = app.querySelector<HTMLCanvasElement>("#c")!;
@@ -358,11 +358,26 @@ function renderMatchScreen(): void {
   const layoutHud = () => {
     const rect = wrap.getBoundingClientRect();
     if (rect.width < 32 || rect.height < 32) return;
-    const pitchPx = rect.height * L.pitchH;
     pitchHud.style.top = "0";
     pitchHud.style.left = "0";
     pitchHud.style.width = "100%";
-    pitchHud.style.height = `${Math.floor(pitchPx)}px`;
+    pitchHud.style.height = "auto";
+  };
+
+  const syncPendingBuildUi = () => {
+    const hint = app.querySelector("#build-hint");
+    app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
+      const kind = btn.dataset.pendingBuild as BuildingKind;
+      const on = state.pendingBuild === kind;
+      btn.classList.toggle("selected", on);
+      btn.classList.toggle("cd", m.gold < BUILD_COST[kind]);
+    });
+    if (hint) {
+      hint.textContent = state.pendingBuild
+        ? `${state.pendingBuild === "bier" ? "Bierstand" : state.pendingBuild === "fanshop" ? "Fanshop" : "Ordnerposten"} — Plot antippen`
+        : "Gebäude tippen, dann Plot wählen";
+    }
+    wrap.classList.toggle("placing", !!state.pendingBuild);
   };
 
   const resize = () => {
@@ -448,7 +463,6 @@ function renderMatchScreen(): void {
       const cost = m.upgradeCost(slot);
       const next = (slot.level || 1) + 1;
       buildTitle.textContent = `${slot.building === "bier" ? "Bierstand" : slot.building === "ordner" ? "Ordnerposten" : "Fanshop"} Lv${slot.level}`;
-      // Ordner anheuern NUR am Ordnerposten — nie Bierstand/Fanshop
       if (slot.building === "ordner") {
         btnHire.hidden = false;
         btnHire.classList.remove("hidden");
@@ -469,15 +483,11 @@ function renderMatchScreen(): void {
         btnUpgrade.disabled = m.gold < cost;
         btnUpgrade.innerHTML = `Upgrade → Lv${next} <small>${cost}g</small>`;
       }
+      buildMenu.classList.remove("hidden");
     } else {
-      buildOptions.classList.remove("hidden");
-      upgradeOptions.classList.add("hidden");
-      btnHire.hidden = true;
-      btnHire.classList.add("hidden");
-      btnHire.style.display = "none";
-      buildTitle.textContent = `Gebäude · Shop ${BUILD_COST.fanshop}g · Ordner ${BUILD_COST.ordner}g · Bier ${BUILD_COST.bier}g`;
+      // Empty plots: use right rail, not popup
+      buildMenu.classList.add("hidden");
     }
-    buildMenu.classList.remove("hidden");
   };
 
   const syncBuyButtons = () => {
@@ -513,47 +523,56 @@ function renderMatchScreen(): void {
         (s) => s.blockId === hit.blockId && s.index === hit.index,
       );
       m.selectedSlot = hit;
-      if (slot && (!slot.building || slot.greyNeutral || slot.owner === "neutral")) {
-        showBuildMenu(hit.blockId, hit.index);
-      } else if (
+      if (
+        state.pendingBuild &&
+        slot &&
+        (!slot.building || slot.greyNeutral || slot.owner === "neutral")
+      ) {
+        m.buildMenu = hit;
+        const ok = m.tryBuild(state.pendingBuild);
+        if (ok) state.pendingBuild = null;
+        hideMenus();
+        syncPendingBuildUi();
+        syncOverlay();
+        return;
+      }
+      if (
         slot?.building &&
         slot.owner === m.playerTeam &&
         !slot.greyNeutral
       ) {
         showBuildMenu(hit.blockId, hit.index);
+      } else if (slot && (!slot.building || slot.greyNeutral)) {
+        state.pendingBuild = state.pendingBuild ?? "fanshop";
+        m.toast("Rechts Gebäude wählen, dann Plot tippen");
+        syncPendingBuildUi();
       } else {
         hideMenus();
-        m.toast(`Slot ${hit.blockId + 1}.${hit.index + 1}`);
       }
       return;
     }
     hideMenus();
+    state.pendingBuild = null;
+    syncPendingBuildUi();
   });
 
   const syncOverlay = () => {
-    (["gesang", "pyro"] as MoodAction[]).forEach((act) => {
-      const btn = app.querySelector<HTMLButtonElement>(`#btn-${act}`)!;
-      const ready = m.moodActionReady(act);
-      btn.classList.toggle("ready", ready);
-      btn.classList.toggle("cd", !ready);
-      btn.querySelector("span")!.textContent = cdLabel(m.cd[act]);
-    });
     const hb = app.querySelector<HTMLButtonElement>("#btn-hooligan")!;
     const hready = m.hooliganOrderReady();
     hb.classList.toggle("ready", hready);
     hb.classList.toggle("cd", !hready);
     hb.disabled = !hready;
     hb.title = hready
-      ? `Angriff · ${HOOLIGAN_ORDER_BEER} Bier`
-      : `Angriff · braucht ${HOOLIGAN_ORDER_BEER} Bier`;
+      ? `Senden · ${HOOLIGAN_ORDER_BEER} Bier`
+      : `Senden · braucht ${HOOLIGAN_ORDER_BEER} Bier`;
     const pf = app.querySelector<HTMLButtonElement>("#btn-pyro-fight")!;
     const pready = m.pyroFightReady();
     pf.classList.toggle("ready", pready);
     pf.classList.toggle("cd", !pready);
     pf.disabled = !pready;
     pf.title = pready
-      ? `Pyro Wurf · ${PYRO_FIGHT_MERCH} Fanartikel`
-      : `Pyro Wurf · braucht ${PYRO_FIGHT_MERCH} Fanartikel`;
+      ? `Senden · ${PYRO_FIGHT_MERCH} Fanartikel`
+      : `Senden · braucht ${PYRO_FIGHT_MERCH} Fanartikel`;
     (["ultras", "normalos", "hooligans"] as FanKind[]).forEach((kind) => {
       const plus = app.querySelector<HTMLButtonElement>(
         `[data-quick-buy="${kind}"]`,
@@ -567,31 +586,9 @@ function renderMatchScreen(): void {
     const freeEl = app.querySelector("#free-seats");
     if (freeEl) freeEl.textContent = String(m.countFreeBuySeats());
     if (!seatMenu.classList.contains("hidden")) syncBuyButtons();
+    syncPendingBuildUi();
   };
 
-  app.querySelectorAll<HTMLButtonElement>("[data-mood]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const act = btn.dataset.mood as MoodAction;
-      const ok = m.tryMoodAction(act);
-      if (ok) {
-        const bar = app.querySelector("#momentum-bar");
-        const pulse = app.querySelector("#mom-pulse");
-        if (bar) {
-          bar.classList.remove("kick-gesang", "kick-pyro");
-          // reflow so animation restarts
-          void (bar as HTMLElement).offsetWidth;
-          bar.classList.add(act === "gesang" ? "kick-gesang" : "kick-pyro", "kick");
-        }
-        if (pulse) {
-          pulse.classList.remove("from-gesang", "from-pyro", "run");
-          void (pulse as HTMLElement).offsetWidth;
-          // Both Heim actions push from the left into the bar
-          pulse.classList.add(act === "gesang" ? "from-gesang" : "from-pyro", "run");
-        }
-      }
-      syncOverlay();
-    });
-  });
   app.querySelector("#btn-hooligan")!.addEventListener("click", () => {
     m.tryHooliganOrder();
     syncOverlay();
@@ -618,11 +615,13 @@ function renderMatchScreen(): void {
       syncOverlay();
     });
   });
-  app.querySelectorAll<HTMLButtonElement>("[data-build]").forEach((btn) => {
+  app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      m.tryBuild(btn.dataset.build as BuildingKind);
+      const kind = btn.dataset.pendingBuild as BuildingKind;
+      state.pendingBuild = state.pendingBuild === kind ? null : kind;
       hideMenus();
-      syncOverlay();
+      syncPendingBuildUi();
+      if (state.pendingBuild) m.toast("Plot auf dem Gang wählen");
     });
   });
   btnHire.addEventListener("click", () => {
@@ -718,11 +717,7 @@ function renderMatchScreen(): void {
       if (lpG) lpG.textContent = `Gast ${pG}%`;
       const bar = app.querySelector("#momentum-bar");
       if (bar) {
-        const kicking = m.moodKick > 0.08;
-        bar.classList.toggle("kick", kicking);
-        if (!kicking) {
-          bar.classList.remove("kick-gesang", "kick-pyro");
-        }
+        bar.classList.toggle("kick", m.moodKick > 0.08);
       }
       const banner = app.querySelector("#combat-banner");
       if (banner) {

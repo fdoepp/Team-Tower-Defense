@@ -2696,30 +2696,42 @@ canBuy(kind: FanKind): boolean {
     }
   }
 
-  /** Jubel from block fans only → momentum */
+  /**
+   * Momentum from people-count pressure per block (team color),
+   * not from Gesang/Pyro actions.
+   */
   private tickJubelMomentum(dt: number): void {
-    const jubel = (team: TeamId, blockId: number, mul: Record<FanKind, number>) => {
-      let j = 0;
+    let pressure = 0;
+    let blueTotal = 0;
+    let redTotal = 0;
+    for (let b = 0; b < BLOCK_COUNT; b++) {
+      let blue = 0;
+      let red = 0;
       for (const f of this.fans) {
-        if (f.hp <= 0 || f.team !== team || f.isSteward) continue;
-        if (f.blockId !== blockId || f.state !== "block") continue;
-        j += FAN_STATS[f.kind].jubel * (mul[f.kind] ?? 1);
+        if (f.hp <= 0 || f.isSteward) continue;
+        if (f.blockId !== b) continue;
+        if (f.state !== "block" && f.state !== "stand") continue;
+        if (f.team === "ksc") blue++;
+        else if (f.team === "vfb") red++;
       }
-      return j;
-    };
-    const jH = jubel(this.playerTeam, HEIM_BLOCK, this.jubelMulHeim);
-    const jG = jubel(this.aiTeam, GAST_BLOCK, this.jubelMulGast);
-    const k = 0.042;
-    const lambda = 0.07;
-    const sign = this.playerTeam === "ksc" ? 1 : 1;
-    // momentum + = player advantage
+      blueTotal += blue;
+      redTotal += red;
+      const total = blue + red;
+      if (total <= 0) continue;
+      // Block pressure: share of blue vs red, weighted by crowd size
+      pressure += ((blue - red) / total) * (0.55 + Math.min(8, total) * 0.08);
+    }
+    // +momentum = KSC advantage; flip if player is VfB for HUD "Heim"
+    const signed = this.playerTeam === "ksc" ? pressure : -pressure;
+    const k = 0.055;
+    const lambda = 0.065;
     this.momentum = clamp(
-      this.momentum + (k * (jH - jG) - lambda * this.momentum) * dt * sign,
+      this.momentum + (k * signed - lambda * this.momentum) * dt,
       -1,
       1,
     );
-    this.moodHeim = clamp(this.moodHeim + (jH * 0.002 - 0.01) * dt, 0, 3);
-    this.moodGaeste = clamp(this.moodGaeste + (jG * 0.002 - 0.01) * dt, 0, 3);
+    this.moodHeim = clamp(0.35 + blueTotal * 0.08, 0, 3);
+    this.moodGaeste = clamp(0.35 + redTotal * 0.08, 0, 3);
   }
 
   private tickBlockStorm(dt: number): void {
@@ -2857,10 +2869,7 @@ canBuy(kind: FanKind): boolean {
     this.aiSecurity = Math.min(120, this.aiSecurity + dt * 1.05);
 
     const interval = 7 / diffMul(this.cfg.settings.difficulty);
-    const moodEvery = diffMul(this.cfg.settings.difficulty) > 1 ? 1.6 : 2.4;
-    if (Math.floor(this.realElapsed / moodEvery) !== Math.floor((this.realElapsed - dt) / moodEvery)) {
-      this.aiTryMood();
-    }
+    // Gesang/Pyro actions removed — momentum comes from block people-count only
 
     if (this.aiAcc < interval) return;
     this.aiAcc = 0;
@@ -2921,61 +2930,6 @@ canBuy(kind: FanKind): boolean {
       this.floatAtSlot(s, "KI Ordner", false);
       return;
     }
-  }
-
-  /** AI Gesang/Pyro — frequency & timing scale with difficulty */
-  private aiTryMood(): void {
-    const diff = this.cfg.settings.difficulty;
-    const chance =
-      diff === "easy" ? 0.22 : diff === "hard" ? 0.72 : 0.45;
-    if (Math.random() > chance) return;
-
-    // Prefer Gesang slightly over Pyro when catching up (RPS balance)
-    const behind = this.momentum > 0.08; // player (heim) ahead → AI should push
-    const preferPyro = behind && Math.random() < 0.4;
-    const act: MoodAction = preferPyro ? "pyro" : "gesang";
-    if (this.aiCd[act] > 0) {
-      const alt: MoodAction = act === "pyro" ? "gesang" : "pyro";
-      if (this.aiCd[alt] > 0) return;
-      this.aiFireMood(alt);
-      return;
-    }
-    // Hard: only fire when it matters; easy: random even when ahead
-    if (diff === "hard" && !behind && Math.random() < 0.55) return;
-    if (diff === "easy" && behind && Math.random() < 0.4) return; // clumsier when needed
-    this.aiFireMood(act);
-  }
-
-  private aiFireMood(act: MoodAction): void {
-    const kind: FanKind = act === "gesang" ? "normalos" : "ultras";
-    const n = this.countInBlock(this.aiTeam, GAST_BLOCK, kind);
-    if (n <= 0) return;
-    const cost =
-      act === "gesang" ? Math.round(4 + n * 1.2) : Math.round(9 + n * 1.8);
-    if (act === "gesang") {
-      if (this.aiSecurity < cost) return;
-      this.aiSecurity -= cost;
-      this.moodGaeste = clamp(this.moodGaeste + 0.38 * n, 0, 3);
-      this.jubelMulGast.normalos = 1.7;
-      this.jubelMulGast.hooligans = 1.15;
-      const before = this.momentum;
-      this.momentum = clamp(this.momentum - 0.095 * n, -1, 1);
-      this.moodKick = Math.min(1, 0.55 + Math.abs(this.momentum - before));
-      this.triggerCheer("gesang", this.aiTeam, GAST_BLOCK);
-      this.toast(`KI Gesang ×${n}`);
-    } else {
-      if (this.aiMerch < cost) return;
-      this.aiMerch -= cost;
-      this.moodGaeste = clamp(this.moodGaeste + 0.32 * n, 0, 3);
-      this.moodHeim = clamp(this.moodHeim - 0.1 * n, 0, 3);
-      this.jubelMulGast.ultras = 1.45;
-      const before = this.momentum;
-      this.momentum = clamp(this.momentum - 0.065 * n, -1, 1);
-      this.moodKick = Math.min(1, 0.65 + Math.abs(this.momentum - before));
-      this.triggerCheer("pyro", this.aiTeam, GAST_BLOCK);
-      this.toast(`KI Pyro ×${n}`);
-    }
-    this.aiCd[act] = MOOD_CD[act] * (this.cfg.settings.difficulty === "easy" ? 1.35 : 1);
   }
 
   private aiTryBuild(): void {
