@@ -11,7 +11,9 @@ import {
   FEVER_FROM_MIN,
   HIT_CD,
   HIT_DAMAGE,
+  MELEE_RANGE,
   MOOD_CD,
+  NEUTRAL_STEWARD_RESPAWN,
   NORMALO_BEER_INTERVAL,
   PROD_BEER,
   PROD_MERCH,
@@ -22,7 +24,9 @@ import {
   STAND_CONVERT_SEC,
   STAND_CONVERT_SEAT_MAJORITY,
   START_GOLD,
+  STEWARD_CAP,
   STEWARD_GOLD_PER_SEC,
+  STEWARD_HIRE_GOLD,
   STEWARD_STATS,
   ULTRA_BEER_INTERVAL,
   ULTRA_ORDER_BEER,
@@ -228,7 +232,7 @@ export class Match {
       bufferPost.greyNeutral = false;
       bufferPost.owner = "neutral";
       bufferPost.level = 1;
-      bufferPost.stewardCd = 4;
+      bufferPost.stewardCd = NEUTRAL_STEWARD_RESPAWN;
       const post = this.stewardPostPos(bufferPost);
       for (let i = 0; i < 2; i++) {
         const st = this.makeSteward("neutral", bufferPost);
@@ -310,6 +314,7 @@ export class Match {
       invading: false,
       isSteward: false,
       homeStandKey: null,
+      homeBlockId: blockId,
       patrolDir: Math.random() < 0.5 ? 1 : -1,
       cheerT: 0,
     };
@@ -345,6 +350,7 @@ export class Match {
       invading: false,
       isSteward: true,
       homeStandKey: slotKey(stand.blockId, stand.index),
+      homeBlockId: stand.blockId,
       patrolDir: Math.random() < 0.5 ? 1 : -1,
       cheerT: 0,
       _after: "steward",
@@ -373,7 +379,7 @@ export class Match {
     s.greyNeutral = false;
     s.owner = owner;
     s.level = 1;
-    s.stewardCd = kind === "ordner" ? 1.5 : 8;
+    s.stewardCd = kind === "ordner" ? (owner === "neutral" ? NEUTRAL_STEWARD_RESPAWN : 9999) : 8;
     s.convertAcc = 0;
     s.convertBy = null;
     s.prodFlash = 0;
@@ -485,9 +491,18 @@ export class Match {
   }
 
   private homeBlockOf(f: FanUnit): number {
+    if (f.homeBlockId != null) return f.homeBlockId;
     if (f.team === this.playerTeam) return HEIM_BLOCK;
     if (f.team === this.aiTeam) return GAST_BLOCK;
     return f.blockId;
+  }
+
+  /** Player may buy into Heim or any block they own / hold seat majority in */
+  canBuyInBlock(blockId: number): boolean {
+    if (this.blockOwner[blockId] === this.playerTeam) return true;
+    if (blockId === HEIM_BLOCK) return true;
+    if (blockId === GAST_BLOCK) return false;
+    return this.hasSeatMajority(blockId, this.playerTeam);
   }
 
   /** Seat reserved while fan lives (Ultra on gang keeps Heim-Platz) */
@@ -638,7 +653,6 @@ export class Match {
 
   ultraOrderReady(): boolean {
     return (
-      this.cd.ultraOrder <= 0 &&
       this.currency.beer >= ULTRA_ORDER_BEER &&
       this.fans.some(
         (f) =>
@@ -651,10 +665,6 @@ export class Match {
   }
 
   tryUltraOrder(): boolean {
-    if (this.cd.ultraOrder > 0) {
-      this.toast("Ultra-Befehl: CD");
-      return false;
-    }
     const ultras = this.fans.filter(
       (f) =>
         f.team === this.playerTeam &&
@@ -666,14 +676,21 @@ export class Match {
       this.toast("Keine Ultras im Block");
       return false;
     }
-    const door = doorPos(HEIM_BLOCK);
+    const door = doorPos(this.homeBlockOf(ultras[0]));
     if (!this.spend("beer", ULTRA_ORDER_BEER, door, "BIER")) {
       this.toast(`Ultra braucht ${ULTRA_ORDER_BEER} Bier`);
       return false;
     }
     this.sendToGang(ultras[0]);
-    this.cd.ultraOrder = ULTRA_ORDER_CD;
-    this.toast("1 Ultra → Gang");
+    this.cd.ultraOrder = ULTRA_ORDER_CD; // 0 — no cooldown
+    const onGang = this.fans.filter(
+      (f) =>
+        f.team === this.playerTeam &&
+        f.kind === "ultras" &&
+        f.hp > 0 &&
+        (f.state === "gang" || f.state === "moving"),
+    ).length;
+    this.toast(`Ultra → Gang (${onGang} unterwegs)`);
     return true;
   }
 
@@ -702,8 +719,8 @@ export class Match {
   }
 
   tryBuyFan(kind: FanKind, blockId: number, seatIndex: number): boolean {
-    if (blockId !== HEIM_BLOCK) {
-      this.toast("Nur Heimblock");
+    if (!this.canBuyInBlock(blockId)) {
+      this.toast("Block noch nicht unter Kontrolle");
       return false;
     }
     if (this.blockFanCount(blockId) >= SEATS_PER_BLOCK) {
@@ -787,7 +804,7 @@ export class Match {
     s.owner = this.playerTeam;
     if (!s.level) s.level = 1;
     if (s.building === "bier" && s.beer < 20) s.beer = 40;
-    if (s.building === "ordner") s.stewardCd = Math.min(s.stewardCd || 8, 2);
+    if (s.building === "ordner") s.stewardCd = 9999; // manual hire only
     this.buildMenu = null;
     const p = this.standWorld(s);
     this.floatAt(p.x, p.y, `−${cost}€`, false);
@@ -1020,9 +1037,58 @@ export class Match {
     }
   }
 
+  /** Count living Ordner tied to a post */
+  stewardCountAt(s: BuildSlot): number {
+    const key = slotKey(s.blockId, s.index);
+    return this.fans.filter(
+      (f) => f.hp > 0 && f.isSteward && f.homeStandKey === key,
+    ).length;
+  }
+
+  canHireSteward(s: BuildSlot): boolean {
+    if (s.building !== "ordner" || s.greyNeutral) return false;
+    if (s.owner !== this.playerTeam) return false;
+    return this.stewardCountAt(s) < STEWARD_CAP && this.gold >= STEWARD_HIRE_GOLD;
+  }
+
+  /** Player: click Ordnerposten → Ordner für Gold anheuern */
+  tryHireSteward(): boolean {
+    const sel = this.buildMenu ?? this.selectedSlot;
+    if (!sel) {
+      this.toast("Ordnerposten wählen");
+      return false;
+    }
+    const s = this.slots.find(
+      (x) => x.blockId === sel.blockId && x.index === sel.index,
+    );
+    if (!s || s.building !== "ordner") {
+      this.toast("Kein Ordnerposten");
+      return false;
+    }
+    if (s.owner !== this.playerTeam || s.greyNeutral) {
+      this.toast("Nicht dein Posten");
+      return false;
+    }
+    if (this.stewardCountAt(s) >= STEWARD_CAP) {
+      this.toast(`Max. ${STEWARD_CAP} Ordner`);
+      return false;
+    }
+    if (this.gold < STEWARD_HIRE_GOLD) {
+      this.toast(`${STEWARD_HIRE_GOLD}€ nötig`);
+      return false;
+    }
+    this.gold -= STEWARD_HIRE_GOLD;
+    const st = this.makeSteward(this.playerTeam, s);
+    this.fans.push(st);
+    this.floatAtSlot(s, `−${STEWARD_HIRE_GOLD}€ Ordner`, true);
+    this.toast("Ordner angeheuert");
+    return true;
+  }
+
   private tickStewards(dt: number): void {
+    // Only neutral posts auto-respawn (slow). Player/AI must hire manually.
     for (const s of this.slots) {
-      if (s.building !== "ordner" || !s.owner || s.greyNeutral) continue;
+      if (s.building !== "ordner" || s.owner !== "neutral" || s.greyNeutral) continue;
       const key = slotKey(s.blockId, s.index);
       const aliveAtPost = this.fans.filter(
         (f) => f.hp > 0 && f.isSteward && f.homeStandKey === key,
@@ -1030,14 +1096,13 @@ export class Match {
       const neutralAlive = this.fans.filter(
         (f) => f.hp > 0 && f.isSteward && f.team === "neutral",
       ).length;
-      // Never more than 2 neutral Ordners total on the gang
-      if (s.owner === "neutral" && neutralAlive >= 2) continue;
-      const cap = 2;
+      if (neutralAlive >= STEWARD_CAP) continue;
       s.stewardCd -= dt;
-      if (aliveAtPost >= cap) continue;
+      if (aliveAtPost >= STEWARD_CAP) continue;
       if (s.stewardCd > 0) continue;
-      s.stewardCd = 7.5 / productionRate(s.level || 1);
-      this.fans.push(this.makeSteward(s.owner, s));
+      s.stewardCd = NEUTRAL_STEWARD_RESPAWN;
+      this.fans.push(this.makeSteward("neutral", s));
+      this.toast("Neutraler Ordner kehrt zurück");
     }
 
     for (const f of this.fans) {
@@ -1389,7 +1454,8 @@ export class Match {
   private blockerAhead(f: FanUnit): FanUnit | null {
     const dir = f.team === this.playerTeam ? 1 : -1;
     let best: FanUnit | null = null;
-    let bestD = 0.065;
+    // Stop close enough that melee combat can engage
+    let bestD = MELEE_RANGE * 0.95;
     for (const o of this.fans) {
       if (o === f || o.hp <= 0) continue;
       const hostile =
@@ -1671,8 +1737,13 @@ export class Match {
       if (!foes.length) continue;
       foes.sort((a, b) => dist(inv.x, inv.y, a.x, a.y) - dist(inv.x, inv.y, b.x, b.y));
       const t = foes[0];
-      inv.x += (t.x - inv.x) * 0.12;
-      inv.y += (t.y - inv.y) * 0.12;
+      // Close to melee range before fighting
+      const d = dist(inv.x, inv.y, t.x, t.y);
+      if (d > MELEE_RANGE * 0.85) {
+        const step = Math.min(1, 0.35);
+        inv.x += (t.x - inv.x) * step;
+        inv.y += (t.y - inv.y) * step;
+      }
     }
   }
 
@@ -1704,13 +1775,8 @@ export class Match {
       if (!canAttack && a.state !== "gang" && !a.isSteward) continue;
 
       let best: FanUnit | null = null;
-      // Gang/steward fights need enough reach for mutual trades
-      let bestD =
-        a.invading || blockInvaded || a.state === "block"
-          ? 0.42
-          : a.isSteward || a.state === "gang"
-            ? 0.14
-            : 0.08;
+      // Strict melee — must stand directly next to each other
+      let bestD = MELEE_RANGE;
 
       for (const b of this.fans) {
         if (b.hp <= 0 || b === a) continue;
@@ -1728,10 +1794,7 @@ export class Match {
         const sameLane =
           sameBlockFight ||
           ((a.state === "gang" || a.isSteward) &&
-            (b.state === "gang" || b.isSteward || b.state === "stand")) ||
-          (a.state === "gang" &&
-            b.state === "block" &&
-            Math.abs(blockIdToGangX(b.blockId) - a.gangX) < 0.12);
+            (b.state === "gang" || b.isSteward || b.state === "stand"));
 
         if (!sameLane) continue;
         const d = dist(a.x, a.y, b.x, b.y);
@@ -1784,11 +1847,25 @@ export class Match {
     target.aggro = clamp(target.aggro + 12, 0, 100);
     if (target.hp <= 0) {
       target.hp = 0;
-      this.toast(
-        target.isSteward
-          ? "Ordner besiegt"
-          : `${FAN_STATS[target.kind].label} besiegt`,
-      );
+      if (target.isSteward) {
+        this.onStewardDefeated(target);
+        this.toast("Ordner besiegt");
+      } else {
+        this.toast(`${FAN_STATS[target.kind].label} besiegt`);
+      }
+    }
+  }
+
+  /** Neutral Ordner: start slow respawn timer on their post */
+  private onStewardDefeated(st: FanUnit): void {
+    if (!st.homeStandKey) return;
+    const stand = this.slots.find(
+      (s) => slotKey(s.blockId, s.index) === st.homeStandKey,
+    );
+    if (!stand) return;
+    if (stand.owner === "neutral") {
+      // Don't instantly refill — wait full respawn even if another Ordner still alive
+      stand.stewardCd = Math.max(stand.stewardCd, NEUTRAL_STEWARD_RESPAWN);
     }
   }
 
@@ -2097,6 +2174,7 @@ export class Match {
     if (this.aiAcc < interval) return;
     this.aiAcc = 0;
     this.aiTryBuild();
+    this.aiTryHireSteward();
     const ultras = this.fans.filter(
       (f) =>
         f.team === this.aiTeam &&
@@ -2108,8 +2186,28 @@ export class Match {
     const onGang = this.fans.filter(
       (f) => f.team === this.aiTeam && f.state === "gang" && f.hp > 0 && !f.isSteward,
     ).length;
-    if (ultras.length && onGang < 1 && Math.random() < 0.35) {
+    // AI can stack multiple Ultras on gang (no CD) when beer-like budget via gold proxy
+    const want = this.cfg.settings.difficulty === "hard" ? 3 : 2;
+    if (ultras.length && onGang < want && Math.random() < 0.4) {
       this.sendToGang(ultras[0]);
+    }
+  }
+
+  /** AI: spend gold to hire Ordner at own posts (same rules as player) */
+  private aiTryHireSteward(): void {
+    const posts = this.slots.filter(
+      (s) =>
+        s.building === "ordner" &&
+        s.owner === this.aiTeam &&
+        !s.greyNeutral,
+    );
+    for (const s of posts) {
+      if (this.stewardCountAt(s) >= STEWARD_CAP) continue;
+      if (this.aiGold < STEWARD_HIRE_GOLD) return;
+      this.aiGold -= STEWARD_HIRE_GOLD;
+      this.fans.push(this.makeSteward(this.aiTeam, s));
+      this.floatAtSlot(s, "KI Ordner", false);
+      return;
     }
   }
 
@@ -2207,6 +2305,7 @@ export class Match {
     s.owner = this.aiTeam;
     s.greyNeutral = false;
     if (s.building === "bier" && s.beer < 20) s.beer = 40;
+    if (s.building === "ordner") s.stewardCd = 9999; // AI hires manually
     this.floatAtSlot(s, claim ? "KI Claim" : "KI baut", false);
   }
 

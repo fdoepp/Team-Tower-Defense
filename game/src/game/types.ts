@@ -57,6 +57,8 @@ export type FanUnit = {
   invading: boolean;
   isSteward: boolean;
   homeStandKey: string | null;
+  /** Block whose seat this fan reserves while away (gang/invade) */
+  homeBlockId: number;
   /** Ordner patrol direction on gang (−1 / +1) */
   patrolDir: number;
   /** cheer FX timer after Gesang/Pyro */
@@ -94,12 +96,10 @@ export type Currencies = {
 export const START_GOLD = 75;
 
 export const BUY_COST = {
-  /** Ultra-Gang-Pfad: teurer Einstieg */
-  ultras: { beer: 45, merch: 0, gold: 0 },
-  /** Gesang-Pfad: günstigere Normalos */
-  normalos: { beer: 0, merch: 24, gold: 0 },
-  /** Familie/Shop-Pfad etwas günstiger */
-  familie: { beer: 0, merch: 0, gold: 35 },
+  /** Günstiger Nachkauf — Einstieg erleichtern */
+  ultras: { beer: 22, merch: 0, gold: 0 },
+  normalos: { beer: 0, merch: 12, gold: 0 },
+  familie: { beer: 0, merch: 0, gold: 18 },
 } as const;
 
 /** Differentiated building costs — Bier feeds Ultra loop, Shop feeds Gesang */
@@ -138,13 +138,21 @@ export const MOOD_CD = {
   pyro: 18,
 } as const;
 
-/** Ultra-Befehl: teurer + längere CD (nerft Bier→Ultra→Gang) */
-export const ULTRA_ORDER_CD = 18;
-export const ULTRA_ORDER_BEER = 8;
+/** Ultra→Gang: kein CD — nur Bier-Kosten (Mehrfach-Send möglich) */
+export const ULTRA_ORDER_CD = 0;
+export const ULTRA_ORDER_BEER = 6;
 
-/** Combat */
+/** Combat — nur Nahkampf (Einheiten müssen direkt nebeneinander stehen) */
 export const HIT_DAMAGE = 22;
-export const HIT_CD = 0.6;
+export const HIT_CD = 0.55;
+/** Max distance (norm coords) to deal damage — adjacent only */
+export const MELEE_RANGE = 0.055;
+/** Player/AI Ordner manuell anheuern */
+export const STEWARD_HIRE_GOLD = 22;
+/** Max Ordner pro Posten (Spieler/KI/Neutral) */
+export const STEWARD_CAP = 2;
+/** Neutraler Ordner: lange Pause nach Tod, bevor er wiederkommt */
+export const NEUTRAL_STEWARD_RESPAWN = 32;
 export const BLOCK_STORM_COUNT = 3;
 export const BLOCK_STORM_SEC = 5;
 /** Stand convert only with seat majority — longer timer */

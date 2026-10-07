@@ -16,6 +16,7 @@ import {
   BUY_COST,
   MIX_MAX,
   MIX_MIN,
+  STEWARD_HIRE_GOLD,
   ULTRA_ORDER_BEER,
   UPGRADE_MAX,
   type BuildingKind,
@@ -258,6 +259,7 @@ function renderMatchScreen(): void {
             <button data-build="fanshop">Fanshop <small>${BUILD_COST.fanshop}g · +Gesang</small></button>
           </div>
           <div id="upgrade-options" class="hidden">
+            <button id="btn-hire-steward" class="hidden">Ordner anheuern <small>${STEWARD_HIRE_GOLD}€</small></button>
             <button id="btn-upgrade">Upgrade <small></small></button>
           </div>
           <button class="popup-cancel" id="build-cancel">Abbrechen</button>
@@ -286,6 +288,7 @@ function renderMatchScreen(): void {
   const upgradeOptions = app.querySelector<HTMLDivElement>("#upgrade-options")!;
   const buildTitle = app.querySelector<HTMLParagraphElement>("#build-title")!;
   const btnUpgrade = app.querySelector<HTMLButtonElement>("#btn-upgrade")!;
+  const btnHire = app.querySelector<HTMLButtonElement>("#btn-hire-steward")!;
   const fsGate = app.querySelector<HTMLDivElement>("#fs-gate")!;
   const pitchHud = app.querySelector<HTMLDivElement>("#pitch-hud")!;
   const ultraPad = app.querySelector<HTMLButtonElement>("#btn-ultra")!;
@@ -389,7 +392,16 @@ function renderMatchScreen(): void {
       upgradeOptions.classList.remove("hidden");
       const cost = m.upgradeCost(slot);
       const next = (slot.level || 1) + 1;
-      buildTitle.textContent = `${slot.building === "bier" ? "Bierstand" : slot.building === "ordner" ? "Ordner" : "Fanshop"} Lv${slot.level}`;
+      buildTitle.textContent = `${slot.building === "bier" ? "Bierstand" : slot.building === "ordner" ? "Ordnerposten" : "Fanshop"} Lv${slot.level}`;
+      if (slot.building === "ordner") {
+        btnHire.classList.remove("hidden");
+        const canHire = m.canHireSteward(slot);
+        btnHire.disabled = !canHire;
+        btnHire.innerHTML = `Ordner anheuern <small>${STEWARD_HIRE_GOLD}€ · ${m.stewardCountAt(slot)}/2</small>`;
+        btnHire.classList.toggle("cd", !canHire);
+      } else {
+        btnHire.classList.add("hidden");
+      }
       if (cost == null || slot.level >= UPGRADE_MAX) {
         btnUpgrade.disabled = true;
         btnUpgrade.innerHTML = `Max. Stufe ${UPGRADE_MAX}`;
@@ -400,6 +412,7 @@ function renderMatchScreen(): void {
     } else {
       buildOptions.classList.remove("hidden");
       upgradeOptions.classList.add("hidden");
+      btnHire.classList.add("hidden");
       buildTitle.textContent = `Gebäude · Shop ${BUILD_COST.fanshop}g · Ordner ${BUILD_COST.ordner}g · Bier ${BUILD_COST.bier}g`;
     }
     buildMenu.classList.remove("hidden");
@@ -422,6 +435,10 @@ function renderMatchScreen(): void {
 
     const seat = hitSeat(m, mx, my);
     if (seat && !m.seatOccupied(seat.blockId, seat.seatIndex)) {
+      if (!m.canBuyInBlock(seat.blockId)) {
+        m.toast("Block noch nicht unter Kontrolle");
+        return;
+      }
       m.selectedSeat = seat;
       showSeatMenu(seat.blockId, seat.seatIndex);
       m.toast(`Platz ${seat.seatIndex + 1}`);
@@ -471,7 +488,11 @@ function renderMatchScreen(): void {
     const uready = m.ultraOrderReady();
     ub.classList.toggle("ready", uready);
     ub.classList.toggle("cd", !uready);
-    ub.querySelector("span")!.textContent = cdLabel(m.cd.ultraOrder);
+    ub.querySelector("span")!.textContent = uready
+      ? "bereit"
+      : m.currency.beer < ULTRA_ORDER_BEER
+        ? `${ULTRA_ORDER_BEER} Bier`
+        : "kein Ultra";
     if (!seatMenu.classList.contains("hidden")) syncBuyButtons();
   };
 
@@ -520,6 +541,12 @@ function renderMatchScreen(): void {
       hideMenus();
       syncOverlay();
     });
+  });
+  btnHire.addEventListener("click", () => {
+    m.tryHireSteward();
+    // Keep menu open so another Ordner can be hired
+    if (m.buildMenu) showBuildMenu(m.buildMenu.blockId, m.buildMenu.index);
+    syncOverlay();
   });
   btnUpgrade.addEventListener("click", () => {
     m.tryUpgrade();

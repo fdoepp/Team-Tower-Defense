@@ -187,9 +187,8 @@ function drawSeats(
       const occ = m.seatOccupied(b.id, i);
       const sel =
         m.selectedSeat?.blockId === b.id && m.selectedSeat?.seatIndex === i;
-      // "+" only for permanently free Heim seats (buyable) — not temp empty / reserved
-      const buyable =
-        !occ && b.id === HEIM_BLOCK && m.blockOwner[HEIM_BLOCK] === m.playerTeam;
+      // "+" on free seats in blocks the player controls (Heim or captured)
+      const buyable = !occ && m.canBuyInBlock(b.id);
 
       let cushion = buyable
         ? "rgba(220,252,231,0.95)"
