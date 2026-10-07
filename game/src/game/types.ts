@@ -1,5 +1,5 @@
 export type TeamId = "ksc" | "vfb";
-/** Normalo = Gesang/Sicherheit · Ultra = Pyro/Fanartikel · Hooligan = Nahkampf/Bier */
+/** Fan (normalos) = Gesang/Sicherheit · Ultra = Pyro/Fanartikel · Hooligan = Nahkampf/Bier */
 export type FanKind = "ultras" | "normalos" | "hooligans";
 export type FanMix = Record<FanKind, number>;
 export type AiDifficulty = "easy" | "normal" | "hard";
@@ -75,6 +75,9 @@ export type BuildSlot = {
   convertAcc: number;
   convertBy: TeamId | null;
   prodFlash: number;
+  /** Ordnerposten structural HP — must be destroyed before pushing past */
+  structHp: number;
+  structMaxHp: number;
 };
 
 export type Currencies = {
@@ -131,10 +134,13 @@ export const PYRO_FIGHT_MERCH = 6;
 
 export const HIT_DAMAGE = 22;
 export const HIT_CD = 0.55;
-/** Melee must be nearly overlapping — generous enough vs Ordner hitboxes */
+/** Melee must be nearly overlapping */
 export const MELEE_RANGE = 0.14;
-/** Ultra pyro throwers engagement distance */
-export const RANGED_RANGE = 0.26;
+/** Fernkämpfer (Bengalo) ≈ 5× Nahkampf */
+export const RANGED_RANGE = MELEE_RANGE * 5;
+
+export const ORDNER_POST_HP = 360;
+export const ORDNER_POST_HP_PER_LEVEL = 90;
 export const HIT_DAMAGE_SCALE = 0.7;
 /** Pyro ranged damage scale (vs melee) */
 export const RANGED_DAMAGE_SCALE = 0.85;
@@ -181,7 +187,7 @@ export const FAN_STATS: Record<
     drink: 0.7,
     jubel: 1.25,
     color: "#16a34a",
-    label: "Normalo",
+    label: "Fan",
   },
   ultras: {
     maxHp: 140,

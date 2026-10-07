@@ -25,7 +25,6 @@ import {
   type FanMix,
   type MoodAction,
   type SoloSettings,
-  type SpeedMode,
   type TeamId,
 } from "./game/types";
 import {
@@ -146,7 +145,7 @@ function renderSetup(): void {
         <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
       </div>
       <div class="card stack">
-        ${row("normalos", "Normalos (Gesang · Sicherheit)")}
+        ${row("normalos", "Fans (Gesang · Sicherheit)")}
         ${row("ultras", "Ultras (Pyro · Fanartikel)")}
         ${row("hooligans", "Hooligans (Nahkampf · Bier)")}
         <p class="tiny">Summe ${mixSum(mix)} / 8 ${isValidMix(mix) ? "✓" : ""}</p>
@@ -206,7 +205,7 @@ function renderMatchScreen(): void {
               <p class="freie-plaetze">Freie Plätze <b id="free-seats">0</b></p>
               <div class="unit-rows">
                 <div class="ur-row">
-                  <span class="ur-name">Normalos</span>
+                  <span class="ur-name">Fans</span>
                   <b class="ur-count" id="fb-n">0</b>
                   <button type="button" class="ar-plus" data-quick-buy="normalos" title="${BUY_COST.normalos.security} Sicherheit">+</button>
                   <button class="ar-btn gesang" data-mood="gesang" id="btn-gesang" type="button">Gesang<span></span></button>
@@ -229,11 +228,6 @@ function renderMatchScreen(): void {
                   <b class="ur-count" id="fb-o">0</b>
                 </div>
               </div>
-            </div>
-            <div class="speed-btns top-speed">
-              <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
-              <button data-spd="1" class="on">▶</button>
-              <button data-spd="2">2×</button>
             </div>
             <div class="fanbase-col gast" aria-label="Gegner-Fanbase">
               <span class="fb"><i>N</i><b id="fb-en">0</b></span>
@@ -270,7 +264,7 @@ function renderMatchScreen(): void {
         <div class="toast" id="toast"></div>
         <div class="popup-menu hidden" id="seat-menu">
           <p class="popup-title">Fan kaufen</p>
-          <button data-buy="normalos" id="buy-normalos">Normalo <small>${BUY_COST.normalos.security} Sicherheit</small></button>
+          <button data-buy="normalos" id="buy-normalos">Fan <small>${BUY_COST.normalos.security} Sicherheit</small></button>
           <button data-buy="ultras" id="buy-ultras">Ultra <small>${BUY_COST.ultras.merch} Fanartikel</small></button>
           <button data-buy="hooligans" id="buy-hooligans">Hooligan <small>${BUY_COST.hooligans.beer} Bier</small></button>
           <button class="popup-cancel" id="seat-cancel">Abbrechen</button>
@@ -376,7 +370,6 @@ function renderMatchScreen(): void {
     });
   };
   app.querySelector("#fs-enter")!.addEventListener("click", tryFs);
-  app.querySelector("#btn-fs")!.addEventListener("click", tryFs);
   if (!needFs) void lockLandscape();
 
   const hideMenus = () => {
@@ -486,14 +479,6 @@ function renderMatchScreen(): void {
       return;
     }
     hideMenus();
-  });
-
-  app.querySelectorAll<HTMLButtonElement>("[data-spd]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      m.setSpeed(Number(btn.dataset.spd) as SpeedMode);
-      app.querySelectorAll("[data-spd]").forEach((b) => b.classList.remove("on"));
-      btn.classList.add("on");
-    });
   });
 
   const syncOverlay = () => {

@@ -16,6 +16,8 @@ import {
   MOOD_CD,
   NEUTRAL_STEWARD_RESPAWN,
   NORMALO_BEER_INTERVAL,
+  ORDNER_POST_HP,
+  ORDNER_POST_HP_PER_LEVEL,
   PROD_BEER,
   PROD_MERCH,
   PROD_SECURITY,
@@ -117,8 +119,22 @@ export type ConfettiBit = {
   life: number;
 };
 
+export type PyroProjectile = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  damage: number;
+  attackerId: number;
+  targetFanId: number | null;
+  targetSlotKey: string | null;
+  team: TeamId;
+  t: number;
+  life: number;
+};
+
 export type MoodParticle = {
-  kind: "note" | "smoke" | "spark";
+  kind: "note" | "smoke" | "spark" | "flare";
   x: number;
   y: number;
   vx: number;
@@ -156,6 +172,7 @@ export class Match {
   lastGoalTeam: TeamId | null = null;
   confetti: ConfettiBit[] = [];
   moodFx: MoodParticle[] = [];
+  pyroShots: PyroProjectile[] = [];
   speed: SpeedMode = 0;
   toasts: { text: string; t: number }[] = [];
   result: MatchResult | null = null;
@@ -214,6 +231,8 @@ export class Match {
           convertAcc: 0,
           convertBy: null,
           prodFlash: 0,
+          structHp: 0,
+          structMaxHp: 0,
         });
       }
     }
@@ -271,8 +290,8 @@ export class Match {
       }
     }
 
-    this.toast(`${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)} — ▶ starten`);
-    this.speed = 0;
+    this.toast(`${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)}`);
+    this.speed = 1;
   }
 
   private makeFan(
@@ -387,6 +406,97 @@ export class Match {
     s.convertBy = null;
     s.prodFlash = 0;
     if (kind === "bier") s.beer = 40;
+    if (kind === "ordner") this.initOrdnerPostHp(s);
+  }
+
+  private initOrdnerPostHp(s: BuildSlot): void {
+    const lv = s.level || 1;
+    s.structMaxHp = ORDNER_POST_HP + (lv - 1) * ORDNER_POST_HP_PER_LEVEL;
+    s.structHp = s.structMaxHp;
+  }
+
+  private ordnerPostGangPos(s: BuildSlot): { x: number; y: number } {
+    const c = boothCenter(s.blockId, s.index);
+    return { x: c.x, y: gangMidY() };
+  }
+
+  private isHostileOrdnerPost(s: BuildSlot, team: TeamId): boolean {
+    if (s.building !== "ordner" || s.structHp <= 0) return false;
+    if (s.owner === team) return false;
+    return s.owner === "neutral" || s.owner !== team;
+  }
+
+  /** Intact Ordnerposten between unit and goal block */
+  private blockingOrdnerPosts(f: FanUnit, goalBlock: number): BuildSlot[] {
+    const dir = f.team === this.playerTeam ? 1 : -1;
+    const goalGx = blockIdToGangX(goalBlock);
+    const out: BuildSlot[] = [];
+    for (const s of this.slots) {
+      if (!this.isHostileOrdnerPost(s, f.team as TeamId)) continue;
+      const gx = blockIdToGangX(s.blockId);
+      const between =
+        dir > 0
+          ? gx >= f.gangX - 0.03 && gx <= goalGx + 0.02
+          : gx <= f.gangX + 0.03 && gx >= goalGx - 0.02;
+      if (between) out.push(s);
+    }
+    out.sort((a, b) => {
+      const ga = blockIdToGangX(a.blockId);
+      const gb = blockIdToGangX(b.blockId);
+      return dir > 0 ? ga - gb : gb - ga;
+    });
+    return out;
+  }
+
+  private nearestHostileOrdnerPost(f: FanUnit): BuildSlot | null {
+    const dir = f.team === this.playerTeam ? 1 : -1;
+    let best: BuildSlot | null = null;
+    let bestDx = 99;
+    for (const s of this.slots) {
+      if (!this.isHostileOrdnerPost(s, f.team as TeamId)) continue;
+      const gx = blockIdToGangX(s.blockId);
+      const dx = (gx - f.gangX) * dir;
+      if (dx < -0.02 || dx > bestDx) continue;
+      bestDx = dx;
+      best = s;
+    }
+    return best;
+  }
+
+  private destroyOrdnerPost(s: BuildSlot): void {
+    const key = slotKey(s.blockId, s.index);
+    for (const f of this.fans) {
+      if (f.isSteward && f.homeStandKey === key) f.hp = 0;
+    }
+    s.building = null;
+    s.structHp = 0;
+    s.structMaxHp = 0;
+    s.stewardCd = 0;
+    this.floatAtSlot(s, "Posten zerstört", false);
+  }
+
+  private damageOrdnerPost(
+    s: BuildSlot,
+    dmg: number,
+    at: FanUnit,
+  ): void {
+    if (s.structHp <= 0) return;
+    s.structHp = Math.max(0, s.structHp - dmg);
+    s.prodFlash = 1;
+    if (s.structHp <= 0) this.destroyOrdnerPost(s);
+    else if (Math.random() < 0.35) {
+      const p = this.ordnerPostGangPos(s);
+      this.floatAt(p.x, p.y, `−${Math.round(dmg)}`, false);
+    }
+    void at;
+  }
+
+  teamHomeThreatened(team: TeamId): boolean {
+    const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+    if (this.enemyUltraInBlock(home, team)) return true;
+    return team === this.playerTeam
+      ? this.lineAi < blockIdToGangX(HEIM_BLOCK) + 0.14
+      : this.linePlayer > blockIdToGangX(GAST_BLOCK) - 0.14;
   }
 
   toast(text: string): void {
@@ -690,31 +800,170 @@ canBuy(kind: FanKind): boolean {
             size: 0.012 + Math.random() * 0.008,
           });
         } else {
-          this.moodFx.push({
-            kind: "smoke",
-            x: f.x + (Math.random() - 0.5) * 0.03,
-            y: f.y - 0.04,
-            vx: (Math.random() - 0.5) * 0.05,
-            vy: -0.05 - Math.random() * 0.04,
-            color,
-            t: 0,
-            life: 1.4 + Math.random() * 0.6,
-            size: 0.02 + Math.random() * 0.02,
-          });
-          if (Math.random() < 0.4) {
+          for (let i = 0; i < 8; i++) {
             this.moodFx.push({
-              kind: "spark",
-              x: f.x,
-              y: f.y - 0.05,
-              vx: (Math.random() - 0.5) * 0.08,
-              vy: -0.08 - Math.random() * 0.06,
-              color: "#fbbf24",
+              kind: "smoke",
+              x: f.x + (Math.random() - 0.5) * 0.06,
+              y: f.y - 0.04,
+              vx: (Math.random() - 0.5) * 0.07,
+              vy: -0.06 - Math.random() * 0.05,
+              color: i % 2 ? color : "#64748b",
               t: 0,
-              life: 0.7,
-              size: 0.008,
+              life: 2.2 + Math.random() * 1.2,
+              size: 0.028 + Math.random() * 0.035,
+            });
+          }
+          if (Math.random() < 0.55) {
+            this.moodFx.push({
+              kind: "flare",
+              x: f.x + (Math.random() - 0.5) * 0.04,
+              y: f.y - 0.05,
+              vx: (Math.random() - 0.5) * 0.06,
+              vy: -0.14 - Math.random() * 0.1,
+              color: "#fb923c",
+              t: 0,
+              life: 1.6 + Math.random() * 0.8,
+              size: 0.014,
             });
           }
         }
+      }
+    }
+  }
+
+  private spawnPyroShot(
+    a: FanUnit,
+    tx: number,
+    ty: number,
+    damage: number,
+    targetFanId: number | null,
+    targetSlotKey: string | null,
+  ): void {
+    const dx = tx - a.x;
+    const dy = ty - a.y;
+    const len = Math.hypot(dx, dy) || 1;
+    this.pyroShots.push({
+      x: a.x,
+      y: a.y,
+      vx: (dx / len) * 0.62,
+      vy: (dy / len) * 0.62,
+      damage,
+      attackerId: a.id,
+      targetFanId,
+      targetSlotKey,
+      team: a.team as TeamId,
+      t: 0,
+      life: 0.55,
+    });
+  }
+
+  private tickPyroShots(dt: number): void {
+    for (const p of this.pyroShots) {
+      p.t += dt;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      if (p.t < 0.08) continue;
+      if (p.targetSlotKey) {
+        const s = this.slots.find(
+          (x) => slotKey(x.blockId, x.index) === p.targetSlotKey,
+        );
+        if (s && s.structHp > 0) {
+          const pos = this.ordnerPostGangPos(s);
+          if (dist(p.x, p.y, pos.x, pos.y) < 0.045) {
+            this.damageOrdnerPost(s, p.damage, { id: p.attackerId } as FanUnit);
+            p.life = 0;
+            this.moodFx.push({
+              kind: "smoke",
+              x: p.x,
+              y: p.y,
+              vx: (Math.random() - 0.5) * 0.05,
+              vy: -0.04,
+              color: "#94a3b8",
+              t: 0,
+              life: 0.9,
+              size: 0.03,
+            });
+          }
+        } else {
+          p.life = 0;
+        }
+        continue;
+      }
+      const target = this.fans.find((f) => f.id === p.targetFanId);
+      if (target && target.hp > 0) {
+        if (dist(p.x, p.y, target.x, target.y) < 0.05) {
+          const atk = this.fans.find((f) => f.id === p.attackerId);
+          if (atk) this.applyHit(atk, target);
+          else target.hp -= p.damage;
+          this.moodFx.push({
+            kind: "smoke",
+            x: p.x,
+            y: p.y,
+            vx: 0,
+            vy: -0.03,
+            color: "#64748b",
+            t: 0,
+            life: 0.7,
+            size: 0.025,
+          });
+          p.life = 0;
+        }
+      } else if (p.t > p.life) {
+        p.life = 0;
+      }
+    }
+    this.pyroShots = this.pyroShots.filter((p) => p.t < p.life);
+  }
+
+  private tickRecallForDefense(dt: number): void {
+    void dt;
+    for (const team of [this.playerTeam, this.aiTeam] as TeamId[]) {
+      if (!this.teamHomeThreatened(team)) continue;
+      const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+      for (const f of this.fans) {
+        if (f.hp <= 0 || f.team !== team) continue;
+        if (f.kind !== "hooligans" && f.kind !== "ultras") continue;
+        if (!f.invading) continue;
+        f.invading = false;
+        f.state = "gang";
+        f.blockId = f.homeBlockId ?? home;
+        f.path = [];
+        f.pathI = 0;
+      }
+    }
+  }
+
+  private ordnerPostDamageFrom(a: FanUnit): number {
+    const rangedMul = a.rangedPyro ? RANGED_DAMAGE_SCALE : 1;
+    return (
+      HIT_DAMAGE *
+      HIT_DAMAGE_SCALE *
+      rangedMul *
+      this.attackOf(a) *
+      this.neighborBonus(a) *
+      1.15
+    );
+  }
+
+  private tickOrdnerPostCombat(dt: number): void {
+    void dt;
+    for (const a of this.fans) {
+      if (a.hp <= 0 || a.kind !== "ultras" && a.kind !== "hooligans") continue;
+      if (a.state !== "gang" && !a.invading) continue;
+      const post = this.nearestHostileOrdnerPost(a);
+      if (!post || a.attackCd > 0) continue;
+      const pos = this.ordnerPostGangPos(post);
+      const d = dist(a.x, a.y, pos.x, pos.y);
+      const reach = a.rangedPyro ? RANGED_RANGE : MELEE_RANGE;
+      if (d > reach) continue;
+      a.armSwing = 1;
+      a.attackCd = HIT_CD / Math.max(0.4, this.attackOf(a));
+      const dmg = this.ordnerPostDamageFrom(a);
+      const key = slotKey(post.blockId, post.index);
+      if (a.rangedPyro) {
+        this.spawnPyroShot(a, pos.x, pos.y, dmg, null, key);
+      } else {
+        this.damageOrdnerPost(post, dmg, a);
       }
     }
   }
@@ -725,7 +974,7 @@ canBuy(kind: FanKind): boolean {
       this.fans.some(
         (f) =>
           f.team === this.playerTeam &&
-          f.kind === "normalos" &&
+          f.kind === "hooligans" &&
           f.hp > 0 &&
           f.state === "block",
       )
@@ -940,6 +1189,11 @@ canBuy(kind: FanKind): boolean {
     }
     this.gold -= cost;
     s.level++;
+    if (s.building === "ordner") {
+      const prev = s.structHp;
+      this.initOrdnerPostHp(s);
+      if (prev > 0) s.structHp = Math.min(s.structMaxHp, prev + ORDNER_POST_HP_PER_LEVEL * 0.5);
+    }
     this.buildMenu = null;
     this.floatAtSlot(s, `Lv${s.level}`, true);
     this.toast(`Upgrade → Lv${s.level}`);
@@ -1005,10 +1259,13 @@ canBuy(kind: FanKind): boolean {
     this.tickEconomy(step);
     this.tickStewards(step);
     this.tickFans(step);
+    this.tickRecallForDefense(step);
     this.tickAutoDefend(step);
     this.updateBattleLines();
     this.tickCaptureConvert(step);
+    this.tickOrdnerPostCombat(step);
     this.tickCombat(step);
+    this.tickPyroShots(step);
     this.tickNeutralCapture(step);
     this.tickFamilyFlight(step);
     this.tickJubelMomentum(step);
@@ -1607,9 +1864,33 @@ canBuy(kind: FanKind): boolean {
   private tickGangMove(f: FanUnit, dt: number): void {
     if (f.isSteward) return; // held at post
     const dir = f.team === this.playerTeam ? 1 : -1;
-    const blocker = this.blockerAhead(f);
     const speed = 0.065 * FAN_STATS[f.kind].fight;
     const midY = gangMidY();
+    const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
+
+    if (
+      (f.kind === "hooligans" || f.kind === "ultras") &&
+      f.state === "gang" &&
+      !f.invading &&
+      (f.team === this.playerTeam || f.team === this.aiTeam)
+    ) {
+      const team = f.team as TeamId;
+      if (this.teamHomeThreatened(team)) {
+        const homeGx = blockIdToGangX(
+          team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK,
+        );
+        const advanced = dir > 0 ? f.gangX > homeGx + 0.05 : f.gangX < homeGx - 0.05;
+        if (advanced) {
+          f.gangX = clamp(f.gangX - dir * speed * 1.65 * dt, 0, 1);
+          f.x = gangXToWorld(f.gangX);
+          f.y += (midY - f.y) * Math.min(1, 9 * dt);
+          return;
+        }
+      }
+    }
+
+    const ordPosts = this.blockingOrdnerPosts(f, goalBlock);
+    const blocker = this.blockerAhead(f);
     if (!blocker) {
       f.gangX = clamp(f.gangX + dir * speed * dt, 0, 1);
       f.x = gangXToWorld(f.gangX);
@@ -1636,13 +1917,22 @@ canBuy(kind: FanKind): boolean {
       this.syncGangFromWorld(f);
     }
 
-    const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
+    if (
+      ordPosts.length &&
+      (f.kind === "hooligans" || f.kind === "ultras")
+    ) {
+      const capGx = blockIdToGangX(ordPosts[0].blockId) - dir * 0.028;
+      if (dir > 0) f.gangX = Math.min(f.gangX, capGx);
+      else f.gangX = Math.max(f.gangX, capGx);
+      f.x = gangXToWorld(f.gangX);
+    }
+
     const goalGx = blockIdToGangX(goalBlock);
     const reached =
       f.team === this.playerTeam
         ? f.gangX >= goalGx - 0.02
         : f.gangX <= goalGx + 0.02;
-    if (reached && !blocker) {
+    if (reached && !blocker && ordPosts.length === 0) {
       const door = doorPos(goalBlock);
       f.blockId = goalBlock;
       f.path = [
@@ -1914,7 +2204,7 @@ canBuy(kind: FanKind): boolean {
       if (!canAttack && a.state !== "gang" && !a.isSteward) continue;
 
       let best: FanUnit | null = null;
-      const reach = a.rangedPyro ? RANGED_RANGE : MELEE_RANGE * 1.15;
+      const reach = a.rangedPyro ? RANGED_RANGE : MELEE_RANGE;
       let bestD = reach;
 
       for (const b of this.fans) {
@@ -1942,11 +2232,32 @@ canBuy(kind: FanKind): boolean {
           best = b;
         }
       }
+      if (a.state === "gang" && (a.kind === "ultras" || a.kind === "hooligans")) {
+        const post = this.nearestHostileOrdnerPost(a);
+        if (post) {
+          const pos = this.ordnerPostGangPos(post);
+          const reachPost = a.rangedPyro ? RANGED_RANGE : MELEE_RANGE;
+          if (dist(a.x, a.y, pos.x, pos.y) <= reachPost * 1.05) continue;
+        }
+      }
+
       if (!best || a.attackCd > 0) continue;
 
       a.armSwing = 1;
       a.attackCd = HIT_CD / Math.max(0.4, this.attackOf(a));
-      this.applyHit(a, best);
+
+      if (a.rangedPyro && (a.state === "gang" || a.isSteward)) {
+        const dmg =
+          (HIT_DAMAGE *
+            HIT_DAMAGE_SCALE *
+            RANGED_DAMAGE_SCALE *
+            this.attackOf(a) *
+            this.neighborBonus(a)) /
+          Math.max(0.35, this.defenseOf(best));
+        this.spawnPyroShot(a, best.x, best.y, dmg, best.id, null);
+      } else {
+        this.applyHit(a, best);
+      }
 
       // Steward fights always trade — Ultra must deal damage back
       if (best.hp > 0 && best.kind !== "hooligans") {
@@ -2291,7 +2602,10 @@ canBuy(kind: FanKind): boolean {
       p.y += p.vy * dt;
       if (p.kind === "smoke") {
         p.vy -= 0.02 * dt;
-        p.size += 0.01 * dt;
+        p.size += 0.012 * dt;
+      } else if (p.kind === "flare") {
+        p.vy -= 0.04 * dt;
+        p.vx *= 1 - dt * 0.15;
       }
     }
     this.moodFx = this.moodFx.filter((p) => p.t < p.life);

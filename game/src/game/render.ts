@@ -45,7 +45,7 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawSlots(ctx, m, w, h);
   drawReservedPads(ctx, m, w, h);
   drawFans(ctx, m, w, h);
-  drawCombatOverlays(ctx, m, w, h);
+  drawPyroShots(ctx, m, w, h);
   drawConfetti(ctx, m, w, h);
   drawMoodParticles(ctx, m, w, h);
   drawFloats(ctx, m, w, h);
@@ -254,47 +254,59 @@ function drawGang(
 ): void {
   const y = h * gangY();
   const gh = h * L.gangH;
-  const g = ctx.createLinearGradient(0, y, 0, y + gh);
-  g.addColorStop(0, "#64748b");
-  g.addColorStop(0.45, "#475569");
-  g.addColorStop(1, "#334155");
-  ctx.fillStyle = g;
-  ctx.fillRect(w * L.blocksLeft, y, w * (L.blocksRight - L.blocksLeft), gh);
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(w * L.blocksLeft, y, w * (L.blocksRight - L.blocksLeft), gh);
-  ctx.strokeStyle = "rgba(255,255,255,0.08)";
-  ctx.lineWidth = 1;
-  for (let i = 1; i < 10; i++) {
-    const tx = w * L.blocksLeft + (w * (L.blocksRight - L.blocksLeft) / 10) * i;
-    ctx.beginPath();
-    ctx.moveTo(tx, y + 4);
-    ctx.lineTo(tx, y + gh - 4);
-    ctx.stroke();
-  }
-  // Dashed possession / Kampf frontiers (blau = Heim front, rot = Gast front)
   const left = w * L.blocksLeft;
   const span = w * (L.blocksRight - L.blocksLeft);
   const px = left + span * m.linePlayer;
   const ax = left + span * m.lineAi;
+
+  // Asphalt base
+  ctx.fillStyle = "#334155";
+  ctx.fillRect(left, y, span, gh);
+
+  // Besitz / Bauzone: blau = Heim+Vorstoß, rot = Gast, Mitte umkämpft
+  ctx.fillStyle = "rgba(37,99,235,0.42)";
+  ctx.fillRect(left, y, Math.max(0, px - left), gh);
+  ctx.fillStyle = "rgba(220,38,38,0.42)";
+  ctx.fillRect(ax, y, left + span - ax, gh);
+  if (px < ax) {
+    const gMid = ctx.createLinearGradient(px, 0, ax, 0);
+    gMid.addColorStop(0, "rgba(148,163,184,0.55)");
+    gMid.addColorStop(0.5, "rgba(100,116,139,0.65)");
+    gMid.addColorStop(1, "rgba(148,163,184,0.55)");
+    ctx.fillStyle = gMid;
+    ctx.fillRect(px, y, ax - px, gh);
+  }
+
+  // Block-Trennlinien im Gang
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = 1;
+  for (let b = 1; b < BLOCK_COUNT; b++) {
+    const tx = left + span * (b / (BLOCK_COUNT - 1));
+    ctx.beginPath();
+    ctx.moveTo(tx, y + 2);
+    ctx.lineTo(tx, y + gh - 2);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(left, y, span, gh);
+
+  // Dynamische Kampfgrenzen (Frontlinien)
   ctx.save();
-  ctx.setLineDash([6, 5]);
+  ctx.setLineDash([7, 5]);
   ctx.lineWidth = 3;
   ctx.strokeStyle = "rgba(59,130,246,0.95)";
   ctx.beginPath();
-  ctx.moveTo(px, y + 3);
-  ctx.lineTo(px, y + gh - 3);
+  ctx.moveTo(px, y + 2);
+  ctx.lineTo(px, y + gh - 2);
   ctx.stroke();
   ctx.strokeStyle = "rgba(239,68,68,0.95)";
   ctx.beginPath();
-  ctx.moveTo(ax, y + 3);
-  ctx.lineTo(ax, y + gh - 3);
+  ctx.moveTo(ax, y + 2);
+  ctx.lineTo(ax, y + gh - 2);
   ctx.stroke();
   ctx.setLineDash([]);
-  if (px < ax) {
-    ctx.fillStyle = "rgba(255,255,255,0.1)";
-    ctx.fillRect(px, y + 4, ax - px, gh - 8);
-  }
   ctx.restore();
   // Center corridor label pill
   const label = "GANG";
@@ -310,26 +322,29 @@ function drawGang(
   ctx.fillText(label, w / 2, y + 16);
 }
 
-function drawCombatOverlays(
+function drawPyroShots(
   ctx: CanvasRenderingContext2D,
   m: Match,
   w: number,
   h: number,
 ): void {
-  for (const f of m.fans) {
-    if (f.hp <= 0 || !f.invading) continue;
-    const x = f.x * w;
-    const y = f.y * h;
-    const pulse = 0.5 + 0.5 * Math.sin(m.realElapsed * 8);
-    ctx.strokeStyle = f.team === "ksc" ? `rgba(59,130,246,${0.4 + pulse * 0.5})` : `rgba(239,68,68,${0.4 + pulse * 0.5})`;
-    ctx.lineWidth = 3;
+  for (const p of m.pyroShots) {
+    const x = p.x * w;
+    const y = p.y * h;
+    const glow = ctx.createRadialGradient(x, y, 1, x, y, 10);
+    glow.addColorStop(0, "#fff7ed");
+    glow.addColorStop(0.35, "#fb923c");
+    glow.addColorStop(1, "rgba(251,146,60,0)");
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(x, y, 16 + pulse * 4, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fillStyle = "#fbbf24";
-    ctx.font = `700 ${Math.floor(h * 0.02)}px Outfit, Manrope, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText("KAMPF", x, y - 22);
+    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#1c1917";
+    ctx.fillRect(x - 1.5, y - 2, 3, 10);
+    ctx.fillStyle = "rgba(148,163,184,0.45)";
+    ctx.beginPath();
+    ctx.ellipse(x - 4, y - 6, 7, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
@@ -502,6 +517,15 @@ function drawBuilding(
     ctx.fillText(`${Math.ceil(left)}`, cx, y + bh * 0.22 + 1);
     ctx.textBaseline = "alphabetic";
     ctx.restore();
+  }
+
+  if (s.building === "ordner" && s.structMaxHp > 0) {
+    const pct = Math.max(0, Math.min(1, s.structHp / s.structMaxHp));
+    const barW = bw - 10;
+    ctx.fillStyle = "rgba(15,23,42,0.55)";
+    ctx.fillRect(x + 5, y + bh - 8, barW, 4);
+    ctx.fillStyle = pct > 0.45 ? "#22c55e" : pct > 0.2 ? "#f59e0b" : "#ef4444";
+    ctx.fillRect(x + 5, y + bh - 8, barW * pct, 4);
   }
 
   // level pips only — no text labels
@@ -719,15 +743,7 @@ function drawMannchen(
   ctx.ellipse(0, s * 1.2, s * 0.75, s * 0.22, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Clear team ring so converted seats are unmistakable
-  if (f.team === "ksc" || f.team === "vfb") {
-    ctx.strokeStyle =
-      f.team === "ksc" ? "rgba(37,99,235,0.95)" : "rgba(220,38,38,0.95)";
-    ctx.lineWidth = Math.max(2, s * 0.12);
-    ctx.beginPath();
-    ctx.arc(0, -s * 0.15, s * 1.05, 0, Math.PI * 2);
-    ctx.stroke();
-  } else if (Math.abs(f.captureProg) > 0.12) {
+  if (Math.abs(f.captureProg) > 0.12 && f.team === "neutral") {
     ctx.strokeStyle =
       f.captureProg > 0
         ? `rgba(59,130,246,${0.35 + Math.abs(f.captureProg) * 0.55})`
@@ -745,11 +761,11 @@ function drawMannchen(
   }
 
   if (f.kind === "ultras") {
-    drawUltra(ctx, f, s, jersey, skin, onGang);
+    drawUltra(ctx, f, s, jersey, skin, onGang, m.realElapsed);
   } else if (f.kind === "hooligans") {
     drawHooligan(ctx, f, s, jersey, skin);
   } else {
-    drawNormalo(ctx, f, s, jersey, skin);
+    drawNormalo(ctx, f, s, jersey, skin, m.realElapsed);
   }
 
   // HP bar during Gang / invade fights
@@ -762,45 +778,25 @@ function drawMannchen(
     ctx.fillRect(-bw / 2, -s * 1.55, bw * pct, 3.5);
   }
 
-  // Gesang: wave flag; Pyro: hold flare
-  if (f.cheerT > 0.05 && !f.isSteward) {
+  if (f.cheerT > 0.05 && f.kind === "normalos" && !f.isSteward) {
     const wave = Math.sin(m.realElapsed * 10 + f.id) * 0.35;
-    if (f.kind === "ultras") {
-      // Pyro flare
-      ctx.save();
-      ctx.translate(s * 0.55, -s * 0.35);
-      ctx.rotate(-0.4 + wave * 0.2);
-      ctx.fillStyle = "#1c1917";
-      ctx.fillRect(-2, 0, 4, s * 0.7);
-      const glow = ctx.createRadialGradient(0, -2, 1, 0, -2, s * 0.35);
-      glow.addColorStop(0, "#fff7ed");
-      glow.addColorStop(0.35, jersey);
-      glow.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(0, -2, s * 0.35, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    } else {
-      // Flag for normalos
-      ctx.save();
-      ctx.translate(-s * 0.55, -s * 0.2);
-      ctx.rotate(-0.5 + wave);
-      ctx.strokeStyle = "#a8a29e";
-      ctx.lineWidth = Math.max(1.5, s * 0.1);
-      ctx.beginPath();
-      ctx.moveTo(0, s * 0.55);
-      ctx.lineTo(0, -s * 0.55);
-      ctx.stroke();
-      ctx.fillStyle = jersey;
-      ctx.beginPath();
-      ctx.moveTo(0, -s * 0.55);
-      ctx.lineTo(s * 0.7, -s * 0.35);
-      ctx.lineTo(0, -s * 0.15);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
-    }
+    ctx.save();
+    ctx.translate(-s * 0.55, -s * 0.2);
+    ctx.rotate(-0.5 + wave);
+    ctx.strokeStyle = "#a8a29e";
+    ctx.lineWidth = Math.max(1.5, s * 0.1);
+    ctx.beginPath();
+    ctx.moveTo(0, s * 0.55);
+    ctx.lineTo(0, -s * 0.55);
+    ctx.stroke();
+    ctx.fillStyle = jersey;
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 0.55);
+    ctx.lineTo(s * 0.7, -s * 0.35);
+    ctx.lineTo(0, -s * 0.15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   }
 
   ctx.restore();
@@ -822,6 +818,7 @@ function drawUltra(
   jersey: string,
   skin: string,
   onGang: boolean,
+  elapsed: number,
 ): void {
   // black cargo pants
   ctx.strokeStyle = "#0a0a0a";
@@ -883,8 +880,7 @@ function drawUltra(
   ctx.moveTo(-face * s * 0.5, -s * 0.02);
   ctx.lineTo(-face * s * 0.75, s * 0.45);
   ctx.stroke();
-  if (f.rangedPyro && onGang) {
-    // Pyro-Stab + Rauch (Fernkampf)
+  if (f.rangedPyro && onGang && swing > 0.25) {
     ctx.save();
     ctx.translate(ix, iy);
     ctx.rotate(-0.55 * face);
@@ -899,20 +895,48 @@ function drawUltra(
     ctx.ellipse(-face * s * 0.35, -s * 0.45, s * 0.45, s * 0.28, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
-  } else if (swing > 0.3) {
-    ctx.fillStyle = "rgba(251,146,60,0.9)";
-    ctx.beginPath();
-    ctx.arc(ix, iy, s * 0.28, 0, Math.PI * 2);
-    ctx.fill();
+  } else {
+    drawUltraHandPyro(ctx, f, s, jersey, face, elapsed);
   }
+}
+
+function drawUltraHandPyro(
+  ctx: CanvasRenderingContext2D,
+  f: FanUnit,
+  s: number,
+  jersey: string,
+  face: number,
+  elapsed: number,
+): void {
+  const flick = 0.85 + Math.sin(f.id * 3 + elapsed * 8) * 0.15;
+  ctx.save();
+  ctx.translate(face * s * 0.52, -s * 0.15);
+  ctx.rotate(-0.35 * face);
+  ctx.fillStyle = "#1c1917";
+  ctx.fillRect(-1.5, 0, 3, s * 0.72);
+  const glow = ctx.createRadialGradient(0, -2, 1, 0, -2, s * 0.38 * flick);
+  glow.addColorStop(0, "#fffbeb");
+  glow.addColorStop(0.3, "#fb923c");
+  glow.addColorStop(0.65, jersey);
+  glow.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(0, -2, s * 0.32 * flick, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(148,163,184,0.35)";
+  ctx.beginPath();
+  ctx.ellipse(-face * s * 0.22, -s * 0.38, s * 0.28, s * 0.16, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
 function drawNormalo(
   ctx: CanvasRenderingContext2D,
-  _f: FanUnit,
+  f: FanUnit,
   s: number,
   jersey: string,
   skin: string,
+  elapsed: number,
 ): void {
   // blue jeans
   ctx.strokeStyle = "#1d4ed8";
@@ -932,19 +956,45 @@ function drawNormalo(
   ctx.fillStyle = "#fff";
   ctx.fillRect(-s * 0.12, -s * 0.15, s * 0.24, s * 0.45);
 
-  // waving scarf in hand
+  // Schal (Fanartikel) — always visible
+  ctx.fillStyle = jersey;
+  ctx.fillRect(-s * 0.42, -s * 0.02, s * 0.84, s * 0.14);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(-s * 0.42, s * 0.04, s * 0.84, s * 0.05);
+  const wave = Math.sin(elapsed * 4 + f.id) * 0.12;
   ctx.strokeStyle = jersey;
   ctx.lineWidth = Math.max(2, s * 0.18);
   ctx.beginPath();
   ctx.moveTo(s * 0.45, -s * 0.05);
-  ctx.quadraticCurveTo(s * 1.05, -s * 0.55, s * 0.85, s * 0.35);
+  ctx.quadraticCurveTo(s * 1.05, -s * 0.55 + wave, s * 0.85, s * 0.35);
   ctx.stroke();
   ctx.strokeStyle = "#fff";
   ctx.lineWidth = Math.max(1.2, s * 0.1);
   ctx.beginPath();
   ctx.moveTo(s * 0.5, 0);
-  ctx.quadraticCurveTo(s * 0.95, -s * 0.4, s * 0.8, s * 0.25);
+  ctx.quadraticCurveTo(s * 0.95, -s * 0.4 + wave, s * 0.8, s * 0.25);
   ctx.stroke();
+
+  // Fahne in linker Hand
+  ctx.save();
+  ctx.translate(-s * 0.55, -s * 0.1);
+  ctx.rotate(-0.45 + wave);
+  ctx.strokeStyle = "#a8a29e";
+  ctx.lineWidth = Math.max(1.5, s * 0.1);
+  ctx.beginPath();
+  ctx.moveTo(0, s * 0.5);
+  ctx.lineTo(0, -s * 0.55);
+  ctx.stroke();
+  ctx.fillStyle = jersey;
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.55);
+  ctx.lineTo(s * 0.65, -s * 0.38);
+  ctx.lineTo(0, -s * 0.18);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, -s * 0.48, s * 0.22, s * 0.08);
+  ctx.restore();
 
   // head
   ctx.fillStyle = skin;
@@ -978,13 +1028,16 @@ function drawNormalo(
 
 function drawHooligan(
   ctx: CanvasRenderingContext2D,
-  _f: FanUnit,
+  f: FanUnit,
   s: number,
   jersey: string,
-  skin: string,
+  _skin: string,
 ): void {
-  // light beige pants
-  ctx.strokeStyle = "#d6d3d1";
+  void _skin;
+  const ksc = f.team === "ksc";
+  const hood = ksc ? "#1d4ed8" : jersey;
+
+  ctx.strokeStyle = "#1e293b";
   ctx.lineWidth = Math.max(2, s * 0.2);
   ctx.lineCap = "round";
   ctx.beginPath();
@@ -994,42 +1047,33 @@ function drawHooligan(
   ctx.lineTo(s * 0.3, s * 0.95);
   ctx.stroke();
 
-  // body
-  ctx.fillStyle = jersey;
-  roundRect(ctx, -s * 0.45, -s * 0.25, s * 0.9, s * 0.7, 3);
+  // Hoodie — vermummt, KSC blau erkennbar
+  ctx.fillStyle = hood;
+  roundRect(ctx, -s * 0.52, -s * 0.35, s * 1.04, s * 0.82, 4);
   ctx.fill();
-
-  // yellow backpack (behind / side — drawn large and clear)
-  ctx.fillStyle = "#eab308";
-  roundRect(ctx, s * 0.28, -s * 0.2, s * 0.42, s * 0.55, 3);
+  ctx.fillStyle = "rgba(0,0,0,0.45)";
+  roundRect(ctx, -s * 0.52, -s * 0.35, s * 1.04, s * 0.38, 4);
   ctx.fill();
-  ctx.fillStyle = "#a16207";
-  ctx.fillRect(s * 0.32, s * 0.05, s * 0.34, s * 0.08);
+  if (ksc) {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(-s * 0.12, -s * 0.08, s * 0.24, s * 0.35);
+  }
 
-  // head
-  ctx.fillStyle = skin;
+  // Kapuze / Gesichtsschatten
+  ctx.fillStyle = "#0f172a";
   ctx.beginPath();
-  ctx.arc(0, -s * 0.58, s * 0.34, 0, Math.PI * 2);
+  ctx.arc(0, -s * 0.62, s * 0.38, 0, Math.PI * 2);
   ctx.fill();
 
-  // soft hair / no beanie
-  ctx.fillStyle = "#78716c";
-  ctx.beginPath();
-  ctx.arc(0, -s * 0.7, s * 0.34, Math.PI, 0);
-  ctx.fill();
-
-  // program / flag stick
-  ctx.strokeStyle = "#a8a29e";
-  ctx.lineWidth = Math.max(1.5, s * 0.12);
-  ctx.beginPath();
-  ctx.moveTo(-s * 0.4, s * 0.1);
-  ctx.lineTo(-s * 0.55, -s * 0.55);
-  ctx.stroke();
-  ctx.fillStyle = "#fef3c7";
-  ctx.fillRect(-s * 0.72, -s * 0.7, s * 0.35, s * 0.28);
+  // Sonnenbrille
+  ctx.fillStyle = "#020617";
+  ctx.fillRect(-s * 0.34, -s * 0.68, s * 0.68, s * 0.12);
+  ctx.fillStyle = "rgba(255,255,255,0.25)";
+  ctx.fillRect(-s * 0.3, -s * 0.66, s * 0.22, s * 0.05);
+  ctx.fillRect(s * 0.08, -s * 0.66, s * 0.22, s * 0.05);
 
   // arms — always two
-  ctx.strokeStyle = skin;
+  ctx.strokeStyle = "#334155";
   ctx.lineWidth = Math.max(1.8, s * 0.16);
   ctx.lineCap = "round";
   ctx.beginPath();
@@ -1197,6 +1241,22 @@ function drawMoodParticles(
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(px, py, rad, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.kind === "flare") {
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = Math.max(2, p.size * h * 2);
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px + p.vx * w * 0.08, py + p.vy * h * 0.08);
+      ctx.stroke();
+      const glow = ctx.createRadialGradient(px, py, 1, px, py, 8);
+      glow.addColorStop(0, "#fff7ed");
+      glow.addColorStop(0.5, "#fb923c");
+      glow.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(px, py, 6, 0, Math.PI * 2);
       ctx.fill();
     } else {
       ctx.fillStyle = p.color;
