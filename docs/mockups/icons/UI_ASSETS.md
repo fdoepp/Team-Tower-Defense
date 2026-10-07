@@ -2,6 +2,8 @@
 
 Alle Pfade relativ zu `game/public/icons/`.
 
+**Hintergrund:** Icons sind freigestellte **RGBA-PNGs** (kein Karten-/Sheet-Hintergrund). Ausnahme: `ui/menu-rail-brown*.png` (das *ist* der Menü-Hintergrund) und die Scoreboard-Tafel selbst bleibt als Element erhalten.
+
 ## 1–8 UI-Bausteine (`ui/`)
 
 | # | Datei | Beschreibung |
