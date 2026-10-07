@@ -719,12 +719,47 @@ function drawMannchen(
   ctx.ellipse(0, s * 1.2, s * 0.75, s * 0.22, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  // Clear team ring so converted seats are unmistakable
+  if (f.team === "ksc" || f.team === "vfb") {
+    ctx.strokeStyle =
+      f.team === "ksc" ? "rgba(37,99,235,0.95)" : "rgba(220,38,38,0.95)";
+    ctx.lineWidth = Math.max(2, s * 0.12);
+    ctx.beginPath();
+    ctx.arc(0, -s * 0.15, s * 1.05, 0, Math.PI * 2);
+    ctx.stroke();
+  } else if (Math.abs(f.captureProg) > 0.12) {
+    ctx.strokeStyle =
+      f.captureProg > 0
+        ? `rgba(59,130,246,${0.35 + Math.abs(f.captureProg) * 0.55})`
+        : `rgba(239,68,68,${0.35 + Math.abs(f.captureProg) * 0.55})`;
+    ctx.lineWidth = Math.max(2, s * 0.1);
+    ctx.beginPath();
+    ctx.arc(
+      0,
+      -s * 0.15,
+      s * 1.05,
+      -Math.PI / 2,
+      -Math.PI / 2 + Math.abs(f.captureProg) * Math.PI * 2,
+    );
+    ctx.stroke();
+  }
+
   if (f.kind === "ultras") {
     drawUltra(ctx, f, s, jersey, skin, onGang);
   } else if (f.kind === "familie") {
     drawFamilie(ctx, f, s, jersey, skin);
   } else {
     drawNormalo(ctx, f, s, jersey, skin);
+  }
+
+  // HP bar during Gang / invade fights
+  if ((onGang || f.invading) && f.hp < f.maxHp - 0.5) {
+    const bw = s * 1.6;
+    const pct = Math.max(0, Math.min(1, f.hp / f.maxHp));
+    ctx.fillStyle = "rgba(15,23,42,0.55)";
+    ctx.fillRect(-bw / 2, -s * 1.55, bw, 3.5);
+    ctx.fillStyle = pct > 0.45 ? "#22c55e" : pct > 0.2 ? "#f59e0b" : "#ef4444";
+    ctx.fillRect(-bw / 2, -s * 1.55, bw * pct, 3.5);
   }
 
   // Gesang: wave flag; Pyro: hold flare

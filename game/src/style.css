@@ -206,9 +206,66 @@ select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
   pointer-events: none;
+}
+
+.fanbase-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
+  min-width: 44px;
+}
+
+.fanbase-col .fb {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
+  font-size: 0.52rem;
+  font-weight: 800;
+  min-width: 42px;
+}
+
+.fanbase-col .fb i {
+  font-style: normal;
+  opacity: 0.7;
+  font-weight: 800;
+}
+
+.fanbase-col .fb b {
+  font-family: var(--display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.fanbase-col.heim .fb {
+  color: #1e3a8a;
+  border-color: rgba(37, 99, 235, 0.28);
+  background: rgba(239, 246, 255, 0.9);
+}
+
+.fanbase-col.heim .fb b {
+  color: #1d4ed8;
+}
+
+.fanbase-col.gast .fb {
+  color: #7f1d1d;
+  border-color: rgba(220, 38, 38, 0.28);
+  background: rgba(254, 242, 242, 0.92);
+}
+
+.fanbase-col.gast .fb b {
+  color: #dc2626;
 }
 
 .wallet-inline {
@@ -218,6 +275,8 @@ select {
   align-items: center;
   pointer-events: none;
   min-width: 0;
+  flex: 1;
+  justify-content: center;
 }
 
 .wallet-inline .wi {

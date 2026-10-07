@@ -146,7 +146,9 @@ export const ULTRA_ORDER_BEER = 6;
 export const HIT_DAMAGE = 22;
 export const HIT_CD = 0.55;
 /** Max distance (norm coords) to deal damage — adjacent only */
-export const MELEE_RANGE = 0.055;
+export const MELEE_RANGE = 0.07;
+/** Slightly lower hit so higher HP fights last longer in the Gang */
+export const HIT_DAMAGE_SCALE = 0.72;
 /** Player/AI Ordner manuell anheuern */
 export const STEWARD_HIRE_GOLD = 22;
 /** Max Ordner pro Posten (Spieler/KI/Neutral) */
@@ -193,19 +195,19 @@ export const FAN_STATS: Record<
   }
 > = {
   ultras: {
-    maxHp: 105,
-    attack: 1.3,
-    defense: 0.85,
-    fight: 1.35,
+    maxHp: 260,
+    attack: 1.25,
+    defense: 0.95,
+    fight: 1.4,
     drink: 0.9,
     jubel: 0.75,
     color: "#1f6feb",
     label: "Ultra",
   },
   normalos: {
-    maxHp: 75,
+    maxHp: 160,
     attack: 0.55,
-    defense: 0.55,
+    defense: 0.65,
     fight: 0.7,
     drink: 1.2,
     jubel: 1.2,
@@ -213,9 +215,9 @@ export const FAN_STATS: Record<
     label: "Normal",
   },
   familie: {
-    maxHp: 55,
+    maxHp: 110,
     attack: 0.25,
-    defense: 0.4,
+    defense: 0.5,
     fight: 0.35,
     drink: 0.5,
     jubel: 0.9,
@@ -224,18 +226,18 @@ export const FAN_STATS: Record<
   },
 };
 
-/** Steward (Ordner) — anti-rush buffer vs Ultra */
+/** Steward (Ordner) — durable anti-rush; long Gang brawls */
 export const STEWARD_STATS = {
-  maxHpBase: 105,
-  maxHpPerLevel: 14,
-  attack: 0.9,
-  defense: 1.2,
+  maxHpBase: 280,
+  maxHpPerLevel: 35,
+  attack: 0.85,
+  defense: 1.25,
   /** bonus multiplier when fighting Ultras */
-  vsUltraMul: 1.35,
+  vsUltraMul: 1.25,
   /** slow patrol along own gang band */
-  patrolSpeed: 0.045,
+  patrolSpeed: 0.04,
   /** rush toward infiltrating Ultra */
-  chaseSpeed: 0.18,
+  chaseSpeed: 0.16,
 };
 
 export const BLOCK_META = [

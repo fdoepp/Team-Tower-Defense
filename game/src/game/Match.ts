@@ -11,6 +11,7 @@ import {
   FEVER_FROM_MIN,
   HIT_CD,
   HIT_DAMAGE,
+  HIT_DAMAGE_SCALE,
   MELEE_RANGE,
   MOOD_CD,
   NEUTRAL_STEWARD_RESPAWN,
@@ -497,12 +498,44 @@ export class Match {
     return f.blockId;
   }
 
-  /** Player may buy into Heim or any block they own / hold seat majority in */
+  /** Heim always; captured/contested blocks once you have any own fan there */
   canBuyInBlock(blockId: number): boolean {
-    if (this.blockOwner[blockId] === this.playerTeam) return true;
-    if (blockId === HEIM_BLOCK) return true;
     if (blockId === GAST_BLOCK) return false;
-    return this.hasSeatMajority(blockId, this.playerTeam);
+    if (blockId === HEIM_BLOCK) return true;
+    if (this.blockOwner[blockId] === this.playerTeam) return true;
+    // Any living own fan whose home/seat is in this block unlocks buying
+    return this.fans.some(
+      (f) =>
+        f.hp > 0 &&
+        !f.isSteward &&
+        f.team === this.playerTeam &&
+        (f.homeBlockId === blockId ||
+          (f.state === "block" && f.blockId === blockId && f.seatIndex != null)),
+    );
+  }
+
+  /** Living fan counts for HUD (excl. dead) */
+  countTeamFans(team: TeamId): {
+    ultras: number;
+    normalos: number;
+    familie: number;
+    ordner: number;
+  } {
+    let ultras = 0,
+      normalos = 0,
+      familie = 0,
+      ordner = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.team !== team) continue;
+      if (f.isSteward) {
+        ordner++;
+        continue;
+      }
+      if (f.kind === "ultras") ultras++;
+      else if (f.kind === "normalos") normalos++;
+      else familie++;
+    }
+    return { ultras, normalos, familie, ordner };
   }
 
   /** Seat reserved while fan lives (Ultra on gang keeps Heim-Platz) */
@@ -1030,7 +1063,7 @@ export class Match {
           // AI stands also show production so both sides are readable
           if (s.building === "bier") this.floatAtSlot(s, `+${n} Bier`, false);
           else if (s.building === "ordner")
-            this.floatAtSlot(s, `+${n} Ordner`, false);
+            this.floatAtSlot(s, `+${n} Sicherheit`, false);
           else this.floatAtSlot(s, `+${n} Shop`, false);
         }
       }
@@ -1085,10 +1118,21 @@ export class Match {
     return true;
   }
 
+  /** Grey Ordner only make sense while the booth sits between both battle lines */
+  private isContestedGangZone(blockId: number): boolean {
+    const mid = blockIdToGangX(blockId);
+    // Contested = Heim front has not clearly passed AND Gast front has not clearly passed
+    return this.linePlayer < mid + 0.04 && this.lineAi > mid - 0.04;
+  }
+
   private tickStewards(dt: number): void {
-    // Only neutral posts auto-respawn (slow). Player/AI must hire manually.
+    // Neutral posts: slow respawn ONLY while still in contested (grey) territory
     for (const s of this.slots) {
       if (s.building !== "ordner" || s.owner !== "neutral" || s.greyNeutral) continue;
+      if (!this.isContestedGangZone(s.blockId)) {
+        // Freeze timer while deep in blue/red land — no grey reinforcements
+        continue;
+      }
       const key = slotKey(s.blockId, s.index);
       const aliveAtPost = this.fans.filter(
         (f) => f.hp > 0 && f.isSteward && f.homeStandKey === key,
@@ -1112,12 +1156,32 @@ export class Match {
       );
       if (!stand) continue;
 
+      // Neutral Ordner stuck deep in owned land: retreat to post, then despawn
+      if (
+        f.team === "neutral" &&
+        stand.owner === "neutral" &&
+        !this.isContestedGangZone(stand.blockId)
+      ) {
+        const homeGx = blockIdToGangX(stand.blockId);
+        const midY = gangMidY();
+        const dx = homeGx - f.gangX;
+        f.gangX += Math.sign(dx) * Math.min(Math.abs(dx), 0.12 * dt);
+        f.x = gangXToWorld(f.gangX);
+        f.y += (midY - f.y) * Math.min(1, 5 * dt);
+        f.state = "gang";
+        f.blockId = stand.blockId;
+        if (Math.abs(f.gangX - homeGx) < 0.03) {
+          f.hp = 0; // leave the field — no grey Ordner in blue/red land
+          this.floatAt(f.x, f.y, "Ordner zieht ab", false);
+        }
+        continue;
+      }
+
       const band = this.stewardPatrolBand(f);
       const threat = this.stewardThreat(f, band);
       const midY = gangMidY();
 
       if (threat) {
-        // Sprint to infiltrating Ultra
         const speed = STEWARD_STATS.chaseSpeed;
         const dx = threat.x - f.x;
         const step = Math.sign(dx) * Math.min(Math.abs(dx), speed * dt);
@@ -1129,11 +1193,9 @@ export class Match {
           0,
           1,
         );
-        // Prefer world from gangX for consistency
         f.x = gangXToWorld(f.gangX);
         f.aggro = 100;
       } else {
-        // Slow patrol across own gang band
         if (!f.patrolDir) f.patrolDir = 1;
         f.gangX += f.patrolDir * STEWARD_STATS.patrolSpeed * dt;
         if (f.gangX >= band.max) {
@@ -1455,7 +1517,7 @@ export class Match {
     const dir = f.team === this.playerTeam ? 1 : -1;
     let best: FanUnit | null = null;
     // Stop close enough that melee combat can engage
-    let bestD = MELEE_RANGE * 0.95;
+    let bestD = MELEE_RANGE * 1.15;
     for (const o of this.fans) {
       if (o === f || o.hp <= 0) continue;
       const hostile =
@@ -1480,18 +1542,28 @@ export class Match {
     if (f.isSteward) return; // held at post
     const dir = f.team === this.playerTeam ? 1 : -1;
     const blocker = this.blockerAhead(f);
+    const speed = 0.06 * FAN_STATS[f.kind].fight;
     if (!blocker) {
-      f.gangX = clamp(
-        f.gangX + dir * 0.055 * FAN_STATS[f.kind].fight * dt,
-        0,
-        1,
-      );
-      f.x = gangXToWorld(f.gangX);
-      f.y = gangMidY() + Math.sin(this.realElapsed * 3 + f.id) * 0.008;
+      f.gangX = clamp(f.gangX + dir * speed * dt, 0, 1);
     } else {
-      f.x = gangXToWorld(f.gangX);
-      f.y = gangMidY();
+      // Keep pressing into the enemy — stay in melee, never freeze idle
+      const bx =
+        blocker.state === "gang" || blocker.isSteward
+          ? blocker.gangX
+          : blockIdToGangX(blocker.blockId);
+      const contact = bx - dir * (MELEE_RANGE * 0.55);
+      // Creep toward contact point (and slightly into foe) so the brawl drifts forward
+      const push = dir * speed * 0.45 * dt;
+      if (dir > 0) f.gangX = clamp(Math.min(f.gangX + push, contact + 0.012), 0, 1);
+      else f.gangX = clamp(Math.max(f.gangX + push, contact - 0.012), 0, 1);
+      // Snap into melee if we drifted out of range
+      const worldGap = (blocker.x - f.x) * dir;
+      if (worldGap > MELEE_RANGE * 0.9) {
+        f.gangX = clamp(f.gangX + dir * speed * 1.2 * dt, 0, 1);
+      }
     }
+    f.x = gangXToWorld(f.gangX);
+    f.y = gangMidY() + (blocker ? 0 : Math.sin(this.realElapsed * 3 + f.id) * 0.008);
 
     const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
     const goalGx = blockIdToGangX(goalBlock);
@@ -1834,14 +1906,14 @@ export class Match {
     if (target.kind === "familie" && !target.isSteward) {
       // Don't insta-kill — family flight system handles unsafe blocks
       const dmg =
-        (HIT_DAMAGE * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
+        (HIT_DAMAGE * HIT_DAMAGE_SCALE * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
         Math.max(0.35, this.defenseOf(target) * defMul);
       target.hp -= dmg * 0.5;
       if (target.hp <= 0) target.hp = 0;
       return;
     }
     const dmg =
-      (HIT_DAMAGE * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
+      (HIT_DAMAGE * HIT_DAMAGE_SCALE * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
       Math.max(0.35, (this.defenseOf(target) * defMul) / this.neighborBonus(target));
     target.hp -= dmg;
     target.aggro = clamp(target.aggro + 12, 0, 100);
@@ -1922,9 +1994,10 @@ export class Match {
       if (ultraP) pull += 0.5 * colHeimBias + 0.15;
       if (ultraA) pull -= 0.5 * colGastBias + 0.15;
 
-      f.lean = clamp(f.lean + pull * dt * 0.07, -1, 1);
+      f.lean = clamp(f.lean + pull * dt * 0.045, -1, 1);
       const pressure = Math.abs(pull);
-      const rate = 0.018 + pressure * 0.04 + (ultraP || ultraA ? 0.03 : 0);
+      // Slower seat-by-seat convert — clearly visible per person
+      const rate = 0.01 + pressure * 0.022 + (ultraP || ultraA ? 0.015 : 0);
       if (f.lean > 0.35) f.captureProg = clamp(f.captureProg + rate * dt, 0, 1);
       else if (f.lean < -0.35)
         f.captureProg = clamp(f.captureProg - rate * dt, -1, 0);
@@ -1932,16 +2005,18 @@ export class Match {
 
       if (f.captureProg >= 1) {
         f.team = this.playerTeam;
+        f.homeBlockId = f.blockId;
         f.lean = 1;
         f.captureProg = 0;
-        this.toast("Platz → Heim");
-        this.floatAt(f.x, f.y, "+Heim", true);
+        this.toast(`Sitz → ${teamLabel(this.playerTeam)}`);
+        this.floatAt(f.x, f.y, "✓ Heim", true);
       } else if (f.captureProg <= -1) {
         f.team = this.aiTeam;
+        f.homeBlockId = f.blockId;
         f.lean = -1;
         f.captureProg = 0;
-        this.toast("Platz → Gäste");
-        this.floatAt(f.x, f.y, "+Gäste", false);
+        this.toast(`Sitz → ${teamLabel(this.aiTeam)}`);
+        this.floatAt(f.x, f.y, "✓ Gäste", false);
       }
     }
 

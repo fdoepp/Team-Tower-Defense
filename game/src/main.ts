@@ -195,6 +195,12 @@ function renderMatchScreen(): void {
         <canvas id="c"></canvas>
         <div class="pitch-hud" id="pitch-hud">
           <div class="pitch-top">
+            <div class="fanbase-col heim" aria-label="Eigene Fanbase">
+              <span class="fb"><i>U</i><b id="fb-u">0</b></span>
+              <span class="fb"><i>N</i><b id="fb-n">0</b></span>
+              <span class="fb"><i>F</i><b id="fb-f">0</b></span>
+              <span class="fb"><i>O</i><b id="fb-o">0</b></span>
+            </div>
             <div class="wallet-inline" aria-label="Ressourcen">
               <span class="wi gold"><i>Geld</i><b id="gold">0</b></span>
               <span class="wi bier"><i>Bier</i><b id="cur-beer">0</b></span>
@@ -205,6 +211,12 @@ function renderMatchScreen(): void {
               <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
               <button data-spd="1" class="on">▶</button>
               <button data-spd="2">2×</button>
+            </div>
+            <div class="fanbase-col gast" aria-label="Gegner-Fanbase">
+              <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
+              <span class="fb"><i>N</i><b id="fb-en">0</b></span>
+              <span class="fb"><i>F</i><b id="fb-ef">0</b></span>
+              <span class="fb"><i>O</i><b id="fb-eo">0</b></span>
             </div>
           </div>
           <div class="match-hud-score">
@@ -573,6 +585,20 @@ function renderMatchScreen(): void {
       if (beer) beer.textContent = String(m.currencyPct("beer"));
       if (merch) merch.textContent = String(m.currencyPct("merch"));
       if (sec) sec.textContent = String(m.currencyPct("security"));
+      const own = m.countTeamFans(m.playerTeam);
+      const foe = m.countTeamFans(m.aiTeam);
+      const setFb = (id: string, n: number) => {
+        const el = app.querySelector(id);
+        if (el) el.textContent = String(n);
+      };
+      setFb("#fb-u", own.ultras);
+      setFb("#fb-n", own.normalos);
+      setFb("#fb-f", own.familie);
+      setFb("#fb-o", own.ordner);
+      setFb("#fb-eu", foe.ultras);
+      setFb("#fb-en", foe.normalos);
+      setFb("#fb-ef", foe.familie);
+      setFb("#fb-eo", foe.ordner);
       const hudScore = app.querySelector("#hud-score");
       const hudMin = app.querySelector("#hud-minute");
       if (hudScore) {
