@@ -16,7 +16,6 @@ import {
   doorPos,
   gangY,
   pennantPos,
-  plotGangX,
   seatPos,
 } from "./layout";
 import {
