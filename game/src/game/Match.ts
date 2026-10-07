@@ -555,6 +555,46 @@ canBuy(kind: FanKind): boolean {
     return null;
   }
 
+  /** Freie Sitze in Blöcken, in denen der Spieler kaufen darf */
+  countFreeBuySeats(): number {
+    let n = 0;
+    for (let blockId = 0; blockId < BLOCK_COUNT; blockId++) {
+      if (blockId === GAST_BLOCK || !this.canBuyInBlock(blockId)) continue;
+      for (let i = 0; i < SEATS_PER_BLOCK; i++) {
+        if (!this.seatOccupied(blockId, i)) n++;
+      }
+    }
+    return n;
+  }
+
+  /** Erster freier Platz: Heim → eroberte Neutrals */
+  buySlotForPlayer(): { blockId: number; seatIndex: number } | null {
+    const order: number[] = [HEIM_BLOCK];
+    for (let b = 0; b < BLOCK_COUNT; b++) {
+      if (b !== HEIM_BLOCK && b !== GAST_BLOCK) order.push(b);
+    }
+    for (const blockId of order) {
+      if (!this.canBuyInBlock(blockId)) continue;
+      const seatIndex = this.freeSeat(blockId);
+      if (seatIndex != null) return { blockId, seatIndex };
+    }
+    return null;
+  }
+
+  canQuickBuy(kind: FanKind): boolean {
+    return this.canBuy(kind) && this.buySlotForPlayer() != null;
+  }
+
+  /** HUD [+] — kauft auf nächsten freien Platz */
+  tryBuyFanQuick(kind: FanKind): boolean {
+    const slot = this.buySlotForPlayer();
+    if (!slot) {
+      this.toast("Kein freier Platz");
+      return false;
+    }
+    return this.tryBuyFan(kind, slot.blockId, slot.seatIndex);
+  }
+
   blockFanCount(blockId: number): number {
     return this.fans.filter(
       (f) => f.hp > 0 && !f.isSteward && f.blockId === blockId && f.seatIndex != null,
@@ -712,7 +752,7 @@ canBuy(kind: FanKind): boolean {
     list[0].rangedPyro = false;
     this.sendToGang(list[0]);
     this.cd.hooliganOrder = 0;
-    this.toast("Hooligan → Gang (Nahkampf)");
+    this.toast("Hooligan → Angriff (Nahkampf)");
     return true;
   }
 
@@ -752,7 +792,7 @@ canBuy(kind: FanKind): boolean {
     u.hp = Math.min(u.hp, u.maxHp);
     this.sendToGang(u);
     this.cd.pyroFight = 0;
-    this.toast("Ultra → Pyro-Kampf (Fern)");
+    this.toast("Ultra → Pyro Wurf");
     return true;
   }
 

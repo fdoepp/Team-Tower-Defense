@@ -196,33 +196,39 @@ function renderMatchScreen(): void {
         <canvas id="c"></canvas>
         <div class="pitch-hud" id="pitch-hud">
           <div class="pitch-top">
-            <div class="action-rail heim" aria-label="Eigene Fans & Aktionen">
-              <div class="ar-row">
-                <span class="fb"><i>N</i><b id="fb-n">0</b></span>
-                <span class="ar-cur">Sich.</span>
-                <button class="ar-btn gesang" data-mood="gesang" id="btn-gesang" type="button">Gesang<span></span></button>
+            <div class="heim-panel" aria-label="Heim-Steuerung">
+              <div class="wallet-row" aria-label="Ressourcen">
+                <span class="wi gold"><i>Gold</i><b id="gold">0</b></span>
+                <span class="wi bier"><i>Bier</i><b id="cur-beer">0</b></span>
+                <span class="wi merch"><i>Fanartikel</i><b id="cur-merch">0</b></span>
+                <span class="wi sec"><i>Sicherheit</i><b id="cur-sec">0</b></span>
               </div>
-              <div class="ar-row">
-                <span class="fb"><i>U</i><b id="fb-u">0</b></span>
-                <span class="ar-cur">Fanart.</span>
-                <button class="ar-btn pyro" data-mood="pyro" id="btn-pyro" type="button">Pyro<span></span></button>
-                <button class="ar-btn pyro-fight" id="btn-pyro-fight" type="button">Fern<span></span></button>
+              <p class="freie-plaetze">Freie Plätze <b id="free-seats">0</b></p>
+              <div class="unit-rows">
+                <div class="ur-row">
+                  <span class="ur-name">Normalos</span>
+                  <b class="ur-count" id="fb-n">0</b>
+                  <button type="button" class="ar-plus" data-quick-buy="normalos" title="${BUY_COST.normalos.security} Sicherheit">+</button>
+                  <button class="ar-btn gesang" data-mood="gesang" id="btn-gesang" type="button">Gesang<span></span></button>
+                </div>
+                <div class="ur-row">
+                  <span class="ur-name">Ultras</span>
+                  <b class="ur-count" id="fb-u">0</b>
+                  <button type="button" class="ar-plus" data-quick-buy="ultras" title="${BUY_COST.ultras.merch} Fanartikel">+</button>
+                  <button class="ar-btn pyro" data-mood="pyro" id="btn-pyro" type="button">Pyro<span></span></button>
+                  <button class="ar-btn pyro-fight" id="btn-pyro-fight" type="button">Pyro Wurf<span></span></button>
+                </div>
+                <div class="ur-row">
+                  <span class="ur-name">Hooligans</span>
+                  <b class="ur-count" id="fb-h">0</b>
+                  <button type="button" class="ar-plus" data-quick-buy="hooligans" title="${BUY_COST.hooligans.beer} Bier">+</button>
+                  <button class="ar-btn fight" id="btn-hooligan" type="button">Angriff<span></span></button>
+                </div>
+                <div class="ur-row ur-row-ordner">
+                  <span class="ur-name">Ordner</span>
+                  <b class="ur-count" id="fb-o">0</b>
+                </div>
               </div>
-              <div class="ar-row">
-                <span class="fb"><i>H</i><b id="fb-h">0</b></span>
-                <span class="ar-cur">Bier</span>
-                <button class="ar-btn fight" id="btn-hooligan" type="button">Kampf<span></span></button>
-              </div>
-              <div class="ar-row">
-                <span class="fb"><i>O</i><b id="fb-o">0</b></span>
-                <span class="ar-cur muted">Ordner</span>
-              </div>
-            </div>
-            <div class="wallet-inline" aria-label="Ressourcen">
-              <span class="wi gold"><i>Geld</i><b id="gold">0</b></span>
-              <span class="wi bier"><i>Bier</i><b id="cur-beer">0</b></span>
-              <span class="wi merch"><i>Fanartikel</i><b id="cur-merch">0</b></span>
-              <span class="wi sec"><i>Sicherheit</i><b id="cur-sec">0</b></span>
             </div>
             <div class="speed-btns top-speed">
               <button type="button" id="btn-fs" class="fs-chrome-btn" title="Vollbild">⛶</button>
@@ -514,6 +520,18 @@ function renderMatchScreen(): void {
     pf.querySelector("span")!.textContent = pready
       ? `${PYRO_FIGHT_MERCH} FA`
       : "—";
+    (["ultras", "normalos", "hooligans"] as FanKind[]).forEach((kind) => {
+      const plus = app.querySelector<HTMLButtonElement>(
+        `[data-quick-buy="${kind}"]`,
+      );
+      if (!plus) return;
+      const ok = m.canQuickBuy(kind);
+      plus.disabled = !ok;
+      plus.classList.toggle("ready", ok);
+      plus.classList.toggle("cd", !ok);
+    });
+    const freeEl = app.querySelector("#free-seats");
+    if (freeEl) freeEl.textContent = String(m.countFreeBuySeats());
     if (!seatMenu.classList.contains("hidden")) syncBuyButtons();
   };
 
@@ -547,6 +565,12 @@ function renderMatchScreen(): void {
   app.querySelector("#btn-pyro-fight")!.addEventListener("click", () => {
     m.tryPyroFight();
     syncOverlay();
+  });
+  app.querySelectorAll<HTMLButtonElement>("[data-quick-buy]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      m.tryBuyFanQuick(btn.dataset.quickBuy as FanKind);
+      syncOverlay();
+    });
   });
   app.querySelectorAll<HTMLButtonElement>("[data-buy]").forEach((btn) => {
     btn.addEventListener("click", () => {
