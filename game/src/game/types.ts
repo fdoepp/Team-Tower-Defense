@@ -217,8 +217,8 @@ export const STEWARD_STATS = {
   attack: 0.85,
   defense: 1.25,
   vsUltraMul: 1.2,
-  patrolSpeed: 0.04,
-  chaseSpeed: 0.16,
+  patrolSpeed: 0.085,
+  chaseSpeed: 0.18,
 };
 
 export const BLOCK_META = [

@@ -1479,27 +1479,6 @@ canBuy(kind: FanKind): boolean {
       );
       if (!stand) continue;
 
-      // Neutral Ordner stuck deep in owned land: retreat to post, then despawn
-      if (
-        f.team === "neutral" &&
-        stand.owner === "neutral" &&
-        !this.isContestedGangZone(stand.blockId)
-      ) {
-        const homeGx = blockIdToGangX(stand.blockId);
-        const midY = gangMidY();
-        const dx = homeGx - f.gangX;
-        f.gangX += Math.sign(dx) * Math.min(Math.abs(dx), 0.12 * dt);
-        f.x = gangXToWorld(f.gangX);
-        f.y += (midY - f.y) * Math.min(1, 5 * dt);
-        f.state = "gang";
-        f.blockId = stand.blockId;
-        if (Math.abs(f.gangX - homeGx) < 0.03) {
-          f.hp = 0; // leave the field — no grey Ordner in blue/red land
-          this.floatAt(f.x, f.y, "Ordner zieht ab", false);
-        }
-        continue;
-      }
-
       const band = this.stewardPatrolBand(f);
       const threat = this.stewardThreat(f, band);
       const midY = gangMidY();
@@ -1536,18 +1515,41 @@ canBuy(kind: FanKind): boolean {
     }
   }
 
-  /** Gang-X patrol range for a steward's team / post */
+  /** Gang-X patrol range for a steward's team / post — wider so movement is visible */
   private stewardPatrolBand(f: FanUnit): { min: number; max: number } {
     if (f.team === "neutral") {
       return {
-        min: blockIdToGangX(1) - 0.08,
-        max: blockIdToGangX(2) + 0.08,
+        min: blockIdToGangX(1) - 0.12,
+        max: blockIdToGangX(2) + 0.12,
       };
     }
     if (f.team === this.playerTeam) {
-      return { min: 0, max: blockIdToGangX(1) + 0.12 };
+      return { min: 0.02, max: Math.max(0.28, this.linePlayer + 0.08) };
     }
-    return { min: blockIdToGangX(2) - 0.12, max: 1 };
+    return { min: Math.min(0.72, this.lineAi - 0.08), max: 0.98 };
+  }
+
+  /** Build / possession frontier permanently painted on the gang */
+  buildFrontierGx(team: TeamId): number {
+    if (team === this.playerTeam) {
+      let edge = blockIdToGangX(HEIM_BLOCK) + 0.08;
+      for (let b = 0; b < BLOCK_COUNT; b++) {
+        if (b === GAST_BLOCK) continue;
+        if (this.blockOwner[b] === this.playerTeam || this.inPlayerTerritory(b)) {
+          edge = Math.max(edge, blockIdToGangX(b) + 0.12);
+        }
+      }
+      return clamp(Math.max(edge, this.linePlayer), 0.08, 0.92);
+    }
+    let edge = blockIdToGangX(GAST_BLOCK) - 0.08;
+    for (let b = 0; b < BLOCK_COUNT; b++) {
+      if (b === HEIM_BLOCK) continue;
+      const mid = blockIdToGangX(b);
+      const aiOwns =
+        this.blockOwner[b] === this.aiTeam || this.lineAi <= mid + 0.05;
+      if (aiOwns) edge = Math.min(edge, mid - 0.12);
+    }
+    return clamp(Math.min(edge, this.lineAi), 0.08, 0.92);
   }
 
   /** Nearest hostile Ultra in/near this steward's band */
@@ -1748,6 +1750,29 @@ canBuy(kind: FanKind): boolean {
       return;
     }
     const t = f.path[f.pathI];
+    const midY = gangMidY();
+    const onGangCorridor = Math.abs(f.y - midY) < 0.09 || Math.abs(t.y - midY) < 0.09;
+
+    // Cannot walk past hostile units (to beer stand / home / invade)
+    if (onGangCorridor && f.team !== "neutral") {
+      const moveDir = Math.sign(t.x - f.x) || (f.team === this.playerTeam ? 1 : -1);
+      const blocker =
+        this.blockerAhead(f, moveDir) ??
+        (Math.abs(t.x - f.x) < 0.04 ? this.foeInWay(f) : null);
+      if (blocker) {
+        const gap = (blocker.x - f.x) * moveDir;
+        const reach = f.rangedPyro ? RANGED_RANGE * 0.7 : MELEE_RANGE * 0.35;
+        if (gap > reach) {
+          const step = Math.min(gap - reach, 0.14 * dt);
+          f.x += moveDir * step;
+        }
+        f.y += (midY - f.y) * Math.min(1, 8 * dt);
+        this.syncGangFromWorld(f);
+        f.aggro = 100;
+        return;
+      }
+    }
+
     const speed = 0.22;
     const d = dist(f.x, f.y, t.x, t.y);
     if (d < 0.012) {
@@ -1760,10 +1785,8 @@ canBuy(kind: FanKind): boolean {
     const step = Math.min(1, (speed * dt) / d);
     f.x += (t.x - f.x) * step;
     f.y += (t.y - f.y) * step;
-    if (Math.abs(f.y - gangMidY()) < 0.06) {
-      const left = blockCenterX(0);
-      const right = blockCenterX(BLOCK_COUNT - 1);
-      f.gangX = clamp((f.x - left) / (right - left || 1), 0, 1);
+    if (Math.abs(f.y - midY) < 0.06) {
+      this.syncGangFromWorld(f);
     }
   }
 
@@ -1827,29 +1850,55 @@ canBuy(kind: FanKind): boolean {
     this.setAfter(f, "");
   }
 
-  /** Blocking enemy in front — cannot pass fans/ultras/ordners (incl. neutral stewards) */
-  private blockerAhead(f: FanUnit): FanUnit | null {
-    const dir = f.team === this.playerTeam ? 1 : -1;
+  private isHostileUnit(f: FanUnit, o: FanUnit): boolean {
+    if (o === f || o.hp <= 0) return false;
+    if (o.team === f.team) return false;
+    if (o.team === "neutral" && !o.isSteward) return false;
+    return true;
+  }
+
+  /** Enemy in front on gang / path — cannot walk past without fighting */
+  private blockerAhead(f: FanUnit, dirHint?: number): FanUnit | null {
+    const dir =
+      dirHint ??
+      (f.team === this.playerTeam ? 1 : f.team === this.aiTeam ? -1 : 1);
     let best: FanUnit | null = null;
-    // Detect early; close-in / hold happens in tickGangMove (world space)
-    let bestD = f.rangedPyro ? RANGED_RANGE * 1.15 : MELEE_RANGE * 1.6;
+    let bestD = f.rangedPyro ? RANGED_RANGE * 1.15 : MELEE_RANGE * 2.2;
     for (const o of this.fans) {
-      if (o === f || o.hp <= 0) continue;
-      const hostile =
-        o.team !== f.team &&
-        (o.team !== "neutral" || o.isSteward);
-      if (!hostile) continue;
+      if (!this.isHostileUnit(f, o)) continue;
       const onLane =
         o.state === "gang" ||
         o.isSteward ||
         o.state === "stand" ||
-        (o.state === "block" && Math.abs(blockIdToGangX(o.blockId) - f.gangX) < 0.1);
+        o.state === "moving" ||
+        (o.state === "block" && Math.abs(blockIdToGangX(o.blockId) - f.gangX) < 0.12);
       if (!onLane) continue;
       const dx = (o.x - f.x) * dir;
       if (dx < -0.02 || dx > bestD) continue;
-      if (Math.abs(o.y - f.y) > 0.16) continue;
+      if (Math.abs(o.y - f.y) > 0.14) continue;
       bestD = dx;
       best = o;
+    }
+    return best;
+  }
+
+  /** Closest foe near current position (any direction) — used when heading to beer */
+  private foeInWay(f: FanUnit): FanUnit | null {
+    let best: FanUnit | null = null;
+    let bestD = MELEE_RANGE * 1.8;
+    for (const o of this.fans) {
+      if (!this.isHostileUnit(f, o)) continue;
+      const onLane =
+        o.state === "gang" ||
+        o.isSteward ||
+        o.state === "moving" ||
+        o.state === "stand";
+      if (!onLane && !(o.state === "block" && Math.abs(o.y - f.y) < 0.08)) continue;
+      const d = dist(f.x, f.y, o.x, o.y);
+      if (d < bestD) {
+        bestD = d;
+        best = o;
+      }
     }
     return best;
   }
@@ -1955,16 +2004,23 @@ canBuy(kind: FanKind): boolean {
           f.team === team &&
           !f.isSteward &&
           (f.kind === "hooligans" || f.kind === "ultras") &&
-          (f.state === "gang" || f.invading),
+          (f.state === "gang" || f.invading || f.state === "moving"),
       );
-    const pUltras = frontKinds(this.playerTeam);
-    const aUltras = frontKinds(this.aiTeam);
-    this.linePlayer = pUltras.length
-      ? Math.max(...pUltras.map((f) => f.gangX))
-      : blockIdToGangX(HEIM_BLOCK);
-    this.lineAi = aUltras.length
-      ? Math.min(...aUltras.map((f) => f.gangX))
-      : blockIdToGangX(GAST_BLOCK);
+    const pFront = frontKinds(this.playerTeam);
+    const aFront = frontKinds(this.aiTeam);
+    // Persist colored build frontier even without fighters out
+    let pLine = this.buildFrontierGx(this.playerTeam);
+    let aLine = this.buildFrontierGx(this.aiTeam);
+    if (pFront.length) pLine = Math.max(pLine, ...pFront.map((f) => f.gangX));
+    if (aFront.length) aLine = Math.min(aLine, ...aFront.map((f) => f.gangX));
+    // Never let fronts cross: contested mid stays between them
+    if (pLine > aLine) {
+      const mid = (pLine + aLine) / 2;
+      pLine = mid - 0.01;
+      aLine = mid + 0.01;
+    }
+    this.linePlayer = clamp(pLine, 0.05, 0.95);
+    this.lineAi = clamp(aLine, 0.05, 0.95);
   }
 
   /** Seated fans in a block belonging to a team (for convert majority gate) */
@@ -2193,15 +2249,25 @@ canBuy(kind: FanKind): boolean {
       } else if (a.kind === "hooligans" || a.kind === "ultras") {
         canAttack =
           a.state === "gang" ||
+          a.state === "moving" ||
           a.invading ||
           (a.state === "block" && (blockInvaded || a.blockId === home));
-      } else if (a.kind === "normalos" && a.state === "block" && !a.isSteward) {
+      } else if (a.kind === "normalos") {
         canAttack =
           a.team !== "neutral" &&
-          this.enemyUltraInBlock(a.blockId, a.team as TeamId);
+          (a.state === "moving" ||
+            a.state === "gang" ||
+            (a.state === "block" &&
+              this.enemyUltraInBlock(a.blockId, a.team as TeamId)));
       }
 
-      if (!canAttack && a.state !== "gang" && !a.isSteward) continue;
+      if (
+        !canAttack &&
+        a.state !== "gang" &&
+        a.state !== "moving" &&
+        !a.isSteward
+      )
+        continue;
 
       let best: FanUnit | null = null;
       const reach = a.rangedPyro ? RANGED_RANGE : MELEE_RANGE;
@@ -2220,10 +2286,18 @@ canBuy(kind: FanKind): boolean {
           a.kind !== "normalos" &&
           b.kind !== "normalos";
 
+        const aOnCorridor =
+          a.state === "gang" ||
+          a.state === "moving" ||
+          a.isSteward ||
+          a.state === "stand";
+        const bOnCorridor =
+          b.state === "gang" ||
+          b.state === "moving" ||
+          b.isSteward ||
+          b.state === "stand";
         const sameLane =
-          sameBlockFight ||
-          ((a.state === "gang" || a.isSteward) &&
-            (b.state === "gang" || b.isSteward || b.state === "stand" || b.state === "moving"));
+          sameBlockFight || (aOnCorridor && bOnCorridor);
 
         if (!sameLane) continue;
         const d = dist(a.x, a.y, b.x, b.y);

@@ -259,22 +259,25 @@ function drawGang(
   const px = left + span * m.linePlayer;
   const ax = left + span * m.lineAi;
 
-  // Asphalt base
-  ctx.fillStyle = "#334155";
-  ctx.fillRect(left, y, span, gh);
+  // Dauerhafte Besitz-/Bauzonen (solid tint) — blau bis Heim-Front, rot ab Gast-Front
+  const pEdge = Math.min(px, ax);
+  const aEdge = Math.max(px, ax);
 
-  // Besitz / Bauzone: blau = Heim+Vorstoß, rot = Gast, Mitte umkämpft
-  ctx.fillStyle = "rgba(37,99,235,0.42)";
-  ctx.fillRect(left, y, Math.max(0, px - left), gh);
-  ctx.fillStyle = "rgba(220,38,38,0.42)";
-  ctx.fillRect(ax, y, left + span - ax, gh);
-  if (px < ax) {
-    const gMid = ctx.createLinearGradient(px, 0, ax, 0);
-    gMid.addColorStop(0, "rgba(148,163,184,0.55)");
-    gMid.addColorStop(0.5, "rgba(100,116,139,0.65)");
-    gMid.addColorStop(1, "rgba(148,163,184,0.55)");
-    ctx.fillStyle = gMid;
-    ctx.fillRect(px, y, ax - px, gh);
+  ctx.fillStyle = "#1e3a8a";
+  ctx.fillRect(left, y, Math.max(0, pEdge - left), gh);
+  ctx.fillStyle = "rgba(59,130,246,0.55)";
+  ctx.fillRect(left, y, Math.max(0, pEdge - left), gh);
+
+  ctx.fillStyle = "#7f1d1d";
+  ctx.fillRect(aEdge, y, left + span - aEdge, gh);
+  ctx.fillStyle = "rgba(239,68,68,0.55)";
+  ctx.fillRect(aEdge, y, left + span - aEdge, gh);
+
+  if (aEdge > pEdge) {
+    ctx.fillStyle = "#475569";
+    ctx.fillRect(pEdge, y, aEdge - pEdge, gh);
+    ctx.fillStyle = "rgba(148,163,184,0.35)";
+    ctx.fillRect(pEdge, y, aEdge - pEdge, gh);
   }
 
   // Block-Trennlinien im Gang
