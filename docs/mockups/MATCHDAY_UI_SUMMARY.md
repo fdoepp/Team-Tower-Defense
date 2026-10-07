@@ -8,12 +8,12 @@ Zielrichtung: **Matchday Comic** (Stadion-Flair) + Toy-/Chibi-Figuren, Spielsyst
 
 | Bereich | Inhalt |
 |---|---|
-| Oben | Währungen: **Gold · Bier · Fanartikel · Sicherheit**; Scoreboard KSC–VfB; Momentum/Torchance |
+| Oben | Währungen **Gold · Bier · Fanartikel · Sicherheit** — alle auf **gleichen weißen** Chips; Scoreboard; Momentum/Torchance |
 | Hintergrund | Flutlicht-Stadion, blau \| grau \| rot, Pyro/Stimmung sichtbar |
 | Links | Command-Rail volle Höhe: Fans/Ultras/Hooligans **SEND + HIRE**; Ordner nur **HIRE** → Wachpatrouille |
-| Mitte | Blöcke Heim/Neutral/Gäste (freie Menge, keine Sockel); klare Ausgänge → Gang |
-| Gang | ~12 Stand-Pads; kleine **KSC/VfB-Wimpel** für Gang-Besitz/Front (Bau, Patrouille, Push) |
-| Rechts | Gebäude-Popup bei Klick (Upgrade / Sell) |
+| Mitte | Blöcke Heim/Neutral/Gäste (freie Menge); klare Ausgänge → Gang |
+| Gang | Offener unterer Straßenbereich (~12 Buden-Positionen). Gebaute Buden stehen frei am Gang; leere Slots mit flachem **Bauzaun** + `+`. Figuren nur in Blöcken oder laufend (Block ↔ Stand ↔ Kampf), nicht in einer Icon-Leiste. |
+| Rechts | **Baumenü-Popup** nur Gebäude (Bierstand / Fanshop / Ordnerposten) inkl. Gold-Kosten — **keine Figuren** |
 
 ## Icons (Lv1–Lv5)
 
