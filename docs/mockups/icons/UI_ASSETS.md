@@ -11,11 +11,10 @@ Alle Pfade relativ zu `game/public/icons/`.
 | 1 | `ui/slot-empty.png` | Leerer Bauplatz mit Bauzaun-Rechteck + `+` |
 | 2 | `ui/currency-gold.png` … `currency-sicherheit.png` | Umrandete Währungs-Chips inkl. Anzahl |
 | 3 | `ui/scoreboard-momentum.png` | Anzeigetafel (Logos, Stand, Minute) + Momentum |
-| 4 | `ui/btn-hire-grey.png` / `btn-hire-green.png` | Hire + Kosten (grau/grün) |
-| 5 | `ui/btn-build-grey.png` / `btn-build-green.png` | Build/Bauen + Kosten (grau/grün) |
-| 6 | `ui/btn-send-blue.png` | Send (blau) |
-| 7 | `ui/menu-rail-brown.png` (+ `-tile`) | Durchgehende Bloons-braune Menüleiste |
-| 8 | `ui/pennant-ksc.png` / `pennant-vfb.png` | Fanwimpel-Ständer |
+| 4 | `ui/btn-kaufen-grey.png` / `btn-kaufen-green.png` | Kaufen (grau/grün) |
+| 5 | `ui/btn-senden-grey.png` / `btn-senden-green.png` | Senden (grau/grün) |
+| 6 | `ui/menu-rail-brown.png` (+ `-tile`) | Durchgehende Bloons-braune Menüleiste |
+| 7 | `ui/pennant-ksc.png` / `pennant-vfb.png` | Fanwimpel-Ständer |
 
 ## 9 Buden farbig (`stands/`)
 

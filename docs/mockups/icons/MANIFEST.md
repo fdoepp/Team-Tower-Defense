@@ -6,12 +6,10 @@
 - `ui/currency-fanartikel.png`
 - `ui/currency-sicherheit.png`
 - `ui/scoreboard-momentum.png`
-- `ui/btn-hire-grey.png`
-- `ui/btn-hire-green.png`
-- `ui/btn-build-grey.png`
-- `ui/btn-build-green.png`
-- `ui/btn-send-blue.png`
-- `ui/btn-send-blue-alt.png`
+- `ui/btn-kaufen-grey.png`
+- `ui/btn-kaufen-green.png`
+- `ui/btn-senden-grey.png`
+- `ui/btn-senden-green.png`
 - `ui/menu-rail-brown.png`
 - `ui/menu-rail-brown-tile.png`
 - `ui/pennant-ksc.png`
