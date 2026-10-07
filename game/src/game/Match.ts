@@ -1459,6 +1459,24 @@ canBuy(kind: FanKind): boolean {
     return this.stewardCountAt(s) < STEWARD_CAP && this.gold >= STEWARD_HIRE_GOLD;
   }
 
+  /** Hire at first owned Ordnerposten (sidebar quick action). */
+  tryHireStewardQuick(): boolean {
+    const s = this.slots.find(
+      (x) =>
+        x.building === "ordner" &&
+        x.owner === this.playerTeam &&
+        !x.greyNeutral &&
+        this.stewardCountAt(x) < STEWARD_CAP,
+    );
+    if (!s) {
+      this.toast("Ordnerposten bauen / Platz frei?");
+      return false;
+    }
+    this.selectedSlot = { blockId: s.blockId, index: s.index };
+    this.buildMenu = { blockId: s.blockId, index: s.index };
+    return this.tryHireSteward();
+  }
+
   /** Player: click Ordnerposten → Ordner für Gold anheuern */
   tryHireSteward(): boolean {
     const sel = this.buildMenu ?? this.selectedSlot;

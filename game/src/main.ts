@@ -192,44 +192,56 @@ function renderMatchScreen(): void {
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell matchday">
       <aside class="side-rail left-rail" aria-label="Personen">
-        <header class="rail-head">Personen</header>
+        <header class="rail-banner">Personen</header>
         <p class="freie-plaetze">Freie Plätze <b id="free-seats">0</b></p>
         <div class="unit-rows">
           <div class="ur-row">
-            <img class="ur-icon" src="${unitIconPath("normalos", tc, 1)}" alt="">
+            <img class="ur-icon" data-unit-icon="normalos" src="${unitIconPath("normalos", tc, 1)}" alt="">
             <div class="ur-meta"><span class="ur-name">Fans</span><b class="ur-count" id="fb-n">0</b></div>
-            <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="normalos" title="${BUY_COST.normalos.security} Sicherheit">
-              <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-              <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-            </button>
+            <div class="ur-actions">
+              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="normalos" title="${BUY_COST.normalos.security} Sicherheit">
+                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+              </button>
+            </div>
           </div>
           <div class="ur-row">
-            <img class="ur-icon" src="${unitIconPath("ultras", tc, 1)}" alt="">
+            <img class="ur-icon" data-unit-icon="ultras" src="${unitIconPath("ultras", tc, 1)}" alt="">
             <div class="ur-meta"><span class="ur-name">Ultras</span><b class="ur-count" id="fb-u">0</b></div>
-            <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="ultras" title="${BUY_COST.ultras.merch} Fanartikel">
-              <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-              <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-            </button>
-            <button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Senden">
-              <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
-              <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
-            </button>
+            <div class="ur-actions">
+              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="ultras" title="${BUY_COST.ultras.merch} Fanartikel">
+                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+              </button>
+              <button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Senden">
+                <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
+                <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
+              </button>
+            </div>
           </div>
           <div class="ur-row">
-            <img class="ur-icon" src="${unitIconPath("hooligans", tc, 1)}" alt="">
+            <img class="ur-icon" data-unit-icon="hooligans" src="${unitIconPath("hooligans", tc, 1)}" alt="">
             <div class="ur-meta"><span class="ur-name">Hooligans</span><b class="ur-count" id="fb-h">0</b></div>
-            <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="hooligans" title="${BUY_COST.hooligans.beer} Bier">
-              <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-              <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-            </button>
-            <button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Senden">
-              <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
-              <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
-            </button>
+            <div class="ur-actions">
+              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="hooligans" title="${BUY_COST.hooligans.beer} Bier">
+                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+              </button>
+              <button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Senden">
+                <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
+                <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
+              </button>
+            </div>
           </div>
           <div class="ur-row ur-row-ordner">
-            <img class="ur-icon" src="${unitIconPath("ordner", tc, 1)}" alt="">
+            <img class="ur-icon" data-unit-icon="ordner" src="${unitIconPath("ordner", tc, 1)}" alt="">
             <div class="ur-meta"><span class="ur-name">Ordner</span><b class="ur-count" id="fb-o">0</b></div>
+            <div class="ur-actions">
+              <button type="button" class="ar-icon-btn ar-kaufen" id="btn-hire-ordner" title="${STEWARD_HIRE_GOLD}€">
+                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+              </button>
+            </div>
           </div>
         </div>
         <div class="fanbase-col gast" aria-label="Gegner">
@@ -317,25 +329,25 @@ function renderMatchScreen(): void {
         </div>
       </div>
       <aside class="side-rail right-rail" aria-label="Gebäude">
-        <header class="rail-head">Bauen</header>
+        <header class="rail-banner">Bauen</header>
         <p class="rail-hint" id="build-hint">Gebäude tippen, dann Plot wählen</p>
         <div class="build-rows">
           <button type="button" class="build-card" data-pending-build="bier">
             <img src="icons/stands/bier-${tc}-3.png" alt="">
             <span>Bierstand</span>
-            <small>${BUILD_COST.bier}g</small>
+            <small>${BUILD_COST.bier} Gold</small>
             <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
           </button>
           <button type="button" class="build-card" data-pending-build="fanshop">
             <img src="icons/stands/fanshop-${tc}-3.png" alt="">
             <span>Fanshop</span>
-            <small>${BUILD_COST.fanshop}g</small>
+            <small>${BUILD_COST.fanshop} Gold</small>
             <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
           </button>
           <button type="button" class="build-card" data-pending-build="ordner">
             <img src="icons/stands/ordner-${tc}-3.png" alt="">
             <span>Ordnerposten</span>
-            <small>${BUILD_COST.ordner}g</small>
+            <small>${BUILD_COST.ordner} Gold</small>
             <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
           </button>
         </div>
@@ -597,6 +609,10 @@ function renderMatchScreen(): void {
     m.tryPyroFight();
     syncOverlay();
   });
+  app.querySelector("#btn-hire-ordner")?.addEventListener("click", () => {
+    m.tryHireStewardQuick();
+    syncOverlay();
+  });
   app.querySelectorAll<HTMLButtonElement>("[data-quick-buy]").forEach((btn) => {
     btn.addEventListener("click", () => {
       m.tryBuyFanQuick(btn.dataset.quickBuy as FanKind);
@@ -669,6 +685,34 @@ function renderMatchScreen(): void {
       setFb("#fb-en", foe.normalos);
       setFb("#fb-eh", foe.hooligans);
       setFb("#fb-eo", foe.ordner);
+      // Sidebar icons follow team building level (Lv1–5 sheets)
+      let unitLv = 1;
+      for (const s of m.slots) {
+        if (s.building && s.owner === m.playerTeam && !s.greyNeutral) {
+          unitLv = Math.max(unitLv, s.level || 1);
+        }
+      }
+      unitLv = Math.max(1, Math.min(5, unitLv));
+      const tcNow = teamColor(m.playerTeam);
+      app.querySelectorAll<HTMLImageElement>("[data-unit-icon]").forEach((img) => {
+        const kind = img.dataset.unitIcon as FanKind | "ordner";
+        const next = unitIconPath(kind, tcNow, unitLv);
+        if (img.getAttribute("src") !== next) img.src = next;
+      });
+      const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
+      if (hireBtn) {
+        const canHire = m.slots.some(
+          (s) =>
+            s.building === "ordner" &&
+            s.owner === m.playerTeam &&
+            !s.greyNeutral &&
+            m.stewardCountAt(s) < 2 &&
+            m.gold >= STEWARD_HIRE_GOLD,
+        );
+        hireBtn.disabled = !canHire;
+        hireBtn.classList.toggle("ready", canHire);
+        hireBtn.classList.toggle("cd", !canHire);
+      }
       const hudScore = app.querySelector("#hud-score");
       const hudMin = app.querySelector("#hud-minute");
       if (hudScore) {

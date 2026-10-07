@@ -16,22 +16,23 @@ export const SEAT_ROWS = 4;
  * - 2×6 fenced build plots
  */
 export const L = {
-  skyH: 0.11,
-  blockTop: 0.12,
-  blockBodyH: 0.3,
+  skyH: 0.1,
+  /** Room for distant bowl + floodlights above stands */
+  blockTop: 0.14,
+  blockBodyH: 0.28,
   /** Open street between stands and plot grid */
-  gangPadTop: 0.02,
-  gangH: 0.2,
-  plotPadTop: 0.01,
-  plotAreaH: 0.32,
-  blocksLeft: 0.03,
-  blocksRight: 0.97,
-  blockGap: 0.014,
-  doorFrac: 0.12,
+  gangPadTop: 0.015,
+  gangH: 0.22,
+  plotPadTop: 0.012,
+  plotAreaH: 0.3,
+  blocksLeft: 0.035,
+  blocksRight: 0.965,
+  blockGap: 0.018,
+  doorFrac: 0.14,
   plotCols: 6,
   plotRows: 2,
-  plotGapX: 0.012,
-  plotGapY: 0.018,
+  plotGapX: 0.014,
+  plotGapY: 0.022,
 };
 
 /** Colored blocks: 3 plots; neutrals also 3 → 12 total */

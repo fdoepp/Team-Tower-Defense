@@ -15,11 +15,14 @@ import {
   boothRect,
   doorPos,
   gangY,
+  pennantPos,
   seatPos,
+  slotFlatIndex,
 } from "./layout";
 import {
   UI_ICONS,
   drawIcon,
+  drawToyIcon,
   standIconPath,
   teamColor,
   unitIconPath,
@@ -55,81 +58,83 @@ function drawStadiumAtmosphere(
   w: number,
   h: number,
 ): void {
-  const skyH = h * (L.blockTop + L.blockBodyH * 0.42);
+  const skyH = h * (L.blockTop + L.blockBodyH * 0.55);
   const sky = ctx.createLinearGradient(0, 0, 0, skyH);
-  sky.addColorStop(0, "#060a14");
-  sky.addColorStop(0.35, "#0f1a2e");
-  sky.addColorStop(0.7, "#1a2740");
-  sky.addColorStop(1, "#243044");
+  sky.addColorStop(0, "#04070f");
+  sky.addColorStop(0.3, "#0c1528");
+  sky.addColorStop(0.65, "#15233a");
+  sky.addColorStop(1, "#1f2d44");
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, w, skyH);
 
-  // distant upper tier (packed bowl)
-  const rimY = skyH * 0.55;
-  ctx.fillStyle = "#1a2233";
-  ctx.beginPath();
-  ctx.ellipse(w * 0.5, rimY + h * 0.06, w * 0.72, h * 0.1, 0, Math.PI, 0);
-  ctx.fill();
-  // crowd speckles (blue | grey | red thirds)
-  for (let i = 0; i < 90; i++) {
-    const t = i / 90;
-    const x = w * (0.08 + t * 0.84);
-    const y = rimY + Math.sin(i * 2.7) * h * 0.018 + (i % 5) * h * 0.006;
-    const side = t < 0.33 ? 0 : t < 0.66 ? 1 : 2;
-    ctx.fillStyle =
-      side === 0
-        ? `rgba(59,130,246,${0.35 + (i % 3) * 0.15})`
-        : side === 2
-          ? `rgba(239,68,68,${0.35 + (i % 3) * 0.15})`
-          : `rgba(148,163,184,${0.3 + (i % 3) * 0.12})`;
-    ctx.fillRect(x, y, 2.2, 3.5);
+  // packed distant bowl — 3 color bands like mockup
+  const rimY = h * 0.02;
+  for (let tier = 0; tier < 4; tier++) {
+    const ty = rimY + tier * h * 0.022;
+    ctx.fillStyle = `rgba(15,23,42,${0.55 + tier * 0.08})`;
+    ctx.beginPath();
+    ctx.ellipse(w * 0.5, ty + h * 0.08, w * (0.78 - tier * 0.03), h * 0.07, 0, Math.PI, 0);
+    ctx.fill();
+    for (let i = 0; i < 120; i++) {
+      const t = i / 120;
+      const x = w * (0.06 + t * 0.88);
+      const y = ty + h * 0.035 + Math.sin(i * 1.7 + tier) * h * 0.01;
+      const side = t < 0.34 ? 0 : t < 0.66 ? 1 : 2;
+      const a = 0.25 + ((i + tier) % 4) * 0.12;
+      ctx.fillStyle =
+        side === 0
+          ? `rgba(59,130,246,${a})`
+          : side === 2
+            ? `rgba(239,68,68,${a})`
+            : `rgba(148,163,184,${a * 0.85})`;
+      ctx.fillRect(x, y, 2.4, 4.2);
+    }
   }
 
   // floodlight masts + beams
-  for (const lx of [0.1, 0.32, 0.68, 0.9]) {
+  for (const lx of [0.08, 0.28, 0.72, 0.92]) {
     const x = w * lx;
-    const y = h * 0.015;
-    ctx.fillStyle = "#334155";
-    ctx.fillRect(x - 2.5, y, 5, h * 0.055);
-    ctx.fillStyle = "rgba(255,251,235,0.95)";
+    const y = h * 0.01;
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(x - 3, y, 6, h * 0.07);
+    ctx.fillStyle = "#f8fafc";
     ctx.beginPath();
-    ctx.arc(x, y + h * 0.055, 4.5, 0, Math.PI * 2);
+    ctx.arc(x, y + h * 0.07, 5.5, 0, Math.PI * 2);
     ctx.fill();
-    const beam = ctx.createRadialGradient(x, y + h * 0.06, 2, x, y + h * 0.22, h * 0.28);
-    beam.addColorStop(0, "rgba(255,250,220,0.42)");
-    beam.addColorStop(0.45, "rgba(255,250,220,0.12)");
+    const beam = ctx.createRadialGradient(x, y + h * 0.08, 2, x, y + h * 0.28, h * 0.34);
+    beam.addColorStop(0, "rgba(255,250,220,0.5)");
+    beam.addColorStop(0.4, "rgba(255,250,220,0.14)");
     beam.addColorStop(1, "rgba(255,250,220,0)");
     ctx.fillStyle = beam;
     ctx.beginPath();
-    ctx.moveTo(x - 6, y + h * 0.055);
-    ctx.lineTo(x + 6, y + h * 0.055);
-    ctx.lineTo(x + w * 0.12, y + h * 0.32);
-    ctx.lineTo(x - w * 0.12, y + h * 0.32);
+    ctx.moveTo(x - 7, y + h * 0.07);
+    ctx.lineTo(x + 7, y + h * 0.07);
+    ctx.lineTo(x + w * 0.14, y + h * 0.38);
+    ctx.lineTo(x - w * 0.14, y + h * 0.38);
     ctx.closePath();
     ctx.fill();
   }
 
-  // pyro / flare glow — guest side always warm, scales with mood
+  // pyro / flare glow — guest side warm, heim cool
   {
     const gx = blockCenterX(GAST_BLOCK) * w;
-    const gy = h * L.blockTop * 0.85;
-    const a = 0.18 + Math.min(0.45, m.moodGaeste * 0.18);
-    const g = ctx.createRadialGradient(gx, gy, 8, gx, gy, w * 0.28);
+    const gy = h * L.blockTop * 0.75;
+    const a = 0.22 + Math.min(0.5, m.moodGaeste * 0.2);
+    const g = ctx.createRadialGradient(gx, gy, 6, gx, gy, w * 0.32);
     g.addColorStop(0, `rgba(251,146,60,${a})`);
-    g.addColorStop(0.4, `rgba(239,68,68,${a * 0.55})`);
+    g.addColorStop(0.35, `rgba(239,68,68,${a * 0.65})`);
     g.addColorStop(1, "rgba(239,68,68,0)");
     ctx.fillStyle = g;
-    ctx.fillRect(gx - w * 0.28, gy - h * 0.12, w * 0.56, h * 0.28);
-    // drifting smoke wisps
-    ctx.fillStyle = `rgba(248,113,113,${0.08 + a * 0.2})`;
-    for (let i = 0; i < 5; i++) {
-      const ox = Math.sin(m.realElapsed * 0.7 + i) * w * 0.04;
+    ctx.fillRect(gx - w * 0.32, gy - h * 0.14, w * 0.64, h * 0.32);
+    for (let i = 0; i < 7; i++) {
+      const ox = Math.sin(m.realElapsed * 0.85 + i * 1.1) * w * 0.05;
+      ctx.fillStyle = `rgba(248,113,113,${0.06 + a * 0.18})`;
       ctx.beginPath();
       ctx.ellipse(
-        gx + ox + (i - 2) * w * 0.03,
-        gy - h * 0.04 - i * h * 0.012,
-        w * 0.05,
-        h * 0.03,
+        gx + ox + (i - 3) * w * 0.028,
+        gy - h * 0.05 - i * h * 0.014,
+        w * 0.055,
+        h * 0.035,
         0,
         0,
         Math.PI * 2,
@@ -137,38 +142,38 @@ function drawStadiumAtmosphere(
       ctx.fill();
     }
   }
-  if (m.moodHeim > 0.35) {
+  {
     const hx = blockCenterX(HEIM_BLOCK) * w;
-    const hy = h * L.blockTop * 0.85;
-    const a = 0.12 + m.moodHeim * 0.14;
-    const g = ctx.createRadialGradient(hx, hy, 8, hx, hy, w * 0.22);
+    const hy = h * L.blockTop * 0.75;
+    const a = 0.14 + Math.min(0.4, m.moodHeim * 0.16);
+    const g = ctx.createRadialGradient(hx, hy, 6, hx, hy, w * 0.26);
     g.addColorStop(0, `rgba(96,165,250,${a})`);
     g.addColorStop(1, "rgba(96,165,250,0)");
     ctx.fillStyle = g;
-    ctx.fillRect(hx - w * 0.22, hy - h * 0.1, w * 0.44, h * 0.24);
+    ctx.fillRect(hx - w * 0.26, hy - h * 0.12, w * 0.52, h * 0.28);
   }
 
-  // open concourse / gang asphalt
+  // open concourse asphalt
   const floorY = h * gangY();
-  const floor = ctx.createLinearGradient(0, floorY - h * 0.03, 0, h);
-  floor.addColorStop(0, "#8b9199");
-  floor.addColorStop(0.2, "#6b7280");
-  floor.addColorStop(0.55, "#78716c");
-  floor.addColorStop(1, "#57534e");
+  const floor = ctx.createLinearGradient(0, floorY - h * 0.04, 0, h);
+  floor.addColorStop(0, "#9ca3af");
+  floor.addColorStop(0.15, "#6b7280");
+  floor.addColorStop(0.5, "#78716c");
+  floor.addColorStop(1, "#44403c");
   ctx.fillStyle = floor;
-  ctx.fillRect(0, floorY - h * 0.03, w, h - floorY + h * 0.03);
+  ctx.fillRect(0, floorY - h * 0.04, w, h - floorY + h * 0.04);
 
-  // asphalt grain + lane marks
-  ctx.fillStyle = "rgba(15,23,42,0.07)";
-  for (let i = 0; i < 22; i++) {
-    ctx.fillRect(0, floorY + (i / 22) * (h - floorY), w, 1);
+  ctx.fillStyle = "rgba(15,23,42,0.06)";
+  for (let i = 0; i < 28; i++) {
+    ctx.fillRect(0, floorY + (i / 28) * (h - floorY), w, 1);
   }
-  ctx.strokeStyle = "rgba(255,255,255,0.08)";
-  ctx.lineWidth = 1;
-  ctx.setLineDash([10, 14]);
+  // soft lane arrows on gang
+  ctx.strokeStyle = "rgba(255,255,255,0.1)";
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 12]);
   ctx.beginPath();
-  ctx.moveTo(w * L.blocksLeft, floorY + h * L.gangH * 0.5);
-  ctx.lineTo(w * L.blocksRight, floorY + h * L.gangH * 0.5);
+  ctx.moveTo(w * L.blocksLeft, floorY + h * L.gangH * 0.55);
+  ctx.lineTo(w * L.blocksRight, floorY + h * L.gangH * 0.55);
   ctx.stroke();
   ctx.setLineDash([]);
 }
@@ -182,92 +187,97 @@ function drawBlocks(
   const top = h * L.blockTop;
   const bh = h * L.blockBodyH;
   const bw = blockWidthNorm() * w;
+  const labels = ["Heim", "Neutral", "Neutral", "Gäste"];
 
   for (const b of BLOCK_META) {
     const cx = blockCenterX(b.id) * w;
     const left = cx - bw / 2;
     const owner = m.blockOwner[b.id];
     const base =
-      owner === "ksc" ? "#1d4ed8" : owner === "vfb" ? "#b91c1c" : "#64748b";
+      owner === "ksc" ? "#2563eb" : owner === "vfb" ? "#dc2626" : "#64748b";
     const deep =
-      owner === "ksc" ? "#1e3a8a" : owner === "vfb" ? "#7f1d1d" : "#475569";
+      owner === "ksc" ? "#1e3a8a" : owner === "vfb" ? "#7f1d1d" : "#334155";
+    const glow =
+      owner === "ksc"
+        ? "rgba(59,130,246,0.45)"
+        : owner === "vfb"
+          ? "rgba(248,113,113,0.45)"
+          : "rgba(148,163,184,0.25)";
 
-    // stand shell with depth lip
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    roundRect(ctx, left + 5, top + 8, bw, bh, 18);
+    // colored glow under platform
+    const g = ctx.createRadialGradient(cx, top + bh * 0.4, 10, cx, top + bh * 0.5, bw * 0.7);
+    g.addColorStop(0, glow);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(left - 8, top - 12, bw + 16, bh + 24);
+
+    // raised platform base (isometric lip)
+    ctx.fillStyle = "rgba(0,0,0,0.4)";
+    roundRect(ctx, left + 6, top + 10, bw, bh, 20);
     ctx.fill();
 
-    const shell = ctx.createLinearGradient(left, top, left + bw, top + bh);
+    const shell = ctx.createLinearGradient(left, top, left, top + bh);
     shell.addColorStop(0, base);
-    shell.addColorStop(0.4, deep);
-    shell.addColorStop(0.85, "#0f172a");
+    shell.addColorStop(0.35, deep);
+    shell.addColorStop(0.75, "#0f172a");
     shell.addColorStop(1, "#020617");
     ctx.fillStyle = shell;
-    roundRect(ctx, left, top, bw, bh, 18);
+    roundRect(ctx, left, top, bw, bh, 20);
     ctx.fill();
 
-    // bright rim / canopy edge
-    ctx.strokeStyle = "rgba(255,255,255,0.22)";
-    ctx.lineWidth = 2;
-    roundRect(ctx, left + 1.5, top + 1.5, bw - 3, bh - 3, 16);
+    ctx.strokeStyle = "rgba(255,255,255,0.28)";
+    ctx.lineWidth = 2.5;
+    roundRect(ctx, left + 2, top + 2, bw - 4, bh - 4, 18);
     ctx.stroke();
 
     // terrace steps
     ctx.save();
-    roundRect(ctx, left, top, bw, bh, 18);
+    roundRect(ctx, left, top, bw, bh, 20);
     ctx.clip();
-    for (let row = 0; row < 6; row++) {
-      const ry = top + bh * 0.16 + row * (bh * 0.13);
-      ctx.fillStyle = row % 2 === 0 ? "rgba(255,255,255,0.18)" : "rgba(15,23,42,0.28)";
-      ctx.fillRect(left + 8, ry, bw - 16, bh * 0.1);
-      ctx.strokeStyle = "rgba(255,255,255,0.12)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(left + 10, ry + bh * 0.1);
-      ctx.lineTo(left + bw - 10, ry + bh * 0.1);
-      ctx.stroke();
+    for (let row = 0; row < 5; row++) {
+      const ry = top + bh * 0.2 + row * (bh * 0.14);
+      ctx.fillStyle = row % 2 === 0 ? "rgba(255,255,255,0.14)" : "rgba(15,23,42,0.3)";
+      ctx.fillRect(left + 10, ry, bw - 20, bh * 0.11);
     }
-    // top canopy
-    const canopy = ctx.createLinearGradient(left, top, left, top + bh * 0.14);
-    canopy.addColorStop(0, "rgba(15,23,42,0.55)");
-    canopy.addColorStop(1, "rgba(15,23,42,0.05)");
+    const canopy = ctx.createLinearGradient(left, top, left, top + bh * 0.18);
+    canopy.addColorStop(0, "rgba(15,23,42,0.65)");
+    canopy.addColorStop(1, "rgba(15,23,42,0)");
     ctx.fillStyle = canopy;
-    ctx.fillRect(left, top, bw, bh * 0.14);
+    ctx.fillRect(left, top, bw, bh * 0.18);
     ctx.restore();
 
-    // badge
-    ctx.fillStyle = "rgba(255,255,255,0.94)";
-    roundRect(ctx, cx - bw * 0.32, top + 6, bw * 0.64, Math.max(18, h * 0.028), 10);
+    // label chip
+    const label = labels[b.id] ?? "Block";
+    const chipW = Math.max(54, bw * 0.55);
+    const chipH = Math.max(18, h * 0.026);
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    roundRect(ctx, cx - chipW / 2, top + 6, chipW, chipH, 9);
     ctx.fill();
     if (owner === "ksc" || owner === "vfb") {
-      drawClubCrest(ctx, cx - bw * 0.18, top + 15, Math.max(10, h * 0.016), owner);
-      ctx.fillStyle = "#0f172a";
-      ctx.font = `800 ${Math.floor(h * 0.015)}px Outfit, Manrope, sans-serif`;
-      ctx.textAlign = "left";
-      ctx.fillText(owner === "ksc" ? "KSC" : "VfB", cx - bw * 0.08, top + 19);
-    } else {
-      ctx.fillStyle = "#64748b";
-      ctx.font = `700 ${Math.floor(h * 0.013)}px Manrope, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.fillText("NEUTRAL", cx, top + 19);
+      drawClubCrest(ctx, cx - chipW * 0.28, top + 6 + chipH / 2, chipH * 0.38, owner);
     }
+    ctx.fillStyle = "#0f172a";
+    ctx.font = `800 ${Math.floor(chipH * 0.55)}px Outfit, Manrope, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, cx + (owner === "ksc" || owner === "vfb" ? 6 : 0), top + 6 + chipH / 2 + 0.5);
+    ctx.textBaseline = "alphabetic";
 
-    // exit tunnel into open gang
+    // exit tunnel
     const d = doorPos(b.id);
     const doorW = bw * L.doorFrac;
     const corridorTop = d.y * h;
-    const corridorH = Math.max(8, h * gangY() - corridorTop + 4);
+    const corridorH = Math.max(10, h * gangY() - corridorTop + 6);
     const dx = d.x * w - doorW / 2;
     const tunnel = ctx.createLinearGradient(dx, corridorTop, dx, corridorTop + corridorH);
-    tunnel.addColorStop(0, "#1f2937");
-    tunnel.addColorStop(1, "#111827");
+    tunnel.addColorStop(0, "#111827");
+    tunnel.addColorStop(1, "#020617");
     ctx.fillStyle = tunnel;
-    roundRect(ctx, dx, corridorTop - 2, doorW, corridorH + 2, 6);
+    roundRect(ctx, dx, corridorTop - 2, doorW, corridorH + 4, 8);
     ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.25)";
-    ctx.lineWidth = 1.5;
-    roundRect(ctx, dx + 1, corridorTop, doorW - 2, Math.min(corridorH, h * 0.04), 5);
-    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.12)";
+    roundRect(ctx, dx + 3, corridorTop + 2, doorW - 6, Math.min(corridorH * 0.35, h * 0.03), 5);
+    ctx.fill();
   }
 }
 
@@ -288,38 +298,23 @@ function drawSeats(
       // "+" on free seats in blocks the player controls (Heim or captured)
       const buyable = !occ && m.canBuyInBlock(b.id);
 
+      // subtle seat pad — icons carry the look
       let cushion = buyable
-        ? "rgba(220,252,231,0.95)"
+        ? "rgba(34,197,94,0.35)"
         : occ
-          ? "rgba(0,0,0,0.2)"
-          : "rgba(0,0,0,0.28)";
-      if (occ && (b.id === 1 || b.id === 2)) {
-        if (occ.team === "ksc") cushion = "rgba(37,99,235,0.45)";
-        else if (occ.team === "vfb") cushion = "rgba(220,38,38,0.45)";
-        else {
-          const lean = occ.lean || 0;
-          const prog = occ.captureProg || 0;
-          const t = Math.max(Math.abs(lean), Math.abs(prog));
-          if (t > 0.15) {
-            cushion =
-              lean > 0 || prog > 0
-                ? `rgba(37,99,235,${0.12 + t * 0.4})`
-                : `rgba(220,38,38,${0.12 + t * 0.4})`;
-          } else cushion = "rgba(120,120,128,0.35)";
-        }
-      } else if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.35)";
-      else if (occ?.team === "vfb") cushion = "rgba(220,38,38,0.35)";
+          ? "rgba(0,0,0,0.12)"
+          : "rgba(0,0,0,0.18)";
+      if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.22)";
+      else if (occ?.team === "vfb") cushion = "rgba(220,38,38,0.22)";
 
       ctx.fillStyle = cushion;
-      roundRect(ctx, x - 12, y - 6, 24, 14, 3);
+      roundRect(ctx, x - 10, y - 4, 20, 10, 3);
       ctx.fill();
-      ctx.strokeStyle = sel
-        ? "#6bcb77"
-        : buyable
-          ? "rgba(107,203,119,0.75)"
-          : "rgba(255,255,255,0.14)";
-      ctx.lineWidth = sel || buyable ? 2 : 1;
-      ctx.stroke();
+      if (buyable || sel) {
+        ctx.strokeStyle = sel ? "#6bcb77" : "rgba(107,203,119,0.65)";
+        ctx.lineWidth = sel ? 2 : 1.5;
+        ctx.stroke();
+      }
 
       // Capture ring on converting neutrals
       if (occ?.team === "neutral" && Math.abs(occ.captureProg) > 0.08) {
@@ -432,6 +427,19 @@ function drawSlots(
   }
 }
 
+function plotPennantTeam(
+  m: Match,
+  s: BuildSlot,
+): "ksc" | "vfb" | null {
+  if (s.building && !s.greyNeutral && (s.owner === "ksc" || s.owner === "vfb")) {
+    return s.owner;
+  }
+  // Territorial lean: left half of grid → Heim team, right → Gast
+  const flat = slotFlatIndex(s.blockId, s.index);
+  const leftish = flat % L.plotCols < L.plotCols / 2;
+  return leftish ? m.playerTeam : m.aiTeam;
+}
+
 function drawTerritoryPennants(
   ctx: CanvasRenderingContext2D,
   m: Match,
@@ -439,21 +447,69 @@ function drawTerritoryPennants(
   h: number,
 ): void {
   for (const s of m.slots) {
-    if (!s.building || s.greyNeutral) continue;
-    if (s.owner !== "ksc" && s.owner !== "vfb") continue;
-    const r = boothRect(s.blockId, s.index);
-    const src = s.owner === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
-    const pw = Math.min(r.w * w * 0.42, h * 0.07);
+    const team = plotPennantTeam(m, s);
+    if (!team) continue;
+    const p = pennantPos(s.blockId, s.index);
+    const src = team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
+    const pw = Math.min(w * 0.055, h * 0.065);
     const ph = pw * 1.15;
-    drawIcon(
-      ctx,
-      src,
-      r.x * w + r.w * w * 0.02,
-      r.y * h - ph * 0.15,
-      pw,
-      ph,
-      0.02,
-    );
+    const bob = Math.sin(m.realElapsed * 3.2 + s.blockId + s.index) * 2;
+    drawIcon(ctx, src, p.x * w - pw * 0.15, p.y * h - ph * 0.35 + bob, pw, ph, 0.02);
+  }
+}
+
+/** Mockup-style umzäuntes Rechteck (Holz) — nicht nur isometrische Raute */
+function drawWoodPlot(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  bw: number,
+  bh: number,
+  sel: boolean,
+): void {
+  const r = Math.min(10, Math.min(bw, bh) * 0.12);
+  // floor
+  ctx.fillStyle = "#5c6370";
+  roundRect(ctx, x + 3, y + 3, bw - 6, bh - 6, r);
+  ctx.fill();
+  const floor = ctx.createLinearGradient(x, y, x, y + bh);
+  floor.addColorStop(0, "#8b929c");
+  floor.addColorStop(1, "#57534e");
+  ctx.fillStyle = floor;
+  roundRect(ctx, x + 5, y + 5, bw - 10, bh - 10, r - 2);
+  ctx.fill();
+
+  // wooden fence posts + rails
+  const post = "#8b5a2b";
+  const rail = "#a16207";
+  ctx.strokeStyle = rail;
+  ctx.lineWidth = Math.max(2.5, Math.min(bw, bh) * 0.045);
+  ctx.strokeRect(x + 6, y + 6, bw - 12, bh - 12);
+  ctx.fillStyle = post;
+  const ps = Math.max(4, Math.min(bw, bh) * 0.07);
+  for (const [px, py] of [
+    [x + 4, y + 4],
+    [x + bw - 4 - ps, y + 4],
+    [x + 4, y + bh - 4 - ps],
+    [x + bw - 4 - ps, y + bh - 4 - ps],
+  ] as const) {
+    roundRect(ctx, px, py, ps, ps * 1.35, 2);
+    ctx.fill();
+  }
+
+  // +
+  ctx.fillStyle = sel ? "#22c55e" : "rgba(255,255,255,0.85)";
+  ctx.font = `800 ${Math.max(16, Math.floor(bh * 0.32))}px Outfit, Manrope, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("+", x + bw / 2, y + bh / 2);
+  ctx.textBaseline = "alphabetic";
+
+  if (sel) {
+    ctx.strokeStyle = "#22c55e";
+    ctx.lineWidth = 3;
+    roundRect(ctx, x + 1, y + 1, bw - 2, bh - 2, r);
+    ctx.stroke();
   }
 }
 
@@ -470,40 +526,35 @@ function drawBuilding(
   const grey = !!(s.owner === "neutral" || s.greyNeutral);
   const player = s.owner === m.playerTeam;
   const ai = s.owner === m.aiTeam;
-  const r = Math.min(8, Math.min(bw, bh) * 0.12);
+  const r = Math.min(10, Math.min(bw, bh) * 0.12);
   const convT = Math.min(1, s.convertAcc / STAND_CONVERT_SEC);
   const cx = x + bw / 2;
 
   if (!s.building) {
-    const drew = drawIcon(ctx, UI_ICONS.slotEmpty, x, y, bw, bh, 0.02);
-    if (!drew) {
-      ctx.fillStyle = "rgba(255,255,255,0.82)";
-      roundRect(ctx, x, y, bw, bh, r);
-      ctx.fill();
-      ctx.fillStyle = sel ? "#16a34a" : "#64748b";
-      ctx.font = `800 ${Math.max(16, Math.floor(bh * 0.36))}px Outfit, Manrope, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("+", x + bw / 2, y + bh / 2 + 1);
-      ctx.textBaseline = "alphabetic";
-    }
-    if (sel) {
-      ctx.strokeStyle = "#16a34a";
-      ctx.lineWidth = 2.5;
-      roundRect(ctx, x + 1, y + 1, bw - 2, bh - 2, r);
-      ctx.stroke();
-    }
+    drawWoodPlot(ctx, x, y, bw, bh, sel);
     return;
   }
+
+  // plot pad under building
+  ctx.fillStyle = "rgba(15,23,42,0.25)";
+  roundRect(ctx, x + 4, y + bh * 0.55, bw - 8, bh * 0.38, r);
+  ctx.fill();
 
   const color = teamColor(
     grey && !(s.convertBy && convT > 0.35) ? "neutral" : s.owner,
   );
   const lv = Math.max(1, Math.min(5, s.level || 1));
   const iconSrc = standIconPath(s.building, color, lv);
-  const drew = drawIcon(ctx, iconSrc, x, y, bw, bh, 0.02);
+  // soft contact shadow
+  ctx.fillStyle = "rgba(15,23,42,0.35)";
+  ctx.beginPath();
+  ctx.ellipse(cx, y + bh * 0.88, bw * 0.32, bh * 0.08, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const iconH = bh * 0.95;
+  const iconY = y + bh * 0.02 + Math.sin(m.realElapsed * 1.6 + s.index) * 1.5;
+  const drew = drawIcon(ctx, iconSrc, x, iconY, bw, iconH, 0.04);
   if (!drew) {
-    // fallback soft card
     ctx.fillStyle = grey ? "#e2e8f0" : player ? "#eff6ff" : ai ? "#fef2f2" : "#f8fafc";
     roundRect(ctx, x, y, bw, bh, r);
     ctx.fill();
@@ -525,23 +576,23 @@ function drawBuilding(
     const pct = Math.min(1, s.convertAcc / STAND_CONVERT_SEC);
     const left = Math.max(0, STAND_CONVERT_SEC - s.convertAcc);
     const col = s.convertBy === "ksc" ? "#3b82f6" : "#ef4444";
-    const rr = Math.min(bw, bh) * 0.18;
+    const rr = Math.min(bw, bh) * 0.16;
     ctx.save();
     ctx.strokeStyle = "rgba(0,0,0,0.45)";
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.arc(cx, y + bh * 0.18, rr, 0, Math.PI * 2);
+    ctx.arc(cx, y + bh * 0.14, rr, 0, Math.PI * 2);
     ctx.stroke();
     ctx.strokeStyle = col;
     ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.arc(cx, y + bh * 0.18, rr, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
+    ctx.arc(cx, y + bh * 0.14, rr, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
     ctx.stroke();
-    ctx.fillStyle = col;
+    ctx.fillStyle = "#fff";
     ctx.font = `700 ${Math.max(9, Math.floor(rr * 0.7))}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(`${Math.ceil(left)}`, cx, y + bh * 0.18 + 1);
+    ctx.fillText(`${Math.ceil(left)}`, cx, y + bh * 0.14 + 1);
     ctx.textBaseline = "alphabetic";
     ctx.restore();
   }
@@ -555,24 +606,21 @@ function drawBuilding(
     ctx.fillRect(x + 5, y + bh - 8, barW * pct, 4);
   }
 
+  // level pips
   if (!grey || (s.convertBy && convT > 0.5)) {
     const pipW = Math.min(7, (bw - 12) / 5 - 1);
     for (let i = 0; i < 5; i++) {
-      ctx.fillStyle = i < lv ? "#fde68a" : "rgba(0,0,0,0.4)";
-      ctx.fillRect(x + 5 + i * (pipW + 2), y + 4, pipW, 4);
+      ctx.fillStyle = i < lv ? "#fde68a" : "rgba(0,0,0,0.45)";
+      ctx.fillRect(x + 5 + i * (pipW + 2), y + 3, pipW, 4);
     }
   }
 
-  ctx.strokeStyle = sel
-    ? "#16a34a"
-    : player
-      ? "rgba(37,99,235,0.45)"
-      : ai
-        ? "rgba(220,38,38,0.4)"
-        : "rgba(100,116,139,0.35)";
-  ctx.lineWidth = sel ? 2.5 : 1.5;
-  roundRect(ctx, x + 0.5, y + 0.5, bw - 1, bh - 1, r);
-  ctx.stroke();
+  if (sel) {
+    ctx.strokeStyle = "#22c55e";
+    ctx.lineWidth = 3;
+    roundRect(ctx, x + 1, y + 1, bw - 2, bh - 2, r);
+    ctx.stroke();
+  }
 
   if (s.building === "bier" && !grey) {
     ctx.fillStyle = "rgba(0,0,0,0.45)";
@@ -692,72 +740,71 @@ function drawMannchen(
     drawSteward(ctx, m, f, x, y, h);
     return;
   }
-  const onGang = f.state === "gang" || f.invading;
-  const base = Math.max(0.9, h * (onGang ? 0.042 : 0.032) / 10);
-  const scale =
-    f.kind === "ultras" ? base * 1.25 : f.kind === "hooligans" ? base * 1.1 : base;
-  const s = 10 * scale;
-  const size = s * 2.85;
+  const onGang = f.state === "gang" || f.invading || f.state === "moving";
+  const fighting = f.state === "gang" && f.hp < f.maxHp * 0.95;
+  const cheering =
+    !onGang &&
+    (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) > 0.7;
+  const sizeMul =
+    f.kind === "ultras" ? 1.2 : f.kind === "hooligans" ? 1.1 : 1;
+  const size = Math.max(22, h * (onGang ? 0.078 : 0.062) * sizeMul);
   const color = teamColor(f.team);
   const lv = unitVisualLevel(m, f.team);
   const src = unitIconPath(f.kind, color, lv);
-  const bob = Math.sin(m.realElapsed * 5.2 + f.id * 0.85) * s * 0.12;
-  const sway = Math.sin(m.realElapsed * 2.4 + f.id) * 0.04;
-
-  ctx.save();
-  ctx.translate(x, y + bob);
-  ctx.rotate(sway);
-
-  // shadow
-  ctx.fillStyle = "rgba(0,0,0,0.28)";
-  ctx.beginPath();
-  ctx.ellipse(0, s * 1.15 - bob * 0.3, s * 0.7, s * 0.2, 0, 0, Math.PI * 2);
-  ctx.fill();
+  const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
+  const facing = f.team === "vfb" ? -1 : 1;
+  const mode = fighting
+    ? "fight"
+    : onGang
+      ? "walk"
+      : cheering
+        ? "cheer"
+        : "idle";
 
   if (Math.abs(f.captureProg) > 0.12 && f.team === "neutral") {
     ctx.strokeStyle =
       f.captureProg > 0
         ? `rgba(59,130,246,${0.35 + Math.abs(f.captureProg) * 0.55})`
         : `rgba(239,68,68,${0.35 + Math.abs(f.captureProg) * 0.55})`;
-    ctx.lineWidth = Math.max(2, s * 0.1);
+    ctx.lineWidth = Math.max(2, size * 0.04);
     ctx.beginPath();
     ctx.arc(
-      0,
-      -s * 0.15,
-      s * 1.15,
+      x,
+      y - size * 0.35,
+      size * 0.55,
       -Math.PI / 2,
       -Math.PI / 2 + Math.abs(f.captureProg) * Math.PI * 2,
     );
     ctx.stroke();
   }
 
-  const drew = drawIcon(ctx, src, -size / 2, -size * 0.85, size, size, 0.02);
+  const drew = drawToyIcon(ctx, src, x, y, size, {
+    t: m.realElapsed,
+    phase,
+    mode,
+    facing,
+    hop: onGang ? 1 : 0,
+  });
   if (!drew) {
+    const s = size / 2.85;
     const jersey = teamJersey(f);
     const skin = f.team === "neutral" ? "#c4c4c4" : "#e8c4a0";
+    ctx.save();
+    ctx.translate(x, y);
     if (f.kind === "ultras") drawUltra(ctx, f, s, jersey, skin, onGang, m.realElapsed);
     else if (f.kind === "hooligans") drawHooligan(ctx, f, s, jersey, skin);
     else drawNormalo(ctx, f, s, jersey, skin, m.realElapsed);
+    ctx.restore();
   }
 
-  if ((onGang || f.invading) && f.hp < f.maxHp - 0.5) {
-    const bw = s * 1.6;
+  if (onGang || f.invading) {
+    const bw = size * 0.7;
     const pct = Math.max(0, Math.min(1, f.hp / f.maxHp));
     ctx.fillStyle = "rgba(15,23,42,0.55)";
-    ctx.fillRect(-bw / 2, -s * 1.55, bw, 3.5);
+    ctx.fillRect(x - bw / 2, y + size * 0.12, bw, 3.5);
     ctx.fillStyle = pct > 0.45 ? "#22c55e" : pct > 0.2 ? "#f59e0b" : "#ef4444";
-    ctx.fillRect(-bw / 2, -s * 1.55, bw * pct, 3.5);
+    ctx.fillRect(x - bw / 2, y + size * 0.12, bw * pct, 3.5);
   }
-
-  ctx.restore();
-
-  const bw = s * 2.2;
-  const bx = x - bw / 2;
-  const by = y + s * 1.35;
-  ctx.fillStyle = "rgba(0,0,0,0.5)";
-  ctx.fillRect(bx, by, bw, 3);
-  ctx.fillStyle = f.hp / f.maxHp > 0.35 ? "#6bcb77" : "#f87171";
-  ctx.fillRect(bx, by, bw * Math.max(0, f.hp / f.maxHp), 3);
 }
 
 function drawUltra(
@@ -1044,26 +1091,30 @@ function drawSteward(
   const s = 10 * Math.max(1, h * 0.028 / 10);
   const neutral = f.team === "neutral";
   const hpCol = neutral ? "#a8a29e" : "#facc15";
-  const size = s * 2.7;
+  const size = Math.max(24, h * 0.07);
   const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(m, f.team));
+  const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
+  const onGang = f.state === "gang" || f.state === "moving";
+
+  if (
+    drawToyIcon(ctx, src, x, y, size, {
+      t: m.realElapsed,
+      phase,
+      mode: onGang ? "walk" : "idle",
+      facing: f.patrolDir < 0 ? -1 : 1,
+      hop: onGang ? 0.85 : 0,
+    })
+  ) {
+    const bw = size * 0.7;
+    ctx.fillStyle = "rgba(0,0,0,0.5)";
+    ctx.fillRect(x - bw / 2, y + size * 0.12, bw, 3);
+    ctx.fillStyle = hpCol;
+    ctx.fillRect(x - bw / 2, y + size * 0.12, bw * Math.max(0, f.hp / f.maxHp), 3);
+    return;
+  }
 
   ctx.save();
   ctx.translate(x, y);
-
-  ctx.fillStyle = "rgba(0,0,0,0.28)";
-  ctx.beginPath();
-  ctx.ellipse(0, s * 1.15, s * 0.7, s * 0.2, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  if (drawIcon(ctx, src, -size / 2, -size * 0.85, size, size, 0.02)) {
-    ctx.restore();
-    const bw = s * 2.2;
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(x - bw / 2, y + s * 1.25, bw, 3);
-    ctx.fillStyle = hpCol;
-    ctx.fillRect(x - bw / 2, y + s * 1.25, bw * Math.max(0, f.hp / f.maxHp), 3);
-    return;
-  }
 
   const skin = neutral ? "#c4c4c4" : "#e8c4a0";
   const vest = neutral ? "#9ca3af" : "#facc15";

@@ -123,3 +123,87 @@ export function drawIcon(
   ctx.drawImage(img, dx, dy, dw, dh);
   return true;
 }
+
+export type ToyAnim = {
+  /** seconds */
+  t: number;
+  /** per-unit phase offset */
+  phase?: number;
+  /** idle | walk | cheer | fight */
+  mode?: "idle" | "walk" | "cheer" | "fight";
+  /** face left (-1) or right (1) */
+  facing?: number;
+  /** 0..1 hop intensity */
+  hop?: number;
+};
+
+/**
+ * Fake-3D toy billboard from a freigestelltes Lv1–5 PNG:
+ * ground shadow, bob/squash, sway, walk hop, cheer pulse.
+ */
+export function drawToyIcon(
+  ctx: CanvasRenderingContext2D,
+  src: string,
+  x: number,
+  y: number,
+  size: number,
+  anim: ToyAnim = { t: 0 },
+): boolean {
+  const img = getIcon(src);
+  if (!img) return false;
+  const t = anim.t;
+  const ph = anim.phase ?? 0;
+  const mode = anim.mode ?? "idle";
+  const facing = anim.facing ?? 1;
+  const hop = anim.hop ?? (mode === "walk" ? 1 : 0);
+
+  const idleBob = Math.sin(t * 5.4 + ph) * size * 0.045;
+  const cheerBob = Math.sin(t * 10.5 + ph) * size * 0.09;
+  const walkBob = Math.abs(Math.sin(t * 9.2 + ph)) * size * 0.14 * hop;
+  const bob =
+    mode === "cheer" ? cheerBob : mode === "walk" || mode === "fight" ? -walkBob : idleBob;
+
+  const squashY =
+    mode === "walk" || mode === "fight"
+      ? 1 - Math.abs(Math.sin(t * 9.2 + ph)) * 0.08 * hop
+      : mode === "cheer"
+        ? 1 + Math.sin(t * 10.5 + ph) * 0.05
+        : 1 + Math.sin(t * 5.4 + ph) * 0.02;
+  const squashX = 2 - squashY;
+  const sway =
+    mode === "cheer"
+      ? Math.sin(t * 6.2 + ph) * 0.12
+      : mode === "walk"
+        ? Math.sin(t * 9.2 + ph) * 0.08 * hop
+        : Math.sin(t * 2.3 + ph) * 0.035;
+  const shear = mode === "walk" ? Math.sin(t * 9.2 + ph) * 0.12 * hop * facing : 0;
+
+  // soft ground shadow (fake contact)
+  const shW = size * 0.42 * squashX;
+  const shH = size * 0.12;
+  ctx.save();
+  ctx.fillStyle = "rgba(15,23,42,0.32)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + size * 0.08, shW, shH, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  const dw = size * squashX;
+  const dh = size * squashY;
+  ctx.save();
+  ctx.translate(x, y + bob);
+  ctx.transform(facing, 0, shear, 1, 0, 0);
+  ctx.rotate(sway);
+  // slight perspective foreshorten (toy tilt)
+  ctx.transform(1, 0, 0, 0.96, 0, 0);
+  ctx.drawImage(img, -dw / 2, -dh * 0.92, dw, dh);
+
+  // rim light for “toy plastic” pop
+  if (mode === "cheer" || mode === "fight") {
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = mode === "cheer" ? 0.12 : 0.08;
+    ctx.drawImage(img, -dw / 2, -dh * 0.92, dw, dh);
+  }
+  ctx.restore();
+  return true;
+}
