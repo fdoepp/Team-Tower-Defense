@@ -12,8 +12,8 @@ Zielrichtung: **Matchday Comic** (Stadion-Flair) + Toy-/Chibi-Figuren, Spielsyst
 | Hintergrund | Flutlicht-Stadion, blau \| grau \| rot, Pyro/Stimmung sichtbar |
 | Links | Command-Rail volle Höhe: Fans/Ultras/Hooligans **SEND + HIRE**; Ordner nur **HIRE** → Wachpatrouille |
 | Mitte | Blöcke Heim/Neutral/Gäste (freie Menge); klare Ausgänge → Gang |
-| Gang | Offener unterer Straßenbereich (~12 Buden-Positionen). Gebaute Buden stehen frei am Gang; leere Slots mit flachem **Bauzaun** + `+`. Figuren nur in Blöcken oder laufend (Block ↔ Stand ↔ Kampf), nicht in einer Icon-Leiste. |
-| Rechts | **Baumenü-Popup** nur Gebäude (Bierstand / Fanshop / Ordnerposten) inkl. Gold-Kosten — **keine Figuren** |
+| Gang | Offener Straßenbereich; **~12 gleichmäßige Bau-Plots** (oft 2×6) als **umzäunte Rechtecke** mit `+`. Gebaute Buden stehen *in* diesen Plots; KSC/VfB-Wimpel markieren Besitz/Front. Figuren nur Block oder laufend auf dem Gang. |
+| Rechts | **BAUEN**-Panel optisch wie linke Command-Rail (Holz, Header, Karten, Button-Paar), Inhalt nur Gebäude + Gold-Kosten — **keine Figuren** |
 
 ## Icons (Lv1–Lv5)
 
