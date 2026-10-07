@@ -4,7 +4,7 @@ Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fu�
 
 ## Spielen (Handy-Link)
 
-**Live:** https://attendance-investments-clear-systems.trycloudflare.com  
+**Live:** https://voltage-cruises-front-beatles.trycloudflare.com  
 
 ### Vollbild (wichtig)
 
