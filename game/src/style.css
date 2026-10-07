@@ -178,19 +178,24 @@ select {
   height: 100%;
 }
 
-/* Matchday Comic: left people rail | stadium | right build rail */
+/* Matchday Comic: left people rail | stadium; build rail pops on demand */
 .match-shell.matchday {
   flex: 1;
   min-height: 0;
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: minmax(148px, 18%) 1fr minmax(148px, 18%);
+  grid-template-columns: minmax(148px, 18%) 1fr;
   grid-template-rows: 1fr;
   gap: 0;
   position: relative;
   background: #1a1410;
   align-items: stretch;
+  overflow: hidden;
+}
+
+.match-shell.matchday.build-open {
+  grid-template-columns: minmax(148px, 18%) 1fr minmax(168px, 20%);
 }
 
 .match-shell.matchday .side-rail {
@@ -220,9 +225,46 @@ select {
   border-right-width: 4px;
 }
 
-.match-shell.matchday .right-rail {
+.match-shell.matchday .right-rail,
+.match-shell.matchday .build-rail {
   padding-right: max(10px, env(safe-area-inset-right));
   border-left-width: 4px;
+}
+
+.match-shell.matchday .build-rail {
+  position: relative;
+  z-index: 8;
+  min-width: 0;
+  animation: build-rail-in 0.22s ease-out;
+}
+
+.match-shell.matchday .build-rail[hidden] {
+  display: none !important;
+}
+
+@keyframes build-rail-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.match-shell.matchday .rail-close {
+  margin-top: auto;
+  border: 2px solid #7a4a22;
+  border-radius: 12px;
+  padding: 8px 10px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 0.75rem;
+  color: #3b2412;
+  background: linear-gradient(180deg, #fffaf0, #e8d0a8);
+  box-shadow: 0 2px 0 rgba(60, 30, 10, 0.35);
+  cursor: pointer;
 }
 
 .rail-head {
@@ -470,7 +512,10 @@ select {
 
 @media (max-width: 900px) {
   .match-shell.matchday {
-    grid-template-columns: minmax(118px, 22%) 1fr minmax(118px, 22%);
+    grid-template-columns: minmax(118px, 22%) 1fr;
+  }
+  .match-shell.matchday.build-open {
+    grid-template-columns: minmax(110px, 20%) 1fr minmax(130px, 24%);
   }
   .match-shell.matchday .ur-row .ur-icon,
   .match-shell.matchday .ur-icon { width: 40px; height: 40px; }
@@ -1310,8 +1355,11 @@ select {
   }
   .match-shell.matchday {
     display: grid !important;
-    grid-template-columns: minmax(148px, 18%) 1fr minmax(148px, 18%);
+    grid-template-columns: minmax(148px, 18%) 1fr;
     pointer-events: auto;
+  }
+  .match-shell.matchday.build-open {
+    grid-template-columns: minmax(148px, 18%) 1fr minmax(160px, 20%);
   }
 }
 

@@ -187,21 +187,39 @@ function drawBlocks(
   const top = h * L.blockTop;
   const bh = h * L.blockBodyH;
   const bw = blockWidthNorm() * w;
-  const labels = ["Heim", "Neutral", "Neutral", "Gäste"];
+  const labels = ["Heim", "Neutral", "Gäste"];
 
   for (const b of BLOCK_META) {
     const cx = blockCenterX(b.id) * w;
     const left = cx - bw / 2;
     const owner = m.blockOwner[b.id];
-    const base =
+    // Gradual tint from people in the block (capture pressure)
+    let blue = 0;
+    let red = 0;
+    for (const f of m.fans) {
+      if (f.hp <= 0 || f.isSteward) continue;
+      if (f.blockId !== b.id) continue;
+      if (f.state !== "block" && f.state !== "stand") continue;
+      if (f.team === "ksc") blue++;
+      else if (f.team === "vfb") red++;
+    }
+    const crowd = blue + red;
+    const lean = crowd > 0 ? (blue - red) / crowd : 0; // +heim blue, -gast red
+    const pressure = Math.min(1, crowd / 8) * Math.abs(lean);
+
+    let base =
       owner === "ksc" ? "#2563eb" : owner === "vfb" ? "#dc2626" : "#64748b";
-    const deep =
+    let deep =
       owner === "ksc" ? "#1e3a8a" : owner === "vfb" ? "#7f1d1d" : "#334155";
+    if (owner === "neutral" && pressure > 0.08) {
+      base = lean > 0 ? lerpHex("#64748b", "#2563eb", pressure) : lerpHex("#64748b", "#dc2626", pressure);
+      deep = lean > 0 ? lerpHex("#334155", "#1e3a8a", pressure) : lerpHex("#334155", "#7f1d1d", pressure);
+    }
     const glow =
-      owner === "ksc"
-        ? "rgba(59,130,246,0.45)"
-        : owner === "vfb"
-          ? "rgba(248,113,113,0.45)"
+      owner === "ksc" || (owner === "neutral" && lean > 0.15)
+        ? `rgba(59,130,246,${0.25 + pressure * 0.35})`
+        : owner === "vfb" || (owner === "neutral" && lean < -0.15)
+          ? `rgba(248,113,113,${0.25 + pressure * 0.35})`
           : "rgba(148,163,184,0.25)";
 
     // colored glow under platform
@@ -434,9 +452,9 @@ function plotPennantTeam(
   if (s.building && !s.greyNeutral && (s.owner === "ksc" || s.owner === "vfb")) {
     return s.owner;
   }
-  // Territorial lean: left half of grid → Heim team, right → Gast
+  // Territorial lean: left plots → Heim team, right → Gast
   const flat = slotFlatIndex(s.blockId, s.index);
-  const leftish = flat % L.plotCols < L.plotCols / 2;
+  const leftish = flat < 6;
   return leftish ? m.playerTeam : m.aiTeam;
 }
 
@@ -728,6 +746,16 @@ function unitVisualLevel(m: Match, team: FanUnit["team"]): number {
   return Math.max(1, Math.min(5, maxLv));
 }
 
+function fanFacing(f: FanUnit): number {
+  if (f.path.length > f.pathI) {
+    const t = f.path[f.pathI]!;
+    if (Math.abs(t.x - f.x) > 0.002) return t.x >= f.x ? 1 : -1;
+  }
+  if (f.team === "vfb") return -1;
+  if (f.team === "ksc") return 1;
+  return f.patrolDir < 0 ? -1 : 1;
+}
+
 function drawMannchen(
   ctx: CanvasRenderingContext2D,
   m: Match,
@@ -740,26 +768,33 @@ function drawMannchen(
     drawSteward(ctx, m, f, x, y, h);
     return;
   }
-  const onGang = f.state === "gang" || f.invading || f.state === "moving";
-  const fighting = f.state === "gang" && f.hp < f.maxHp * 0.95;
+  const onGang = f.state === "gang" || f.invading;
+  const exiting =
+    f.state === "moving" && f.y < gangY() + L.gangH * 0.22;
+  const moving = f.state === "moving" || onGang;
+  const fighting =
+    (onGang || f.invading) && (f.armSwing > 0.15 || f.attackCd > 0.05);
   const cheering =
-    !onGang &&
-    (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) > 0.7;
+    !moving &&
+    (f.cheerT > 0 ||
+      (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) > 0.7);
   const sizeMul =
-    f.kind === "ultras" ? 1.2 : f.kind === "hooligans" ? 1.1 : 1;
-  const size = Math.max(22, h * (onGang ? 0.078 : 0.062) * sizeMul);
+    f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
+  const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
   const color = teamColor(f.team);
   const lv = unitVisualLevel(m, f.team);
   const src = unitIconPath(f.kind, color, lv);
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
-  const facing = f.team === "vfb" ? -1 : 1;
+  const facing = fanFacing(f);
   const mode = fighting
     ? "fight"
-    : onGang
-      ? "walk"
-      : cheering
-        ? "cheer"
-        : "idle";
+    : exiting
+      ? "exit"
+      : moving
+        ? "walk"
+        : cheering
+          ? "cheer"
+          : "idle";
 
   if (Math.abs(f.captureProg) > 0.12 && f.team === "neutral") {
     ctx.strokeStyle =
@@ -783,7 +818,8 @@ function drawMannchen(
     phase,
     mode,
     facing,
-    hop: onGang ? 1 : 0,
+    hop: moving ? 1 : 0,
+    strike: Math.max(f.armSwing, fighting ? 0.35 : 0),
   });
   if (!drew) {
     const s = size / 2.85;
@@ -797,7 +833,7 @@ function drawMannchen(
     ctx.restore();
   }
 
-  if (onGang || f.invading) {
+  if (onGang || f.invading || f.state === "moving") {
     const bw = size * 0.7;
     const pct = Math.max(0, Math.min(1, f.hp / f.maxHp));
     ctx.fillStyle = "rgba(15,23,42,0.55)";

@@ -19,6 +19,7 @@ import {
   MIX_MIN,
   PYRO_FIGHT_MERCH,
   STEWARD_HIRE_GOLD,
+  UPGRADE_COST,
   UPGRADE_MAX,
   type BuildingKind,
   type FanKind,
@@ -49,8 +50,10 @@ const state = {
   match: null as Match | null,
   raf: 0,
   last: 0,
-  /** Right-rail build mode: pick a plot to place this building */
+  /** Build-rail place mode: kind chosen while a plot is targeted */
   pendingBuild: null as BuildingKind | null,
+  /** Plot selected for place/upgrade (build rail open) */
+  buildTarget: null as { blockId: number; index: number } | null,
 };
 
 document.documentElement.classList.toggle("standalone", isStandalone());
@@ -188,6 +191,7 @@ function renderMatchScreen(): void {
   const iosHint = isIos() && !isStandalone();
   const tc = teamColor(m.playerTeam);
   state.pendingBuild = null;
+  state.buildTarget = null;
   app.innerHTML = `
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell matchday">
@@ -328,10 +332,10 @@ function renderMatchScreen(): void {
           </div>
         </div>
       </div>
-      <aside class="side-rail right-rail" aria-label="Gebäude">
-        <header class="rail-banner">Bauen</header>
-        <p class="rail-hint" id="build-hint">Gebäude tippen, dann Plot wählen</p>
-        <div class="build-rows">
+      <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
+        <header class="rail-banner" id="build-rail-title">Bauen</header>
+        <p class="rail-hint" id="build-hint">Gebäude wählen</p>
+        <div class="build-rows" id="build-place-rows">
           <button type="button" class="build-card" data-pending-build="bier">
             <img src="icons/stands/bier-${tc}-3.png" alt="">
             <span>Bierstand</span>
@@ -351,6 +355,20 @@ function renderMatchScreen(): void {
             <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
           </button>
         </div>
+        <div class="build-rows hidden" id="build-upgrade-rows">
+          <button type="button" class="build-card" id="rail-upgrade">
+            <span>Upgrade</span>
+            <small id="rail-upgrade-cost">—</small>
+            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+          </button>
+          <button type="button" class="build-card" id="rail-hire-ordner">
+            <img src="${unitIconPath("ordner", tc, 1)}" alt="">
+            <span>Ordner anheuern</span>
+            <small>${STEWARD_HIRE_GOLD}€</small>
+            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+          </button>
+        </div>
+        <button type="button" class="rail-close" id="build-rail-close">Schließen</button>
       </aside>
     </div>`;
 
@@ -359,13 +377,14 @@ function renderMatchScreen(): void {
   const ctx = canvas.getContext("2d")!;
   const seatMenu = app.querySelector<HTMLDivElement>("#seat-menu")!;
   const buildMenu = app.querySelector<HTMLDivElement>("#build-menu")!;
-  const buildOptions = app.querySelector<HTMLDivElement>("#build-options")!;
-  const upgradeOptions = app.querySelector<HTMLDivElement>("#upgrade-options")!;
-  const buildTitle = app.querySelector<HTMLParagraphElement>("#build-title")!;
   const btnUpgrade = app.querySelector<HTMLButtonElement>("#btn-upgrade")!;
   const btnHire = app.querySelector<HTMLButtonElement>("#btn-hire-steward")!;
   const fsGate = app.querySelector<HTMLDivElement>("#fs-gate")!;
   const pitchHud = app.querySelector<HTMLDivElement>("#pitch-hud")!;
+  const buildRail = app.querySelector<HTMLElement>("#build-rail")!;
+  const buildPlaceRows = app.querySelector<HTMLElement>("#build-place-rows")!;
+  const buildUpgradeRows = app.querySelector<HTMLElement>("#build-upgrade-rows")!;
+  const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
 
   const layoutHud = () => {
     const rect = wrap.getBoundingClientRect();
@@ -376,6 +395,65 @@ function renderMatchScreen(): void {
     pitchHud.style.height = "auto";
   };
 
+  const closeBuildRail = () => {
+    state.pendingBuild = null;
+    state.buildTarget = null;
+    m.buildMenu = null;
+    buildRail.hidden = true;
+    buildRail.classList.remove("open");
+    shell.classList.remove("build-open");
+    wrap.classList.remove("placing");
+    buildPlaceRows.classList.remove("hidden");
+    buildUpgradeRows.classList.add("hidden");
+  };
+
+  const openBuildRail = (mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
+    state.buildTarget = target;
+    m.selectedSlot = target;
+    m.buildMenu = target;
+    buildRail.hidden = false;
+    buildRail.classList.add("open");
+    shell.classList.add("build-open");
+    const title = app.querySelector("#build-rail-title");
+    const hint = app.querySelector("#build-hint");
+    if (mode === "place") {
+      buildPlaceRows.classList.remove("hidden");
+      buildUpgradeRows.classList.add("hidden");
+      if (title) title.textContent = "Bauen";
+      if (hint) hint.textContent = "Gebäude für diesen Plot wählen";
+      syncPendingBuildUi();
+    } else {
+      buildPlaceRows.classList.add("hidden");
+      buildUpgradeRows.classList.remove("hidden");
+      if (title) title.textContent = "Upgrade";
+      const slot = m.slots.find(
+        (s) => s.blockId === target.blockId && s.index === target.index,
+      );
+      const next = (slot?.level ?? 1) + 1;
+      const cost = slot ? (UPGRADE_COST as readonly number[])[next] : null;
+      const upBtn = app.querySelector<HTMLButtonElement>("#rail-upgrade")!;
+      const costEl = app.querySelector("#rail-upgrade-cost");
+      if (cost == null || !slot || slot.level >= UPGRADE_MAX) {
+        upBtn.disabled = true;
+        if (costEl) costEl.textContent = `Max. Lv${UPGRADE_MAX}`;
+      } else {
+        upBtn.disabled = m.gold < cost;
+        if (costEl) costEl.textContent = `${cost} Gold → Lv${next}`;
+      }
+      const hireBtn = app.querySelector<HTMLButtonElement>("#rail-hire-ordner")!;
+      const canHire = !!(slot && m.canHireSteward(slot));
+      hireBtn.classList.toggle("hidden", slot?.building !== "ordner");
+      hireBtn.disabled = !canHire;
+      hireBtn.classList.toggle("cd", !canHire);
+      if (hint) {
+        hint.textContent =
+          slot?.building === "ordner"
+            ? "Upgrade oder Ordner anheuern"
+            : "Gebäude upgraden";
+      }
+    }
+  };
+
   const syncPendingBuildUi = () => {
     const hint = app.querySelector("#build-hint");
     app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
@@ -384,12 +462,11 @@ function renderMatchScreen(): void {
       btn.classList.toggle("selected", on);
       btn.classList.toggle("cd", m.gold < BUILD_COST[kind]);
     });
-    if (hint) {
-      hint.textContent = state.pendingBuild
-        ? `${state.pendingBuild === "bier" ? "Bierstand" : state.pendingBuild === "fanshop" ? "Fanshop" : "Ordnerposten"} — Plot antippen`
-        : "Gebäude tippen, dann Plot wählen";
+    if (hint && !buildPlaceRows.classList.contains("hidden")) {
+      hint.textContent = state.buildTarget
+        ? "Gebäude für diesen Plot wählen"
+        : "Plot tippen";
     }
-    wrap.classList.toggle("placing", !!state.pendingBuild);
   };
 
   const resize = () => {
@@ -446,10 +523,10 @@ function renderMatchScreen(): void {
 
   const hideMenus = () => {
     m.seatMenu = null;
-    m.buildMenu = null;
     m.selectedSeat = null;
     seatMenu.classList.add("hidden");
     buildMenu.classList.add("hidden");
+    closeBuildRail();
   };
 
   const showSeatMenu = (blockId: number, seatIndex: number) => {
@@ -461,44 +538,20 @@ function renderMatchScreen(): void {
   };
 
   const showBuildMenu = (blockId: number, index: number) => {
-    hideMenus();
-    m.buildMenu = { blockId, index };
-    m.selectedSlot = { blockId, index };
+    m.seatMenu = null;
+    m.selectedSeat = null;
+    seatMenu.classList.add("hidden");
+    buildMenu.classList.add("hidden");
     const slot = m.slots.find((s) => s.blockId === blockId && s.index === index);
     const owned =
-      slot?.building &&
+      !!slot?.building &&
       slot.owner === m.playerTeam &&
       !slot.greyNeutral;
-    if (owned && slot) {
-      buildOptions.classList.add("hidden");
-      upgradeOptions.classList.remove("hidden");
-      const cost = m.upgradeCost(slot);
-      const next = (slot.level || 1) + 1;
-      buildTitle.textContent = `${slot.building === "bier" ? "Bierstand" : slot.building === "ordner" ? "Ordnerposten" : "Fanshop"} Lv${slot.level}`;
-      if (slot.building === "ordner") {
-        btnHire.hidden = false;
-        btnHire.classList.remove("hidden");
-        btnHire.style.display = "";
-        const canHire = m.canHireSteward(slot);
-        btnHire.disabled = !canHire;
-        btnHire.innerHTML = `<img src="${unitIconPath("ordner", teamColor(m.playerTeam), 1)}" alt=""><span>Ordner anheuern <small>${STEWARD_HIRE_GOLD}€ · ${m.stewardCountAt(slot)}/2</small></span>`;
-        btnHire.classList.toggle("cd", !canHire);
-      } else {
-        btnHire.hidden = true;
-        btnHire.classList.add("hidden");
-        btnHire.style.display = "none";
-      }
-      if (cost == null || slot.level >= UPGRADE_MAX) {
-        btnUpgrade.disabled = true;
-        btnUpgrade.innerHTML = `Max. Stufe ${UPGRADE_MAX}`;
-      } else {
-        btnUpgrade.disabled = m.gold < cost;
-        btnUpgrade.innerHTML = `Upgrade → Lv${next} <small>${cost}g</small>`;
-      }
-      buildMenu.classList.remove("hidden");
+    if (owned) openBuildRail("upgrade", { blockId, index });
+    else if (slot && (!slot.building || slot.greyNeutral || slot.owner === "neutral")) {
+      openBuildRail("place", { blockId, index });
     } else {
-      // Empty plots: use right rail, not popup
-      buildMenu.classList.add("hidden");
+      closeBuildRail();
     }
   };
 
@@ -531,41 +584,11 @@ function renderMatchScreen(): void {
 
     const hit = hitSlot(m, mx, my);
     if (hit) {
-      const slot = m.slots.find(
-        (s) => s.blockId === hit.blockId && s.index === hit.index,
-      );
-      m.selectedSlot = hit;
-      if (
-        state.pendingBuild &&
-        slot &&
-        (!slot.building || slot.greyNeutral || slot.owner === "neutral")
-      ) {
-        m.buildMenu = hit;
-        const ok = m.tryBuild(state.pendingBuild);
-        if (ok) state.pendingBuild = null;
-        hideMenus();
-        syncPendingBuildUi();
-        syncOverlay();
-        return;
-      }
-      if (
-        slot?.building &&
-        slot.owner === m.playerTeam &&
-        !slot.greyNeutral
-      ) {
-        showBuildMenu(hit.blockId, hit.index);
-      } else if (slot && (!slot.building || slot.greyNeutral)) {
-        state.pendingBuild = state.pendingBuild ?? "fanshop";
-        m.toast("Rechts Gebäude wählen, dann Plot tippen");
-        syncPendingBuildUi();
-      } else {
-        hideMenus();
-      }
+      showBuildMenu(hit.blockId, hit.index);
+      syncOverlay();
       return;
     }
     hideMenus();
-    state.pendingBuild = null;
-    syncPendingBuildUi();
   });
 
   const syncOverlay = () => {
@@ -634,15 +657,40 @@ function renderMatchScreen(): void {
   app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const kind = btn.dataset.pendingBuild as BuildingKind;
-      state.pendingBuild = state.pendingBuild === kind ? null : kind;
-      hideMenus();
-      syncPendingBuildUi();
-      if (state.pendingBuild) m.toast("Plot auf dem Gang wählen");
+      if (!state.buildTarget) {
+        m.toast("Zuerst einen freien Plot tippen");
+        return;
+      }
+      m.buildMenu = state.buildTarget;
+      m.selectedSlot = state.buildTarget;
+      const ok = m.tryBuild(kind);
+      if (ok) {
+        closeBuildRail();
+      } else {
+        syncPendingBuildUi();
+      }
+      syncOverlay();
     });
+  });
+  app.querySelector("#rail-upgrade")?.addEventListener("click", () => {
+    if (state.buildTarget) {
+      m.buildMenu = state.buildTarget;
+      m.tryUpgrade();
+    }
+    closeBuildRail();
+    syncOverlay();
+  });
+  app.querySelector("#rail-hire-ordner")?.addEventListener("click", () => {
+    if (state.buildTarget) {
+      m.buildMenu = state.buildTarget;
+      m.selectedSlot = state.buildTarget;
+      m.tryHireSteward();
+      openBuildRail("upgrade", state.buildTarget);
+    }
+    syncOverlay();
   });
   btnHire.addEventListener("click", () => {
     m.tryHireSteward();
-    // Keep menu open so another Ordner can be hired
     if (m.buildMenu) showBuildMenu(m.buildMenu.blockId, m.buildMenu.index);
     syncOverlay();
   });
@@ -653,6 +701,10 @@ function renderMatchScreen(): void {
   });
   app.querySelector("#seat-cancel")!.addEventListener("click", hideMenus);
   app.querySelector("#build-cancel")!.addEventListener("click", hideMenus);
+  app.querySelector("#build-rail-close")?.addEventListener("click", () => {
+    closeBuildRail();
+    syncOverlay();
+  });
 
   syncOverlay();
   state.last = performance.now();

@@ -56,6 +56,7 @@ import {
   BLOCK_COUNT,
   GAST_BLOCK,
   HEIM_BLOCK,
+  NEUTRAL_BLOCK,
   SEATS_PER_BLOCK,
   blockCenterX,
   blockIdToGangX,
@@ -213,11 +214,11 @@ export class Match {
     this.cfg = cfg;
     this.playerTeam = cfg.settings.playerTeam;
     this.aiTeam = cfg.settings.playerTeam === "ksc" ? "vfb" : "ksc";
-    this.blockOwner = [this.playerTeam, "neutral", "neutral", this.aiTeam];
+    this.blockOwner = [this.playerTeam, "neutral", this.aiTeam];
 
     for (const b of BLOCK_META) {
       for (const i of slotIndicesForBlock(b.id)) {
-        const isNeutral = b.id === 1 || b.id === 2;
+        const isNeutral = b.id === NEUTRAL_BLOCK;
         this.slots.push({
           blockId: b.id,
           index: i,
@@ -237,19 +238,17 @@ export class Match {
       }
     }
 
-    // Neutrale Zone: Bier-Claims (grau) + aktiver Ordnerposten mit 2 Ordnern als Puffer
-    for (const blockId of [1, 2]) {
-      this.placeBuilding(blockId, 0, "bier", true, "neutral");
-      const s0 = this.slots.find((x) => x.blockId === blockId && x.index === 0);
-      if (s0) {
-        s0.greyNeutral = true;
-        s0.beer = 25;
-      }
+    // Neutralzone: grauer Bier-Claim + Ordnerposten mit 2 Ordnern
+    this.placeBuilding(NEUTRAL_BLOCK, 0, "bier", true, "neutral");
+    const s0 = this.slots.find((x) => x.blockId === NEUTRAL_BLOCK && x.index === 0);
+    if (s0) {
+      s0.greyNeutral = true;
+      s0.beer = 25;
     }
-    // Ein Ordnerposten in der Neutralzone (Block 1) mit zwei Ordnern ab Start
-    // Same level/stats as any other Ordnerposten — not buffed
-    this.placeBuilding(1, 1, "ordner", true, "neutral");
-    const bufferPost = this.slots.find((x) => x.blockId === 1 && x.index === 1);
+    this.placeBuilding(NEUTRAL_BLOCK, 1, "ordner", true, "neutral");
+    const bufferPost = this.slots.find(
+      (x) => x.blockId === NEUTRAL_BLOCK && x.index === 1,
+    );
     if (bufferPost) {
       bufferPost.greyNeutral = false;
       bufferPost.owner = "neutral";
@@ -265,13 +264,11 @@ export class Match {
         const spread = (i - 0.5) * 0.04;
         st.x = post.x + spread;
         st.y = post.y;
-        st.gangX = blockIdToGangX(1) + spread * 0.5;
+        st.gangX = blockIdToGangX(NEUTRAL_BLOCK) + spread * 0.5;
         st.patrolDir = i === 0 ? 1 : -1;
         this.fans.push(st);
       }
     }
-    // Zweites Neutral-Slot-Index 1 bleibt freier Bauplatz (Claim später möglich)
-    // Block 2 Index 1: freier + Slot ohne vorgebautes Gebäude
 
     const homeKinds = expandMix(cfg.playerSetup.mix);
     homeKinds.forEach((kind, i) => {
@@ -281,13 +278,11 @@ export class Match {
     awayKinds.forEach((kind, i) => {
       this.fans.push(this.makeFan(kind, this.aiTeam, GAST_BLOCK, i));
     });
-    // Neutrale Blöcke: anfangs ¾ der Plätze besetzt (9/12), gemischt
-    for (const blockId of [1, 2]) {
-      for (let i = 0; i < 9; i++) {
-        const kind: FanKind =
-          i % 3 === 0 ? "normalos" : i % 3 === 1 ? "hooligans" : "ultras";
-        this.fans.push(this.makeFan(kind, "neutral", blockId, i));
-      }
+    // Neutralblock: ¾ der Plätze besetzt (9/12), gemischt
+    for (let i = 0; i < 9; i++) {
+      const kind: FanKind =
+        i % 3 === 0 ? "normalos" : i % 3 === 1 ? "hooligans" : "ultras";
+      this.fans.push(this.makeFan(kind, "neutral", NEUTRAL_BLOCK, i));
     }
 
     this.toast(`${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)}`);
@@ -1697,7 +1692,7 @@ canBuy(kind: FanKind): boolean {
       const onGang =
         o.state === "gang" ||
         o.invading ||
-        (o.state === "block" && (o.blockId === 1 || o.blockId === 2));
+        (o.state === "block" && o.blockId === NEUTRAL_BLOCK);
       if (!onGang && o.state !== "moving") continue;
       const gx = o.state === "gang" || o.invading ? o.gangX : blockIdToGangX(o.blockId);
       // React a bit outside band too when Ultra crosses into zone
@@ -2658,7 +2653,7 @@ canBuy(kind: FanKind): boolean {
   private refillNeutralSeats(dt: number): void {
     if (this.defectAcc < 4.5) return;
     this.defectAcc = 0;
-    for (const blockId of [1, 2]) {
+    for (const blockId of [NEUTRAL_BLOCK]) {
       if (this.blockOwner[blockId] !== "neutral") continue;
       const seated = this.fans.filter(
         (f) =>
@@ -2958,7 +2953,7 @@ canBuy(kind: FanKind): boolean {
       this.slots.find((x) => x.blockId === GAST_BLOCK && !x.building) ??
       this.slots.find(
         (x) =>
-          (x.blockId === 1 || x.blockId === 2) &&
+          x.blockId === NEUTRAL_BLOCK &&
           x.building &&
           (x.owner === "neutral" || x.greyNeutral) &&
           this.lineAi <= blockIdToGangX(x.blockId) + 0.05,

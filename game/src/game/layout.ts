@@ -1,45 +1,63 @@
-/** Matchday Comic layout — stadium stands, open gang, 2×6 build plots */
+/** Matchday Comic layout — 3 stands, open gang with scattered build plots */
 
-export const BLOCK_COUNT = 4;
+export const BLOCK_COUNT = 3;
 export const HEIM_BLOCK = 0;
-export const GAST_BLOCK = 3;
-export const NEUTRAL_BLOCKS = [1, 2] as const;
+export const NEUTRAL_BLOCK = 1;
+export const GAST_BLOCK = 2;
+export const NEUTRAL_BLOCKS = [NEUTRAL_BLOCK] as const;
 export const SEATS_PER_BLOCK = 12;
 export const SEAT_COLS = 3;
 export const SEAT_ROWS = 4;
 
 /**
- * Vertical pack (canvas is the center stadium column between side rails):
+ * Vertical pack (canvas is the center stadium column):
  * - Night sky / floodlights
- * - Bleacher blocks (Heim | Neutral | Neutral | Gäste)
- * - Open gang / concourse
- * - 2×6 fenced build plots
+ * - Bleacher blocks (Heim | Neutral | Gäste)
+ * - Open gang with 12 scattered build plots
  */
 export const L = {
   skyH: 0.1,
-  /** Room for distant bowl + floodlights above stands */
-  blockTop: 0.14,
-  blockBodyH: 0.28,
-  /** Open street between stands and plot grid */
-  gangPadTop: 0.015,
-  gangH: 0.22,
-  plotPadTop: 0.012,
-  plotAreaH: 0.3,
+  blockTop: 0.13,
+  blockBodyH: 0.27,
+  gangPadTop: 0.02,
+  /** Full open concourse (plots live inside this band) */
+  gangH: 0.56,
   blocksLeft: 0.035,
   blocksRight: 0.965,
-  blockGap: 0.018,
+  blockGap: 0.022,
   doorFrac: 0.14,
-  plotCols: 6,
-  plotRows: 2,
-  plotGapX: 0.014,
-  plotGapY: 0.022,
+  /** Plot footprint relative to canvas */
+  plotW: 0.135,
+  plotH: 0.145,
 };
 
-/** Colored blocks: 3 plots; neutrals also 3 → 12 total */
+/** 4 plots per block → 12 total */
 export const SLOTS_PER_BLOCK = 4;
-export const BUILDABLE_INDICES_COLORED = [1, 2, 3] as const;
-export const BUILDABLE_INDICES_NEUTRAL = [0, 1, 2] as const;
+export const BUILDABLE_INDICES = [0, 1, 2, 3] as const;
+export const BUILDABLE_INDICES_COLORED = BUILDABLE_INDICES;
+export const BUILDABLE_INDICES_NEUTRAL = BUILDABLE_INDICES;
 export const ULTRA_PAD_INDEX = 0;
+
+/**
+ * Organic scatter of 12 plots on the gang (mockup-like, not a rigid bottom grid).
+ * Coordinates are normalized canvas fractions (top-left of plot).
+ */
+export const PLOT_SCATTER: readonly { x: number; y: number; w: number; h: number }[] = [
+  // upper gang row (closer to stands)
+  { x: 0.05, y: 0.46, w: 0.13, h: 0.14 },
+  { x: 0.22, y: 0.49, w: 0.125, h: 0.135 },
+  { x: 0.40, y: 0.47, w: 0.13, h: 0.14 },
+  { x: 0.58, y: 0.50, w: 0.125, h: 0.135 },
+  { x: 0.74, y: 0.46, w: 0.13, h: 0.14 },
+  { x: 0.06, y: 0.64, w: 0.13, h: 0.145 },
+  // lower gang row
+  { x: 0.24, y: 0.68, w: 0.135, h: 0.14 },
+  { x: 0.42, y: 0.65, w: 0.13, h: 0.145 },
+  { x: 0.60, y: 0.69, w: 0.135, h: 0.14 },
+  { x: 0.78, y: 0.66, w: 0.13, h: 0.145 },
+  { x: 0.14, y: 0.82, w: 0.13, h: 0.14 },
+  { x: 0.70, y: 0.83, w: 0.135, h: 0.14 },
+];
 
 export function blockWidthNorm(): number {
   const span = L.blocksRight - L.blocksLeft;
@@ -77,7 +95,7 @@ export function gangY(): number {
 }
 
 export function gangMidY(): number {
-  return gangY() + L.gangH * 0.55;
+  return gangY() + L.gangH * 0.42;
 }
 
 export function doorPos(blockId: number): { x: number; y: number } {
@@ -110,16 +128,15 @@ export function gangLanePos(blockId: number): { x: number; y: number } {
   };
 }
 
-export function slotIndicesForBlock(blockId: number): readonly number[] {
-  if (blockId === HEIM_BLOCK || blockId === GAST_BLOCK) return BUILDABLE_INDICES_COLORED;
-  return BUILDABLE_INDICES_NEUTRAL;
+export function slotIndicesForBlock(_blockId: number): readonly number[] {
+  return BUILDABLE_INDICES;
 }
 
 export function isUltraPad(blockId: number, index: number): boolean {
   return blockId === HEIM_BLOCK && index === ULTRA_PAD_INDEX;
 }
 
-/** Flat 0..11 index for the 2×6 plot grid */
+/** Flat 0..11 index for scatter plot list */
 export function slotFlatIndex(blockId: number, index: number): number {
   let n = 0;
   for (let b = 0; b < BLOCK_COUNT; b++) {
@@ -132,34 +149,15 @@ export function slotFlatIndex(blockId: number, index: number): number {
 }
 
 /**
- * All buildable plots sit in a 2×6 grid in the lower open area
- * (Matchday Comic: umzäunte Rechtecke auf dem Gang).
+ * Build plots scattered across the open gang (Matchday Comic).
  */
 export function boothRect(
   blockId: number,
   index: number,
 ): { x: number; y: number; w: number; h: number } {
-  const flat = slotFlatIndex(blockId, index);
-  const cols = L.plotCols;
-  const rows = L.plotRows;
-  const col = flat % cols;
-  const row = Math.floor(flat / cols) % rows;
-
-  const left = L.blocksLeft;
-  const right = L.blocksRight;
-  const gapX = L.plotGapX;
-  const gapY = L.plotGapY;
-  const areaW = right - left;
-  const cellW = (areaW - gapX * (cols - 1)) / cols;
-  const y0 = gangY() + L.gangH + L.plotPadTop;
-  const cellH = (L.plotAreaH - gapY * (rows - 1)) / rows;
-
-  return {
-    x: left + col * (cellW + gapX),
-    y: y0 + row * (cellH + gapY),
-    w: cellW,
-    h: cellH,
-  };
+  const flat = Math.max(0, Math.min(PLOT_SCATTER.length - 1, slotFlatIndex(blockId, index)));
+  const p = PLOT_SCATTER[flat]!;
+  return { x: p.x, y: p.y, w: p.w, h: p.h };
 }
 
 export function boothCenter(blockId: number, index: number): { x: number; y: number } {
@@ -170,5 +168,5 @@ export function boothCenter(blockId: number, index: number): { x: number; y: num
 /** Territory pennant anchor near a plot */
 export function pennantPos(blockId: number, index: number): { x: number; y: number } {
   const r = boothRect(blockId, index);
-  return { x: r.x + r.w * 0.12, y: r.y + r.h * 0.15 };
+  return { x: r.x + r.w * 0.12, y: r.y + r.h * 0.12 };
 }
