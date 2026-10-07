@@ -478,8 +478,12 @@ function renderMatchScreen(): void {
         kind === "bier" ? "Bierstand" : kind === "fanshop" ? "Fanshop" : kind === "ordner" ? "Ordnerposten" : "Gebäude";
       if (upTitle) upTitle.textContent = `${name} upgraden`;
       if (kind && fromImg && toImg) {
-        fromImg.src = standIconPath(kind, tc, lv);
-        toImg.src = standIconPath(kind, tc, Math.min(UPGRADE_MAX, next));
+        const fromSrc = standIconPath(kind, tc, lv);
+        const toSrc = standIconPath(kind, tc, Math.min(UPGRADE_MAX, next));
+        fromImg.src = fromSrc.startsWith("/") ? fromSrc : `/${fromSrc}`;
+        toImg.src = toSrc.startsWith("/") ? toSrc : `/${toSrc}`;
+        fromImg.alt = `${name} Lv${lv}`;
+        toImg.alt = `${name} Lv${Math.min(UPGRADE_MAX, next)}`;
       }
       if (fromLv) fromLv.textContent = `Lv${lv}`;
       if (toLv) toLv.textContent = slot && slot.level >= UPGRADE_MAX ? "Max" : `Lv${next}`;

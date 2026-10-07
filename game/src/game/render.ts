@@ -507,20 +507,17 @@ function drawSlots(
 }
 
 /**
- * Fahnen nur wenn die Frontlinie den Plot erreicht hat
- * (oder ein Team dort gebaut/geclaimt hat) — nie am Start in der Mitte.
+ * Fahnen nur auf gebauten/geclaimten Buden — nie am Start auf leeren Plots.
+ * (Frontlinie allein steckt keine Fahne; erst Besitz durch Bauen/Claim.)
  */
 function plotPennantTeam(
   m: Match,
   s: BuildSlot,
 ): "ksc" | "vfb" | null {
+  void m;
   if (s.building && !s.greyNeutral && (s.owner === "ksc" || s.owner === "vfb")) {
     return s.owner;
   }
-  const gx = plotGangX(s.blockId, s.index);
-  // No starter flags — only after the front has actually moved onto the plot
-  if (m.linePlayer > 0.1 && gx <= m.linePlayer - 0.01) return m.playerTeam;
-  if (m.lineAi < 0.9 && gx >= m.lineAi + 0.01) return m.aiTeam;
   return null;
 }
 
