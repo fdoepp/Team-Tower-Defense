@@ -67,6 +67,7 @@ import {
   gangLanePos,
   gangMidY,
   gangXToWorld,
+  plotGangX,
   seatPos,
   slotIndicesForBlock,
 } from "./layout";
@@ -1146,13 +1147,26 @@ canBuy(kind: FanKind): boolean {
     return true;
   }
 
-  /** Only build in own territory (battle-line / owned blocks) */
-  inPlayerTerritory(blockId: number): boolean {
-    if (blockId === HEIM_BLOCK) return true;
+  /**
+   * Heim-plots always; further plots only once the player front line
+   * has reached their X (plotGangX) — never by “leftish block” alone.
+   */
+  inPlayerTerritory(blockId: number, index = 0): boolean {
     if (blockId === GAST_BLOCK) return false;
-    // Neutral blocks: player frontmost ultra must be past block center
-    const mid = blockIdToGangX(blockId);
-    return this.linePlayer >= mid - 0.05;
+    if (blockId === HEIM_BLOCK) return true;
+    const gx = plotGangX(blockId, index);
+    return gx <= this.linePlayer + 0.04;
+  }
+
+  /**
+   * Gäste-plots always for AI; center/left only after AI front line
+   * has pushed that far — prevents early builds on the left.
+   */
+  inAiTerritory(blockId: number, index = 0): boolean {
+    if (blockId === HEIM_BLOCK) return false;
+    if (blockId === GAST_BLOCK) return true;
+    const gx = plotGangX(blockId, index);
+    return gx >= this.lineAi - 0.04;
   }
 
   tryBuild(kind: BuildingKind): boolean {
@@ -1161,8 +1175,8 @@ canBuy(kind: FanKind): boolean {
       return false;
     }
     const sel = this.buildMenu ?? this.selectedSlot!;
-    if (!this.inPlayerTerritory(sel.blockId)) {
-      this.toast("Nur eigenes Territorium");
+    if (!this.inPlayerTerritory(sel.blockId, sel.index)) {
+      this.toast("Frontlinie noch nicht hier");
       return false;
     }
     if (sel.blockId === GAST_BLOCK) {
@@ -2949,16 +2963,20 @@ canBuy(kind: FanKind): boolean {
     const kinds: BuildingKind[] = ["bier", "ordner", "fanshop"];
     const kind = kinds[this.aiBuildRot % kinds.length];
     this.aiBuildRot++;
-    let s =
-      this.slots.find((x) => x.blockId === GAST_BLOCK && !x.building) ??
-      this.slots.find(
+    // Only plots the AI front line has already claimed (by X) — never left early
+    const candidates = this.slots
+      .filter(
         (x) =>
-          x.blockId === NEUTRAL_BLOCK &&
-          x.building &&
-          (x.owner === "neutral" || x.greyNeutral) &&
-          this.lineAi <= blockIdToGangX(x.blockId) + 0.05,
-      ) ??
-      this.slots.find((x) => x.blockId === GAST_BLOCK && !x.building);
+          this.inAiTerritory(x.blockId, x.index) &&
+          (!x.building ||
+            ((x.owner === "neutral" || x.greyNeutral) && !!x.building)),
+      )
+      .sort((a, b) => plotGangX(b.blockId, b.index) - plotGangX(a.blockId, a.index));
+    const empty = candidates.find((x) => !x.building);
+    const claimable = candidates.find(
+      (x) => x.building && (x.owner === "neutral" || x.greyNeutral),
+    );
+    const s = empty ?? claimable;
     if (!s) {
       // upgrade own
       const up = this.slots.find(
@@ -2974,7 +2992,7 @@ canBuy(kind: FanKind): boolean {
       }
       return;
     }
-    const claim = s.blockId !== GAST_BLOCK;
+    const claim = !!(s.building && (s.owner === "neutral" || s.greyNeutral));
     const cost = claim
       ? Math.floor(BUILD_COST[kind] * 0.65)
       : BUILD_COST[kind];
@@ -2983,6 +3001,7 @@ canBuy(kind: FanKind): boolean {
     if (!s.building) s.building = kind;
     s.owner = this.aiTeam;
     s.greyNeutral = false;
+    if (!s.level) s.level = 1;
     if (s.building === "bier" && s.beer < 20) s.beer = 40;
     if (s.building === "ordner") s.stewardCd = 9999; // AI hires manually
     this.floatAtSlot(s, claim ? "KI Claim" : "KI baut", false);

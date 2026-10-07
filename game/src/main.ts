@@ -10,7 +10,13 @@ import {
   onFullscreenChange,
 } from "./game/fullscreen";
 import { drawMatch, hitSeat, hitSlot } from "./game/render";
-import { UI_ICONS, preloadIcons, teamColor, unitIconPath } from "./game/assets";
+import {
+  UI_ICONS,
+  preloadIcons,
+  standIconPath,
+  teamColor,
+  unitIconPath,
+} from "./game/assets";
 import {
   BUILD_COST,
   BUY_COST,
@@ -201,50 +207,62 @@ function renderMatchScreen(): void {
         <div class="unit-rows">
           <div class="ur-row">
             <img class="ur-icon" data-unit-icon="normalos" src="${unitIconPath("normalos", tc, 1)}" alt="">
-            <div class="ur-meta"><span class="ur-name">Fans</span><b class="ur-count" id="fb-n">0</b></div>
-            <div class="ur-actions">
-              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="normalos" title="${BUY_COST.normalos.security} Sicherheit">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
+            <div class="ur-body">
+              <div class="ur-meta"><span class="ur-name">Fans</span><b class="ur-count" id="fb-n">0</b></div>
+              <p class="ur-cost">${BUY_COST.normalos.security} Sicherheit</p>
+              <div class="ur-actions">
+                <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="normalos" title="Kaufen">
+                  <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+                  <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+                </button>
+              </div>
             </div>
           </div>
           <div class="ur-row">
             <img class="ur-icon" data-unit-icon="ultras" src="${unitIconPath("ultras", tc, 1)}" alt="">
-            <div class="ur-meta"><span class="ur-name">Ultras</span><b class="ur-count" id="fb-u">0</b></div>
-            <div class="ur-actions">
-              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="ultras" title="${BUY_COST.ultras.merch} Fanartikel">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
-              <button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Senden">
-                <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
-                <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
-              </button>
+            <div class="ur-body">
+              <div class="ur-meta"><span class="ur-name">Ultras</span><b class="ur-count" id="fb-u">0</b></div>
+              <p class="ur-cost">${BUY_COST.ultras.merch} Fanartikel</p>
+              <div class="ur-actions">
+                <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="ultras" title="Kaufen">
+                  <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+                  <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+                </button>
+                <button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Senden">
+                  <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
+                  <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
+                </button>
+              </div>
             </div>
           </div>
           <div class="ur-row">
             <img class="ur-icon" data-unit-icon="hooligans" src="${unitIconPath("hooligans", tc, 1)}" alt="">
-            <div class="ur-meta"><span class="ur-name">Hooligans</span><b class="ur-count" id="fb-h">0</b></div>
-            <div class="ur-actions">
-              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="hooligans" title="${BUY_COST.hooligans.beer} Bier">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
-              <button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Senden">
-                <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
-                <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
-              </button>
+            <div class="ur-body">
+              <div class="ur-meta"><span class="ur-name">Hooligans</span><b class="ur-count" id="fb-h">0</b></div>
+              <p class="ur-cost">${BUY_COST.hooligans.beer} Bier</p>
+              <div class="ur-actions">
+                <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="hooligans" title="Kaufen">
+                  <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+                  <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+                </button>
+                <button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Senden">
+                  <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
+                  <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
+                </button>
+              </div>
             </div>
           </div>
           <div class="ur-row ur-row-ordner">
             <img class="ur-icon" data-unit-icon="ordner" src="${unitIconPath("ordner", tc, 1)}" alt="">
-            <div class="ur-meta"><span class="ur-name">Ordner</span><b class="ur-count" id="fb-o">0</b></div>
-            <div class="ur-actions">
-              <button type="button" class="ar-icon-btn ar-kaufen" id="btn-hire-ordner" title="${STEWARD_HIRE_GOLD}€">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
+            <div class="ur-body">
+              <div class="ur-meta"><span class="ur-name">Ordner</span><b class="ur-count" id="fb-o">0</b></div>
+              <p class="ur-cost">${STEWARD_HIRE_GOLD} Gold</p>
+              <div class="ur-actions">
+                <button type="button" class="ar-icon-btn ar-kaufen" id="btn-hire-ordner" title="Kaufen">
+                  <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+                  <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -263,29 +281,20 @@ function renderMatchScreen(): void {
             <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
             <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
           </div>
-          <div class="pitch-score" aria-label="Spielstand">
-            <div class="match-hud-score">
-              <div class="hud-crest ksc">K</div>
-              <div class="hud-scoreline">
-                <b id="hud-score">0:0</b>
-                <span id="hud-minute">0′</span>
-              </div>
-              <div class="hud-crest vfb">V</div>
-            </div>
+          <!-- Scoreboard + Momentum live on canvas (stadion top third) -->
+          <div class="pitch-score sr-only" aria-label="Spielstand">
+            <b id="hud-score">0:0</b>
+            <span id="hud-minute">0′</span>
           </div>
-          <div class="pitch-momentum" aria-label="Momentum">
-            <div class="momentum-wrap">
-              <div class="momentum-bar" id="momentum-bar" title="Momentum aus Block-Besetzung">
-                <div class="mom-fill heim" id="mom-heim"></div>
-                <div class="mom-fill gast" id="mom-gast"></div>
-                <div class="mom-knob" id="mom-knob"></div>
-              </div>
-              <div class="mom-labels">
-                <span id="mom-p-heim">Heim 50%</span>
-                <span id="mom-p-tor">Torchance 28%</span>
-                <span id="mom-p-gast">Gast 50%</span>
-              </div>
+          <div class="pitch-momentum sr-only" aria-label="Momentum">
+            <div class="momentum-bar" id="momentum-bar">
+              <div class="mom-fill heim" id="mom-heim"></div>
+              <div class="mom-fill gast" id="mom-gast"></div>
+              <div class="mom-knob" id="mom-knob"></div>
             </div>
+            <span id="mom-p-heim">Heim 50%</span>
+            <span id="mom-p-tor">Torchance 28%</span>
+            <span id="mom-p-gast">Gast 50%</span>
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
@@ -337,35 +346,58 @@ function renderMatchScreen(): void {
         <p class="rail-hint" id="build-hint">Gebäude wählen</p>
         <div class="build-rows" id="build-place-rows">
           <button type="button" class="build-card" data-pending-build="bier">
-            <img src="icons/stands/bier-${tc}-3.png" alt="">
-            <span>Bierstand</span>
-            <small>${BUILD_COST.bier} Gold</small>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            <img class="build-preview" src="icons/stands/bier-${tc}-1.png" alt="">
+            <div class="build-info">
+              <span>Bierstand</span>
+              <small>${BUILD_COST.bier} Gold</small>
+              <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            </div>
           </button>
           <button type="button" class="build-card" data-pending-build="fanshop">
-            <img src="icons/stands/fanshop-${tc}-3.png" alt="">
-            <span>Fanshop</span>
-            <small>${BUILD_COST.fanshop} Gold</small>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            <img class="build-preview" src="icons/stands/fanshop-${tc}-1.png" alt="">
+            <div class="build-info">
+              <span>Fanshop</span>
+              <small>${BUILD_COST.fanshop} Gold</small>
+              <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            </div>
           </button>
           <button type="button" class="build-card" data-pending-build="ordner">
-            <img src="icons/stands/ordner-${tc}-3.png" alt="">
-            <span>Ordnerposten</span>
-            <small>${BUILD_COST.ordner} Gold</small>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            <img class="build-preview" src="icons/stands/ordner-${tc}-1.png" alt="">
+            <div class="build-info">
+              <span>Ordnerposten</span>
+              <small>${BUILD_COST.ordner} Gold</small>
+              <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            </div>
           </button>
         </div>
         <div class="build-rows hidden" id="build-upgrade-rows">
-          <button type="button" class="build-card" id="rail-upgrade">
-            <span>Upgrade</span>
-            <small id="rail-upgrade-cost">—</small>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-          </button>
+          <div class="upgrade-panel" id="upgrade-panel">
+            <p class="upgrade-title" id="upgrade-title">Dieses Haus</p>
+            <div class="upgrade-preview">
+              <div class="up-stage">
+                <img id="upgrade-from-img" src="" alt="">
+                <span id="upgrade-from-lv">Lv1</span>
+              </div>
+              <div class="up-arrow" aria-hidden="true">→</div>
+              <div class="up-stage">
+                <img id="upgrade-to-img" src="" alt="">
+                <span id="upgrade-to-lv">Lv2</span>
+              </div>
+            </div>
+            <p class="upgrade-blurb" id="upgrade-blurb">Besserer Ertrag & stärkeres Gebäude</p>
+            <button type="button" class="upgrade-buy" id="rail-upgrade">
+              <span id="rail-upgrade-label">Upgrade</span>
+              <small id="rail-upgrade-cost">—</small>
+              <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            </button>
+          </div>
           <button type="button" class="build-card" id="rail-hire-ordner">
-            <img src="${unitIconPath("ordner", tc, 1)}" alt="">
-            <span>Ordner anheuern</span>
-            <small>${STEWARD_HIRE_GOLD}€</small>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            <img class="build-preview" src="${unitIconPath("ordner", tc, 1)}" alt="">
+            <div class="build-info">
+              <span>Ordner anheuern</span>
+              <small>${STEWARD_HIRE_GOLD} Gold</small>
+              <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            </div>
           </button>
         </div>
         <button type="button" class="rail-close" id="build-rail-close">Schließen</button>
@@ -429,16 +461,46 @@ function renderMatchScreen(): void {
       const slot = m.slots.find(
         (s) => s.blockId === target.blockId && s.index === target.index,
       );
-      const next = (slot?.level ?? 1) + 1;
+      const lv = slot?.level ?? 1;
+      const next = lv + 1;
       const cost = slot ? (UPGRADE_COST as readonly number[])[next] : null;
       const upBtn = app.querySelector<HTMLButtonElement>("#rail-upgrade")!;
       const costEl = app.querySelector("#rail-upgrade-cost");
+      const labelEl = app.querySelector("#rail-upgrade-label");
+      const fromImg = app.querySelector<HTMLImageElement>("#upgrade-from-img");
+      const toImg = app.querySelector<HTMLImageElement>("#upgrade-to-img");
+      const fromLv = app.querySelector("#upgrade-from-lv");
+      const toLv = app.querySelector("#upgrade-to-lv");
+      const blurb = app.querySelector("#upgrade-blurb");
+      const upTitle = app.querySelector("#upgrade-title");
+      const kind = slot?.building;
+      const name =
+        kind === "bier" ? "Bierstand" : kind === "fanshop" ? "Fanshop" : kind === "ordner" ? "Ordnerposten" : "Gebäude";
+      if (upTitle) upTitle.textContent = `${name} upgraden`;
+      if (kind && fromImg && toImg) {
+        fromImg.src = standIconPath(kind, tc, lv);
+        toImg.src = standIconPath(kind, tc, Math.min(UPGRADE_MAX, next));
+      }
+      if (fromLv) fromLv.textContent = `Lv${lv}`;
+      if (toLv) toLv.textContent = slot && slot.level >= UPGRADE_MAX ? "Max" : `Lv${next}`;
+      if (blurb) {
+        blurb.textContent =
+          kind === "bier"
+            ? "Mehr Bier-Produktion & Kapazität"
+            : kind === "fanshop"
+              ? "Mehr Fanartikel & Stimmung"
+              : kind === "ordner"
+                ? "Stärkerer Posten & mehr Ordner-Power"
+                : "Gebäude verbessern";
+      }
       if (cost == null || !slot || slot.level >= UPGRADE_MAX) {
         upBtn.disabled = true;
-        if (costEl) costEl.textContent = `Max. Lv${UPGRADE_MAX}`;
+        if (labelEl) labelEl.textContent = "Maximale Stufe";
+        if (costEl) costEl.textContent = `Lv${UPGRADE_MAX}`;
       } else {
         upBtn.disabled = m.gold < cost;
-        if (costEl) costEl.textContent = `${cost} Gold → Lv${next}`;
+        if (labelEl) labelEl.textContent = `Upgrade auf Lv${next}`;
+        if (costEl) costEl.textContent = `${cost} Gold`;
       }
       const hireBtn = app.querySelector<HTMLButtonElement>("#rail-hire-ordner")!;
       const canHire = !!(slot && m.canHireSteward(slot));
@@ -448,8 +510,8 @@ function renderMatchScreen(): void {
       if (hint) {
         hint.textContent =
           slot?.building === "ordner"
-            ? "Upgrade oder Ordner anheuern"
-            : "Gebäude upgraden";
+            ? "Genau dieses Haus: Upgrade oder Ordner"
+            : "Genau dieses Haus upgraden";
       }
     }
   };
@@ -547,12 +609,20 @@ function renderMatchScreen(): void {
       !!slot?.building &&
       slot.owner === m.playerTeam &&
       !slot.greyNeutral;
-    if (owned) openBuildRail("upgrade", { blockId, index });
-    else if (slot && (!slot.building || slot.greyNeutral || slot.owner === "neutral")) {
-      openBuildRail("place", { blockId, index });
-    } else {
-      closeBuildRail();
+    if (owned) {
+      openBuildRail("upgrade", { blockId, index });
+      return;
     }
+    if (slot && (!slot.building || slot.greyNeutral || slot.owner === "neutral")) {
+      if (!m.inPlayerTerritory(blockId, index)) {
+        m.toast("Frontlinie noch nicht hier — keine Fahne");
+        closeBuildRail();
+        return;
+      }
+      openBuildRail("place", { blockId, index });
+      return;
+    }
+    closeBuildRail();
   };
 
   const syncBuyButtons = () => {

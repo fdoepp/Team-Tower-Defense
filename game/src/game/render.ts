@@ -16,8 +16,8 @@ import {
   doorPos,
   gangY,
   pennantPos,
+  plotGangX,
   seatPos,
-  slotFlatIndex,
 } from "./layout";
 import {
   UI_ICONS,
@@ -39,6 +39,7 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   ctx.clearRect(0, 0, w, h);
 
   drawStadiumAtmosphere(ctx, m, w, h);
+  drawScoreboard(ctx, m, w, h);
   drawBlocks(ctx, m, w, h);
   drawSeats(ctx, m, w, h);
   drawGang(ctx, m, w, h);
@@ -311,28 +312,14 @@ function drawSeats(
       const x = p.x * w;
       const y = p.y * h;
       const occ = m.seatOccupied(b.id, i);
-      const sel =
-        m.selectedSeat?.blockId === b.id && m.selectedSeat?.seatIndex === i;
-      // "+" on free seats in blocks the player controls (Heim or captured)
-      const buyable = !occ && m.canBuyInBlock(b.id);
-
-      // subtle seat pad — icons carry the look
-      let cushion = buyable
-        ? "rgba(34,197,94,0.35)"
-        : occ
-          ? "rgba(0,0,0,0.12)"
-          : "rgba(0,0,0,0.18)";
-      if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.22)";
-      else if (occ?.team === "vfb") cushion = "rgba(220,38,38,0.22)";
+      // No buy "+" in blocks — hiring is via Personen-Rail only
+      let cushion = occ ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.14)";
+      if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.18)";
+      else if (occ?.team === "vfb") cushion = "rgba(220,38,38,0.18)";
 
       ctx.fillStyle = cushion;
-      roundRect(ctx, x - 10, y - 4, 20, 10, 3);
+      roundRect(ctx, x - 9, y - 3, 18, 8, 3);
       ctx.fill();
-      if (buyable || sel) {
-        ctx.strokeStyle = sel ? "#6bcb77" : "rgba(107,203,119,0.65)";
-        ctx.lineWidth = sel ? 2 : 1.5;
-        ctx.stroke();
-      }
 
       // Capture ring on converting neutrals
       if (occ?.team === "neutral" && Math.abs(occ.captureProg) > 0.08) {
@@ -346,15 +333,89 @@ function drawSeats(
         ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
         ctx.stroke();
       }
-
-      if (buyable) {
-        ctx.fillStyle = "#6bcb77";
-        ctx.font = "800 12px Outfit, Manrope, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText("+", x, y + 5);
-      }
     }
   }
+}
+
+/** Center scoreboard + momentum strip (Matchday Comic / mockup) */
+function drawScoreboard(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  const boardW = Math.min(w * 0.42, h * 0.55);
+  const boardH = boardW * (720 / 1280) * 0.72;
+  const bx = (w - boardW) / 2;
+  const by = h * 0.012;
+  // Soft stadium glow behind board
+  const glow = ctx.createRadialGradient(
+    w * 0.5,
+    by + boardH * 0.55,
+    4,
+    w * 0.5,
+    by + boardH * 0.4,
+    boardW * 0.7,
+  );
+  glow.addColorStop(0, "rgba(255,250,220,0.18)");
+  glow.addColorStop(1, "rgba(255,250,220,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(bx - 20, by - 8, boardW + 40, boardH + 24);
+
+  const drew = drawIcon(ctx, UI_ICONS.scoreboard, bx, by, boardW, boardH, 0.02);
+  if (!drew) {
+    // fallback panel
+    ctx.fillStyle = "rgba(15,23,42,0.88)";
+    roundRect(ctx, bx, by, boardW, boardH * 0.62, 10);
+    ctx.fill();
+  }
+
+  // Live score + minute overlaid on board face
+  const faceY = by + boardH * 0.22;
+  const faceH = boardH * 0.38;
+  ctx.save();
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = `900 ${Math.max(16, Math.floor(faceH * 0.72))}px Outfit, Manrope, sans-serif`;
+  ctx.shadowColor = "rgba(0,0,0,0.65)";
+  ctx.shadowBlur = 6;
+  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w * 0.5, faceY + faceH * 0.42);
+  ctx.shadowBlur = 0;
+  ctx.font = `800 ${Math.max(10, Math.floor(faceH * 0.32))}px Outfit, Manrope, sans-serif`;
+  ctx.fillStyle = "#e2e8f0";
+  const min = Math.floor(m.minute ?? 0);
+  ctx.fillText(`${min}′`, w * 0.5 + boardW * 0.38, by + boardH * 0.12);
+
+  // Momentum / Torchance strip under the board
+  const barY = by + boardH * 0.78;
+  const barH = Math.max(14, boardH * 0.16);
+  const barX = bx + boardW * 0.08;
+  const barW = boardW * 0.84;
+  const ch = m.goalChance();
+  const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
+  const gastPct = Math.max(0.05, Math.min(0.95, ch.pGast));
+  const torchance = Math.round(ch.pTor * 100);
+  roundRect(ctx, barX, barY, barW, barH, 6);
+  ctx.fillStyle = "rgba(15,23,42,0.75)";
+  ctx.fill();
+  const split = barX + barW * heimPct;
+  ctx.fillStyle = "#2563eb";
+  roundRect(ctx, barX, barY, Math.max(4, split - barX), barH, 6);
+  ctx.fill();
+  ctx.fillStyle = "#dc2626";
+  roundRect(ctx, split, barY, Math.max(4, barX + barW - split), barH, 6);
+  ctx.fill();
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.55))}px Outfit, Manrope, sans-serif`;
+  ctx.textAlign = "left";
+  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, barX + 6, barY + barH / 2 + 0.5);
+  ctx.textAlign = "right";
+  ctx.fillText(`Gast ${Math.round(gastPct * 100)}%`, barX + barW - 6, barY + barH / 2 + 0.5);
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#fde68a";
+  ctx.fillText(`Torchance ${torchance}%`, w * 0.5, barY + barH / 2 + 0.5);
+  ctx.restore();
 }
 
 function drawGang(
@@ -445,6 +506,10 @@ function drawSlots(
   }
 }
 
+/**
+ * Fahnen nur wenn die Frontlinie den Plot erreicht hat
+ * (oder ein Team dort gebaut/geclaimt hat) — nie am Start in der Mitte.
+ */
 function plotPennantTeam(
   m: Match,
   s: BuildSlot,
@@ -452,10 +517,11 @@ function plotPennantTeam(
   if (s.building && !s.greyNeutral && (s.owner === "ksc" || s.owner === "vfb")) {
     return s.owner;
   }
-  // Territorial lean: left plots → Heim team, right → Gast
-  const flat = slotFlatIndex(s.blockId, s.index);
-  const leftish = flat < 6;
-  return leftish ? m.playerTeam : m.aiTeam;
+  const gx = plotGangX(s.blockId, s.index);
+  // No starter flags — only after the front has actually moved onto the plot
+  if (m.linePlayer > 0.1 && gx <= m.linePlayer - 0.01) return m.playerTeam;
+  if (m.lineAi < 0.9 && gx >= m.lineAi + 0.01) return m.aiTeam;
+  return null;
 }
 
 function drawTerritoryPennants(
@@ -476,8 +542,8 @@ function drawTerritoryPennants(
   }
 }
 
-/** Mockup-style umzäuntes Rechteck (Holz) — nicht nur isometrische Raute */
-function drawWoodPlot(
+/** Toy-3D Baustelle from slot-empty asset */
+function drawBaustelle(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -485,48 +551,33 @@ function drawWoodPlot(
   bh: number,
   sel: boolean,
 ): void {
-  const r = Math.min(10, Math.min(bw, bh) * 0.12);
-  // floor
-  ctx.fillStyle = "#5c6370";
-  roundRect(ctx, x + 3, y + 3, bw - 6, bh - 6, r);
-  ctx.fill();
-  const floor = ctx.createLinearGradient(x, y, x, y + bh);
-  floor.addColorStop(0, "#8b929c");
-  floor.addColorStop(1, "#57534e");
-  ctx.fillStyle = floor;
-  roundRect(ctx, x + 5, y + 5, bw - 10, bh - 10, r - 2);
-  ctx.fill();
-
-  // wooden fence posts + rails
-  const post = "#8b5a2b";
-  const rail = "#a16207";
-  ctx.strokeStyle = rail;
-  ctx.lineWidth = Math.max(2.5, Math.min(bw, bh) * 0.045);
-  ctx.strokeRect(x + 6, y + 6, bw - 12, bh - 12);
-  ctx.fillStyle = post;
-  const ps = Math.max(4, Math.min(bw, bh) * 0.07);
-  for (const [px, py] of [
-    [x + 4, y + 4],
-    [x + bw - 4 - ps, y + 4],
-    [x + 4, y + bh - 4 - ps],
-    [x + bw - 4 - ps, y + bh - 4 - ps],
-  ] as const) {
-    roundRect(ctx, px, py, ps, ps * 1.35, 2);
+  const drew = drawIcon(ctx, UI_ICONS.slotEmpty, x, y, bw, bh, 0.02);
+  if (!drew) {
+    // fallback fence plot
+    const r = Math.min(10, Math.min(bw, bh) * 0.12);
+    ctx.fillStyle = "#4b5563";
+    roundRect(ctx, x + 4, y + 4, bw - 8, bh - 8, r);
     ctx.fill();
+    ctx.strokeStyle = "#eab308";
+    ctx.lineWidth = 3;
+    roundRect(ctx, x + 6, y + 6, bw - 12, bh - 12, r - 2);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.font = `800 ${Math.max(16, Math.floor(bh * 0.28))}px Outfit, Manrope, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("+", x + bw / 2, y + bh / 2);
+    ctx.textBaseline = "alphabetic";
   }
-
-  // +
-  ctx.fillStyle = sel ? "#22c55e" : "rgba(255,255,255,0.85)";
-  ctx.font = `800 ${Math.max(16, Math.floor(bh * 0.32))}px Outfit, Manrope, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("+", x + bw / 2, y + bh / 2);
-  ctx.textBaseline = "alphabetic";
-
   if (sel) {
     ctx.strokeStyle = "#22c55e";
-    ctx.lineWidth = 3;
-    roundRect(ctx, x + 1, y + 1, bw - 2, bh - 2, r);
+    ctx.lineWidth = 3.5;
+    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 10);
+    ctx.stroke();
+    // soft green pulse
+    ctx.strokeStyle = "rgba(34,197,94,0.35)";
+    ctx.lineWidth = 6;
+    roundRect(ctx, x - 1, y - 1, bw + 2, bh + 2, 12);
     ctx.stroke();
   }
 }
@@ -549,7 +600,7 @@ function drawBuilding(
   const cx = x + bw / 2;
 
   if (!s.building) {
-    drawWoodPlot(ctx, x, y, bw, bh, sel);
+    drawBaustelle(ctx, x, y, bw, bh, sel);
     return;
   }
 
@@ -569,9 +620,15 @@ function drawBuilding(
   ctx.ellipse(cx, y + bh * 0.88, bw * 0.32, bh * 0.08, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  const iconH = bh * 0.95;
-  const iconY = y + bh * 0.02 + Math.sin(m.realElapsed * 1.6 + s.index) * 1.5;
-  const drew = drawIcon(ctx, iconSrc, x, iconY, bw, iconH, 0.04);
+  // Toy-3D bob on stands (same language as units)
+  const size = Math.min(bw, bh) * 0.98;
+  const drew = drawToyIcon(ctx, iconSrc, cx, y + bh * 0.78, size, {
+    t: m.realElapsed,
+    phase: s.blockId * 1.7 + s.index * 0.9,
+    mode: s.prodFlash > 0.2 ? "cheer" : "idle",
+    facing: 1,
+    hop: 0,
+  });
   if (!drew) {
     ctx.fillStyle = grey ? "#e2e8f0" : player ? "#eff6ff" : ai ? "#fef2f2" : "#f8fafc";
     roundRect(ctx, x, y, bw, bh, r);
@@ -1323,18 +1380,23 @@ export function hitSlot(
   mx: number,
   my: number,
 ): { blockId: number; index: number } | null {
+  let best: { blockId: number; index: number; d: number } | null = null;
   for (const s of m.slots) {
-    if (s.blockId === GAST_BLOCK) continue;
+    // AI home plots are not clickable for the player
+    if (s.blockId === GAST_BLOCK && s.owner === m.aiTeam && s.building) continue;
     const r = boothRect(s.blockId, s.index);
     const x0 = r.x * m.width;
     const y0 = r.y * m.height;
     const x1 = (r.x + r.w) * m.width;
     const y1 = (r.y + r.h) * m.height;
     if (mx >= x0 && mx <= x1 && my >= y0 && my <= y1) {
-      return { blockId: s.blockId, index: s.index };
+      const cx = (x0 + x1) / 2;
+      const cy = (y0 + y1) / 2;
+      const d = Math.hypot(mx - cx, my - cy);
+      if (!best || d < best.d) best = { blockId: s.blockId, index: s.index, d };
     }
   }
-  return null;
+  return best ? { blockId: best.blockId, index: best.index } : null;
 }
 
 export function hitSeat(

@@ -1,4 +1,4 @@
-/** Matchday Comic layout — 3 stands, open gang with scattered build plots */
+/** Matchday Comic — stadium top third, 3 stands, gang with 12 Baustellen */
 
 export const BLOCK_COUNT = 3;
 export const HEIM_BLOCK = 0;
@@ -10,25 +10,25 @@ export const SEAT_COLS = 3;
 export const SEAT_ROWS = 4;
 
 /**
- * Vertical pack (canvas is the center stadium column):
- * - Night sky / floodlights
- * - Bleacher blocks (Heim | Neutral | Gäste)
- * - Open gang with 12 scattered build plots
+ * Vertical pack:
+ * - ~top third: night stadium bowl + scoreboard zone
+ * - stands (Heim | Neutral | Gäste) sit in the bowl
+ * - open gang with 12 scattered Baustellen
  */
 export const L = {
-  skyH: 0.1,
-  blockTop: 0.13,
-  blockBodyH: 0.27,
-  gangPadTop: 0.02,
-  /** Full open concourse (plots live inside this band) */
-  gangH: 0.56,
-  blocksLeft: 0.035,
-  blocksRight: 0.965,
-  blockGap: 0.022,
+  /** Stadium atmosphere fills roughly top third */
+  stadiumH: 0.34,
+  blockTop: 0.16,
+  blockBodyH: 0.2,
+  gangPadTop: 0.015,
+  /** Gang + Baustellen fill the remaining field */
+  gangH: 0.6,
+  blocksLeft: 0.04,
+  blocksRight: 0.96,
+  blockGap: 0.024,
   doorFrac: 0.14,
-  /** Plot footprint relative to canvas */
-  plotW: 0.135,
-  plotH: 0.145,
+  plotW: 0.14,
+  plotH: 0.15,
 };
 
 /** 4 plots per block → 12 total */
@@ -39,24 +39,26 @@ export const BUILDABLE_INDICES_NEUTRAL = BUILDABLE_INDICES;
 export const ULTRA_PAD_INDEX = 0;
 
 /**
- * Organic scatter of 12 plots on the gang (mockup-like, not a rigid bottom grid).
- * Coordinates are normalized canvas fractions (top-left of plot).
+ * 12 Baustellen on the gang, ordered by territory:
+ * flat 0–3 Heim (left), 4–7 Neutral (center), 8–11 Gäste (right).
+ * Normalized canvas fractions (top-left of plot).
  */
 export const PLOT_SCATTER: readonly { x: number; y: number; w: number; h: number }[] = [
-  // upper gang row (closer to stands)
-  { x: 0.05, y: 0.46, w: 0.13, h: 0.14 },
-  { x: 0.22, y: 0.49, w: 0.125, h: 0.135 },
-  { x: 0.40, y: 0.47, w: 0.13, h: 0.14 },
-  { x: 0.58, y: 0.50, w: 0.125, h: 0.135 },
-  { x: 0.74, y: 0.46, w: 0.13, h: 0.14 },
-  { x: 0.06, y: 0.64, w: 0.13, h: 0.145 },
-  // lower gang row
-  { x: 0.24, y: 0.68, w: 0.135, h: 0.14 },
-  { x: 0.42, y: 0.65, w: 0.13, h: 0.145 },
-  { x: 0.60, y: 0.69, w: 0.135, h: 0.14 },
-  { x: 0.78, y: 0.66, w: 0.13, h: 0.145 },
-  { x: 0.14, y: 0.82, w: 0.13, h: 0.14 },
-  { x: 0.70, y: 0.83, w: 0.135, h: 0.14 },
+  // Heim — left column cluster
+  { x: 0.04, y: 0.44, w: 0.135, h: 0.145 },
+  { x: 0.18, y: 0.50, w: 0.13, h: 0.14 },
+  { x: 0.06, y: 0.64, w: 0.135, h: 0.145 },
+  { x: 0.20, y: 0.78, w: 0.13, h: 0.14 },
+  // Neutral — center
+  { x: 0.36, y: 0.46, w: 0.135, h: 0.145 },
+  { x: 0.50, y: 0.52, w: 0.13, h: 0.14 },
+  { x: 0.38, y: 0.66, w: 0.135, h: 0.145 },
+  { x: 0.52, y: 0.78, w: 0.13, h: 0.14 },
+  // Gäste — right
+  { x: 0.68, y: 0.44, w: 0.135, h: 0.145 },
+  { x: 0.82, y: 0.50, w: 0.13, h: 0.14 },
+  { x: 0.70, y: 0.64, w: 0.135, h: 0.145 },
+  { x: 0.83, y: 0.78, w: 0.13, h: 0.14 },
 ];
 
 export function blockWidthNorm(): number {
@@ -81,6 +83,14 @@ export function gangXToWorld(gangX: number): number {
   return left + t * (right - left);
 }
 
+/** Map a world X (0..1) to battle-line gangX (0..1). */
+export function worldXToGangX(worldX: number): number {
+  const left = blockCenterX(0);
+  const right = blockCenterX(BLOCK_COUNT - 1);
+  if (right <= left) return 0.5;
+  return Math.max(0, Math.min(1, (worldX - left) / (right - left)));
+}
+
 export function blockTopY(_blockId: number): number {
   return L.blockTop;
 }
@@ -89,13 +99,12 @@ export function blockBodyBottom(blockId: number): number {
   return blockTopY(blockId) + L.blockBodyH;
 }
 
-/** Top of open gang band */
 export function gangY(): number {
   return L.blockTop + L.blockBodyH + L.gangPadTop;
 }
 
 export function gangMidY(): number {
-  return gangY() + L.gangH * 0.42;
+  return gangY() + L.gangH * 0.4;
 }
 
 export function doorPos(blockId: number): { x: number; y: number } {
@@ -110,8 +119,8 @@ export function seatPos(blockId: number, seatIndex: number): { x: number; y: num
   const row = Math.floor(seatIndex / SEAT_COLS);
   const cx = blockCenterX(blockId);
   const bw = blockWidthNorm();
-  const top = blockTopY(blockId) + L.blockBodyH * 0.18;
-  const usableH = L.blockBodyH * 0.7;
+  const top = blockTopY(blockId) + L.blockBodyH * 0.2;
+  const usableH = L.blockBodyH * 0.68;
   const left = cx - bw * 0.36;
   const stepX = (bw * 0.72) / (SEAT_COLS - 1 || 1);
   const stepY = usableH / (SEAT_ROWS - 1 || 1);
@@ -136,7 +145,6 @@ export function isUltraPad(blockId: number, index: number): boolean {
   return blockId === HEIM_BLOCK && index === ULTRA_PAD_INDEX;
 }
 
-/** Flat 0..11 index for scatter plot list */
 export function slotFlatIndex(blockId: number, index: number): number {
   let n = 0;
   for (let b = 0; b < BLOCK_COUNT; b++) {
@@ -148,9 +156,6 @@ export function slotFlatIndex(blockId: number, index: number): number {
   return 0;
 }
 
-/**
- * Build plots scattered across the open gang (Matchday Comic).
- */
 export function boothRect(
   blockId: number,
   index: number,
@@ -165,8 +170,12 @@ export function boothCenter(blockId: number, index: number): { x: number; y: num
   return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
 }
 
-/** Territory pennant anchor near a plot */
+/** Battle-line position of a plot (0=heim … 1=gäste). */
+export function plotGangX(blockId: number, index: number): number {
+  return worldXToGangX(boothCenter(blockId, index).x);
+}
+
 export function pennantPos(blockId: number, index: number): { x: number; y: number } {
   const r = boothRect(blockId, index);
-  return { x: r.x + r.w * 0.12, y: r.y + r.h * 0.12 };
+  return { x: r.x + r.w * 0.08, y: r.y + r.h * 0.05 };
 }
