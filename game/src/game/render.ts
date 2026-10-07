@@ -703,9 +703,9 @@ function drawMannchen(
   }
   const onGang = f.state === "gang" || f.invading;
   const base = Math.max(0.9, h * (onGang ? 0.03 : 0.02) / 10);
-  // size by kind — ultras bulkier, familie smaller
+  // size by kind — ultras bulkier, hooligans bulk
   const scale =
-    f.kind === "ultras" ? base * 1.15 : f.kind === "familie" ? base * 0.88 : base;
+    f.kind === "ultras" ? base * 1.15 : f.kind === "hooligans" ? base * 0.88 : base;
   const s = 10 * scale;
   const jersey = teamJersey(f);
   const skin = f.team === "neutral" ? "#c4c4c4" : "#e8c4a0";
@@ -746,8 +746,8 @@ function drawMannchen(
 
   if (f.kind === "ultras") {
     drawUltra(ctx, f, s, jersey, skin, onGang);
-  } else if (f.kind === "familie") {
-    drawFamilie(ctx, f, s, jersey, skin);
+  } else if (f.kind === "hooligans") {
+    drawHooligan(ctx, f, s, jersey, skin);
   } else {
     drawNormalo(ctx, f, s, jersey, skin);
   }
@@ -782,7 +782,7 @@ function drawMannchen(
       ctx.fill();
       ctx.restore();
     } else {
-      // Flag for normalos / familie
+      // Flag for normalos
       ctx.save();
       ctx.translate(-s * 0.55, -s * 0.2);
       ctx.rotate(-0.5 + wave);
@@ -883,7 +883,23 @@ function drawUltra(
   ctx.moveTo(-face * s * 0.5, -s * 0.02);
   ctx.lineTo(-face * s * 0.75, s * 0.45);
   ctx.stroke();
-  if (swing > 0.3) {
+  if (f.rangedPyro && onGang) {
+    // Pyro-Stab + Rauch (Fernkampf)
+    ctx.save();
+    ctx.translate(ix, iy);
+    ctx.rotate(-0.55 * face);
+    ctx.fillStyle = "#1c1917";
+    ctx.fillRect(-1.5, -s * 0.15, 3, s * 0.85);
+    ctx.fillStyle = "#f97316";
+    ctx.beginPath();
+    ctx.arc(0, -s * 0.2, s * 0.22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(148,163,184,0.55)";
+    ctx.beginPath();
+    ctx.ellipse(-face * s * 0.35, -s * 0.45, s * 0.45, s * 0.28, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  } else if (swing > 0.3) {
     ctx.fillStyle = "rgba(251,146,60,0.9)";
     ctx.beginPath();
     ctx.arc(ix, iy, s * 0.28, 0, Math.PI * 2);
@@ -960,7 +976,7 @@ function drawNormalo(
   ctx.stroke();
 }
 
-function drawFamilie(
+function drawHooligan(
   ctx: CanvasRenderingContext2D,
   _f: FanUnit,
   s: number,

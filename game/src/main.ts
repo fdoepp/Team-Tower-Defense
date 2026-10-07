@@ -10,14 +10,15 @@ import {
   onFullscreenChange,
 } from "./game/fullscreen";
 import { drawMatch, hitSeat, hitSlot } from "./game/render";
-import { boothRect, HEIM_BLOCK, L, ULTRA_PAD_INDEX } from "./game/layout";
+import { L } from "./game/layout";
 import {
   BUILD_COST,
   BUY_COST,
+  HOOLIGAN_ORDER_BEER,
   MIX_MAX,
   MIX_MIN,
+  PYRO_FIGHT_MERCH,
   STEWARD_HIRE_GOLD,
-  ULTRA_ORDER_BEER,
   UPGRADE_MAX,
   type BuildingKind,
   type FanKind,
@@ -145,9 +146,9 @@ function renderSetup(): void {
         <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
       </div>
       <div class="card stack">
-        ${row("ultras", "Ultras (Kampf/Pyro)")}
-        ${row("normalos", "Normalos (Gesang)")}
-        ${row("familie", "Familie (Geld, braucht Sicherheit)")}
+        ${row("normalos", "Normalos (Gesang · Sicherheit)")}
+        ${row("ultras", "Ultras (Pyro · Fanartikel)")}
+        ${row("hooligans", "Hooligans (Nahkampf · Bier)")}
         <p class="tiny">Summe ${mixSum(mix)} / 8 ${isValidMix(mix) ? "✓" : ""}</p>
       </div>
       <div class="row">
@@ -195,11 +196,27 @@ function renderMatchScreen(): void {
         <canvas id="c"></canvas>
         <div class="pitch-hud" id="pitch-hud">
           <div class="pitch-top">
-            <div class="fanbase-col heim" aria-label="Eigene Fanbase">
-              <span class="fb"><i>U</i><b id="fb-u">0</b></span>
-              <span class="fb"><i>N</i><b id="fb-n">0</b></span>
-              <span class="fb"><i>F</i><b id="fb-f">0</b></span>
-              <span class="fb"><i>O</i><b id="fb-o">0</b></span>
+            <div class="action-rail heim" aria-label="Eigene Fans & Aktionen">
+              <div class="ar-row">
+                <span class="fb"><i>N</i><b id="fb-n">0</b></span>
+                <span class="ar-cur">Sich.</span>
+                <button class="ar-btn gesang" data-mood="gesang" id="btn-gesang" type="button">Gesang<span></span></button>
+              </div>
+              <div class="ar-row">
+                <span class="fb"><i>U</i><b id="fb-u">0</b></span>
+                <span class="ar-cur">Fanart.</span>
+                <button class="ar-btn pyro" data-mood="pyro" id="btn-pyro" type="button">Pyro<span></span></button>
+                <button class="ar-btn pyro-fight" id="btn-pyro-fight" type="button">Fern<span></span></button>
+              </div>
+              <div class="ar-row">
+                <span class="fb"><i>H</i><b id="fb-h">0</b></span>
+                <span class="ar-cur">Bier</span>
+                <button class="ar-btn fight" id="btn-hooligan" type="button">Kampf<span></span></button>
+              </div>
+              <div class="ar-row">
+                <span class="fb"><i>O</i><b id="fb-o">0</b></span>
+                <span class="ar-cur muted">Ordner</span>
+              </div>
             </div>
             <div class="wallet-inline" aria-label="Ressourcen">
               <span class="wi gold"><i>Geld</i><b id="gold">0</b></span>
@@ -213,9 +230,9 @@ function renderMatchScreen(): void {
               <button data-spd="2">2×</button>
             </div>
             <div class="fanbase-col gast" aria-label="Gegner-Fanbase">
-              <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
               <span class="fb"><i>N</i><b id="fb-en">0</b></span>
-              <span class="fb"><i>F</i><b id="fb-ef">0</b></span>
+              <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
+              <span class="fb"><i>H</i><b id="fb-eh">0</b></span>
               <span class="fb"><i>O</i><b id="fb-eo">0</b></span>
             </div>
           </div>
@@ -228,14 +245,6 @@ function renderMatchScreen(): void {
             <div class="hud-crest vfb">V</div>
           </div>
           <div class="mom-row">
-            <div class="mood-stack">
-              <button class="mood-chip gesang" data-mood="gesang" id="btn-gesang" type="button">
-                Gesang<small>Fanartikel</small><span></span>
-              </button>
-              <button class="mood-chip pyro" data-mood="pyro" id="btn-pyro" type="button">
-                Pyro<small>Bier</small><span></span>
-              </button>
-            </div>
             <div class="momentum-wrap">
               <div class="momentum-bar" id="momentum-bar" title="Momentum / Torchance">
                 <div class="mom-fill heim" id="mom-heim"></div>
@@ -252,15 +261,12 @@ function renderMatchScreen(): void {
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
-        <button type="button" class="ultra-pad" id="btn-ultra">
-          <strong>Ultra → Gang</strong><small>${ULTRA_ORDER_BEER} Bier</small><span></span>
-        </button>
         <div class="toast" id="toast"></div>
         <div class="popup-menu hidden" id="seat-menu">
           <p class="popup-title">Fan kaufen</p>
-          <button data-buy="ultras" id="buy-ultras">Ultra <small>${BUY_COST.ultras.beer} Bier</small></button>
-          <button data-buy="normalos" id="buy-normalos">Normalo <small>${BUY_COST.normalos.merch} Fanartikel</small></button>
-          <button data-buy="familie" id="buy-familie">Familie <small>${BUY_COST.familie.gold}€ · Sicherheit≥25</small></button>
+          <button data-buy="normalos" id="buy-normalos">Normalo <small>${BUY_COST.normalos.security} Sicherheit</small></button>
+          <button data-buy="ultras" id="buy-ultras">Ultra <small>${BUY_COST.ultras.merch} Fanartikel</small></button>
+          <button data-buy="hooligans" id="buy-hooligans">Hooligan <small>${BUY_COST.hooligans.beer} Bier</small></button>
           <button class="popup-cancel" id="seat-cancel">Abbrechen</button>
         </div>
         <div class="popup-menu hidden" id="build-menu">
@@ -303,7 +309,6 @@ function renderMatchScreen(): void {
   const btnHire = app.querySelector<HTMLButtonElement>("#btn-hire-steward")!;
   const fsGate = app.querySelector<HTMLDivElement>("#fs-gate")!;
   const pitchHud = app.querySelector<HTMLDivElement>("#pitch-hud")!;
-  const ultraPad = app.querySelector<HTMLButtonElement>("#btn-ultra")!;
 
   const layoutHud = () => {
     const rect = wrap.getBoundingClientRect();
@@ -313,12 +318,6 @@ function renderMatchScreen(): void {
     pitchHud.style.left = "0";
     pitchHud.style.width = "100%";
     pitchHud.style.height = `${Math.floor(pitchPx)}px`;
-
-    const ur = boothRect(HEIM_BLOCK, ULTRA_PAD_INDEX);
-    ultraPad.style.left = `${ur.x * rect.width}px`;
-    ultraPad.style.top = `${ur.y * rect.height}px`;
-    ultraPad.style.width = `${ur.w * rect.width}px`;
-    ultraPad.style.height = `${ur.h * rect.height}px`;
   };
 
   const resize = () => {
@@ -406,12 +405,14 @@ function renderMatchScreen(): void {
       const next = (slot.level || 1) + 1;
       buildTitle.textContent = `${slot.building === "bier" ? "Bierstand" : slot.building === "ordner" ? "Ordnerposten" : "Fanshop"} Lv${slot.level}`;
       if (slot.building === "ordner") {
+        btnHire.hidden = false;
         btnHire.classList.remove("hidden");
         const canHire = m.canHireSteward(slot);
         btnHire.disabled = !canHire;
         btnHire.innerHTML = `Ordner anheuern <small>${STEWARD_HIRE_GOLD}€ · ${m.stewardCountAt(slot)}/2</small>`;
         btnHire.classList.toggle("cd", !canHire);
       } else {
+        btnHire.hidden = true;
         btnHire.classList.add("hidden");
       }
       if (cost == null || slot.level >= UPGRADE_MAX) {
@@ -424,6 +425,7 @@ function renderMatchScreen(): void {
     } else {
       buildOptions.classList.remove("hidden");
       upgradeOptions.classList.add("hidden");
+      btnHire.hidden = true;
       btnHire.classList.add("hidden");
       buildTitle.textContent = `Gebäude · Shop ${BUILD_COST.fanshop}g · Ordner ${BUILD_COST.ordner}g · Bier ${BUILD_COST.bier}g`;
     }
@@ -431,7 +433,7 @@ function renderMatchScreen(): void {
   };
 
   const syncBuyButtons = () => {
-    (["ultras", "normalos", "familie"] as FanKind[]).forEach((kind) => {
+    (["ultras", "normalos", "hooligans"] as FanKind[]).forEach((kind) => {
       const btn = app.querySelector<HTMLButtonElement>(`#buy-${kind}`)!;
       const ok = m.canBuy(kind);
       btn.classList.toggle("ready", ok);
@@ -496,15 +498,22 @@ function renderMatchScreen(): void {
       btn.classList.toggle("cd", !ready);
       btn.querySelector("span")!.textContent = cdLabel(m.cd[act]);
     });
-    const ub = app.querySelector<HTMLButtonElement>("#btn-ultra")!;
-    const uready = m.ultraOrderReady();
-    ub.classList.toggle("ready", uready);
-    ub.classList.toggle("cd", !uready);
-    ub.querySelector("span")!.textContent = uready
-      ? "bereit"
-      : m.currency.beer < ULTRA_ORDER_BEER
-        ? `${ULTRA_ORDER_BEER} Bier`
-        : "kein Ultra";
+    const hb = app.querySelector<HTMLButtonElement>("#btn-hooligan")!;
+    const hready = m.hooliganOrderReady();
+    hb.classList.toggle("ready", hready);
+    hb.classList.toggle("cd", !hready);
+    hb.querySelector("span")!.textContent = hready
+      ? `${HOOLIGAN_ORDER_BEER} Bier`
+      : m.currency.beer < HOOLIGAN_ORDER_BEER
+        ? `${HOOLIGAN_ORDER_BEER} Bier`
+        : "—";
+    const pf = app.querySelector<HTMLButtonElement>("#btn-pyro-fight")!;
+    const pready = m.pyroFightReady();
+    pf.classList.toggle("ready", pready);
+    pf.classList.toggle("cd", !pready);
+    pf.querySelector("span")!.textContent = pready
+      ? `${PYRO_FIGHT_MERCH} FA`
+      : "—";
     if (!seatMenu.classList.contains("hidden")) syncBuyButtons();
   };
 
@@ -531,8 +540,12 @@ function renderMatchScreen(): void {
       syncOverlay();
     });
   });
-  app.querySelector("#btn-ultra")!.addEventListener("click", () => {
-    m.tryUltraOrder();
+  app.querySelector("#btn-hooligan")!.addEventListener("click", () => {
+    m.tryHooliganOrder();
+    syncOverlay();
+  });
+  app.querySelector("#btn-pyro-fight")!.addEventListener("click", () => {
+    m.tryPyroFight();
     syncOverlay();
   });
   app.querySelectorAll<HTMLButtonElement>("[data-buy]").forEach((btn) => {
@@ -593,11 +606,11 @@ function renderMatchScreen(): void {
       };
       setFb("#fb-u", own.ultras);
       setFb("#fb-n", own.normalos);
-      setFb("#fb-f", own.familie);
+      setFb("#fb-h", own.hooligans);
       setFb("#fb-o", own.ordner);
       setFb("#fb-eu", foe.ultras);
       setFb("#fb-en", foe.normalos);
-      setFb("#fb-ef", foe.familie);
+      setFb("#fb-eh", foe.hooligans);
       setFb("#fb-eo", foe.ordner);
       const hudScore = app.querySelector("#hud-score");
       const hudMin = app.querySelector("#hud-minute");

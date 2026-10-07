@@ -6,11 +6,11 @@ export function clamp(n: number, a: number, b: number): number {
 }
 
 export function mixSum(m: FanMix): number {
-  return m.normalos + m.ultras + m.familie;
+  return m.normalos + m.ultras + m.hooligans;
 }
 
 export function defaultMix(): FanMix {
-  return { normalos: 3, ultras: 3, familie: 2 };
+  return { normalos: 3, ultras: 3, hooligans: 2 };
 }
 
 export function isValidMix(mix: FanMix): boolean {
@@ -20,8 +20,8 @@ export function isValidMix(mix: FanMix): boolean {
     mix.normalos <= MIX_MAX.normalos &&
     mix.ultras >= MIX_MIN.ultras &&
     mix.ultras <= MIX_MAX.ultras &&
-    mix.familie >= MIX_MIN.familie &&
-    mix.familie <= MIX_MAX.familie
+    mix.hooligans >= MIX_MIN.hooligans &&
+    mix.hooligans <= MIX_MAX.hooligans
   );
 }
 
@@ -49,7 +49,7 @@ export function expandMix(mix: FanMix): FanKind[] {
   const out: FanKind[] = [];
   for (let i = 0; i < mix.ultras; i++) out.push("ultras");
   for (let i = 0; i < mix.normalos; i++) out.push("normalos");
-  for (let i = 0; i < mix.familie; i++) out.push("familie");
+  for (let i = 0; i < mix.hooligans; i++) out.push("hooligans");
   return out;
 }
 
