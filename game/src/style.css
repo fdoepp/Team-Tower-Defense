@@ -212,7 +212,7 @@ select {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex-shrink: 0;
+  flex: 0 0 auto;
   pointer-events: auto;
   max-width: min(42%, 280px);
   padding: 4px 6px;
@@ -221,7 +221,8 @@ select {
   border: 1px solid rgba(255, 255, 255, 0.85);
   box-shadow: var(--shadow-sm);
   backdrop-filter: blur(12px);
-  z-index: 2;
+  z-index: 4;
+  position: relative;
 }
 
 .wallet-row {
@@ -398,7 +399,6 @@ select {
   gap: 3px;
   flex-shrink: 0;
   min-width: 44px;
-  margin-left: auto;
 }
 
 .fanbase-col .fb {
@@ -504,18 +504,35 @@ select {
   flex-shrink: 0;
 }
 
-.pitch-center-stack {
-  position: absolute;
-  left: 50%;
-  top: 8%;
-  transform: translateX(-50%);
-  z-index: 6;
+.pitch-score {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  width: min(420px, 58%);
+  flex: 1 1 auto;
+  min-width: 0;
   pointer-events: none;
+}
+
+/* Slim bar under the top row — never overlaps Heim panel / score / fanbase */
+.pitch-momentum {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 4px;
+  pointer-events: none;
+  z-index: 2;
+  position: relative;
+}
+
+.pitch-momentum .momentum-wrap {
+  width: min(220px, 34vw);
+  max-width: 34%;
+  flex: 0 1 auto;
+  padding: 4px 8px;
+  border-radius: 10px;
 }
 
 .pitch-hud .match-hud-score {
@@ -614,26 +631,27 @@ select {
 .momentum-wrap {
   flex: 1;
   min-width: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
   justify-content: center;
-  padding: 8px 12px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(14px);
+  padding: 5px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(12px);
 }
 
 .momentum-bar {
   position: relative;
   width: 100%;
-  height: 16px;
+  height: 10px;
   border-radius: 999px;
   overflow: hidden;
   background: rgba(148, 163, 184, 0.35);
-  border: 1px solid rgba(15, 23, 42, 0.12);
+  border: 1px solid rgba(15, 23, 42, 0.1);
   display: flex;
   transition: box-shadow 0.15s ease;
 }
@@ -664,12 +682,12 @@ select {
 
 .mom-knob {
   position: absolute;
-  top: 2px;
-  width: 6px;
-  height: 12px;
-  margin-left: -3px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  margin-left: -2px;
   background: #fff;
-  border-radius: 3px;
+  border-radius: 2px;
   box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.25);
   left: 50%;
   z-index: 2;
@@ -711,7 +729,7 @@ select {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  font-size: 0.62rem;
+  font-size: 0.5rem;
   font-weight: 800;
   line-height: 1.1;
 }

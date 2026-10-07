@@ -338,6 +338,7 @@ export class Match {
       patrolDir: Math.random() < 0.5 ? 1 : -1,
       cheerT: 0,
       rangedPyro: false,
+      onOffense: false,
     };
   }
 
@@ -345,12 +346,14 @@ export class Match {
     const sp = this.stewardPostPos(stand);
     const gx = blockIdToGangX(stand.blockId);
     const hp = STEWARD_STATS.maxHpBase + stand.level * STEWARD_STATS.maxHpPerLevel;
+    // Spawn already on gang — tickFans skips stewards, so a "moving" path
+    // would never finish and they'd never patrol.
     return {
       id: uid(),
       kind: "normalos",
       team,
       blockId: stand.blockId,
-      state: "moving",
+      state: "gang",
       seatIndex: null,
       standKey: null,
       hp,
@@ -364,7 +367,7 @@ export class Match {
       gangX: gx,
       x: sp.x,
       y: sp.y,
-      path: [sp],
+      path: [],
       pathI: 0,
       armSwing: 0,
       attackCd: 0,
@@ -375,7 +378,7 @@ export class Match {
       patrolDir: Math.random() < 0.5 ? 1 : -1,
       cheerT: 0,
       rangedPyro: false,
-      _after: "steward",
+      onOffense: false,
     };
   }
 
@@ -491,12 +494,11 @@ export class Match {
     void at;
   }
 
+  /** Nur echte Bedrohung im/am Heimblock — nicht die Kampf-Frontlinie weit draußen */
   teamHomeThreatened(team: TeamId): boolean {
     const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
     if (this.enemyUltraInBlock(home, team)) return true;
-    return team === this.playerTeam
-      ? this.lineAi < blockIdToGangX(HEIM_BLOCK) + 0.14
-      : this.linePlayer > blockIdToGangX(GAST_BLOCK) - 0.14;
+    return this.enemyOnGangNearHome(team);
   }
 
   toast(text: string): void {
@@ -915,55 +917,51 @@ canBuy(kind: FanKind): boolean {
     this.pyroShots = this.pyroShots.filter((p) => p.t < p.life);
   }
 
-  /** True if this unit was sent on offense (not just walking to beer) */
-  private isOffensiveGangUnit(f: FanUnit): boolean {
-    return (
-      (f.kind === "hooligans" || f.kind === "ultras") &&
-      (f.state === "gang" || f.invading) &&
-      !f.isSteward
-    );
-  }
-
   /**
-   * Defense: pull invaders home when own block threatened.
-   * After threat is gone, defenders on gang return to seats.
-   * Attackers (no home threat) keep pushing — never idle on the gang.
+   * Nur Invasion abbrechen, wenn der eigene Block wirklich angegriffen wird.
+   * Angreifer (Angriff/Pyro Wurf, onOffense) pushen weiter —
+   * sie werden NICHT zurück auf den Sitz geschickt.
    */
   private tickRecallForDefense(dt: number): void {
     void dt;
     for (const team of [this.playerTeam, this.aiTeam] as TeamId[]) {
       const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+      const homeGx = blockIdToGangX(home);
       const threatened = this.teamHomeThreatened(team);
 
       for (const f of this.fans) {
         if (f.hp <= 0 || f.team !== team) continue;
         if (f.kind !== "hooligans" && f.kind !== "ultras") continue;
 
+        // Offensive orders keep pushing
+        if (f.onOffense) continue;
+
         if (threatened && f.invading) {
           f.invading = false;
+          f.onOffense = false;
           f.state = "gang";
           f.blockId = f.homeBlockId ?? home;
           f.path = [];
           f.pathI = 0;
-          f.aggro = 100;
+          f.aggro = 100; // defender
           continue;
         }
 
-        // Threat cleared → sit down again (defense done)
+        // Nur Verteidiger (aggro≥80) nahe Heim → zurück auf Sitz nach Entwarnung
         if (
           !threatened &&
           f.state === "gang" &&
           !f.invading &&
           f.aggro >= 80 &&
-          !this.enemyOnGangNearHome(team)
+          Math.abs(f.gangX - homeGx) < 0.2
         ) {
-          const seat =
-            f.seatIndex ?? f._homeSeat ?? this.freeSeat(home);
+          const seat = f.seatIndex ?? f._homeSeat ?? this.freeSeat(home);
           if (seat != null) {
             const end = seatPos(home, seat);
             this.startPath(f, this.pathViaDoors(f.blockId, home, end), "home");
             f._homeSeat = seat;
             f.aggro = 10;
+            f.onOffense = false;
           }
         }
       }
@@ -971,15 +969,14 @@ canBuy(kind: FanKind): boolean {
   }
 
   private enemyOnGangNearHome(team: TeamId): boolean {
-    const homeGx = blockIdToGangX(
-      team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK,
-    );
+    const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+    const homeGx = blockIdToGangX(home);
+    const reach = 0.18;
     return this.fans.some((o) => {
       if (o.hp <= 0 || o.team === team || o.team === "neutral") return false;
-      if (!(o.kind === "ultras" || o.kind === "hooligans" || o.isSteward))
-        return false;
+      if (!(o.kind === "ultras" || o.kind === "hooligans")) return false;
       if (o.state !== "gang" && !o.invading && o.state !== "moving") return false;
-      return Math.abs(o.gangX - homeGx) < 0.22;
+      return Math.abs(o.gangX - homeGx) < reach;
     });
   }
 
@@ -1095,7 +1092,7 @@ canBuy(kind: FanKind): boolean {
     return true;
   }
 
-    private sendToGang(f: FanUnit): void {
+  private sendToGang(f: FanUnit): void {
     const door = doorPos(f.blockId);
     const lane = gangLanePos(f.blockId);
     // Keep seatIndex reserved while alive on gang
@@ -1103,6 +1100,8 @@ canBuy(kind: FanKind): boolean {
     f.state = "moving";
     f.standKey = null;
     f.invading = false;
+    f.onOffense = true;
+    f.aggro = 40; // offense — keep pushing, don't auto-sit
     f.path = [
       { x: door.x, y: door.y },
       { x: lane.x, y: lane.y },
@@ -1202,7 +1201,10 @@ canBuy(kind: FanKind): boolean {
     s.owner = this.playerTeam;
     if (!s.level) s.level = 1;
     if (s.building === "bier" && s.beer < 20) s.beer = 40;
-    if (s.building === "ordner") s.stewardCd = 9999; // manual hire only
+    if (s.building === "ordner") {
+      s.stewardCd = 9999; // manual hire only
+      if (s.structHp <= 0) this.initOrdnerPostHp(s);
+    }
     this.buildMenu = null;
     const p = this.standWorld(s);
     this.floatAt(p.x, p.y, `−${cost}€`, false);
@@ -1559,22 +1561,50 @@ canBuy(kind: FanKind): boolean {
     }
   }
 
-  /** Patrol in front of own Ordnerposten (visible left/right sweep) */
+  /** Patrol across own painted gang territory in front of the post */
   private stewardPatrolBand(f: FanUnit): { min: number; max: number } {
     const postGx = f.homeStandKey
       ? blockIdToGangX(Number(f.homeStandKey.split(":")[0]))
       : f.gangX;
     if (f.team === "neutral") {
       return {
-        min: clamp(postGx - 0.14, 0.05, 0.95),
-        max: clamp(postGx + 0.14, 0.05, 0.95),
+        min: clamp(postGx - 0.16, 0.05, 0.95),
+        max: clamp(postGx + 0.16, 0.05, 0.95),
       };
     }
-    // Team Ordner: clear sweep around the post on the gang
-    return {
-      min: clamp(postGx - 0.16, 0.02, 0.98),
-      max: clamp(postGx + 0.16, 0.02, 0.98),
-    };
+    if (f.team === this.playerTeam) {
+      // Heim → vorwärts über eigenes Territorium (sichtbarer Sweep)
+      const far = Math.max(
+        postGx + 0.28,
+        this.linePlayer,
+        this.cementEdgeGx(this.playerTeam),
+        this.buildFrontierGx(this.playerTeam),
+      );
+      let min = clamp(postGx - 0.06, 0.02, 0.88);
+      let max = clamp(far + 0.04, 0.2, 0.92);
+      if (max - min < 0.18) max = clamp(min + 0.18, 0.2, 0.92);
+      return { min, max };
+    }
+    const near = Math.min(
+      postGx - 0.28,
+      this.lineAi,
+      this.cementEdgeGx(this.aiTeam),
+      this.buildFrontierGx(this.aiTeam),
+    );
+    let min = clamp(near - 0.04, 0.08, 0.8);
+    let max = clamp(postGx + 0.06, 0.12, 0.98);
+    if (max - min < 0.18) min = clamp(max - 0.18, 0.08, 0.8);
+    return { min, max };
+  }
+
+  private teamHasCement(team: TeamId): boolean {
+    for (const s of this.slots) {
+      if (s.building === "ordner" && s.structHp > 0 && s.owner === team)
+        return true;
+    }
+    return this.fans.some(
+      (f) => f.hp > 0 && f.isSteward && f.team === team,
+    );
   }
 
   /** Furthest cemented gang X held by living Ordner + intact Ordnerposten */
@@ -1584,6 +1614,7 @@ canBuy(kind: FanKind): boolean {
       team === this.playerTeam
         ? blockIdToGangX(HEIM_BLOCK)
         : blockIdToGangX(GAST_BLOCK);
+    if (!this.teamHasCement(team)) return edge;
 
     for (const s of this.slots) {
       if (s.building !== "ordner" || s.structHp <= 0) continue;
@@ -1602,10 +1633,11 @@ canBuy(kind: FanKind): boolean {
   private cementWallAhead(f: FanUnit): number | null {
     if (f.team !== this.playerTeam && f.team !== this.aiTeam) return null;
     const foe = f.team === this.playerTeam ? this.aiTeam : this.playerTeam;
+    if (!this.teamHasCement(foe)) return null;
     const dir = f.team === this.playerTeam ? 1 : -1;
     const wall = this.cementEdgeGx(foe);
     const dx = (wall - f.gangX) * dir;
-    if (dx < -0.02) return null; // already past (shouldn't usually happen)
+    if (dx < -0.02) return null;
     return wall;
   }
 
@@ -1840,6 +1872,18 @@ canBuy(kind: FanKind): boolean {
         this.blockerAhead(f, moveDir) ??
         (Math.abs(t.x - f.x) < 0.04 ? this.foeInWay(f) : null);
       if (blocker) {
+        // Offense units: leave path-follow and enter gang combat so they
+        // keep pushing / shooting instead of freezing mid-route.
+        if (f.onOffense && Math.abs(f.y - midY) < 0.1) {
+          f.state = "gang";
+          f.path = [];
+          f.pathI = 0;
+          this.setAfter(f, "");
+          f.y = midY;
+          this.syncGangFromWorld(f);
+          if (f.aggro < 80) f.aggro = 40;
+          return;
+        }
         const gap = (blocker.x - f.x) * moveDir;
         const reach = f.rangedPyro ? RANGED_RANGE * 0.7 : MELEE_RANGE * 0.35;
         if (gap > reach) {
@@ -1848,7 +1892,9 @@ canBuy(kind: FanKind): boolean {
         }
         f.y += (midY - f.y) * Math.min(1, 8 * dt);
         this.syncGangFromWorld(f);
-        f.aggro = 100;
+        // Don't promote attackers to "defender" mid-path — keeps Angriff pushing
+        if (!f.onOffense) f.aggro = 100;
+        else if (f.aggro < 80) f.aggro = 40;
         return;
       }
     }
@@ -1903,6 +1949,7 @@ canBuy(kind: FanKind): boolean {
     } else if (after === "home") {
       f.state = "block";
       f.invading = false;
+      f.onOffense = false;
       const home = this.homeBlockOf(f);
       f.blockId = home;
       const seat = f.seatIndex ?? f._homeSeat ?? this.freeSeat(home);
@@ -1915,6 +1962,8 @@ canBuy(kind: FanKind): boolean {
     } else if (after === "invade") {
       f.state = "block";
       f.invading = true;
+      // Still on the attack order until they sit / recall
+      f.onOffense = true;
       // Fight at door/front — no seat claim while defenders remain
       const door = doorPos(f.blockId);
       f.x = door.x;
@@ -1943,7 +1992,8 @@ canBuy(kind: FanKind): boolean {
       dirHint ??
       (f.team === this.playerTeam ? 1 : f.team === this.aiTeam ? -1 : 1);
     let best: FanUnit | null = null;
-    let bestD = f.rangedPyro ? RANGED_RANGE * 1.15 : MELEE_RANGE * 2.2;
+    // Keep detection modest so attackers don't "see" the whole gang from home
+    let bestD = f.rangedPyro ? RANGED_RANGE * 0.95 : MELEE_RANGE * 2.2;
     for (const o of this.fans) {
       if (!this.isHostileUnit(f, o)) continue;
       const onLane =
@@ -1996,35 +2046,55 @@ canBuy(kind: FanKind): boolean {
     const speed = 0.065 * FAN_STATS[f.kind].fight;
     const midY = gangMidY();
     const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
+
+    // Angreifer (onOffense) pushen immer vorwärts. Nur echte Heim-Verteidiger
+    // laufen zurück, wenn Feinde am Heimblock sind.
     const team = f.team as TeamId;
-    const defending =
-      this.isOffensiveGangUnit(f) && this.teamHomeThreatened(team);
+    const homeGx = blockIdToGangX(
+      team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK,
+    );
+    const defendHome =
+      !f.onOffense &&
+      f.aggro >= 80 &&
+      this.teamHomeThreatened(team) &&
+      (dir > 0 ? f.gangX > homeGx + 0.12 : f.gangX < homeGx - 0.12);
+    const moveDir = defendHome ? -dir : dir;
 
-    // Move direction: home when defending, else push toward enemy
-    const moveDir = defending ? -dir : dir;
-
-    const ordPosts = defending ? [] : this.blockingOrdnerPosts(f, goalBlock);
-    const cementWall = defending ? null : this.cementWallAhead(f);
+    const ordPosts = defendHome ? [] : this.blockingOrdnerPosts(f, goalBlock);
+    const cementWall = defendHome ? null : this.cementWallAhead(f);
     const blocker = this.blockerAhead(f, moveDir);
+    const gapToBlocker = blocker ? (blocker.x - f.x) * moveDir : 999;
+    // Offense always marches; only halt in true contact range (melee / short pyro hold)
+    const haltGap = f.rangedPyro ? RANGED_RANGE * 0.32 : MELEE_RANGE * 0.55;
+    const inHalt = blocker != null && gapToBlocker <= haltGap;
 
-    // Always engage foes in front — never idle past them
-    if (blocker) {
+    if (inHalt && blocker && !f.onOffense) {
       if (f.rangedPyro) {
-        const desired = blocker.x - moveDir * (RANGED_RANGE * 0.7);
+        const desired = blocker.x - moveDir * (RANGED_RANGE * 0.4);
         f.x += (desired - f.x) * Math.min(1, 5 * dt);
         f.y += (midY - f.y) * Math.min(1, 8 * dt);
       } else {
-        const gap = (blocker.x - f.x) * moveDir;
         const targetGap = MELEE_RANGE * 0.2;
-        if (gap > targetGap) {
-          f.x += moveDir * Math.min(gap - targetGap, speed * 2.4 * dt);
+        if (gapToBlocker > targetGap) {
+          f.x += moveDir * Math.min(gapToBlocker - targetGap, speed * 2.4 * dt);
         } else {
           f.x += moveDir * speed * 0.4 * dt;
         }
         f.y += (blocker.y - f.y) * Math.min(1, 10 * dt);
       }
       this.syncGangFromWorld(f);
-      f.aggro = 100;
+    } else if (inHalt && blocker && f.onOffense) {
+      // Keep pressing while fighting — don't idle at the home door
+      const press = f.rangedPyro ? speed * 1.15 : speed * 1.6;
+      const targetGap = f.rangedPyro ? RANGED_RANGE * 0.28 : MELEE_RANGE * 0.2;
+      if (gapToBlocker > targetGap) {
+        f.gangX = clamp(f.gangX + moveDir * press * dt, 0, 1);
+      } else {
+        f.gangX = clamp(f.gangX + moveDir * speed * 0.35 * dt, 0, 1);
+      }
+      f.x = gangXToWorld(f.gangX);
+      f.y = midY + Math.sin(this.realElapsed * 3 + f.id) * 0.008;
+      if (f.aggro < 80) f.aggro = 40;
     } else {
       f.gangX = clamp(f.gangX + moveDir * speed * dt, 0, 1);
       f.x = gangXToWorld(f.gangX);
@@ -2045,22 +2115,15 @@ canBuy(kind: FanKind): boolean {
       f.x = gangXToWorld(f.gangX);
     }
 
-    if (defending) return; // stay on gang until threat cleared (recall sends home)
+    if (defendHome) return;
 
     const goalGx = blockIdToGangX(goalBlock);
-    const wallClear = cementWall == null || (dir > 0 ? f.gangX >= cementWall - 0.02 : f.gangX <= cementWall + 0.02);
-    // Only invade when wall cleared — if cement still holds, keep fighting it
+    const foe = team === this.playerTeam ? this.aiTeam : this.playerTeam;
+    const foeCement = this.cementEdgeGx(foe);
+    const pastCement =
+      dir > 0 ? foeCement < f.gangX - 0.01 : foeCement > f.gangX + 0.01;
     const canInvade =
-      !blocker &&
-      ordPosts.length === 0 &&
-      (cementWall == null ||
-        (dir > 0
-          ? this.cementEdgeGx(
-              f.team === this.playerTeam ? this.aiTeam : this.playerTeam,
-            ) < f.gangX - 0.01
-          : this.cementEdgeGx(
-              f.team === this.playerTeam ? this.aiTeam : this.playerTeam,
-            ) > f.gangX + 0.01));
+      !inHalt && ordPosts.length === 0 && (cementWall == null || pastCement);
     const reached =
       f.team === this.playerTeam
         ? f.gangX >= goalGx - 0.02
@@ -2078,7 +2141,6 @@ canBuy(kind: FanKind): boolean {
       f._homeSeat = f.seatIndex;
       this.setAfter(f, "invade");
     }
-    void wallClear;
   }
 
   private updateBattleLines(): void {
@@ -2375,16 +2437,17 @@ canBuy(kind: FanKind): boolean {
           a.kind !== "normalos" &&
           b.kind !== "normalos";
 
+        const midY = gangMidY();
         const aOnCorridor =
           a.state === "gang" ||
-          a.state === "moving" ||
           a.isSteward ||
-          a.state === "stand";
+          a.state === "stand" ||
+          (a.state === "moving" && Math.abs(a.y - midY) < 0.1);
         const bOnCorridor =
           b.state === "gang" ||
-          b.state === "moving" ||
           b.isSteward ||
-          b.state === "stand";
+          b.state === "stand" ||
+          (b.state === "moving" && Math.abs(b.y - midY) < 0.1);
         const sameLane =
           sameBlockFight || (aOnCorridor && bOnCorridor);
 
@@ -2409,7 +2472,7 @@ canBuy(kind: FanKind): boolean {
       a.armSwing = 1;
       a.attackCd = HIT_CD / Math.max(0.4, this.attackOf(a));
 
-      if (a.rangedPyro && (a.state === "gang" || a.isSteward)) {
+      if (a.rangedPyro && (a.state === "gang" || a.state === "moving" || a.isSteward)) {
         const dmg =
           (HIT_DAMAGE *
             HIT_DAMAGE_SCALE *
@@ -2422,13 +2485,17 @@ canBuy(kind: FanKind): boolean {
         this.applyHit(a, best);
       }
 
-      // Steward fights always trade — Ultra must deal damage back
+      // Counter-hit only in melee reach — ranged pyro must not eat free Ordner punches
+      // from halfway across the gang.
       if (best.hp > 0 && best.kind !== "hooligans") {
-        const stewardFight = a.isSteward || best.isSteward;
-        if (stewardFight || best.attackCd <= 0) {
-          best.armSwing = 1;
-          best.attackCd = HIT_CD / Math.max(0.4, this.attackOf(best));
-          this.applyHit(best, a);
+        const counterReach = best.isSteward || a.isSteward ? MELEE_RANGE * 1.15 : MELEE_RANGE;
+        if (dist(a.x, a.y, best.x, best.y) <= counterReach) {
+          const stewardFight = a.isSteward || best.isSteward;
+          if (stewardFight || best.attackCd <= 0) {
+            best.armSwing = 1;
+            best.attackCd = HIT_CD / Math.max(0.4, this.attackOf(best));
+            this.applyHit(best, a);
+          }
         }
       }
     }
@@ -2458,7 +2525,12 @@ canBuy(kind: FanKind): boolean {
       (HIT_DAMAGE * HIT_DAMAGE_SCALE * rangedMul * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
       Math.max(0.35, (this.defenseOf(target) * defMul) / this.neighborBonus(target));
     target.hp -= dmg;
-    target.aggro = clamp(target.aggro + 12, 0, 100);
+    // Hitting an attacker must not cancel their push (aggro→100 used to recall them)
+    if (!target.onOffense) {
+      target.aggro = clamp(target.aggro + 12, 0, 100);
+    } else if (target.aggro < 80) {
+      target.aggro = 40;
+    }
     if (target.hp <= 0) {
       target.hp = 0;
       if (target.isSteward) {

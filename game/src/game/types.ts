@@ -58,6 +58,8 @@ export type FanUnit = {
   cheerT: number;
   /** Ultra sent via Pyro-Kampf — ranged smoker, low HP */
   rangedPyro: boolean;
+  /** Sent via Angriff / Pyro Wurf — keep pushing, don't auto-return to seat */
+  onOffense: boolean;
   _after?: string;
   _homeSeat?: number | null;
 };
@@ -217,8 +219,8 @@ export const STEWARD_STATS = {
   attack: 0.85,
   defense: 1.25,
   vsUltraMul: 1.2,
-  patrolSpeed: 0.085,
-  chaseSpeed: 0.18,
+  patrolSpeed: 0.12,
+  chaseSpeed: 0.2,
 };
 
 export const BLOCK_META = [

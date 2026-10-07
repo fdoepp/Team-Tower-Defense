@@ -229,6 +229,16 @@ function renderMatchScreen(): void {
                 </div>
               </div>
             </div>
+            <div class="pitch-score" aria-label="Spielstand">
+              <div class="match-hud-score">
+                <div class="hud-crest ksc">K</div>
+                <div class="hud-scoreline">
+                  <b id="hud-score">0:0</b>
+                  <span id="hud-minute">0′</span>
+                </div>
+                <div class="hud-crest vfb">V</div>
+              </div>
+            </div>
             <div class="fanbase-col gast" aria-label="Gegner-Fanbase">
               <span class="fb"><i>N</i><b id="fb-en">0</b></span>
               <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
@@ -236,28 +246,18 @@ function renderMatchScreen(): void {
               <span class="fb"><i>O</i><b id="fb-eo">0</b></span>
             </div>
           </div>
-          <div class="pitch-center-stack" aria-label="Spielstand und Momentum">
-            <div class="match-hud-score">
-              <div class="hud-crest ksc">K</div>
-              <div class="hud-scoreline">
-                <b id="hud-score">0:0</b>
-                <span id="hud-minute">0′</span>
+          <div class="pitch-momentum" aria-label="Momentum">
+            <div class="momentum-wrap">
+              <div class="momentum-bar" id="momentum-bar" title="Momentum / Torchance">
+                <div class="mom-fill heim" id="mom-heim"></div>
+                <div class="mom-fill gast" id="mom-gast"></div>
+                <div class="mom-knob" id="mom-knob"></div>
+                <div class="mom-pulse" id="mom-pulse" aria-hidden="true"></div>
               </div>
-              <div class="hud-crest vfb">V</div>
-            </div>
-            <div class="mom-row">
-              <div class="momentum-wrap">
-                <div class="momentum-bar" id="momentum-bar" title="Momentum / Torchance">
-                  <div class="mom-fill heim" id="mom-heim"></div>
-                  <div class="mom-fill gast" id="mom-gast"></div>
-                  <div class="mom-knob" id="mom-knob"></div>
-                  <div class="mom-pulse" id="mom-pulse" aria-hidden="true"></div>
-                </div>
-                <div class="mom-labels">
-                  <span id="mom-p-heim">Heim 50%</span>
-                  <span id="mom-p-tor">Torchance 28%</span>
-                  <span id="mom-p-gast">Gast 50%</span>
-                </div>
+              <div class="mom-labels">
+                <span id="mom-p-heim">Heim 50%</span>
+                <span id="mom-p-tor">Torchance 28%</span>
+                <span id="mom-p-gast">Gast 50%</span>
               </div>
             </div>
           </div>
