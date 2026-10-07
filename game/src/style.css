@@ -361,11 +361,28 @@ select {
 }
 
 .match-shell.matchday .fanbase-col.gast {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 4px;
   margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid rgba(90, 55, 25, 0.18);
   pointer-events: none;
+}
+
+.match-shell.matchday .fanbase-col.gast::before {
+  content: "Gegner";
+  grid-column: 1 / -1;
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: #6b4423;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.match-shell.matchday .fanbase-col.gast .fb {
+  min-width: 0;
+  justify-content: space-between;
 }
 
 @media (max-width: 900px) {
