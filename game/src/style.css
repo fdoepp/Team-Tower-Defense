@@ -186,9 +186,11 @@ select {
   height: 100%;
   display: grid;
   grid-template-columns: minmax(148px, 18%) 1fr minmax(148px, 18%);
+  grid-template-rows: 1fr;
   gap: 0;
   position: relative;
   background: #1a1410;
+  align-items: stretch;
 }
 
 .match-shell.matchday .side-rail {
@@ -196,6 +198,9 @@ select {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
   padding: 8px 8px max(8px, env(safe-area-inset-bottom));
   overflow: auto;
   pointer-events: auto;
@@ -317,11 +322,13 @@ select {
 }
 
 .match-shell.matchday #game-wrap {
-  position: relative;
-  inset: auto;
+  position: relative !important;
+  inset: auto !important;
   width: 100%;
   height: 100%;
   min-width: 0;
+  min-height: 0;
+  grid-column: 2;
   background: #1e293b;
 }
 
@@ -1186,8 +1193,8 @@ select {
   .rotate-hint {
     display: flex;
   }
-  .match-shell {
-    display: block !important;
+  .match-shell.a2c,
+  .match-shell.matchday {
     pointer-events: none;
   }
 }
@@ -1196,8 +1203,13 @@ select {
   .rotate-hint {
     display: none !important;
   }
-  .match-shell {
+  .match-shell.a2c {
     display: block !important;
+    pointer-events: auto;
+  }
+  .match-shell.matchday {
+    display: grid !important;
+    grid-template-columns: minmax(148px, 18%) 1fr minmax(148px, 18%);
     pointer-events: auto;
   }
 }
