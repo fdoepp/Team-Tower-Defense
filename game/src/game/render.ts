@@ -576,8 +576,8 @@ function drawBuilding(
     cx = near.x;
     footY = near.y;
     const cellW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
-    // Match booth width to the floor cell; iso art reads slightly taller.
-    size = Math.max(36, cellW * 1.08);
+    // Booth footprint ≈ cell width (iso art has padding; keep under cell).
+    size = Math.max(32, cellW * 0.88);
   }
   ctx.fillStyle = "rgba(15,23,42,0.35)";
   ctx.beginPath();
