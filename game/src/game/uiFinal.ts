@@ -5,7 +5,47 @@
  */
 
 export type UiFinalId =
-  | never;
+  | "fanBlue2"
+  | "fanBlue3"
+  | "fanBlue4"
+  | "fanBlue5"
+  | "fanGrey2"
+  | "fanGrey3"
+  | "fanGrey4"
+  | "fanRed2"
+  | "fanRed3"
+  | "fanRed4"
+  | "hooliganBlue1"
+  | "hooliganBlue2"
+  | "hooliganBlue3"
+  | "hooliganBlue4"
+  | "hooliganBlue5"
+  | "hooliganGrey1"
+  | "hooliganGrey2"
+  | "hooliganGrey3"
+  | "hooliganGrey4"
+  | "hooliganGrey5"
+  | "hooliganRed1"
+  | "hooliganRed2"
+  | "hooliganRed3"
+  | "hooliganRed4"
+  | "hooliganRed5"
+  | "ordnerBlue1"
+  | "ordnerBlue2"
+  | "ordnerBlue3"
+  | "ordnerBlue4"
+  | "ordnerBlue5"
+  | "ordnerGrey1"
+  | "ordnerGrey2"
+  | "ordnerGrey3"
+  | "ordnerGrey4"
+  | "ordnerGrey5"
+  | "ordnerRed1"
+  | "ordnerRed2"
+  | "ordnerRed3"
+  | "ordnerRed4"
+  | "ordnerRed5"
+;
 
 export type UiFinalEntry = {
   file: string;
@@ -18,6 +58,326 @@ export type UiFinalEntry = {
 
 /** Runtime paths under game/public — only user-approved releases. */
 export const UI_FINAL_PATHS = {
+  "fanBlue2": {
+    file: "fan-blue-2.png",
+    path: "icons/ui-final/fan-blue-2.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanBlue3": {
+    file: "fan-blue-3.png",
+    path: "icons/ui-final/fan-blue-3.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanBlue4": {
+    file: "fan-blue-4.png",
+    path: "icons/ui-final/fan-blue-4.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanBlue5": {
+    file: "fan-blue-5.png",
+    path: "icons/ui-final/fan-blue-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanGrey2": {
+    file: "fan-grey-2.png",
+    path: "icons/ui-final/fan-grey-2.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanGrey3": {
+    file: "fan-grey-3.png",
+    path: "icons/ui-final/fan-grey-3.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanGrey4": {
+    file: "fan-grey-4.png",
+    path: "icons/ui-final/fan-grey-4.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanRed2": {
+    file: "fan-red-2.png",
+    path: "icons/ui-final/fan-red-2.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanRed3": {
+    file: "fan-red-3.png",
+    path: "icons/ui-final/fan-red-3.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanRed4": {
+    file: "fan-red-4.png",
+    path: "icons/ui-final/fan-red-4.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganBlue1": {
+    file: "hooligan-blue-1.png",
+    path: "icons/ui-final/hooligan-blue-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganBlue2": {
+    file: "hooligan-blue-2.png",
+    path: "icons/ui-final/hooligan-blue-2.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganBlue3": {
+    file: "hooligan-blue-3.png",
+    path: "icons/ui-final/hooligan-blue-3.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganBlue4": {
+    file: "hooligan-blue-4.png",
+    path: "icons/ui-final/hooligan-blue-4.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganBlue5": {
+    file: "hooligan-blue-5.png",
+    path: "icons/ui-final/hooligan-blue-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganGrey1": {
+    file: "hooligan-grey-1.png",
+    path: "icons/ui-final/hooligan-grey-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganGrey2": {
+    file: "hooligan-grey-2.png",
+    path: "icons/ui-final/hooligan-grey-2.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganGrey3": {
+    file: "hooligan-grey-3.png",
+    path: "icons/ui-final/hooligan-grey-3.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganGrey4": {
+    file: "hooligan-grey-4.png",
+    path: "icons/ui-final/hooligan-grey-4.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganGrey5": {
+    file: "hooligan-grey-5.png",
+    path: "icons/ui-final/hooligan-grey-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganRed1": {
+    file: "hooligan-red-1.png",
+    path: "icons/ui-final/hooligan-red-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganRed2": {
+    file: "hooligan-red-2.png",
+    path: "icons/ui-final/hooligan-red-2.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganRed3": {
+    file: "hooligan-red-3.png",
+    path: "icons/ui-final/hooligan-red-3.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganRed4": {
+    file: "hooligan-red-4.png",
+    path: "icons/ui-final/hooligan-red-4.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "hooliganRed5": {
+    file: "hooligan-red-5.png",
+    path: "icons/ui-final/hooligan-red-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerBlue1": {
+    file: "ordner-blue-1.png",
+    path: "icons/ui-final/ordner-blue-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerBlue2": {
+    file: "ordner-blue-2.png",
+    path: "icons/ui-final/ordner-blue-2.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerBlue3": {
+    file: "ordner-blue-3.png",
+    path: "icons/ui-final/ordner-blue-3.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerBlue4": {
+    file: "ordner-blue-4.png",
+    path: "icons/ui-final/ordner-blue-4.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerBlue5": {
+    file: "ordner-blue-5.png",
+    path: "icons/ui-final/ordner-blue-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerGrey1": {
+    file: "ordner-grey-1.png",
+    path: "icons/ui-final/ordner-grey-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerGrey2": {
+    file: "ordner-grey-2.png",
+    path: "icons/ui-final/ordner-grey-2.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerGrey3": {
+    file: "ordner-grey-3.png",
+    path: "icons/ui-final/ordner-grey-3.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerGrey4": {
+    file: "ordner-grey-4.png",
+    path: "icons/ui-final/ordner-grey-4.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerGrey5": {
+    file: "ordner-grey-5.png",
+    path: "icons/ui-final/ordner-grey-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerRed1": {
+    file: "ordner-red-1.png",
+    path: "icons/ui-final/ordner-red-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerRed2": {
+    file: "ordner-red-2.png",
+    path: "icons/ui-final/ordner-red-2.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerRed3": {
+    file: "ordner-red-3.png",
+    path: "icons/ui-final/ordner-red-3.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerRed4": {
+    file: "ordner-red-4.png",
+    path: "icons/ui-final/ordner-red-4.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ordnerRed5": {
+    file: "ordner-red-5.png",
+    path: "icons/ui-final/ordner-red-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
 } as const satisfies Record<string, UiFinalEntry>;
 
 export function uiFinalIconPath(id: string): string | undefined {
