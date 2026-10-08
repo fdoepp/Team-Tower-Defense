@@ -134,6 +134,14 @@ export const BUILD_LABEL: Record<BuildingKind, string> = {
 };
 
 export const UPGRADE_MAX = 5;
+/** Central per-type unit level cap (Fans / Ultras / Hooligans / Ordner). */
+export type UnitUiKind = FanKind | "ordner";
+export const UNIT_UPGRADE_MAX = UPGRADE_MAX;
+
+export function defaultUnitLevels(): Record<UnitUiKind, number> {
+  return { normalos: 1, ultras: 1, hooligans: 1, ordner: 1 };
+}
+
 /** Building upgrade gold to reach level index (Lv2..Lv5) */
 export const UPGRADE_COST = [0, 0, 40, 75, 120, 180] as const;
 /**
