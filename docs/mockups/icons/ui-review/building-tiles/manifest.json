@@ -1,0 +1,300 @@
+{
+  "build": [
+    {
+      "file": "build/build-bier-blue.png",
+      "kind": "bier",
+      "color": "blue",
+      "name": "Bierstand",
+      "level": 1,
+      "cost_gold": 65,
+      "action": "BAUEN"
+    },
+    {
+      "file": "build/build-fanshop-blue.png",
+      "kind": "fanshop",
+      "color": "blue",
+      "name": "Fanshop",
+      "level": 1,
+      "cost_gold": 35,
+      "action": "BAUEN"
+    },
+    {
+      "file": "build/build-ordner-blue.png",
+      "kind": "ordner",
+      "color": "blue",
+      "name": "Ordnerposten",
+      "level": 1,
+      "cost_gold": 45,
+      "action": "BAUEN"
+    },
+    {
+      "file": "build/build-bier-red.png",
+      "kind": "bier",
+      "color": "red",
+      "name": "Bierstand",
+      "level": 1,
+      "cost_gold": 65,
+      "action": "BAUEN"
+    },
+    {
+      "file": "build/build-fanshop-red.png",
+      "kind": "fanshop",
+      "color": "red",
+      "name": "Fanshop",
+      "level": 1,
+      "cost_gold": 35,
+      "action": "BAUEN"
+    },
+    {
+      "file": "build/build-ordner-red.png",
+      "kind": "ordner",
+      "color": "red",
+      "name": "Ordnerposten",
+      "level": 1,
+      "cost_gold": 45,
+      "action": "BAUEN"
+    }
+  ],
+  "upgrade": [
+    {
+      "file": "upgrade/upgrade-bier-blue-1to2.png",
+      "kind": "bier",
+      "color": "blue",
+      "name": "Bierstand",
+      "from": 1,
+      "to": 2,
+      "cost_gold": 40,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-bier-blue-2to3.png",
+      "kind": "bier",
+      "color": "blue",
+      "name": "Bierstand",
+      "from": 2,
+      "to": 3,
+      "cost_gold": 75,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-bier-blue-3to4.png",
+      "kind": "bier",
+      "color": "blue",
+      "name": "Bierstand",
+      "from": 3,
+      "to": 4,
+      "cost_gold": 120,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-bier-blue-4to5.png",
+      "kind": "bier",
+      "color": "blue",
+      "name": "Bierstand",
+      "from": 4,
+      "to": 5,
+      "cost_gold": 180,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-fanshop-blue-1to2.png",
+      "kind": "fanshop",
+      "color": "blue",
+      "name": "Fanshop",
+      "from": 1,
+      "to": 2,
+      "cost_gold": 40,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-fanshop-blue-2to3.png",
+      "kind": "fanshop",
+      "color": "blue",
+      "name": "Fanshop",
+      "from": 2,
+      "to": 3,
+      "cost_gold": 75,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-fanshop-blue-3to4.png",
+      "kind": "fanshop",
+      "color": "blue",
+      "name": "Fanshop",
+      "from": 3,
+      "to": 4,
+      "cost_gold": 120,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-fanshop-blue-4to5.png",
+      "kind": "fanshop",
+      "color": "blue",
+      "name": "Fanshop",
+      "from": 4,
+      "to": 5,
+      "cost_gold": 180,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-ordner-blue-1to2.png",
+      "kind": "ordner",
+      "color": "blue",
+      "name": "Ordnerposten",
+      "from": 1,
+      "to": 2,
+      "cost_gold": 40,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-ordner-blue-2to3.png",
+      "kind": "ordner",
+      "color": "blue",
+      "name": "Ordnerposten",
+      "from": 2,
+      "to": 3,
+      "cost_gold": 75,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-ordner-blue-3to4.png",
+      "kind": "ordner",
+      "color": "blue",
+      "name": "Ordnerposten",
+      "from": 3,
+      "to": 4,
+      "cost_gold": 120,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-ordner-blue-4to5.png",
+      "kind": "ordner",
+      "color": "blue",
+      "name": "Ordnerposten",
+      "from": 4,
+      "to": 5,
+      "cost_gold": 180,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-bier-red-1to2.png",
+      "kind": "bier",
+      "color": "red",
+      "name": "Bierstand",
+      "from": 1,
+      "to": 2,
+      "cost_gold": 40,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-bier-red-2to3.png",
+      "kind": "bier",
+      "color": "red",
+      "name": "Bierstand",
+      "from": 2,
+      "to": 3,
+      "cost_gold": 75,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-bier-red-3to4.png",
+      "kind": "bier",
+      "color": "red",
+      "name": "Bierstand",
+      "from": 3,
+      "to": 4,
+      "cost_gold": 120,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-bier-red-4to5.png",
+      "kind": "bier",
+      "color": "red",
+      "name": "Bierstand",
+      "from": 4,
+      "to": 5,
+      "cost_gold": 180,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-fanshop-red-1to2.png",
+      "kind": "fanshop",
+      "color": "red",
+      "name": "Fanshop",
+      "from": 1,
+      "to": 2,
+      "cost_gold": 40,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-fanshop-red-2to3.png",
+      "kind": "fanshop",
+      "color": "red",
+      "name": "Fanshop",
+      "from": 2,
+      "to": 3,
+      "cost_gold": 75,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-fanshop-red-3to4.png",
+      "kind": "fanshop",
+      "color": "red",
+      "name": "Fanshop",
+      "from": 3,
+      "to": 4,
+      "cost_gold": 120,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-fanshop-red-4to5.png",
+      "kind": "fanshop",
+      "color": "red",
+      "name": "Fanshop",
+      "from": 4,
+      "to": 5,
+      "cost_gold": 180,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-ordner-red-1to2.png",
+      "kind": "ordner",
+      "color": "red",
+      "name": "Ordnerposten",
+      "from": 1,
+      "to": 2,
+      "cost_gold": 40,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-ordner-red-2to3.png",
+      "kind": "ordner",
+      "color": "red",
+      "name": "Ordnerposten",
+      "from": 2,
+      "to": 3,
+      "cost_gold": 75,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-ordner-red-3to4.png",
+      "kind": "ordner",
+      "color": "red",
+      "name": "Ordnerposten",
+      "from": 3,
+      "to": 4,
+      "cost_gold": 120,
+      "action": "UPGRADE"
+    },
+    {
+      "file": "upgrade/upgrade-ordner-red-4to5.png",
+      "kind": "ordner",
+      "color": "red",
+      "name": "Ordnerposten",
+      "from": 4,
+      "to": 5,
+      "cost_gold": 180,
+      "action": "UPGRADE"
+    }
+  ]
+}
