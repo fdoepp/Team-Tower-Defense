@@ -6,40 +6,43 @@
       "path": "ui/slot-empty.png",
       "role": "bauplatz",
       "style": "pfosten-seil-vorschlag-c",
-      "orientation": "axis-aligned",
+      "orientation": "perspective-floor",
       "control": "grey",
       "locked": true,
-      "notes": "Deploy-Default = parallel ohne Standarte. Alias von slot-empty-parallel.png."
+      "notes": "Deploy-Default = Stadionboden-Perspektive (vorn breiter, hinten schmaler). Alias von slot-empty-persp.png."
     },
     "slotEmptyParallel": {
       "path": "ui/slot-empty-parallel.png",
       "role": "bauplatz",
       "control": "grey",
+      "orientation": "perspective-floor",
       "locked": true,
-      "notes": "Neutral/grau — Standarte aus."
+      "notes": "Runtime-Default-Pfad — Inhalt = Stadionboden-Perspektive (identisch slot-empty-persp.png)."
     },
     "slotEmptyIso": {
       "path": "ui/slot-empty-iso.png",
       "role": "bauplatz",
       "control": "grey",
-      "locked": true,
-      "notes": "Iso-Neutrale Variante (Orientierungs-Alternative)."
+      "locked": false,
+      "notes": "Archiv/Alternative — isometrische Raute. Nicht Deploy-Default."
     },
     "slotEmptyParallelBlue": {
       "path": "ui/slot-empty-parallel-blue.png",
       "role": "bauplatz-eigen",
       "team": "ksc",
       "control": "blue",
+      "orientation": "perspective-floor",
       "locked": true,
-      "notes": "Teamkontrolle KSC — Standarte blau ein."
+      "notes": "Runtime-Pfad = slot-empty-persp-blue.png"
     },
     "slotEmptyParallelRed": {
       "path": "ui/slot-empty-parallel-red.png",
       "role": "bauplatz-eigen",
       "team": "vfb",
       "control": "red",
+      "orientation": "perspective-floor",
       "locked": true,
-      "notes": "Teamkontrolle VfB — Standarte rot ein."
+      "notes": "Runtime-Pfad = slot-empty-persp-red.png"
     },
     "slotEmptyIsoBlue": {
       "path": "ui/slot-empty-iso-blue.png",
@@ -72,6 +75,37 @@
       "style": "holzpfosten-streifenfahne-vorschlag-a",
       "locked": true,
       "notes": "Gäste-Besitz/Front-Marker. Gleiche Form wie pennantKsc, nur rot-weiß."
+    },
+    "slotEmptyPersp": {
+      "path": "ui/slot-empty-persp.png",
+      "role": "bauplatz",
+      "control": "grey",
+      "orientation": "perspective-floor",
+      "locked": true,
+      "notes": "Trapez-Perspektive passend zum stadium-floodlight-derby-bg Bodenraster."
+    },
+    "slotEmptyPerspBlue": {
+      "path": "ui/slot-empty-persp-blue.png",
+      "role": "bauplatz-eigen",
+      "team": "ksc",
+      "control": "blue",
+      "orientation": "perspective-floor",
+      "locked": true
+    },
+    "slotEmptyPerspRed": {
+      "path": "ui/slot-empty-persp-red.png",
+      "role": "bauplatz-eigen",
+      "team": "vfb",
+      "control": "red",
+      "orientation": "perspective-floor",
+      "locked": true
+    },
+    "slotEmptyOrtho": {
+      "path": "ui/slot-empty-ortho.png",
+      "role": "bauplatz-archiv",
+      "orientation": "axis-aligned",
+      "locked": false,
+      "notes": "Archiv: früheres gerades Parallel-Icon ohne Boden-Perspektive."
     }
   },
   "runtimeBinding": {
@@ -83,13 +117,9 @@
       "UI_ICONS.btnUpgradePurple",
       "slotEmptyIconPath",
       "standIconPath",
-      "SLOT_EMPTY_ORIENTATION",
-      "SCENE_ASSETS.stadiumBg",
-      "tribuneIconPath",
-      "unitHeadIconPath",
-      "UI_ICONS.scoreboard"
+      "SLOT_EMPTY_ORIENTATION"
     ],
-    "render": "drawStadiumAtmosphere → drawImageCover(stadiumBg); drawBlocks → tribuneIconPath + drawIcon; drawScoreboard → scoreboard-top uniform AR; Personen-Rail → unitHeadIconPath; Action Cards → standIconPath / unitIconPath",
+    "render": "drawBaustelle → slotControlForPlot → slotEmptyIconPath; drawTerritoryPennants für gebaute Buden; Action Cards → standIconPath",
     "autoSwap": {
       "teamControl": "Standarte-Farbe ein (blue/red Plot-Icon)",
       "greyControl": "Standarte aus (neutrales Plot-Icon)",
@@ -120,32 +150,7 @@
   },
   "deploy": {
     "sourceDir": "game/public/icons/",
-    "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss locked Standarten + Bauplatz-Varianten aus diesem Register preloaded verwenden. Runtime tauscht Bauplatz-Icons automatisch bei Team-/Grau-Kontrolle. Action Cards laden Stand-/Unit-Icons soft und Balance-Werte live aus types.ts."
-  },
-  "scene": {
-    "stadiumBg": {
-      "path": "../assets/stadium-floodlight-derby-bg.jpg",
-      "role": "match-backdrop",
-      "locked": true,
-      "notes": "Konzept-Agent stadium-floodlight-derby-bg — Cover, never distort"
-    },
-    "tribuneHeim": {
-      "path": "../assets/tribune-block-blue.png",
-      "role": "tribune",
-      "team": "ksc",
-      "locked": true
-    },
-    "tribuneNeutral": {
-      "path": "../assets/tribune-block-grey.png",
-      "role": "tribune",
-      "team": "neutral",
-      "locked": true
-    },
-    "tribuneGaeste": {
-      "path": "../assets/tribune-block-red.png",
-      "role": "tribune",
-      "team": "vfb",
-      "locked": true
-    }
+    "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss locked Standarten + Bauplatz-Perspektiv-Varianten (slot-empty-persp*) aus diesem Register preloaded verwenden. Runtime tauscht Bauplatz-Icons automatisch bei Team-/Grau-Kontrolle.",
+    "slotDefault": "perspective-floor"
   }
 }
