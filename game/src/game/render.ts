@@ -302,37 +302,20 @@ function drawBlocks(
 
 function drawSeats(
   ctx: CanvasRenderingContext2D,
-  m: Match,
+  _m: Match,
   w: number,
   h: number,
 ): void {
+  // Decorative terrace marks only — fans wander freely, so no fixed
+  // team-colored "occupied seat" cushions glued to the grid.
   for (const b of BLOCK_META) {
     for (let i = 0; i < SEATS_PER_BLOCK; i++) {
       const p = seatPos(b.id, i);
       const x = p.x * w;
       const y = p.y * h;
-      const occ = m.seatOccupied(b.id, i);
-      // No buy "+" in blocks — hiring is via Personen-Rail only
-      let cushion = occ ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.14)";
-      if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.18)";
-      else if (occ?.team === "vfb") cushion = "rgba(220,38,38,0.18)";
-
-      ctx.fillStyle = cushion;
-      roundRect(ctx, x - 9, y - 3, 18, 8, 3);
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      roundRect(ctx, x - 8, y - 2, 16, 6, 3);
       ctx.fill();
-
-      // Capture ring on converting neutrals
-      if (occ?.team === "neutral" && Math.abs(occ.captureProg) > 0.08) {
-        const prog = Math.abs(occ.captureProg);
-        ctx.strokeStyle =
-          occ.captureProg > 0
-            ? `rgba(59,130,246,${0.4 + prog * 0.5})`
-            : `rgba(239,68,68,${0.4 + prog * 0.5})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
-        ctx.stroke();
-      }
     }
   }
 }
@@ -804,7 +787,26 @@ function drawFans(
     return za - zb || a.y - b.y;
   });
   for (const f of sorted) {
-    drawMannchen(ctx, m, f, f.x * w, f.y * h, h);
+    const x = f.x * w;
+    const y = f.y * h;
+    // Capture ring follows the person (not a fixed seat cell)
+    if (
+      f.team === "neutral" &&
+      !f.isSteward &&
+      f.state === "block" &&
+      Math.abs(f.captureProg) > 0.08
+    ) {
+      const prog = Math.abs(f.captureProg);
+      ctx.strokeStyle =
+        f.captureProg > 0
+          ? `rgba(59,130,246,${0.4 + prog * 0.5})`
+          : `rgba(239,68,68,${0.4 + prog * 0.5})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
+      ctx.stroke();
+    }
+    drawMannchen(ctx, m, f, x, y, h);
   }
 }
 
@@ -864,15 +866,19 @@ function drawMannchen(
     return;
   }
   const onGang = f.state === "gang" || f.invading;
+  const inStand = f.state === "block";
   const exiting =
     f.state === "moving" && f.y < gangY() + L.gangH * 0.22;
   const moving = f.state === "moving" || onGang;
   const fighting =
     (onGang || f.invading) && (f.armSwing > 0.15 || f.attackCd > 0.05);
+  // Stand crowd always looks like they're celebrating (bob + sway)
   const cheering =
-    !moving &&
-    (f.cheerT > 0 ||
-      (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) > 0.7);
+    inStand ||
+    (!moving &&
+      (f.cheerT > 0 ||
+        (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) >
+          0.7));
   const sizeMul =
     f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
   const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
@@ -913,8 +919,8 @@ function drawMannchen(
     phase,
     mode,
     facing,
-    hop: moving ? 1 : 0,
-    strike: Math.max(f.armSwing, fighting ? 0.35 : 0),
+    hop: moving ? 1 : inStand ? 0.7 : 0,
+    strike: Math.max(f.armSwing, fighting ? 0.35 : inStand ? 0.2 : 0),
   });
   if (!drew) {
     const s = size / 2.85;

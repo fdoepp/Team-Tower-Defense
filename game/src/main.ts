@@ -9,7 +9,7 @@ import {
   needsFullscreenGate,
   onFullscreenChange,
 } from "./game/fullscreen";
-import { drawMatch, hitSeat, hitSlot } from "./game/render";
+import { drawMatch, hitSlot } from "./game/render";
 import {
   UI_ICONS,
   preloadIcons,
@@ -323,22 +323,6 @@ function renderMatchScreen(): void {
         </div>
         <canvas id="c"></canvas>
         <div class="toast" id="toast"></div>
-        <div class="popup-menu hidden" id="seat-menu">
-          <p class="popup-title">Fan kaufen</p>
-          <button data-buy="normalos" id="buy-normalos" class="popup-buy">
-            <img src="${unitIconPath("normalos", tc, 1)}" alt="">
-            <span>Fan <small>${BUY_COST.normalos.security} Sicherheit</small></span>
-          </button>
-          <button data-buy="ultras" id="buy-ultras" class="popup-buy">
-            <img src="${unitIconPath("ultras", tc, 1)}" alt="">
-            <span>Ultra <small>${BUY_COST.ultras.merch} Fanartikel</small></span>
-          </button>
-          <button data-buy="hooligans" id="buy-hooligans" class="popup-buy">
-            <img src="${unitIconPath("hooligans", tc, 1)}" alt="">
-            <span>Hooligan <small>${BUY_COST.hooligans.beer} Bier</small></span>
-          </button>
-          <button class="popup-cancel" id="seat-cancel">Abbrechen</button>
-        </div>
         <div class="popup-menu hidden" id="build-menu">
           <p class="popup-title" id="build-title">Gebäude</p>
           <div id="build-options" class="hidden"></div>
@@ -438,7 +422,6 @@ function renderMatchScreen(): void {
   const canvas = app.querySelector<HTMLCanvasElement>("#c")!;
   const wrap = app.querySelector<HTMLDivElement>("#game-wrap")!;
   const ctx = canvas.getContext("2d")!;
-  const seatMenu = app.querySelector<HTMLDivElement>("#seat-menu")!;
   const buildMenu = app.querySelector<HTMLDivElement>("#build-menu")!;
   const btnUpgrade = app.querySelector<HTMLButtonElement>("#btn-upgrade")!;
   const btnHire = app.querySelector<HTMLButtonElement>("#btn-hire-steward")!;
@@ -621,23 +604,13 @@ function renderMatchScreen(): void {
   const hideMenus = () => {
     m.seatMenu = null;
     m.selectedSeat = null;
-    seatMenu.classList.add("hidden");
     buildMenu.classList.add("hidden");
     closeBuildRail();
-  };
-
-  const showSeatMenu = (blockId: number, seatIndex: number) => {
-    hideMenus();
-    m.seatMenu = { blockId, seatIndex };
-    m.selectedSeat = { blockId, seatIndex };
-    seatMenu.classList.remove("hidden");
-    syncBuyButtons();
   };
 
   const showBuildMenu = (blockId: number, index: number) => {
     m.seatMenu = null;
     m.selectedSeat = null;
-    seatMenu.classList.add("hidden");
     buildMenu.classList.add("hidden");
     const slot = m.slots.find((s) => s.blockId === blockId && s.index === index);
     const owned =
@@ -660,33 +633,12 @@ function renderMatchScreen(): void {
     closeBuildRail();
   };
 
-  const syncBuyButtons = () => {
-    (["ultras", "normalos", "hooligans"] as FanKind[]).forEach((kind) => {
-      const btn = app.querySelector<HTMLButtonElement>(`#buy-${kind}`)!;
-      const ok = m.canBuy(kind);
-      btn.classList.toggle("ready", ok);
-      btn.classList.toggle("cd", !ok);
-      btn.disabled = !ok;
-    });
-  };
-
   canvas.addEventListener("pointerdown", (e) => {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    const seat = hitSeat(m, mx, my);
-    if (seat && !m.seatOccupied(seat.blockId, seat.seatIndex)) {
-      if (!m.canBuyInBlock(seat.blockId)) {
-        m.toast("Block noch nicht unter Kontrolle");
-        return;
-      }
-      m.selectedSeat = seat;
-      showSeatMenu(seat.blockId, seat.seatIndex);
-      m.toast(`Platz ${seat.seatIndex + 1}`);
-      return;
-    }
-
+    // Kauf nur über Personen-Sidebar — Block-Klick öffnet keinen Sitz-Kauf mehr
     const hit = hitSlot(m, mx, my);
     if (hit) {
       showBuildMenu(hit.blockId, hit.index);
@@ -728,7 +680,6 @@ function renderMatchScreen(): void {
       const o = m.countTeamFans(m.playerTeam);
       freeEl.textContent = String(o.normalos + o.ultras + o.hooligans + o.ordner);
     }
-    if (!seatMenu.classList.contains("hidden")) syncBuyButtons();
     syncPendingBuildUi();
   };
 
@@ -783,18 +734,6 @@ function renderMatchScreen(): void {
     (e) => e.stopPropagation(),
     true,
   );
-  app.querySelectorAll<HTMLButtonElement>("[data-buy]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      if (!m.seatMenu) return;
-      m.tryBuyFan(
-        btn.dataset.buy as FanKind,
-        m.seatMenu.blockId,
-        m.seatMenu.seatIndex,
-      );
-      hideMenus();
-      syncOverlay();
-    });
-  });
   app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const kind = btn.dataset.pendingBuild as BuildingKind;
@@ -840,7 +779,6 @@ function renderMatchScreen(): void {
     hideMenus();
     syncOverlay();
   });
-  app.querySelector("#seat-cancel")!.addEventListener("click", hideMenus);
   app.querySelector("#build-cancel")!.addEventListener("click", hideMenus);
   app.querySelector("#build-rail-close")?.addEventListener("click", () => {
     closeBuildRail();

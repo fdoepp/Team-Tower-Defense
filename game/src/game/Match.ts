@@ -2,8 +2,16 @@ import {
   AI_SOFT_REGEN,
   AI_START_GOLD_BONUS,
   BLOCK_META,
+  BLOCK_HOME_PULL,
+  BLOCK_HOME_RADIUS,
+  BLOCK_SEPARATION_PUSH,
+  BLOCK_SEPARATION_RADIUS,
   BLOCK_STORM_COUNT,
   BLOCK_STORM_SEC,
+  BLOCK_WANDER_ARRIVE,
+  BLOCK_WANDER_RETARGET_MAX,
+  BLOCK_WANDER_RETARGET_MIN,
+  BLOCK_WANDER_SPEED,
   BUILD_COST,
   BUY_COST,
   BANNER_ADVANCE_SPEED,
@@ -87,7 +95,9 @@ import {
   blockIdToGangX,
   blockTopY,
   blockWidthNorm,
+  blockCrowdRect,
   boothCenter,
+  crowdHomePos,
   doorPos,
   gangLanePos,
   gangMidY,
@@ -331,7 +341,8 @@ export class Match {
     seatIndex: number,
   ): FanUnit {
     const seat = Math.max(0, seatIndex | 0);
-    const p = seatPos(blockId, seat);
+    // Roughly spread home slot; then micro-drift + cheer bob in place
+    const p = crowdHomePos(blockId, seat);
     const level = 1;
     const beerIv = visitInterval(kind, "beer", level);
     const shopIv = visitInterval(kind, "shop", level);
@@ -374,6 +385,9 @@ export class Match {
       rangedPyro: false,
       onOffense: false,
       level,
+      _wanderTx: undefined,
+      _wanderTy: undefined,
+      _wanderCd: 0.2 + Math.random() * 1.2,
     };
   }
 
@@ -1097,7 +1111,8 @@ export class Match {
       return false;
     }
     const c = BUY_COST[kind];
-    const p = seatPos(blockId, seat);
+    const fan = this.makeFan(kind, this.playerTeam, blockId, seat);
+    const p = { x: fan.x, y: fan.y };
     if (c.beer > 0) this.spend("beer", c.beer, p, "BIER");
     if (c.merch > 0) this.spend("merch", c.merch, p, "FANARTIKEL");
     if (c.security > 0) this.spend("security", c.security, p, "SICHERHEIT");
@@ -1105,7 +1120,7 @@ export class Match {
       this.gold -= c.gold;
       this.floatAt(p.x, p.y, `−${c.gold}€`, false);
     }
-    this.fans.push(this.makeFan(kind, this.playerTeam, blockId, seat));
+    this.fans.push(fan);
     this.seatMenu = null;
     this.floatAt(p.x, p.y + 0.02, `+${FAN_STATS[kind].label}`, true);
     this.toast(`${FAN_STATS[kind].label} gekauft`);
@@ -1974,16 +1989,7 @@ export class Match {
       if (f.hp <= 0 || f.isSteward) continue;
 
       if (f.state === "block") {
-        // Soft idle motion inside the stand (not frozen on a grid cell)
-        if (f.seatIndex != null) {
-          const home = seatPos(f.blockId, f.seatIndex);
-          const ang = this.realElapsed * 0.85 + f.id * 0.37;
-          const rad = 0.014;
-          const tx = home.x + Math.cos(ang) * rad;
-          const ty = home.y + Math.sin(ang * 1.25) * rad * 0.65;
-          f.x += (tx - f.x) * Math.min(1, 2.8 * dt);
-          f.y += (ty - f.y) * Math.min(1, 2.8 * dt);
-        }
+        this.tickBlockWander(f, dt);
         // Team fans visit Bier + Fanshop on separate timers (gold into till)
         if (f.team !== "neutral" && !f.onOffense) {
           this.maybeStartStandVisit(f);
@@ -1994,6 +2000,85 @@ export class Match {
         this.finishStandVisit(f);
       } else if (f.state === "gang") {
         this.tickGangMove(f, dt);
+      }
+    }
+    this.tickBlockSeparation(dt);
+  }
+
+  /** Micro-target near this fan's spread-out home slot (celebration idle). */
+  private retargetBlockWander(f: FanUnit): void {
+    const home = crowdHomePos(f.blockId, f.seatIndex ?? 0);
+    const ang = Math.random() * Math.PI * 2;
+    const rad = Math.random() * BLOCK_HOME_RADIUS;
+    f._wanderTx = home.x + Math.cos(ang) * rad;
+    f._wanderTy = home.y + Math.sin(ang) * rad * 0.75;
+    f._wanderCd =
+      BLOCK_WANDER_RETARGET_MIN +
+      Math.random() * (BLOCK_WANDER_RETARGET_MAX - BLOCK_WANDER_RETARGET_MIN);
+  }
+
+  /**
+   * Stand idle: stay roughly spread (home slots), tiny drift, cheer bob.
+   * seatIndex is buy/return id + home slot — not a click target.
+   */
+  private tickBlockWander(f: FanUnit, dt: number): void {
+    const home = crowdHomePos(f.blockId, f.seatIndex ?? 0);
+    // Soft spring keeps the crowd roughly distributed
+    f.x += (home.x - f.x) * Math.min(1, BLOCK_HOME_PULL * dt);
+    f.y += (home.y - f.y) * Math.min(1, BLOCK_HOME_PULL * dt);
+
+    if (f._wanderTx == null || f._wanderTy == null || (f._wanderCd ?? 0) <= 0) {
+      this.retargetBlockWander(f);
+    } else {
+      f._wanderCd = (f._wanderCd ?? 0) - dt;
+    }
+    const tx = f._wanderTx!;
+    const ty = f._wanderTy!;
+    const dx = tx - f.x;
+    const dy = ty - f.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist <= BLOCK_WANDER_ARRIVE || (f._wanderCd ?? 0) <= 0) {
+      this.retargetBlockWander(f);
+    } else {
+      const step = Math.min(dist, BLOCK_WANDER_SPEED * dt);
+      f.x += (dx / dist) * step;
+      f.y += (dy / dist) * step;
+    }
+    // Pulse arms so cheer/fight poses stay lively while bobbing
+    f.armSwing = 0.35 + 0.25 * Math.sin(this.realElapsed * 7.2 + f.id * 0.9);
+
+    const r = blockCrowdRect(f.blockId);
+    const pad = 0.008;
+    f.x = clamp(f.x, r.left + pad, r.left + r.width - pad);
+    f.y = clamp(f.y, r.top + pad, r.top + r.height - pad);
+  }
+
+  /** Soft separation so free wanderers don't fully occupy one pixel. */
+  private tickBlockSeparation(dt: number): void {
+    const living = this.fans.filter(
+      (f) => f.hp > 0 && !f.isSteward && f.state === "block",
+    );
+    const r2 = BLOCK_SEPARATION_RADIUS * BLOCK_SEPARATION_RADIUS;
+    for (let i = 0; i < living.length; i++) {
+      const a = living[i]!;
+      for (let j = i + 1; j < living.length; j++) {
+        const b = living[j]!;
+        if (a.blockId !== b.blockId) continue;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 1e-8 || d2 > r2) continue;
+        const d = Math.sqrt(d2);
+        const push =
+          ((BLOCK_SEPARATION_RADIUS - d) / BLOCK_SEPARATION_RADIUS) *
+          BLOCK_SEPARATION_PUSH *
+          dt;
+        const nx = dx / d;
+        const ny = dy / d;
+        a.x -= nx * push;
+        a.y -= ny * push;
+        b.x += nx * push;
+        b.y += ny * push;
       }
     }
   }
@@ -2222,11 +2307,12 @@ export class Match {
       f.blockId = home;
       const seat = f.seatIndex ?? f._homeSeat ?? this.freeSeat(home);
       f.seatIndex = seat;
-      if (seat != null) {
-        const p = seatPos(home, seat);
-        f.x = p.x;
-        f.y = p.y;
-      }
+      // Re-enter at spread home slot, then micro-drift + cheer
+      const p = crowdHomePos(home, seat);
+      f.x = p.x;
+      f.y = p.y;
+      f._wanderCd = 0;
+      this.retargetBlockWander(f);
     } else if (after === "invade") {
       f.state = "block";
       f.invading = true;
@@ -2890,34 +2976,36 @@ export class Match {
     }
   }
 
-  /** Neutral capture: spatial wave from battle-line pressure + neighbor seats */
+  /** Neutral capture: spatial wave from battle-line pressure + nearby converted fans */
   private tickNeutralCapture(dt: number): void {
     this.defectAcc += dt;
     for (const f of this.fans) {
       if (f.team !== "neutral" || f.hp <= 0 || f.isSteward) continue;
-      if (f.state !== "block" || f.seatIndex == null) continue;
+      if (f.state !== "block") continue;
       if (f.blockId !== 1 && f.blockId !== 2) continue;
 
-      const col = f.seatIndex % 3; // 0 left (heimward) … 2 right (gastward)
+      const rect = blockCrowdRect(f.blockId);
+      // 0 = heimward (left), 1 = gastward (right) from live position
+      const sideT = clamp((f.x - rect.left) / Math.max(0.01, rect.width), 0, 1);
       const blockGx = blockIdToGangX(f.blockId);
       // How far each front has entered this block's zone (−1..1-ish)
       const playerDepth = clamp((this.linePlayer - (blockGx - 0.18)) / 0.36, 0, 1);
       const aiDepth = clamp(((blockGx + 0.18) - this.lineAi) / 0.36, 0, 1);
 
-      // Spatial: heim pressure hits left columns first, gast hits right first
-      const colHeimBias = 1 - col / 2; // col0=1, col1=0.5, col2=0
-      const colGastBias = col / 2; // col0=0, col1=0.5, col2=1
+      // Spatial: heim pressure hits left side first, gast hits right first
+      const colHeimBias = 1 - sideT;
+      const colGastBias = sideT;
       let pull =
         playerDepth * (0.35 + 0.55 * colHeimBias) -
         aiDepth * (0.35 + 0.55 * colGastBias);
 
-      // Neighbor seats already converted push further
+      // Nearby converted fans (by position, not seat index) push further
       let nearHeim = 0;
       let nearGast = 0;
       for (const o of this.fans) {
         if (o.hp <= 0 || o.isSteward || o.blockId !== f.blockId) continue;
-        if (o.state !== "block" || o.seatIndex == null) continue;
-        if (Math.abs(o.seatIndex - f.seatIndex) > 2) continue;
+        if (o.state !== "block") continue;
+        if (Math.hypot(o.x - f.x, o.y - f.y) > 0.08) continue;
         if (o.team === this.playerTeam) nearHeim++;
         if (o.team === this.aiTeam) nearGast++;
       }
