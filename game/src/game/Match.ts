@@ -6,6 +6,10 @@ import {
   BLOCK_STORM_SEC,
   BUILD_COST,
   BUY_COST,
+  BANNER_ADVANCE_SPEED,
+  BANNER_MIN_GAP,
+  BANNER_POST_STANDOFF,
+  BANNER_RETREAT_SPEED,
   CEMENT_BREAKTHROUGH,
   CEMENT_DOT_PER_SEC,
   CEMENT_SLOW_MUL,
@@ -300,6 +304,10 @@ export class Match {
         i % 3 === 0 ? "normalos" : i % 3 === 1 ? "hooligans" : "ultras";
       this.fans.push(this.makeFan(kind, "neutral", NEUTRAL_BLOCK, i));
     }
+
+    // Standarten start at cemented floors (grey mid buffer stays open)
+    this.linePlayer = this.buildFrontierGx(this.playerTeam);
+    this.lineAi = this.buildFrontierGx(this.aiTeam);
 
     this.toast(`${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)}`);
     this.speed = 1;
@@ -1225,7 +1233,7 @@ export class Match {
     this.tickFans(step);
     this.tickRecallForDefense(step);
     this.tickAutoDefend(step);
-    this.updateBattleLines();
+    this.updateBattleLines(step);
     this.tickCaptureConvert(step);
     this.tickOrdnerPostCombat(step);
     this.tickCombat(step);
@@ -1624,21 +1632,47 @@ export class Match {
     );
   }
 
-  /** Furthest cemented gang X held by living Ordner + intact Ordnerposten */
-  cementEdgeGx(team: TeamId): number {
+  /**
+   * Furthest intact Ordnerpost owned by this team (hard Standarte / build floor).
+   * Roaming Ordner do not move this — only built posts.
+   */
+  postEdgeGx(team: TeamId): number {
     const dir = team === this.playerTeam ? 1 : -1;
     let edge =
       team === this.playerTeam
         ? blockIdToGangX(HEIM_BLOCK)
         : blockIdToGangX(GAST_BLOCK);
-    if (!this.teamHasCement(team)) return edge;
-
     for (const s of this.slots) {
       if (s.building !== "ordner" || s.structHp <= 0) continue;
       if (s.owner !== team) continue;
       const gx = blockIdToGangX(s.blockId);
       edge = dir > 0 ? Math.max(edge, gx) : Math.min(edge, gx);
     }
+    return edge;
+  }
+
+  /**
+   * Nearest intact hostile Ordnerpost ahead (incl. neutral mid).
+   * Enemy fans and the enemy Standarte may never pass this wall.
+   */
+  hostilePostWallGx(team: TeamId): number | null {
+    const dir = team === this.playerTeam ? 1 : -1;
+    let wall: number | null = null;
+    for (const s of this.slots) {
+      if (!this.isHostileOrdnerPost(s, team)) continue;
+      const gx = blockIdToGangX(s.blockId);
+      if (wall == null) wall = gx;
+      else wall = dir > 0 ? Math.min(wall, gx) : Math.max(wall, gx);
+    }
+    return wall;
+  }
+
+  /** Furthest cemented gang X held by living Ordner + intact Ordnerposten */
+  cementEdgeGx(team: TeamId): number {
+    const dir = team === this.playerTeam ? 1 : -1;
+    let edge = this.postEdgeGx(team);
+    if (!this.teamHasCement(team)) return edge;
+
     for (const f of this.fans) {
       if (f.hp <= 0 || !f.isSteward || f.team !== team) continue;
       edge = dir > 0 ? Math.max(edge, f.gangX) : Math.min(edge, f.gangX);
@@ -1659,11 +1693,14 @@ export class Match {
     return wall;
   }
 
-  /** Build / possession frontier permanently painted on the gang */
+  /**
+   * Permanent build / possession floor from own Ordnerposten + owned blocks.
+   * Does not jump with roaming Ordner — Standarten stay anchored to posts.
+   */
   buildFrontierGx(team: TeamId): number {
-    const cement = this.cementEdgeGx(team);
+    const post = this.postEdgeGx(team);
     if (team === this.playerTeam) {
-      let edge = Math.max(blockIdToGangX(HEIM_BLOCK) + 0.08, cement + 0.04);
+      let edge = Math.max(blockIdToGangX(HEIM_BLOCK) + 0.08, post + 0.04);
       for (let b = 0; b < BLOCK_COUNT; b++) {
         if (b === GAST_BLOCK) continue;
         if (this.blockOwner[b] === this.playerTeam) {
@@ -1672,7 +1709,7 @@ export class Match {
       }
       return clamp(edge, 0.08, 0.92);
     }
-    let edge = Math.min(blockIdToGangX(GAST_BLOCK) - 0.08, cement - 0.04);
+    let edge = Math.min(blockIdToGangX(GAST_BLOCK) - 0.08, post - 0.04);
     for (let b = 0; b < BLOCK_COUNT; b++) {
       if (b === HEIM_BLOCK) continue;
       if (this.blockOwner[b] === this.aiTeam) {
@@ -1680,6 +1717,21 @@ export class Match {
       }
     }
     return clamp(edge, 0.08, 0.92);
+  }
+
+  /** Slow Standarte crawl: advance moderate, retreat deliberately slow */
+  private approachBanner(
+    cur: number,
+    target: number,
+    dt: number,
+    advanceDir: 1 | -1,
+  ): number {
+    const delta = target - cur;
+    if (Math.abs(delta) < 1e-5) return target;
+    const advancing = delta * advanceDir > 0;
+    const speed = advancing ? BANNER_ADVANCE_SPEED : BANNER_RETREAT_SPEED;
+    const step = Math.sign(delta) * Math.min(Math.abs(delta), speed * dt);
+    return cur + step;
   }
 
   /** Nearest hostile Ultra in/near this steward's band */
@@ -2179,7 +2231,14 @@ export class Match {
     }
   }
 
-  private updateBattleLines(): void {
+  /**
+   * Standarten / Fortschrittsbalken:
+   * - Floor = own Ordnerposten + owned blocks (buildFrontier)
+   * - Soft target = furthest living attacker depth
+   * - Hard cap = intact enemy/neutral Ordnerpost (never overrun)
+   * - Lerp: advance moderate, retreat slow — no snap-back, grey gap OK
+   */
+  private updateBattleLines(dt: number): void {
     const frontKinds = (team: TeamId) =>
       this.fans.filter(
         (f) =>
@@ -2191,23 +2250,67 @@ export class Match {
       );
     const pFront = frontKinds(this.playerTeam);
     const aFront = frontKinds(this.aiTeam);
-    // Cement from Ordner/Posten always paints territory
-    let pLine = this.buildFrontierGx(this.playerTeam);
-    let aLine = this.buildFrontierGx(this.aiTeam);
-    if (pFront.length) pLine = Math.max(pLine, ...pFront.map((f) => f.gangX));
-    if (aFront.length) aLine = Math.min(aLine, ...aFront.map((f) => f.gangX));
-    // Enemy cannot visually claim past living cement
-    const pCement = this.cementEdgeGx(this.playerTeam);
-    const aCement = this.cementEdgeGx(this.aiTeam);
-    aLine = Math.max(aLine, pCement + 0.02);
-    pLine = Math.min(pLine, aCement - 0.02);
-    if (pLine > aLine) {
-      const mid = (pLine + aLine) / 2;
-      pLine = mid - 0.01;
-      aLine = mid + 0.01;
+
+    const pFloor = this.buildFrontierGx(this.playerTeam);
+    const aFloor = this.buildFrontierGx(this.aiTeam);
+
+    let pTarget = pFloor;
+    let aTarget = aFloor;
+    if (pFront.length) {
+      pTarget = Math.max(pTarget, ...pFront.map((f) => f.gangX));
     }
-    this.linePlayer = clamp(pLine, 0.05, 0.95);
-    this.lineAi = clamp(aLine, 0.05, 0.95);
+    if (aFront.length) {
+      aTarget = Math.min(aTarget, ...aFront.map((f) => f.gangX));
+    }
+
+    // Intact Ordnerposten hard-cap the opposing Standarte (and build rights)
+    const pWall = this.hostilePostWallGx(this.playerTeam);
+    const aWall = this.hostilePostWallGx(this.aiTeam);
+    if (pWall != null) {
+      pTarget = Math.min(pTarget, pWall - BANNER_POST_STANDOFF);
+    }
+    if (aWall != null) {
+      aTarget = Math.max(aTarget, aWall + BANNER_POST_STANDOFF);
+    }
+
+    // Never claim behind own floor; keep a usable grey buffer between sides
+    pTarget = Math.max(pTarget, pFloor);
+    aTarget = Math.min(aTarget, aFloor);
+    if (pTarget > aTarget - BANNER_MIN_GAP) {
+      const mid = (pTarget + aTarget) / 2;
+      pTarget = Math.min(pTarget, mid - BANNER_MIN_GAP * 0.5);
+      aTarget = Math.max(aTarget, mid + BANNER_MIN_GAP * 0.5);
+    }
+
+    pTarget = clamp(pTarget, 0.05, 0.95);
+    aTarget = clamp(aTarget, 0.05, 0.95);
+
+    this.linePlayer = this.approachBanner(this.linePlayer, pTarget, dt, 1);
+    this.lineAi = this.approachBanner(this.lineAi, aTarget, dt, -1);
+
+    // Floor first, then Ordnerpost hard-caps (posts always win), then grey gap
+    this.linePlayer = Math.max(this.linePlayer, pFloor);
+    this.lineAi = Math.min(this.lineAi, aFloor);
+    if (pWall != null) {
+      this.linePlayer = Math.min(this.linePlayer, pWall - BANNER_POST_STANDOFF);
+    }
+    if (aWall != null) {
+      this.lineAi = Math.max(this.lineAi, aWall + BANNER_POST_STANDOFF);
+    }
+    if (this.linePlayer > this.lineAi - BANNER_MIN_GAP) {
+      const overflow = this.linePlayer - (this.lineAi - BANNER_MIN_GAP);
+      this.linePlayer -= overflow * 0.5;
+      this.lineAi += overflow * 0.5;
+      // Re-assert post walls after gap split
+      if (pWall != null) {
+        this.linePlayer = Math.min(this.linePlayer, pWall - BANNER_POST_STANDOFF);
+      }
+      if (aWall != null) {
+        this.lineAi = Math.max(this.lineAi, aWall + BANNER_POST_STANDOFF);
+      }
+    }
+    this.linePlayer = clamp(this.linePlayer, 0.05, 0.95);
+    this.lineAi = clamp(this.lineAi, 0.05, 0.95);
   }
 
   /** Seated fans in a block belonging to a team (for convert majority gate) */

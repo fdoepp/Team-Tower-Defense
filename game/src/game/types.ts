@@ -164,6 +164,20 @@ export const CEMENT_DOT_PER_SEC = 10;
  * 0 = must clear front Ordner/post before advancing (no random walkthrough).
  */
 export const CEMENT_BREAKTHROUGH = 0;
+/**
+ * Standarte / Fortschrittsbalken: how fast the banner crawls forward
+ * toward living attacker depth (gangX per second).
+ */
+export const BANNER_ADVANCE_SPEED = 0.048;
+/**
+ * Standarte retreat toward the cemented floor — slower than advance so
+ * the frontier stays forward and only slowly gives ground.
+ */
+export const BANNER_RETREAT_SPEED = 0.014;
+/** Minimum grey gap between opposing Standarten (gangX). */
+export const BANNER_MIN_GAP = 0.05;
+/** Standarte / build rights stop this far before an enemy Ordnerpost. */
+export const BANNER_POST_STANDOFF = 0.035;
 
 export const STEWARD_HIRE_GOLD = 22;
 export const STEWARD_CAP = 2;
@@ -252,8 +266,9 @@ export const STEWARD_STATS = {
   attack: 0.85,
   defense: 1.25,
   vsUltraMul: 1.2,
-  patrolSpeed: 0.055,
-  chaseSpeed: 0.09,
+  patrolSpeed: 0.05,
+  /** Under Ultra gang speed (~0.075) so Ultras can open range for Pyro */
+  chaseSpeed: 0.06,
   /** Patrol / heal radius around own post (gangX) */
   postRadius: 0.11,
   chaseRadius: 0.2,
