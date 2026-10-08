@@ -213,7 +213,7 @@ function renderMatchScreen(): void {
       <aside class="side-rail left-rail" aria-label="Personen">
         <header class="rail-banner">Personen</header>
         <p class="freie-plaetze">Freie Plätze <b id="free-seats">0</b></p>
-        <div class="unit-rows">
+        <div class="unit-rows rail-rows">
           ${(["normalos", "ultras", "hooligans", "ordner"] as UnitUiKind[])
             .map((kind) => {
               const buy = unitBuyCost(kind);
@@ -280,14 +280,26 @@ function renderMatchScreen(): void {
             .join("")}
         </div>
       </aside>
+      <div class="wallet-row wallet-bar" aria-label="Ressourcen">
+        <span class="wb-chip gold">
+          <span class="wb-plate"><img data-wallet-cur="gold" src="/${UI_ICONS.currencyGold.replace(/^\//, "")}" alt=""></span>
+          <b id="gold">0</b>
+        </span>
+        <span class="wb-chip bier">
+          <span class="wb-plate"><img data-wallet-cur="bier" src="/${UI_ICONS.currencyBier.replace(/^\//, "")}" alt=""></span>
+          <b id="cur-beer">0</b>
+        </span>
+        <span class="wb-chip merch">
+          <span class="wb-plate"><img data-wallet-cur="fanartikel" src="/${UI_ICONS.currencyFanartikel.replace(/^\//, "")}" alt=""></span>
+          <b id="cur-merch">0</b>
+        </span>
+        <span class="wb-chip sec">
+          <span class="wb-plate"><img data-wallet-cur="sicherheit" src="/${UI_ICONS.currencySicherheit.replace(/^\//, "")}" alt=""></span>
+          <b id="cur-sec">0</b>
+        </span>
+      </div>
       <div id="game-wrap">
         <div class="top-hud" id="pitch-hud">
-          <div class="wallet-row" aria-label="Ressourcen">
-            <span class="wi gold chip"><img src="${UI_ICONS.currencyGold}" alt=""><b id="gold">0</b></span>
-            <span class="wi bier chip"><img src="${UI_ICONS.currencyBier}" alt=""><b id="cur-beer">0</b></span>
-            <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
-            <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
-          </div>
           <!-- Scoreboard + Momentum live on canvas (stadion top third) -->
           <div class="pitch-score sr-only" aria-label="Spielstand">
             <b id="hud-score">0:0</b>
@@ -351,7 +363,7 @@ function renderMatchScreen(): void {
       <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
         <header class="rail-banner" id="build-rail-title">Bauen</header>
         <p class="rail-hint" id="build-hint">Gebäude wählen</p>
-        <div class="build-rows" id="build-place-rows">
+        <div class="build-rows rail-rows" id="build-place-rows">
           ${(["bier", "fanshop", "ordner"] as BuildingKind[])
             .map((kind) => {
               const src = standIconPath(kind, tc, 1);
@@ -388,7 +400,7 @@ function renderMatchScreen(): void {
             })
             .join("")}
         </div>
-        <div class="build-rows hidden" id="build-upgrade-rows">
+        <div class="build-rows rail-rows hidden" id="build-upgrade-rows">
           <div class="action-card build-card upgrade-card" id="upgrade-panel">
             <div class="ac-title-row">
               <h3 class="ac-title" id="upgrade-title">Gebäude</h3>
@@ -458,14 +470,54 @@ function renderMatchScreen(): void {
   const buildPlaceRows = app.querySelector<HTMLElement>("#build-place-rows")!;
   const buildUpgradeRows = app.querySelector<HTMLElement>("#build-upgrade-rows")!;
   const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
+  const leftRail = app.querySelector<HTMLElement>(".left-rail")!;
+  const walletBar = app.querySelector<HTMLElement>(".wallet-bar")!;
 
+  /**
+   * Wallet am oberen Rand der linken Bildhälfte:
+   * - horizontal mittig zwischen Personen-Rail-Rechtskante und Bildmitte (#game-wrap)
+   * - Höhe = Side-Rail-Banner-Button (.rail-banner), gleiche Pixelhöhe
+   */
   const layoutHud = () => {
-    const rect = wrap.getBoundingClientRect();
-    if (rect.width < 32 || rect.height < 32) return;
+    const wrapRect = wrap.getBoundingClientRect();
+    if (wrapRect.width < 32 || wrapRect.height < 32) return;
     pitchHud.style.top = "0";
     pitchHud.style.left = "0";
     pitchHud.style.width = "100%";
     pitchHud.style.height = "auto";
+
+    const shellRect = shell.getBoundingClientRect();
+    const railRect = leftRail.getBoundingClientRect();
+    if (shellRect.width < 32 || !walletBar) return;
+
+    // Bildmitte = Mitte des Spielfelds (nicht der gesamten Shell inkl. Rails)
+    const imageCenterX = wrapRect.left + wrapRect.width * 0.5;
+    const railRight = railRect.width > 8 ? railRect.right : wrapRect.left;
+    const midX = (railRight + imageCenterX) * 0.5;
+    walletBar.style.left = `${midX - shellRect.left}px`;
+
+    // Regel: Wallet-Höhe = Banner-Button in den Side-Rails (PERSONEN / BAUEN)
+    const banner =
+      leftRail.querySelector<HTMLElement>(".rail-banner") ??
+      shell.querySelector<HTMLElement>(".rail-banner");
+    const bannerRect = banner?.getBoundingClientRect();
+    if (bannerRect && bannerRect.height > 8) {
+      walletBar.style.setProperty("--wb-h", `${bannerRect.height}px`);
+      // Vertikal an Banner-Oberkante ausrichten (gleiche Leisten-Höhe im gleichen Band)
+      walletBar.style.top = `${Math.max(0, bannerRect.top - shellRect.top)}px`;
+    } else {
+      // Fallback: gleiche Formel wie --ur-btn-h (30px × rail-scale)
+      const rows = leftRail.querySelector<HTMLElement>(".unit-rows, .rail-rows");
+      const rr = rows?.getBoundingClientRect();
+      if (rr && rr.width > 8 && rr.height > 8) {
+        const railScale = Math.min(
+          1.08,
+          Math.max(0.68, Math.min(rr.width / 220, rr.height / 480)),
+        );
+        walletBar.style.setProperty("--wb-h", `${30 * railScale}px`);
+      }
+      walletBar.style.top = "";
+    }
   };
 
   const closeBuildRail = () => {
@@ -478,6 +530,7 @@ function renderMatchScreen(): void {
     wrap.classList.remove("placing");
     buildPlaceRows.classList.remove("hidden");
     buildUpgradeRows.classList.add("hidden");
+    requestAnimationFrame(layoutHud);
   };
 
   const openBuildRail = (mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
@@ -510,6 +563,7 @@ function renderMatchScreen(): void {
             : "Genau dieses Haus upgraden";
       }
     }
+    requestAnimationFrame(layoutHud);
   };
 
   /** Soft-bound: from→to Stand-Icons + aktuelle Prod / +Delta + Gold-Kosten. */
@@ -587,6 +641,24 @@ function renderMatchScreen(): void {
       const src = unitHeadIconPath("ordner", tc, m.unitLevelOf(m.playerTeam, "ordner"));
       hireIcon.src = src.startsWith("/") ? src : `/${src}`;
     }
+  };
+
+  /** Soft-bound Wallet: immer aktuelle currency-*.png aus UI_ICONS. */
+  const syncWalletIcons = () => {
+    const asSrc = (p: string) => (p.startsWith("/") ? p : `/${p}`);
+    const map: Record<string, string> = {
+      gold: UI_ICONS.currencyGold,
+      bier: UI_ICONS.currencyBier,
+      fanartikel: UI_ICONS.currencyFanartikel,
+      sicherheit: UI_ICONS.currencySicherheit,
+    };
+    app.querySelectorAll<HTMLImageElement>("[data-wallet-cur]").forEach((img) => {
+      const key = img.dataset.walletCur ?? "";
+      const path = map[key];
+      if (!path) return;
+      const next = asSrc(path);
+      if (img.getAttribute("src") !== next) img.src = next;
+    });
   };
 
   /** Soft-bound Neubau: Stand-/Währungs-Icons + Prod/min + Live-Gold. */
@@ -1014,6 +1086,7 @@ function renderMatchScreen(): void {
       setFb("#fb-n", own.normalos);
       setFb("#fb-h", own.hooligans);
       setFb("#fb-o", own.ordner);
+      syncWalletIcons();
       syncUnitActionCards();
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
       if (hireBtn) {
