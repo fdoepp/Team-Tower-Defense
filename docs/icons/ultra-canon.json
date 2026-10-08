@@ -1,0 +1,132 @@
+{
+  "id": "ultra-canon",
+  "status": "approved",
+  "effectiveFrom": "2026-10-08",
+  "replaces": [
+    "earlier ultra cutouts without pyro/smoke ladder",
+    "unit-icons-agent/docs/ultra-progression/proposals/a-*",
+    "legacy ultra assets with UP chest lettering as primary art"
+  ],
+  "style": {
+    "family": "bloons-chibi-ultra",
+    "fullBody": true,
+    "sizePx": 256,
+    "format": "image/png",
+    "transparent": true,
+    "consistentFigureScale": true,
+    "hoodUp": true,
+    "chestNumberEqualsLevel": true,
+    "pyroFromLevel": 1
+  },
+  "colors": [
+    "grey",
+    "blue",
+    "red"
+  ],
+  "levels": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "pathPattern": "game/public/icons/units/ultra-{color}-{level}.png",
+  "agentMirrorPattern": "unit-icons-agent/assets/units/ultra-{color}-{level}.png",
+  "levelsSpec": {
+    "1": {
+      "pyro": "whiteSmallSmoke",
+      "gear": [
+        "hoodie",
+        "pyro"
+      ],
+      "forbidden": [
+        "sunglasses",
+        "beer",
+        "megaphone",
+        "sparks"
+      ]
+    },
+    "2": {
+      "pyro": "lightTeamTintSmoke",
+      "gear": [
+        "hoodie",
+        "sunglasses",
+        "pyro"
+      ]
+    },
+    "3": {
+      "pyro": "mediumTeamSmoke",
+      "gear": [
+        "hoodie",
+        "sunglasses",
+        "pyro",
+        "beer"
+      ]
+    },
+    "4": {
+      "pyro": "largeTeamSmokeSparks",
+      "gear": [
+        "hoodie",
+        "sunglasses",
+        "pyro",
+        "beer",
+        "sparks"
+      ]
+    },
+    "5": {
+      "pyro": "maxTeamSmokeSparks",
+      "gear": [
+        "hoodie",
+        "sunglasses",
+        "pyro",
+        "megaphone",
+        "sparks"
+      ]
+    }
+  },
+  "files": [
+    "game/public/icons/units/ultra-grey-1.png",
+    "game/public/icons/units/ultra-grey-2.png",
+    "game/public/icons/units/ultra-grey-3.png",
+    "game/public/icons/units/ultra-grey-4.png",
+    "game/public/icons/units/ultra-grey-5.png",
+    "game/public/icons/units/ultra-blue-1.png",
+    "game/public/icons/units/ultra-blue-2.png",
+    "game/public/icons/units/ultra-blue-3.png",
+    "game/public/icons/units/ultra-blue-4.png",
+    "game/public/icons/units/ultra-blue-5.png",
+    "game/public/icons/units/ultra-red-1.png",
+    "game/public/icons/units/ultra-red-2.png",
+    "game/public/icons/units/ultra-red-3.png",
+    "game/public/icons/units/ultra-red-4.png",
+    "game/public/icons/units/ultra-red-5.png"
+  ],
+  "teamColors": {
+    "blue": {
+      "rgb": [
+        31,
+        76,
+        160
+      ],
+      "sharedWith": [
+        "fan",
+        "hooligan",
+        "ordner",
+        "stands"
+      ]
+    },
+    "red": {
+      "rgb": [
+        151,
+        27,
+        32
+      ],
+      "sharedWith": [
+        "fan",
+        "hooligan",
+        "ordner",
+        "stands"
+      ]
+    }
+  }
+}

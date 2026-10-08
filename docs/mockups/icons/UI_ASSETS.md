@@ -14,7 +14,7 @@ Alle Pfade relativ zu `game/public/icons/`.
 | 4 | `ui/btn-kaufen-grey.png` / `btn-kaufen-green.png` | Kaufen (grau/grün) |
 | 5 | `ui/btn-senden-grey.png` / `btn-senden-green.png` | Senden (grau/grün) |
 | 6 | `ui/menu-rail-brown.png` (+ `-tile`) | Durchgehende Bloons-braune Menüleiste |
-| 7 | `ui/pennant-ksc.png` / `pennant-vfb.png` | Fanwimpel-Ständer |
+| 7 | `ui/pennant-ksc.png` / `pennant-vfb.png` | **Standarten (kanonisch):** Holzpfosten + Streifenfahne blau-weiß / rot-weiß — kein Logo |
 
 ## 9 Buden farbig (`stands/`)
 
@@ -37,3 +37,24 @@ Schema: `{fan\|ultra\|hooligan\|ordner}-{blue\|red\|grey}-{1..5}.png`
 - `docs/mockups/icons/ui/preview-ui.jpg`
 - `docs/mockups/icons/stands-colored/preview-lv3.jpg`
 - `docs/mockups/icons/units-colored/preview-lv3.jpg`
+
+## Standarten — Deploy-Regel
+
+**Locked.** Jedes neue Spiel und jeder Deploy verwendet ausschließlich:
+
+- `game/public/icons/ui/pennant-ksc.png` (Heim / blau-weiß)
+- `game/public/icons/ui/pennant-vfb.png` (Gäste / rot-weiß)
+
+Binding: `UI_ICONS.pennantKsc` / `pennantVfb`.  
+Register: [`ASSET_DB.json`](ASSET_DB.json). Gesamtregel: [`../A2c-RULES.md`](../A2c-RULES.md).  
+Final-Preview: [`ui-review/pennant-final/`](ui-review/pennant-final/).
+
+## Einzel-Review (Buttons / Wimpel / Leerplatz)
+
+Für Optimierung einzeln dargestellt unter `docs/mockups/icons/ui-review/`:
+
+- `index.html` — interaktive Galerie (Canvas + Tight-Crop + 1:1)
+- `preview-ui-grid.jpg` / `preview-ui-einzeln.jpg`
+- `solo/*-solo.png` / `solo/*-tight.png`
+- `review-meta.json` — Content-Box, Padding, Fill-Anteil
+- `pennant-final/` — festgelegte Standarten A (blau + rot)

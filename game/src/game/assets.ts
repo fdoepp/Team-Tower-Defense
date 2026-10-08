@@ -11,6 +11,7 @@ export function teamColor(team: TeamId | "neutral" | null | undefined): TeamColo
   return "grey";
 }
 
+/** Soft-bound stand icon — always from `game/public/icons/stands/`. */
 export function standIconPath(
   kind: BuildingKind,
   color: TeamColor,
@@ -20,6 +21,7 @@ export function standIconPath(
   return `icons/stands/${kind}-${color}-${lv}.png`;
 }
 
+/** Soft-bound unit icon — always from `game/public/icons/units/`. */
 export function unitIconPath(
   kind: FanKind | "ordner",
   color: TeamColor,
@@ -35,8 +37,24 @@ export function unitIconPath(
   return `icons/units/${map[kind]}-${color}-${lv}.png`;
 }
 
+/** Deploy-Default: parallel zum Bildrand (iso nur Alternate). */
+export type SlotEmptyOrientation = "parallel" | "iso";
+export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "parallel";
+
+export type SlotControl = "blue" | "red" | "grey";
+
+/**
+ * Kanonische UI-Assets (Icon-Agents / ASSET_DB).
+ * Scoreboard: `scoreboard-top.png` (HUD_TOP_CANON) — nicht scoreboard-momentum.
+ */
 export const UI_ICONS = {
   slotEmpty: "icons/ui/slot-empty.png",
+  slotEmptyParallel: "icons/ui/slot-empty-parallel.png",
+  slotEmptyIso: "icons/ui/slot-empty-iso.png",
+  slotEmptyParallelBlue: "icons/ui/slot-empty-parallel-blue.png",
+  slotEmptyParallelRed: "icons/ui/slot-empty-parallel-red.png",
+  slotEmptyIsoBlue: "icons/ui/slot-empty-iso-blue.png",
+  slotEmptyIsoRed: "icons/ui/slot-empty-iso-red.png",
   currencyGold: "icons/ui/currency-gold.png",
   currencyBier: "icons/ui/currency-bier.png",
   currencyFanartikel: "icons/ui/currency-fanartikel.png",
@@ -45,20 +63,52 @@ export const UI_ICONS = {
   btnKaufenGreen: "icons/ui/btn-kaufen-green.png",
   btnSendenGrey: "icons/ui/btn-senden-grey.png",
   btnSendenGreen: "icons/ui/btn-senden-green.png",
+  btnSendenBlue: "icons/ui/btn-senden-blue.png",
+  btnBauenAmber: "icons/ui/btn-bauen-amber.png",
+  btnBauenGrey: "icons/ui/btn-bauen-grey.png",
+  btnUpgradePurple: "icons/ui/btn-upgrade-purple.png",
+  btnUpgradeGrey: "icons/ui/btn-upgrade-grey.png",
   pennantKsc: "icons/ui/pennant-ksc.png",
   pennantVfb: "icons/ui/pennant-vfb.png",
   menuRail: "icons/ui/menu-rail-brown.png",
   menuRailTile: "icons/ui/menu-rail-brown-tile.png",
-  scoreboard: "icons/ui/scoreboard-momentum.png",
+  /** HUD_TOP_CANON — Broadcast Bubble */
+  scoreboard: "icons/ui/scoreboard-top.png",
+  scoreboardOrbHeim: "icons/ui/scoreboard-top-orb-heim.png",
+  scoreboardOrbGast: "icons/ui/scoreboard-top-orb-gast.png",
 } as const;
 
 export function currencyIconPath(
-  key: "gold" | "beer" | "merch" | "security",
+  currency: "beer" | "merch" | "security" | "gold",
 ): string {
-  if (key === "gold") return UI_ICONS.currencyGold;
-  if (key === "beer") return UI_ICONS.currencyBier;
-  if (key === "merch") return UI_ICONS.currencyFanartikel;
-  return UI_ICONS.currencySicherheit;
+  if (currency === "beer") return UI_ICONS.currencyBier;
+  if (currency === "merch") return UI_ICONS.currencyFanartikel;
+  if (currency === "security") return UI_ICONS.currencySicherheit;
+  return UI_ICONS.currencyGold;
+}
+
+/**
+ * Leerer Bauplatz je Kontrolle.
+ * Team → Plot + Standarte im Icon; grau → ohne Standarte.
+ */
+export function slotEmptyIconPath(
+  control: SlotControl | TeamId | "neutral" | null | undefined,
+  orientation: SlotEmptyOrientation = SLOT_EMPTY_ORIENTATION,
+): string {
+  const c: SlotControl =
+    control === "ksc" || control === "blue"
+      ? "blue"
+      : control === "vfb" || control === "red"
+        ? "red"
+        : "grey";
+  if (orientation === "iso") {
+    if (c === "blue") return UI_ICONS.slotEmptyIsoBlue;
+    if (c === "red") return UI_ICONS.slotEmptyIsoRed;
+    return UI_ICONS.slotEmptyIso;
+  }
+  if (c === "blue") return UI_ICONS.slotEmptyParallelBlue;
+  if (c === "red") return UI_ICONS.slotEmptyParallelRed;
+  return UI_ICONS.slotEmptyParallel;
 }
 
 function loadOne(src: string): Promise<HTMLImageElement> {
@@ -72,7 +122,6 @@ function loadOne(src: string): Promise<HTMLImageElement> {
       resolve(img);
     };
     img.onerror = () => {
-      // Keep a placeholder so callers can fall back to vector draw
       cache.set(src, img);
       resolve(img);
     };
@@ -80,9 +129,13 @@ function loadOne(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/** All icon paths used in a match (stands × colors × levels + units + UI). */
 function allIconPaths(): string[] {
   const paths = new Set<string>(Object.values(UI_ICONS));
+  for (const orient of ["parallel", "iso"] as SlotEmptyOrientation[]) {
+    for (const c of ["grey", "blue", "red"] as SlotControl[]) {
+      paths.add(slotEmptyIconPath(c, orient));
+    }
+  }
   for (const kind of ["bier", "fanshop", "ordner"] as BuildingKind[]) {
     for (const color of ["blue", "red", "grey"] as TeamColor[]) {
       for (let lv = 1; lv <= 5; lv++) paths.add(standIconPath(kind, color, lv));
@@ -135,17 +188,11 @@ export function drawIcon(
 }
 
 export type ToyAnim = {
-  /** seconds */
   t: number;
-  /** per-unit phase offset */
   phase?: number;
-  /** idle | walk | cheer | fight | exit */
   mode?: "idle" | "walk" | "cheer" | "fight" | "exit";
-  /** face left (-1) or right (1) */
   facing?: number;
-  /** 0..1 hop intensity */
   hop?: number;
-  /** 0..1 punch / hit flash */
   strike?: number;
 };
 
@@ -214,7 +261,6 @@ export function drawToyIcon(
   const lean =
     mode === "exit" ? 0.22 * facing : mode === "fight" ? strike * 0.12 * facing : 0;
 
-  // soft ground shadow (fake contact) — stretches with hop
   const shW = size * (0.4 + Math.abs(bob) * 0.004) * squashX;
   const shH = size * (0.11 - Math.min(0.04, Math.abs(bob) * 0.002));
   ctx.save();
@@ -230,12 +276,10 @@ export function drawToyIcon(
   ctx.translate(x + lean * size * 0.2, y + bob);
   ctx.transform(facing, 0, shear, 1, 0, 0);
   ctx.rotate(sway);
-  // slight perspective foreshorten (toy tilt)
   const persp = mode === "exit" ? 0.92 : 0.96;
   ctx.transform(1, 0, 0, persp, 0, 0);
   ctx.drawImage(img, -dw / 2, -dh * 0.92, dw, dh);
 
-  // rim light for “toy plastic” pop
   if (mode === "cheer" || mode === "fight" || strike > 0.2) {
     ctx.globalCompositeOperation = "lighter";
     ctx.globalAlpha = mode === "cheer" ? 0.14 : 0.1 + strike * 0.15;

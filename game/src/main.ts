@@ -236,7 +236,7 @@ function renderMatchScreen(): void {
                 <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
               </button>
               <button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Senden">
-                <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
+                <img class="btn-ready" src="${UI_ICONS.btnSendenBlue}" alt="Senden">
                 <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
               </button>
             </div>
@@ -256,7 +256,7 @@ function renderMatchScreen(): void {
                 <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
               </button>
               <button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Senden">
-                <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
+                <img class="btn-ready" src="${UI_ICONS.btnSendenBlue}" alt="Senden">
                 <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
               </button>
             </div>
@@ -365,7 +365,7 @@ function renderMatchScreen(): void {
                 <small>${BUILD_COST.bier} Gold</small>
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            <img class="build-kaufen" src="${UI_ICONS.btnBauenAmber}" alt="Bauen">
           </button>
           <button type="button" class="build-card" data-pending-build="fanshop">
             <div class="build-top">
@@ -375,7 +375,7 @@ function renderMatchScreen(): void {
                 <small>${BUILD_COST.fanshop} Gold</small>
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            <img class="build-kaufen" src="${UI_ICONS.btnBauenAmber}" alt="Bauen">
           </button>
           <button type="button" class="build-card" data-pending-build="ordner">
             <div class="build-top">
@@ -385,7 +385,7 @@ function renderMatchScreen(): void {
                 <small>${BUILD_COST.ordner} Gold</small>
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            <img class="build-kaufen" src="${UI_ICONS.btnBauenAmber}" alt="Bauen">
           </button>
         </div>
         <div class="build-rows hidden" id="build-upgrade-rows">
@@ -406,7 +406,7 @@ function renderMatchScreen(): void {
             <button type="button" class="upgrade-buy" id="rail-upgrade">
               <span id="rail-upgrade-label">Upgrade</span>
               <small id="rail-upgrade-cost">—</small>
-              <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+              <img class="build-kaufen" src="${UI_ICONS.btnUpgradePurple}" alt="Upgrade">
             </button>
           </div>
           <button type="button" class="build-card" id="rail-hire-ordner">
