@@ -55,6 +55,9 @@ import {
   ULTRA_VS_POST_MUL,
   UPGRADE_COST,
   UPGRADE_MAX,
+  ANIM_DRINK_SEC,
+  ANIM_SHOP_SEC,
+  ANIM_THROW_SEC,
   productionRate,
   unitLevelMul,
   unitUpgradeCost,
@@ -367,6 +370,9 @@ export class Match {
       homeBlockId: blockId,
       patrolDir: Math.random() < 0.5 ? 1 : -1,
       cheerT: 0,
+      drinkT: 0,
+      shopT: 0,
+      throwT: 0,
       rangedPyro: false,
       onOffense: false,
       level,
@@ -409,6 +415,9 @@ export class Match {
       homeBlockId: stand.blockId,
       patrolDir: Math.random() < 0.5 ? 1 : -1,
       cheerT: 0,
+      drinkT: 0,
+      shopT: 0,
+      throwT: 0,
       rangedPyro: false,
       onOffense: false,
       level,
@@ -796,6 +805,8 @@ export class Match {
     const dx = tx - a.x;
     const dy = ty - a.y;
     const len = Math.hypot(dx, dy) || 1;
+    a.throwT = ANIM_THROW_SEC;
+    a.armSwing = 1;
     this.pyroShots.push({
       x: a.x,
       y: a.y,
@@ -1349,6 +1360,9 @@ export class Match {
     for (const f of this.fans) {
       if (f.armSwing > 0) f.armSwing = Math.max(0, f.armSwing - step * 2.2);
       if (f.attackCd > 0) f.attackCd = Math.max(0, f.attackCd - step);
+      if (f.drinkT > 0) f.drinkT = Math.max(0, f.drinkT - step);
+      if (f.shopT > 0) f.shopT = Math.max(0, f.shopT - step);
+      if (f.throwT > 0) f.throwT = Math.max(0, f.throwT - step);
       if (f.cheerT > 0) {
         f.cheerT = Math.max(0, f.cheerT - step);
         // Keep emitting notes/smoke while cheering
@@ -1923,6 +1937,8 @@ export class Match {
       } else if (f.state === "moving") {
         this.followPath(f, dt);
       } else if (f.state === "stand") {
+        // Hold drink / shop pose before resolving the visit
+        if (f.drinkT > 0 || f.shopT > 0) continue;
         this.finishStandVisit(f);
       } else if (f.state === "gang") {
         this.tickGangMove(f, dt);
@@ -2140,8 +2156,18 @@ export class Match {
           f.gangX = blockIdToGangX(stand.blockId);
         }
       }
-    } else if (after === "stand" || after === "shop") {
+    } else if (after === "stand") {
       f.state = "stand";
+      f.drinkT = ANIM_DRINK_SEC;
+      f.armSwing = 0.85;
+      if (f.standKey) {
+        const [b] = f.standKey.split(":").map(Number);
+        f.blockId = b;
+      }
+    } else if (after === "shop") {
+      f.state = "stand";
+      f.shopT = ANIM_SHOP_SEC;
+      f.armSwing = 0.55;
       if (f.standKey) {
         const [b] = f.standKey.split(":").map(Number);
         f.blockId = b;
