@@ -45,6 +45,51 @@ export type UiFinalId =
   | "ordnerRed3"
   | "ordnerRed4"
   | "ordnerRed5"
+  | "standBierBlue1"
+  | "standBierBlue2"
+  | "standBierBlue3"
+  | "standBierBlue4"
+  | "standBierBlue5"
+  | "standBierGrey1"
+  | "standBierGrey2"
+  | "standBierGrey3"
+  | "standBierGrey4"
+  | "standBierGrey5"
+  | "standBierRed1"
+  | "standBierRed2"
+  | "standBierRed3"
+  | "standBierRed4"
+  | "standBierRed5"
+  | "standFanshopBlue1"
+  | "standFanshopBlue2"
+  | "standFanshopBlue3"
+  | "standFanshopBlue4"
+  | "standFanshopBlue5"
+  | "standFanshopGrey1"
+  | "standFanshopGrey2"
+  | "standFanshopGrey3"
+  | "standFanshopGrey4"
+  | "standFanshopGrey5"
+  | "standFanshopRed1"
+  | "standFanshopRed2"
+  | "standFanshopRed3"
+  | "standFanshopRed4"
+  | "standFanshopRed5"
+  | "standOrdnerBlue1"
+  | "standOrdnerBlue2"
+  | "standOrdnerBlue3"
+  | "standOrdnerBlue4"
+  | "standOrdnerBlue5"
+  | "standOrdnerGrey1"
+  | "standOrdnerGrey2"
+  | "standOrdnerGrey3"
+  | "standOrdnerGrey4"
+  | "standOrdnerGrey5"
+  | "standOrdnerRed1"
+  | "standOrdnerRed2"
+  | "standOrdnerRed3"
+  | "standOrdnerRed4"
+  | "standOrdnerRed5"
 ;
 
 export type UiFinalEntry = {
@@ -374,6 +419,366 @@ export const UI_FINAL_PATHS = {
     file: "ordner-red-5.png",
     path: "icons/ui-final/ordner-red-5.png",
     native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierBlue1": {
+    file: "bier-blue-1.png",
+    path: "icons/ui-final/bier-blue-1.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierBlue2": {
+    file: "bier-blue-2.png",
+    path: "icons/ui-final/bier-blue-2.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierBlue3": {
+    file: "bier-blue-3.png",
+    path: "icons/ui-final/bier-blue-3.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierBlue4": {
+    file: "bier-blue-4.png",
+    path: "icons/ui-final/bier-blue-4.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierBlue5": {
+    file: "bier-blue-5.png",
+    path: "icons/ui-final/bier-blue-5.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierGrey1": {
+    file: "bier-grey-1.png",
+    path: "icons/ui-final/bier-grey-1.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierGrey2": {
+    file: "bier-grey-2.png",
+    path: "icons/ui-final/bier-grey-2.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierGrey3": {
+    file: "bier-grey-3.png",
+    path: "icons/ui-final/bier-grey-3.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierGrey4": {
+    file: "bier-grey-4.png",
+    path: "icons/ui-final/bier-grey-4.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierGrey5": {
+    file: "bier-grey-5.png",
+    path: "icons/ui-final/bier-grey-5.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierRed1": {
+    file: "bier-red-1.png",
+    path: "icons/ui-final/bier-red-1.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierRed2": {
+    file: "bier-red-2.png",
+    path: "icons/ui-final/bier-red-2.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierRed3": {
+    file: "bier-red-3.png",
+    path: "icons/ui-final/bier-red-3.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierRed4": {
+    file: "bier-red-4.png",
+    path: "icons/ui-final/bier-red-4.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standBierRed5": {
+    file: "bier-red-5.png",
+    path: "icons/ui-final/bier-red-5.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopBlue1": {
+    file: "fanshop-blue-1.png",
+    path: "icons/ui-final/fanshop-blue-1.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopBlue2": {
+    file: "fanshop-blue-2.png",
+    path: "icons/ui-final/fanshop-blue-2.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopBlue3": {
+    file: "fanshop-blue-3.png",
+    path: "icons/ui-final/fanshop-blue-3.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopBlue4": {
+    file: "fanshop-blue-4.png",
+    path: "icons/ui-final/fanshop-blue-4.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopBlue5": {
+    file: "fanshop-blue-5.png",
+    path: "icons/ui-final/fanshop-blue-5.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopGrey1": {
+    file: "fanshop-grey-1.png",
+    path: "icons/ui-final/fanshop-grey-1.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopGrey2": {
+    file: "fanshop-grey-2.png",
+    path: "icons/ui-final/fanshop-grey-2.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopGrey3": {
+    file: "fanshop-grey-3.png",
+    path: "icons/ui-final/fanshop-grey-3.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopGrey4": {
+    file: "fanshop-grey-4.png",
+    path: "icons/ui-final/fanshop-grey-4.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopGrey5": {
+    file: "fanshop-grey-5.png",
+    path: "icons/ui-final/fanshop-grey-5.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopRed1": {
+    file: "fanshop-red-1.png",
+    path: "icons/ui-final/fanshop-red-1.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopRed2": {
+    file: "fanshop-red-2.png",
+    path: "icons/ui-final/fanshop-red-2.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopRed3": {
+    file: "fanshop-red-3.png",
+    path: "icons/ui-final/fanshop-red-3.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopRed4": {
+    file: "fanshop-red-4.png",
+    path: "icons/ui-final/fanshop-red-4.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standFanshopRed5": {
+    file: "fanshop-red-5.png",
+    path: "icons/ui-final/fanshop-red-5.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerBlue1": {
+    file: "stand-ordner-blue-1.png",
+    path: "icons/ui-final/stand-ordner-blue-1.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerBlue2": {
+    file: "stand-ordner-blue-2.png",
+    path: "icons/ui-final/stand-ordner-blue-2.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerBlue3": {
+    file: "stand-ordner-blue-3.png",
+    path: "icons/ui-final/stand-ordner-blue-3.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerBlue4": {
+    file: "stand-ordner-blue-4.png",
+    path: "icons/ui-final/stand-ordner-blue-4.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerBlue5": {
+    file: "stand-ordner-blue-5.png",
+    path: "icons/ui-final/stand-ordner-blue-5.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerGrey1": {
+    file: "stand-ordner-grey-1.png",
+    path: "icons/ui-final/stand-ordner-grey-1.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerGrey2": {
+    file: "stand-ordner-grey-2.png",
+    path: "icons/ui-final/stand-ordner-grey-2.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerGrey3": {
+    file: "stand-ordner-grey-3.png",
+    path: "icons/ui-final/stand-ordner-grey-3.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerGrey4": {
+    file: "stand-ordner-grey-4.png",
+    path: "icons/ui-final/stand-ordner-grey-4.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerGrey5": {
+    file: "stand-ordner-grey-5.png",
+    path: "icons/ui-final/stand-ordner-grey-5.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerRed1": {
+    file: "stand-ordner-red-1.png",
+    path: "icons/ui-final/stand-ordner-red-1.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerRed2": {
+    file: "stand-ordner-red-2.png",
+    path: "icons/ui-final/stand-ordner-red-2.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerRed3": {
+    file: "stand-ordner-red-3.png",
+    path: "icons/ui-final/stand-ordner-red-3.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerRed4": {
+    file: "stand-ordner-red-4.png",
+    path: "icons/ui-final/stand-ordner-red-4.png",
+    native: { w: 512, h: 512 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "standOrdnerRed5": {
+    file: "stand-ordner-red-5.png",
+    path: "icons/ui-final/stand-ordner-red-5.png",
+    native: { w: 512, h: 512 },
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
