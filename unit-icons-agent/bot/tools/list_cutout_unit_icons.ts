@@ -37,6 +37,7 @@ export default defineTool({
           "Basis-Icons ohne Farb-Suffix (z.B. fan-1.png) werden ignoriert.",
           "Fans: Kanon docs/icons/FAN_CANON.md — game/public/icons/units/fan-*.png",
           "Ordner: Kanon docs/icons/ORDNER_CANON.md — game/public/icons/units/ordner-*.png",
+          "Hooligans: Kanon docs/icons/HOOLIGAN_CANON.md — game/public/icons/units/hooligan-*.png",
         ],
       },
       rootsScanned: roots,

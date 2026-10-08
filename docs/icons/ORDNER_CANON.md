@@ -49,7 +49,7 @@ Arbeitsnotizen: `unit-icons-agent/docs/ordner-progression/` (nur Doku).
 1. Nur die 15 Dateien unter `game/public/icons/units/ordner-{color}-{level}.png` laden.
 2. Keine Regeneration der Ordner, solange dieser Kanon gilt — außer ausdrücklicher Revisions-Auftrag.
 3. Neue Spielstände / Branches übernehmen diese Pfade.
-4. Fans haben einen eigenen Kanon (`FAN_CANON.md`); Ultras/Hooligans sind getrennt.
+4. Fans und Hooligans haben eigene Kanons (`FAN_CANON.md`, `HOOLIGAN_CANON.md`); Ultras sind getrennt.
 
 ## Kurz-Check
 

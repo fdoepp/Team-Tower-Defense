@@ -10,5 +10,6 @@ Für **neue Spielversionen** gelten ausschließlich die freigegebenen Ganzkörpe
 | --- | --- | --- |
 | Fans | [`docs/icons/FAN_CANON.md`](docs/icons/FAN_CANON.md) | `game/public/icons/units/fan-{grey\|blue\|red}-{1..5}.png` |
 | Ordner | [`docs/icons/ORDNER_CANON.md`](docs/icons/ORDNER_CANON.md) | `game/public/icons/units/ordner-{grey\|blue\|red}-{1..5}.png` |
+| Hooligans | [`docs/icons/HOOLIGAN_CANON.md`](docs/icons/HOOLIGAN_CANON.md) | `game/public/icons/units/hooligan-{grey\|blue\|red}-{1..5}.png` |
 
 Ältere Grafiken derselben Typen nicht mehr verwenden.

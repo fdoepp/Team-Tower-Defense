@@ -10,6 +10,7 @@ Zieht die abgelegten Unit-Cutouts und zeigt alle Varianten in **Grau / Blau / Ro
 | --- | --- | --- |
 | Fans | [`FAN_CANON.md`](../docs/icons/FAN_CANON.md) | `../game/public/icons/units/fan-*.png` |
 | Ordner | [`ORDNER_CANON.md`](../docs/icons/ORDNER_CANON.md) | `../game/public/icons/units/ordner-*.png` |
+| Hooligans | [`HOOLIGAN_CANON.md`](../docs/icons/HOOLIGAN_CANON.md) | `../game/public/icons/units/hooligan-*.png` |
 
 Spiegel für den Agent: `assets/units/`.
 
@@ -17,7 +18,7 @@ Spiegel für den Agent: `assets/units/`.
 
 | Quelle | Rolle |
 | --- | --- |
-| `../game/public/icons/units/` | **Runtime / Kanon** (Fans + Ordner) |
+| `../game/public/icons/units/` | **Runtime / Kanon** (Fans + Ordner + Hooligans) |
 | `assets/units/` | Bundled Spiegel für den Agent |
 | `../docs/icons/*_CANON.md` | Verbindliche Regeln |
 

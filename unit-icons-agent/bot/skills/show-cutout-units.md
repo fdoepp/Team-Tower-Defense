@@ -21,8 +21,9 @@ Farben: `grey` (Grau), `blue` (Blau), `red` (Rot). Erwartung: **4 × 3 × 5 = 60
 | --- | --- | --- |
 | Fans | `docs/icons/FAN_CANON.md` | Trikot+Bier → Fähnchen → Cap+Schal → große Fahne; Nummer=Level |
 | Ordner | `docs/icons/ORDNER_CANON.md` | Funk → Stock → Stock+Pads → Schild+Pistole → Schild+MG; Cap/Helm-Nummer=Level; Warnweste immer |
+| Hooligans | `docs/icons/HOOLIGAN_CANON.md` | Boxen → Schlagring → Baseball → Stemmeisen → Kette+Schloss; Vermummung eskaliert |
 
-Runtime: `game/public/icons/units/{fan\|ordner}-{grey\|blue\|red}-{1..5}.png`  
+Runtime: `game/public/icons/units/{fan\|ordner\|hooligan}-{grey\|blue\|red}-{1..5}.png`  
 Keine Legacy-Varianten regenerieren oder empfehlen.
 
 ## Ablauf

@@ -50,7 +50,7 @@ Arbeitsnotizen/History: `unit-icons-agent/docs/fan-progression/` (nur Dokumentat
 1. Nur die 15 Dateien unter `game/public/icons/units/fan-{color}-{level}.png` laden.
 2. Keine Regeneration der Fans, solange dieser Kanon gilt — außer ausdrücklicher Auftrag zur Revision.
 3. Neue Spielstände / Branches übernehmen diese Pfade; unfarbige Legacy-Dateien `fan-1.png`…`fan-5.png` nicht als Ersatz nutzen.
-4. Ultras, Hooligans, Ordner sind **andere** Units — dieses Dokument gilt nur für **Fans**.
+4. Ultras, Hooligans, Ordner sind **andere** Units — dieses Dokument gilt nur für **Fans** (Hooligans: `HOOLIGAN_CANON.md`, Ordner: `ORDNER_CANON.md`).
 
 ## Kurz-Check
 
