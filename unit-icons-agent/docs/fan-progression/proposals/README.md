@@ -53,3 +53,10 @@ Datei: `proposal-d-strip.png` / `d-fan-grey-1.png` … `5.png`
 - Nummer auf dem Trikot = Level
 - Lv1 ohne Fähnchen; Lv2 Fähnchen; Lv3 Schal+Baseball-Cap; Lv4/5 größere Fahne
 - Fahne einfarbig grau (Teamfarbe)
+
+
+## Vorschlag E — Mood-Progression
+
+Datei: `proposal-e-strip.png` / `e-fan-grey-1.png` … `5.png`
+
+Wie Vorschlag D, plus Mood: Lv1 ruhig → Lv5 singt/jubelt mit ausdrucksstärkeren Armen.

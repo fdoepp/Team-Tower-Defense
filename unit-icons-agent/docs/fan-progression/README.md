@@ -20,5 +20,9 @@ Stilziel: wie **Ordner/Ultras** (Bloons-/Comic, ganzfigurig).
 | 4 | Fahne wird größer · Trikot #4 |
 | 5 | noch größere Fahne · Trikot #5 |
 
-Aktueller Grau-Vorschlag: `proposals/d-fan-grey-*.png` (Vorschlag D).
+## Stimmung / Pose
+
+Mit steigendem Level mehr Jubel: Lv1 ruhig → Lv5 singt/schreit, Arme ausdrucksstärker.
+
+Aktueller Grau-Vorschlag: `proposals/e-fan-grey-*.png` (Vorschlag E = D-Regeln + Mood).
 Blau/Rot folgen nach Freigabe.
