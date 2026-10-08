@@ -336,9 +336,9 @@ select {
    Alle Abstände/Größen über --ur-* ; Relationen bleiben beim Skalieren. */
 .match-shell.matchday .action-card.unit-card {
   --ur-scale: 1;
-  /* Basis @ ~220px Rail; cqw hält Relationen bei schmalerer Sidebar */
-  --ur-pad: clamp(5px, 3.6cqw, 8px);
-  --ur-edge: clamp(3px, 2.2cqw, 5px); /* + Border ≈ Gap Kopf→Buttons */
+  /* Gleicher Innenabstand links (→Kopf) und rechts (→Buttons) zur braunen Kante */
+  --ur-inset: clamp(6px, 3.6cqw, 8px);
+  --ur-pad: var(--ur-inset);
   --ur-title: clamp(0.68rem, 3.7cqw, 0.82rem);
   --ur-count-size: clamp(0.78rem, 4.2cqw, 0.95rem);
   --ur-btn-h: clamp(26px, 14.5cqw, 32px);
@@ -353,12 +353,12 @@ select {
   --head-base: clamp(36px, 26cqw, 62px);
   --head-step: clamp(1.5px, 1.4cqw, 4px);
   gap: clamp(2px, 1.2cqw, 4px);
-  padding: var(--ur-card-pad-y) var(--ur-pad) var(--ur-card-pad-y);
-  padding-left: var(--ur-edge);
+  padding: var(--ur-card-pad-y) var(--ur-inset);
   flex: 1 1 0;
   min-height: 0;
   justify-content: flex-start;
   align-items: stretch;
+  overflow: hidden; /* Clip nur innerhalb der Karte, nicht über den braunen Rand */
 }
 
 .match-shell.matchday .action-card.unit-card .ac-title-row {
@@ -389,10 +389,11 @@ select {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--ur-pad);
+  gap: var(--ur-inset);
   width: 100%;
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
 }
 
 /* Kopf: freigestelltes PNG, Größe proportional zur Rail; Level leicht größer */
@@ -451,8 +452,7 @@ select {
   margin-top: 0;
   width: auto;
   flex: 1 1 auto;
-  /* Platz für „UPGRADE“ + Icon + Betrag auch bei schmaler Rail */
-  min-width: min(100%, 7.6em);
+  min-width: 0; /* nicht über rechten --ur-inset hinausdrücken */
 }
 
 .match-shell.matchday .action-card.unit-card .ar-cost-btn {
