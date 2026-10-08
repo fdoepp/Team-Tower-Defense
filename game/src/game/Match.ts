@@ -339,7 +339,8 @@ export class Match {
     seatIndex: number,
   ): FanUnit {
     const seat = Math.max(0, seatIndex | 0);
-    const p = seatPos(blockId, seat);
+    // seatIndex = reservation only; spawn anywhere in the crowd area
+    const p = randomCrowdPos(blockId);
     const level = 1;
     const beerIv = visitInterval(kind, "beer", level);
     const shopIv = visitInterval(kind, "shop", level);
@@ -1108,7 +1109,8 @@ export class Match {
       return false;
     }
     const c = BUY_COST[kind];
-    const p = seatPos(blockId, seat);
+    const fan = this.makeFan(kind, this.playerTeam, blockId, seat);
+    const p = { x: fan.x, y: fan.y };
     if (c.beer > 0) this.spend("beer", c.beer, p, "BIER");
     if (c.merch > 0) this.spend("merch", c.merch, p, "FANARTIKEL");
     if (c.security > 0) this.spend("security", c.security, p, "SICHERHEIT");
@@ -1116,7 +1118,7 @@ export class Match {
       this.gold -= c.gold;
       this.floatAt(p.x, p.y, `−${c.gold}€`, false);
     }
-    this.fans.push(this.makeFan(kind, this.playerTeam, blockId, seat));
+    this.fans.push(fan);
     this.seatMenu = null;
     this.floatAt(p.x, p.y + 0.02, `+${FAN_STATS[kind].label}`, true);
     this.toast(`${FAN_STATS[kind].label} gekauft`);

@@ -383,9 +383,9 @@ export const STEWARD_STATS = {
 };
 
 /** Fans stroll inside their stand — not glued to a seat cell */
-export const BLOCK_WANDER_SPEED = 0.048;
-export const BLOCK_WANDER_RETARGET_MIN = 2.2;
-export const BLOCK_WANDER_RETARGET_MAX = 5.5;
+export const BLOCK_WANDER_SPEED = 0.062;
+export const BLOCK_WANDER_RETARGET_MIN = 1.6;
+export const BLOCK_WANDER_RETARGET_MAX = 4.2;
 export const BLOCK_WANDER_ARRIVE = 0.014;
 /** Soft push-apart so crowded stands don't fully stack */
 export const BLOCK_SEPARATION_RADIUS = 0.022;
