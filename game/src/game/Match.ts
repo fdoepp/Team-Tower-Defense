@@ -1,7 +1,10 @@
 import {
   AI_SOFT_REGEN,
+  AI_START_BEER,
   AI_START_GOLD_BONUS,
+  AI_START_MERCH,
   BLOCK_META,
+  GANG_SPEED_BASE,
   BLOCK_HOME_PULL,
   BLOCK_HOME_RADIUS,
   BLOCK_SEPARATION_PUSH,
@@ -42,6 +45,7 @@ import {
   NEUTRAL_STEWARD_RESPAWN,
   ORDNER_POST_HP,
   ORDNER_POST_HP_PER_LEVEL,
+  PATH_WALK_SPEED,
   MOMENTUM_APPROACH,
   MOMENTUM_EPS,
   MOMENTUM_WEIGHT,
@@ -230,9 +234,9 @@ export class Match {
   captureAcc: Record<string, number> = {};
   aiGold = START_GOLD + AI_START_GOLD_BONUS;
   aiBuildRot = 0;
-  /** soft AI combat resources (not shared with player wallet) */
-  aiMerch = 40;
-  aiBeer = 40;
+  /** soft AI combat resources — same empty send wallets as player at kickoff */
+  aiMerch = AI_START_MERCH;
+  aiBeer = AI_START_BEER;
   aiSecurity = START_SECURITY;
   /** Penalty: whose kick is next (alternating) */
   pensNext: TeamId = "ksc";
@@ -1398,7 +1402,6 @@ export class Match {
     this.tickCombat(step);
     this.tickPyroShots(step);
     this.tickNeutralCapture(step);
-    this.tickFamilyFlight(step);
     this.tickJubelMomentum(step);
     this.tickBlockStorm(step);
     this.tickMatch(step);
@@ -1531,7 +1534,7 @@ export class Match {
     const nrm = this.countInBlock(this.playerTeam, HEIM_BLOCK, "normalos");
     this.gold += (1.0 + nrm * 0.2) * dt;
     const aiN = this.countInBlock(this.aiTeam, GAST_BLOCK, "normalos");
-    this.aiGold += (1.1 + aiN * 0.22) * dt;
+    this.aiGold += (1.05 + aiN * 0.2) * dt;
 
     // Steward upkeep €/s per person
     const stewards = this.fans.filter(
@@ -2303,7 +2306,7 @@ export class Match {
       }
     }
 
-    const speed = 0.22;
+    const speed = PATH_WALK_SPEED;
     const d = dist(f.x, f.y, t.x, t.y);
     if (d < 0.012) {
       f.x = t.x;
@@ -2458,7 +2461,7 @@ export class Match {
   private tickGangMove(f: FanUnit, dt: number): void {
     if (f.isSteward) return;
     const dir = f.team === this.playerTeam ? 1 : -1;
-    const speed = 0.065 * FAN_STATS[f.kind].fight;
+    const speed = GANG_SPEED_BASE * FAN_STATS[f.kind].fight;
     const midY = gangMidY();
     const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
 
@@ -3143,14 +3146,6 @@ export class Match {
       this.fans.push(this.makeFan(kind, "neutral", blockId, seat));
     }
     void dt;
-  }
-
-  /**
-   * Fans never flee / Abwanderung — they stay for Stimmung.
-   * Kept as a no-op hook so call sites remain stable.
-   */
-  private tickFamilyFlight(_dt: number): void {
-    void _dt;
   }
 
   /**

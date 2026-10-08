@@ -111,11 +111,14 @@ export const SECURITY_BASE_CAP = 50;
 /** Regen toward SECURITY_BASE_CAP from intact neutral mid Ordnerposten when safe. */
 export const SECURITY_BASE_REGEN = 0.55;
 
-/** Buy costs — each type tied to its currency (early costs aligned) */
+/**
+ * Buy costs — Ultra slightly cheaper (glass post-breaker), Hool pricier (tank DPS).
+ * Same currency lanes: Fans=Sicherheit · Ultras=Fanartikel · Hools=Bier.
+ */
 export const BUY_COST = {
   normalos: { beer: 0, merch: 0, security: 12, gold: 0 },
-  ultras: { beer: 0, merch: 12, security: 0, gold: 0 },
-  hooligans: { beer: 12, merch: 0, security: 0, gold: 0 },
+  ultras: { beer: 0, merch: 10, security: 0, gold: 0 },
+  hooligans: { beer: 14, merch: 0, security: 0, gold: 0 },
 } as const;
 
 export const BUILD_COST: Record<BuildingKind, number> = {
@@ -171,11 +174,17 @@ export const HOOLIGAN_ORDER_BEER = 6;
 export const PYRO_FIGHT_MERCH = 6;
 
 export const HIT_DAMAGE = 22;
-export const HIT_CD = 0.55;
+/** Slower cadence so gang fights stay readable (~1 hit / s at atk 1). */
+export const HIT_CD = 1.1;
 /** Melee must be nearly overlapping */
 export const MELEE_RANGE = 0.14;
-/** Fernkämpfer (Bengalo) ≈ 5× Nahkampf */
+/** Fernkämpfer (Bengalo) ≈ 5× Nahkampf — Ultras poke Ordnerposts from range */
 export const RANGED_RANGE = MELEE_RANGE * 5;
+
+/** Path walking (block → door → gang). Was 0.22 — too snappy. */
+export const PATH_WALK_SPEED = 0.12;
+/** Base gangX / s before × fight. Was 0.065. */
+export const GANG_SPEED_BASE = 0.04;
 
 /**
  * Gebäude-HP: Lv1 schon klar über jeder Figur (auch Ordner/Hool Lv-max).
@@ -186,9 +195,12 @@ export const ORDNER_POST_HP_PER_LEVEL = 220;
 export const HIT_DAMAGE_SCALE = 0.7;
 /** Pyro ranged damage scale (vs melee) */
 export const RANGED_DAMAGE_SCALE = 0.85;
-/** Extra damage Ultras deal to Ordnerposten (ranged + melee) */
-export const ULTRA_VS_POST_MUL = 1.35;
-/** HP multiplier when Ultra enters Pyro-Kampf */
+/**
+ * Ultra specialty vs Ordnerposten (Gebäude): ranged + melee bonus.
+ * Ultras are the intended post-breakers — Hools win person fights, Ultras crack walls.
+ */
+export const ULTRA_VS_POST_MUL = 1.5;
+/** HP multiplier when Ultra enters Pyro-Kampf (glass cannon while throwing) */
 export const PYRO_FIGHT_HP_MUL = 0.65;
 /** Cement gate: move speed while pressing the wall */
 export const CEMENT_SLOW_MUL = 0.35;
@@ -318,8 +330,14 @@ export const GOAL_P_TOR_MAX = 0.55;
 
 /** AI start gold bonus over START_GOLD */
 export const AI_START_GOLD_BONUS = 5;
-/** Soft AI beer/merch regen per second */
-export const AI_SOFT_REGEN = 0.48;
+/** AI starts with the same empty send wallets as the player (buildings/regen fill them). */
+export const AI_START_BEER = 0;
+export const AI_START_MERCH = 0;
+/**
+ * Soft AI beer/merch/security regen per second — booth-adjacent, not free spam.
+ * Was 0.48 (≈ mid booth); now closer to a weak early stand.
+ */
+export const AI_SOFT_REGEN = 0.28;
 
 export const FAN_STATS: Record<
   FanKind,
@@ -349,7 +367,7 @@ export const FAN_STATS: Record<
     maxHp: 140,
     attack: 0.9,
     defense: 0.7,
-    /** Schneller als Hools → mehrere Pyro-Würfe bevor Nahkampf */
+    /** Schneller als Hools → Abstand halten + Pyro auf Posts */
     fight: 1.15,
     drink: 0.6,
     jubel: 0.85,
@@ -358,9 +376,10 @@ export const FAN_STATS: Record<
   },
   hooligans: {
     maxHp: 240,
-    attack: 1.35,
+    /** Was 1.35 — still strongest melee, but not 9× Fan DPS at equal buy cost */
+    attack: 1.15,
     defense: 1.05,
-    /** Langsamer als Ultras; Nahkampf bleibt über Atk/HP stark */
+    /** Langsamer als Ultras; Nahkampf über HP/Def */
     fight: 0.72,
     drink: 1.1,
     jubel: 0.75,
@@ -379,9 +398,9 @@ export const STEWARD_STATS = {
   attack: 0.85,
   defense: 1.25,
   vsUltraMul: 1.2,
-  patrolSpeed: 0.05,
-  /** Under Ultra gang speed (~0.075) so Ultras can open range for Pyro */
-  chaseSpeed: 0.06,
+  patrolSpeed: 0.035,
+  /** Under Ultra gang speed (~0.046) so Ultras can open range for Pyro */
+  chaseSpeed: 0.04,
   /** Patrol / heal radius around own post (gangX) */
   postRadius: 0.11,
   chaseRadius: 0.2,
