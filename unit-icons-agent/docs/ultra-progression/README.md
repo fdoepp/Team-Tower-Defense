@@ -1,18 +1,21 @@
-# Ultra-Progression (Arbeit)
+# Ultra-Progression
 
-**Stilbasis:** bestehende Ultra-Icons (Hoodie, Kapuze oben, Chibi).
+> **Kanon freigegeben:**  
+> [`docs/icons/ULTRA_CANON.md`](../../../docs/icons/ULTRA_CANON.md)
 
-## Vorschlag B (aktuell) — Grau Lv1–5
+**Für neue Spielversionen / Deployments** immer `game/public/icons/units/ultra-*.png` verwenden.
 
-| Level | Pyro / Rauch | Props | Look |
-| --- | --- | --- | --- |
-| 1 | **weiß**es Pyro, **sehr kleiner** Rauch | Pyro · Nr. **1** | Kapuze, Gesicht offen |
-| 2 | hellgrau, Rauch etwas mehr | Pyro · **2** | + Sonnenbrille |
-| 3 | **Teamgrau**-Rauch, mittel | Pyro + Bier · **3** | aggressiver |
-| 4 | dunkler grauer Rauch **groß** + **Funken** | Pyro + Bier · **4** | lauter |
-| 5 | **max** dunkler Rauch + Funken | Megafon + Pyro · **5** | max laut |
+Finale Ablage: [`final/`](./final/) · Übersicht: [`final/all-colors.png`](./final/all-colors.png).
 
-Nummer = Level auf der linken Brust. Ganzfigurig.  
-Nach Freigabe: Blau/Rot — Pyro/Rauch-Farbe wandert zur jeweiligen Teamfarbe.
+## Freigegebene Leiter
 
-A = erster Wurf · **B = Rauchgröße + Pyrofarbe-Leiter**
+| Level | Pyro / Rauch | Props |
+| --- | --- | --- |
+| 1 | weiß, sehr klein | Pyro · Nr. 1 |
+| 2 | hell → Teamfarbe | + Brille · Nr. 2 |
+| 3 | Teamfarbe, mittel | + Bier · Nr. 3 |
+| 4 | groß + Funken | + Bier · Nr. 4 |
+| 5 | max + Funken | Megafon + Pyro · Nr. 5 |
+
+Immer: Kapuze oben, gleiche Figurgröße, Nummer auf der Brust.  
+Vorschläge A/B unter `proposals/` sind Historie.
