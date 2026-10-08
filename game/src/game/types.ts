@@ -142,8 +142,12 @@ export const MELEE_RANGE = 0.14;
 /** Fernkämpfer (Bengalo) ≈ 5× Nahkampf */
 export const RANGED_RANGE = MELEE_RANGE * 5;
 
-export const ORDNER_POST_HP = 280;
-export const ORDNER_POST_HP_PER_LEVEL = 90;
+/**
+ * Gebäude-HP: Lv1 schon klar über jeder Figur (auch Ordner/Hool Lv-max).
+ * Ein Posten soll lange stehen — es ist ein Bauwerk, kein Runner.
+ */
+export const ORDNER_POST_HP = 1100;
+export const ORDNER_POST_HP_PER_LEVEL = 220;
 export const HIT_DAMAGE_SCALE = 0.7;
 /** Pyro ranged damage scale (vs melee) */
 export const RANGED_DAMAGE_SCALE = 0.85;
@@ -218,7 +222,8 @@ export const FAN_STATS: Record<
     maxHp: 140,
     attack: 0.9,
     defense: 0.7,
-    fight: 1.1,
+    /** Schneller als Hools → mehrere Pyro-Würfe bevor Nahkampf */
+    fight: 1.15,
     drink: 0.6,
     jubel: 0.85,
     color: "#1f6feb",
@@ -228,7 +233,8 @@ export const FAN_STATS: Record<
     maxHp: 240,
     attack: 1.35,
     defense: 1.05,
-    fight: 1.45,
+    /** Langsamer als Ultras; Nahkampf bleibt über Atk/HP stark */
+    fight: 0.72,
     drink: 1.1,
     jubel: 0.55,
     color: "#b45309",
@@ -236,14 +242,22 @@ export const FAN_STATS: Record<
   },
 };
 
+/**
+ * Ordner: niedrigere Basis-HP, dafür langsame Heilung nahe dem Posten.
+ * Tempo unter Ultra-Gang-Speed, damit Ultras Abstand halten können.
+ */
 export const STEWARD_STATS = {
-  maxHpBase: 280,
-  maxHpPerLevel: 35,
+  maxHpBase: 170,
+  maxHpPerLevel: 22,
   attack: 0.85,
   defense: 1.25,
   vsUltraMul: 1.2,
-  patrolSpeed: 0.12,
-  chaseSpeed: 0.2,
+  patrolSpeed: 0.055,
+  chaseSpeed: 0.09,
+  /** Patrol / heal radius around own post (gangX) */
+  postRadius: 0.11,
+  chaseRadius: 0.2,
+  healPerSec: 10,
 };
 
 export const BLOCK_META = [

@@ -356,7 +356,9 @@ export class Match {
   private makeSteward(team: TeamId | "neutral", stand: BuildSlot): FanUnit {
     const sp = this.stewardPostPos(stand);
     const gx = blockIdToGangX(stand.blockId);
-    const hp = STEWARD_STATS.maxHpBase + stand.level * STEWARD_STATS.maxHpPerLevel;
+    const lv = Math.max(1, stand.level || 1);
+    const hp =
+      STEWARD_STATS.maxHpBase + (lv - 1) * STEWARD_STATS.maxHpPerLevel;
     // Spawn already on gang — tickFans skips stewards, so a "moving" path
     // would never finish and they'd never patrol.
     return {
@@ -1549,8 +1551,13 @@ export class Match {
       );
       if (!stand) continue;
 
+      const postGx = this.stewardPostGangX(f);
       const band = this.stewardPatrolBand(f);
-      const threat = this.stewardThreat(f, band);
+      const chaseBand = {
+        min: clamp(postGx - STEWARD_STATS.chaseRadius, 0.02, 0.98),
+        max: clamp(postGx + STEWARD_STATS.chaseRadius, 0.02, 0.98),
+      };
+      const threat = this.stewardThreat(f, chaseBand);
       const midY = gangMidY();
       // Always on gang lane — never stuck on the booth sprite
       f.y = midY + Math.sin(this.realElapsed * 2.2 + f.id) * 0.006;
@@ -1561,6 +1568,9 @@ export class Match {
         const step = Math.sign(dx) * Math.min(Math.abs(dx), speed * dt);
         f.x += step;
         this.syncGangFromWorld(f);
+        // Never chase beyond post neighborhood
+        f.gangX = clamp(f.gangX, chaseBand.min, chaseBand.max);
+        f.x = gangXToWorld(f.gangX);
         f.aggro = 100;
       } else {
         if (!f.patrolDir) f.patrolDir = 1;
@@ -1574,45 +1584,34 @@ export class Match {
         }
         f.x = gangXToWorld(f.gangX);
       }
+
+      // Slow heal while inside the tight post radius (patrol bubble)
+      if (
+        Math.abs(f.gangX - postGx) <= STEWARD_STATS.postRadius + 0.01 &&
+        f.hp < f.maxHp
+      ) {
+        f.hp = Math.min(f.maxHp, f.hp + STEWARD_STATS.healPerSec * dt);
+      }
+
       f.state = "gang";
       f.blockId = stand.blockId;
     }
   }
 
-  /** Patrol across own painted gang territory in front of the post */
+  private stewardPostGangX(f: FanUnit): number {
+    if (!f.homeStandKey) return f.gangX;
+    const [b] = f.homeStandKey.split(":").map(Number);
+    return blockIdToGangX(b);
+  }
+
+  /** Always patrol in a tight bubble around the home Ordnerposten */
   private stewardPatrolBand(f: FanUnit): { min: number; max: number } {
-    const postGx = f.homeStandKey
-      ? blockIdToGangX(Number(f.homeStandKey.split(":")[0]))
-      : f.gangX;
-    if (f.team === "neutral") {
-      return {
-        min: clamp(postGx - 0.16, 0.05, 0.95),
-        max: clamp(postGx + 0.16, 0.05, 0.95),
-      };
-    }
-    if (f.team === this.playerTeam) {
-      // Heim → vorwärts über eigenes Territorium (sichtbarer Sweep)
-      const far = Math.max(
-        postGx + 0.28,
-        this.linePlayer,
-        this.cementEdgeGx(this.playerTeam),
-        this.buildFrontierGx(this.playerTeam),
-      );
-      let min = clamp(postGx - 0.06, 0.02, 0.88);
-      let max = clamp(far + 0.04, 0.2, 0.92);
-      if (max - min < 0.18) max = clamp(min + 0.18, 0.2, 0.92);
-      return { min, max };
-    }
-    const near = Math.min(
-      postGx - 0.28,
-      this.lineAi,
-      this.cementEdgeGx(this.aiTeam),
-      this.buildFrontierGx(this.aiTeam),
-    );
-    let min = clamp(near - 0.04, 0.08, 0.8);
-    let max = clamp(postGx + 0.06, 0.12, 0.98);
-    if (max - min < 0.18) min = clamp(max - 0.18, 0.08, 0.8);
-    return { min, max };
+    const postGx = this.stewardPostGangX(f);
+    const r = STEWARD_STATS.postRadius;
+    return {
+      min: clamp(postGx - r, 0.02, 0.98),
+      max: clamp(postGx + r, 0.02, 0.98),
+    };
   }
 
   private teamHasCement(team: TeamId): boolean {
