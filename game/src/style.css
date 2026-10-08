@@ -834,8 +834,8 @@ select {
 }
 
 /*
- * Live-Werte über Original-Cutout (b-final-cutout, unverändert).
- * Score-Maske = Cream-Panel-Farbe; Minute = nur Grünfläche (Holzring bleibt PNG).
+ * Live-Werte über Original-Cutout (b-final-cutout, byte-identisch).
+ * Score-Maske = Cream; Minute = Grünfläche (Holzring bleibt PNG).
  */
 .match-shell.matchday .sb-score-mask {
   position: absolute;
