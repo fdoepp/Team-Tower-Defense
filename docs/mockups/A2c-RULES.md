@@ -73,10 +73,10 @@ Linke und rechte Rail komponieren Karten zur Laufzeit — **keine** eingebackene
 
 ### Einheiten
 1. Icon: `unitIconPath` → `game/public/icons/units/` (Level = zentraler Typ-Level)
-2. Kaufkosten: `unitBuyCost` ← `BUY_COST` / `STEWARD_HIRE_GOLD`
-3. Senden: `PYRO_FIGHT_MERCH` / `HOOLIGAN_ORDER_BEER`
-4. Upgrade: `UNIT_UPGRADE_COST` / `Match.tryUpgradeUnit` (alle Personentypen)
-5. Buttons: `btn-kaufen-*` / `btn-senden-blue` / `btn-upgrade-*`
+2. Kauf-/Senden-/Upgrade-Kosten **im** Button (Live aus `unitBuyCost` / Senden-Konstanten / `UNIT_UPGRADE_COST`)
+3. Währung: `currencyIconPath` → `game/public/icons/ui/currency-*.png`
+4. Upgrade: `Match.tryUpgradeUnit` (alle Personentypen)
+5. Buttons: CSS `.ar-cost-btn` (Grün/Blau/Violett)
 
 Icon- oder Balance-Updates greifen automatisch beim nächsten Deploy/Match-Preload.  
 Spec: `docs/mockups/icons/ui-review/btn-vorschlaege/ACTION_CARD.md`.

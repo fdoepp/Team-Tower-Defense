@@ -328,58 +328,41 @@ select {
   min-height: 0;
 }
 
-/* Unit Action Cards (soft-bound icons + live costs) */
+/* Unit Action Cards — Kosten im Button, soft-bound Icons/Preise */
 .match-shell.matchday .unit-card {
   gap: 6px;
   padding: 8px 8px 8px;
 }
 
 .match-shell.matchday .unit-card .ac-title-row {
+  position: relative;
   display: flex;
   width: 100%;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 6px;
+  justify-content: center;
+  min-height: 1.2em;
 }
 
 .match-shell.matchday .unit-card .ac-title {
   font-size: 0.92rem;
+  text-align: center;
+  margin: 0;
+}
+
+.match-shell.matchday .unit-card .ur-count {
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .match-shell.matchday .unit-card .ac-icon {
-  width: 72px;
-  height: 72px;
-}
-
-.match-shell.matchday .unit-card .ac-cost {
-  font-size: 0.82rem;
-}
-
-.match-shell.matchday .unit-card .ac-cost img {
-  width: 22px;
-  height: 22px;
-}
-
-.match-shell.matchday .unit-card .ac-cost-send {
-  opacity: 0.9;
-  font-size: 0.72rem;
-  margin-top: -2px;
-}
-
-.match-shell.matchday .unit-card .ac-cost-upgrade {
-  opacity: 0.95;
-  font-size: 0.78rem;
-  margin-top: 2px;
-}
-
-.match-shell.matchday .unit-card .ac-cost-upgrade.poor,
-.match-shell.matchday .unit-card .ac-cost-upgrade.maxed {
-  opacity: 0.55;
+  width: 84px;
+  height: 84px;
 }
 
 .match-shell.matchday .ur-count {
   font-family: var(--display);
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 900;
   color: #fde68a;
   line-height: 1;
@@ -390,16 +373,81 @@ select {
   display: none;
 }
 
-/* Stacked full-width Bloons buttons — dominate the card like BTD upgrades */
+/* Stacked cost-in-button bars (KAUFEN / SENDEN / UPGRADE) */
 .match-shell.matchday .ur-actions {
   display: flex;
   flex-direction: column;
   flex-wrap: nowrap;
-  gap: 4px;
-  margin-top: 3px;
+  gap: 6px;
+  margin-top: 4px;
   width: 100%;
 }
 
+.match-shell.matchday .ar-cost-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  color: #fff;
+  font-family: var(--display), system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.28);
+  transition: transform 0.08s ease, filter 0.08s ease;
+}
+
+.match-shell.matchday .ar-cost-btn .ar-verb {
+  line-height: 1;
+}
+
+.match-shell.matchday .ar-cost-btn .ar-cost-ico {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  pointer-events: none;
+  flex: 0 0 auto;
+}
+
+.match-shell.matchday .ar-cost-btn .ar-cost-amt {
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  min-width: 1.2em;
+}
+
+.match-shell.matchday .ar-cost-btn.ar-kaufen {
+  background: linear-gradient(180deg, #5ec45e 0%, #3a9a48 72%, #2f7f3c 100%);
+}
+
+.match-shell.matchday .ar-cost-btn.ar-senden {
+  background: linear-gradient(180deg, #5a92e6 0%, #3a6fc4 72%, #2f5aa3 100%);
+}
+
+.match-shell.matchday .ar-cost-btn.ar-upgrade {
+  background: linear-gradient(180deg, #b07ae8 0%, #8a52c9 72%, #6f3eab 100%);
+}
+
+.match-shell.matchday .ar-cost-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+}
+
+.match-shell.matchday .ar-cost-btn.cd,
+.match-shell.matchday .ar-cost-btn:disabled {
+  background: linear-gradient(180deg, #9ca3af 0%, #6b7280 72%, #4b5563 100%);
+  cursor: not-allowed;
+  filter: saturate(0.85);
+}
+
+/* legacy image buttons (build rail etc. may still use) */
 .match-shell.matchday .ar-icon-btn {
   display: block;
   width: 100%;
@@ -411,12 +459,6 @@ select {
   cursor: pointer;
   filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.32));
   transition: transform 0.08s ease;
-}
-
-/* Single-action rows (Fans / Ordner): even chunkier one button */
-.match-shell.matchday .ur-actions:has(.ar-icon-btn:only-child) .ar-icon-btn {
-  height: 58px;
-  min-height: 58px;
 }
 
 .match-shell.matchday .ar-icon-btn:active:not(:disabled) {
@@ -676,14 +718,18 @@ select {
     grid-template-columns: minmax(150px, 22%) 1fr minmax(160px, 24%);
   }
   .match-shell.matchday .ar-icon-btn { height: 40px; min-height: 40px; }
-  .match-shell.matchday .ur-actions:has(.ar-icon-btn:only-child) .ar-icon-btn {
-    height: 46px;
-    min-height: 46px;
+  .match-shell.matchday .ar-cost-btn {
+    min-height: 38px;
+    height: 38px;
+    font-size: 0.82rem;
+    gap: 6px;
+    border-radius: 12px;
   }
+  .match-shell.matchday .ar-cost-btn .ar-cost-ico { width: 18px; height: 18px; }
   .match-shell.matchday .action-card .ac-icon { width: 72px; height: 72px; }
   .match-shell.matchday .action-card .ac-icons .ac-icon { width: 64px; height: 64px; }
   .match-shell.matchday .action-card .ac-btn-img { height: 46px; }
-  .match-shell.matchday .unit-card .ac-icon { width: 60px; height: 60px; }
+  .match-shell.matchday .unit-card .ac-icon { width: 68px; height: 68px; }
 }
 
 /* Pitch HUD — frosted Apple chrome over green field only */

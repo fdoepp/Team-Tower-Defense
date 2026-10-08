@@ -4,79 +4,87 @@
     "kind": "normalos",
     "color": "blue",
     "buy": 12,
-    "currency": "Sicherheit",
+    "currency": "security",
     "upgrade": 35,
-    "upgradeCurrency": "Gold",
-    "hasSend": false
+    "upgradeCurrency": "gold",
+    "hasSend": false,
+    "costInButton": true
   },
   {
     "file": "unit-ultras-blue.png",
     "kind": "ultras",
     "color": "blue",
     "buy": 14,
-    "currency": "Fanartikel",
+    "currency": "merch",
     "upgrade": 35,
-    "upgradeCurrency": "Gold",
-    "hasSend": true
+    "upgradeCurrency": "gold",
+    "hasSend": true,
+    "costInButton": true
   },
   {
     "file": "unit-hooligans-blue.png",
     "kind": "hooligans",
     "color": "blue",
     "buy": 14,
-    "currency": "Bier",
+    "currency": "beer",
     "upgrade": 35,
-    "upgradeCurrency": "Gold",
-    "hasSend": true
+    "upgradeCurrency": "gold",
+    "hasSend": true,
+    "costInButton": true
   },
   {
     "file": "unit-ordner-blue.png",
     "kind": "ordner",
     "color": "blue",
     "buy": 22,
-    "currency": "Gold",
+    "currency": "gold",
     "upgrade": 35,
-    "upgradeCurrency": "Gold",
-    "hasSend": false
+    "upgradeCurrency": "gold",
+    "hasSend": false,
+    "costInButton": true
   },
   {
     "file": "unit-normalos-red.png",
     "kind": "normalos",
     "color": "red",
     "buy": 12,
-    "currency": "Sicherheit",
+    "currency": "security",
     "upgrade": 35,
-    "upgradeCurrency": "Gold",
-    "hasSend": false
+    "upgradeCurrency": "gold",
+    "hasSend": false,
+    "costInButton": true
   },
   {
     "file": "unit-ultras-red.png",
     "kind": "ultras",
     "color": "red",
     "buy": 14,
-    "currency": "Fanartikel",
+    "currency": "merch",
     "upgrade": 35,
-    "upgradeCurrency": "Gold",
-    "hasSend": true
+    "upgradeCurrency": "gold",
+    "hasSend": true,
+    "costInButton": true
   },
   {
     "file": "unit-hooligans-red.png",
     "kind": "hooligans",
     "color": "red",
     "buy": 14,
-    "currency": "Bier",
+    "currency": "beer",
     "upgrade": 35,
-    "upgradeCurrency": "Gold",
-    "hasSend": true
+    "upgradeCurrency": "gold",
+    "hasSend": true,
+    "costInButton": true
   },
   {
     "file": "unit-ordner-red.png",
     "kind": "ordner",
     "color": "red",
     "buy": 22,
-    "currency": "Gold",
+    "currency": "gold",
     "upgrade": 35,
-    "upgradeCurrency": "Gold",
-    "hasSend": false
+    "upgradeCurrency": "gold",
+    "hasSend": false,
+    "costInButton": true
   }
 ]
