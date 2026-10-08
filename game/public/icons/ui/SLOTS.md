@@ -1,16 +1,20 @@
 # Bauplatz-Icons (kanonisch)
 
-Deploy-Default: **Stadionboden-Perspektive** — vorn breiter, hinten schmaler, passend zu
-`game/public/assets/stadium-floodlight-derby-bg.jpg`.
+## Live-Kopplung an das Bodenraster (Deploy-Default)
 
-| Kontrolle | Datei |
+Runtime (`FLOOR_GRID_COUPLE` in `floorGrid.ts`):
+
+1. Plot-Zellen liegen auf dem Derby-BG-Bodenraster (Vanishing Point + Spaltenstrahlen + Tiefenlinien).
+2. Quelle ist das **achsenparallele** Icon `slot-empty-ortho*.png`.
+3. Beim Screen-Draw wird es per `drawIconQuad` in die Zellen-Trapezoid **geschnitten/verzerrt**.
+
+| Kontrolle | Warp-Quelle (ortho) |
 |---|---|
-| Grau / Neutral | `slot-empty.png` (= `slot-empty-persp.png` = `slot-empty-parallel.png`) |
-| KSC / blau | `slot-empty-persp-blue.png` (= `slot-empty-parallel-blue.png`) |
-| VfB / rot | `slot-empty-persp-red.png` (= `slot-empty-parallel-red.png`) |
+| Grau / Neutral | `slot-empty-ortho.png` |
+| KSC / blau | `slot-empty-ortho-blue.png` |
+| VfB / rot | `slot-empty-ortho-red.png` |
 
-Benannte Perspektiv-Dateien: `slot-empty-persp*.png`  
-Ortho-Archiv (altes „gerade“ Parallel): `slot-empty-ortho*.png`  
-Iso-Raute (Alternate): `slot-empty-iso*.png`
+Statische Perspektiv-PNGs (`slot-empty-persp*` / `slot-empty-parallel*`) bleiben als Preview/Fallback.
+Iso-Raute: `slot-empty-iso*.png`.
 
-Runtime (`slotEmptyIconPath`, Default-Orientierung `parallel`) lädt damit automatisch die Perspektiv-Variante.
+Siehe `game/src/game/floorGrid.ts` · `drawBaustelle` in `render.ts`.

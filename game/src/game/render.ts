@@ -10,8 +10,10 @@ import {
   HEIM_BLOCK,
   L,
   SEATS_PER_BLOCK,
+  FLOOR_GRID_COUPLE,
   blockCenterX,
   blockWidthNorm,
+  boothQuad,
   boothRect,
   doorPos,
   gangY,
@@ -23,6 +25,7 @@ import {
   UI_ICONS,
   currencyIconPath,
   drawIcon,
+  drawIconQuad,
   drawImageCover,
   drawToyIcon,
   slotEmptyIconPath,
@@ -32,6 +35,7 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
+import { scaleQuad } from "./floorGrid";
 
 export { SEATS_PER_BLOCK } from "./layout";
 export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
@@ -456,7 +460,7 @@ function drawTerritoryPennants(
   }
 }
 
-/** Baustelle — kanonisches paralleles Slot-Icon, Auto-Swap mit Kontrolle. */
+/** Baustelle — Slot-Icon, Auto-Swap mit Kontrolle; bei Floor-Grid in Zellen-Trapez. */
 function drawBaustelle(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -468,8 +472,38 @@ function drawBaustelle(
   s: BuildSlot,
 ): void {
   const control = slotControlForPlot(m, s);
-  const src = slotEmptyIconPath(control);
-  const drew = drawIcon(ctx, src, x, y, bw, bh, 0.02);
+  const src = slotEmptyIconPath(control, undefined, FLOOR_GRID_COUPLE);
+  let drew = false;
+  if (FLOOR_GRID_COUPLE) {
+    const q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+    drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
+    if (sel) {
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(q.tl.x, q.tl.y);
+      ctx.lineTo(q.tr.x, q.tr.y);
+      ctx.lineTo(q.br.x, q.br.y);
+      ctx.lineTo(q.bl.x, q.bl.y);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(34,197,94,0.35)";
+      ctx.lineWidth = 6;
+      ctx.stroke();
+    }
+  } else {
+    drew = drawIcon(ctx, src, x, y, bw, bh, 0.02);
+    if (sel) {
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 3.5;
+      roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 10);
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(34,197,94,0.35)";
+      ctx.lineWidth = 6;
+      roundRect(ctx, x - 1, y - 1, bw + 2, bh + 2, 12);
+      ctx.stroke();
+    }
+  }
   if (!drew) {
     const r = Math.min(10, Math.min(bw, bh) * 0.12);
     ctx.fillStyle = "#4b5563";
@@ -485,16 +519,6 @@ function drawBaustelle(
     ctx.textBaseline = "middle";
     ctx.fillText("+", x + bw / 2, y + bh / 2);
     ctx.textBaseline = "alphabetic";
-  }
-  if (sel) {
-    ctx.strokeStyle = "#22c55e";
-    ctx.lineWidth = 3.5;
-    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 10);
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(34,197,94,0.35)";
-    ctx.lineWidth = 6;
-    roundRect(ctx, x - 1, y - 1, bw + 2, bh + 2, 12);
-    ctx.stroke();
   }
 }
 

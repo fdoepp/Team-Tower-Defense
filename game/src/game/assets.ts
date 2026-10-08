@@ -66,6 +66,10 @@ export const UI_ICONS = {
   slotEmptyParallelRed: "icons/ui/slot-empty-parallel-red.png",
   slotEmptyIsoBlue: "icons/ui/slot-empty-iso-blue.png",
   slotEmptyIsoRed: "icons/ui/slot-empty-iso-red.png",
+  /** Axis-aligned source art — warped live into floor-grid quads. */
+  slotEmptyOrtho: "icons/ui/slot-empty-ortho.png",
+  slotEmptyOrthoBlue: "icons/ui/slot-empty-ortho-blue.png",
+  slotEmptyOrthoRed: "icons/ui/slot-empty-ortho-red.png",
   currencyGold: "icons/ui/currency-gold.png",
   currencyBier: "icons/ui/currency-bier.png",
   currencyFanartikel: "icons/ui/currency-fanartikel.png",
@@ -122,10 +126,14 @@ export function currencyIconPath(
 /**
  * Leerer Bauplatz je Kontrolle.
  * Team → Plot + Standarte im Icon; grau → ohne Standarte.
+ *
+ * When `orthoSource` is true (floor-grid couple), return the axis-aligned
+ * source PNGs — the renderer warps them into the floor cell trapezoid.
  */
 export function slotEmptyIconPath(
   control: SlotControl | TeamId | "neutral" | null | undefined,
   orientation: SlotEmptyOrientation = SLOT_EMPTY_ORIENTATION,
+  orthoSource = false,
 ): string {
   const c: SlotControl =
     control === "ksc" || control === "blue"
@@ -133,6 +141,11 @@ export function slotEmptyIconPath(
       : control === "vfb" || control === "red"
         ? "red"
         : "grey";
+  if (orthoSource) {
+    if (c === "blue") return UI_ICONS.slotEmptyOrthoBlue;
+    if (c === "red") return UI_ICONS.slotEmptyOrthoRed;
+    return UI_ICONS.slotEmptyOrtho;
+  }
   if (orientation === "iso") {
     if (c === "blue") return UI_ICONS.slotEmptyIsoBlue;
     if (c === "red") return UI_ICONS.slotEmptyIsoRed;
@@ -141,6 +154,85 @@ export function slotEmptyIconPath(
   if (c === "blue") return UI_ICONS.slotEmptyParallelBlue;
   if (c === "red") return UI_ICONS.slotEmptyParallelRed;
   return UI_ICONS.slotEmptyParallel;
+}
+
+type Pt = { x: number; y: number };
+
+/**
+ * Draw a freigestelltes icon into a convex screen quad (TL,TR,BR,BL)
+ * via two affine triangles — used to cut Bauplatz into the floor grid.
+ */
+export function drawIconQuad(
+  ctx: CanvasRenderingContext2D,
+  src: string,
+  tl: Pt,
+  tr: Pt,
+  br: Pt,
+  bl: Pt,
+): boolean {
+  const img = getIcon(src);
+  if (!img) return false;
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  if (iw < 2 || ih < 2) return false;
+  // Triangle 1: TL-TR-BL  ←→  (0,0)-(iw,0)-(0,ih)
+  drawTexturedTriangle(ctx, img, tl, tr, bl, { x: 0, y: 0 }, { x: iw, y: 0 }, { x: 0, y: ih });
+  // Triangle 2: TR-BR-BL  ←→  (iw,0)-(iw,ih)-(0,ih)
+  drawTexturedTriangle(ctx, img, tr, br, bl, { x: iw, y: 0 }, { x: iw, y: ih }, { x: 0, y: ih });
+  return true;
+}
+
+/** Affine-map image triangle abc → screen triangle ABC. */
+function drawTexturedTriangle(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  a: Pt,
+  b: Pt,
+  c: Pt,
+  ia: Pt,
+  ib: Pt,
+  ic: Pt,
+): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.lineTo(c.x, c.y);
+  ctx.closePath();
+  ctx.clip();
+
+  // Solve affine: [x y 1] = [u v 1] * M
+  const denom =
+    ia.x * (ib.y - ic.y) + ib.x * (ic.y - ia.y) + ic.x * (ia.y - ib.y);
+  if (Math.abs(denom) < 1e-6) {
+    ctx.restore();
+    return;
+  }
+  // Map from texture → screen
+  // Using determinant form for the 2x3 affine matrix
+  const m11 =
+    (a.x * (ib.y - ic.y) + b.x * (ic.y - ia.y) + c.x * (ia.y - ib.y)) / denom;
+  const m12 =
+    (a.x * (ic.x - ib.x) + b.x * (ia.x - ic.x) + c.x * (ib.x - ia.x)) / denom;
+  const m13 =
+    (a.x * (ib.x * ic.y - ic.x * ib.y) +
+      b.x * (ic.x * ia.y - ia.x * ic.y) +
+      c.x * (ia.x * ib.y - ib.x * ia.y)) /
+    denom;
+  const m21 =
+    (a.y * (ib.y - ic.y) + b.y * (ic.y - ia.y) + c.y * (ia.y - ib.y)) / denom;
+  const m22 =
+    (a.y * (ic.x - ib.x) + b.y * (ia.x - ic.x) + c.y * (ib.x - ia.x)) / denom;
+  const m23 =
+    (a.y * (ib.x * ic.y - ic.x * ib.y) +
+      b.y * (ic.x * ia.y - ia.x * ic.y) +
+      c.y * (ia.x * ib.y - ib.x * ia.y)) /
+    denom;
+
+  // Multiply onto current transform (keeps main.ts DPR scale).
+  ctx.transform(m11, m21, m12, m22, m13, m23);
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
 }
 
 function loadOne(src: string): Promise<HTMLImageElement> {
