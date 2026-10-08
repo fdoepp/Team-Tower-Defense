@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wallet-Bar Vorschläge — LaneLink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --display: "Bangers", system-ui, sans-serif;
+        --ui: "Nunito", system-ui, sans-serif;
+        --pitch: #2f6b3a;
+        --ink: #1c120a;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: var(--ui);
+        color: #fff8eb;
+        background:
+          radial-gradient(1200px 600px at 50% -10%, #3a6b45, transparent 60%),
+          linear-gradient(180deg, #1a2e22, #0f1a14 70%);
+        min-height: 100vh;
+        padding: 28px 24px 48px;
+      }
+      h1 {
+        font-family: var(--display);
+        font-size: 2.2rem;
+        letter-spacing: 0.02em;
+        margin: 0 0 6px;
+        color: #fff4d6;
+        text-shadow: 0 2px 0 #3b2412;
+      }
+      .lede {
+        max-width: 720px;
+        margin: 0 0 22px;
+        color: #d9e8d4;
+        font-weight: 700;
+        line-height: 1.45;
+      }
+      .canon {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 0 0 28px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(20, 30, 22, 0.55);
+        border: 1px solid rgba(255, 236, 200, 0.18);
+      }
+      .canon .ico {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        font-size: 0.85rem;
+        font-weight: 800;
+      }
+      .canon img { width: 36px; height: 36px; object-fit: contain; }
+      .grid {
+        display: grid;
+        gap: 22px;
+      }
+      .proposal {
+        border-radius: 18px;
+        border: 2px solid rgba(255, 220, 160, 0.22);
+        background: rgba(12, 18, 14, 0.55);
+        overflow: hidden;
+      }
+      .proposal header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 18px 10px;
+      }
+      .proposal header h2 {
+        margin: 0;
+        font-family: var(--display);
+        font-size: 1.55rem;
+        color: #ffe7a8;
+      }
+      .proposal header span {
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: #b7cbb4;
+      }
+      .proposal p.desc {
+        margin: 0;
+        padding: 0 18px 12px;
+        color: #d5e4d1;
+        font-size: 0.92rem;
+        font-weight: 700;
+        line-height: 1.4;
+      }
+      .stage {
+        position: relative;
+        margin: 0 14px 14px;
+        height: 210px;
+        border-radius: 14px;
+        overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(15, 40, 22, 0.25), rgba(10, 20, 12, 0.15)),
+          repeating-linear-gradient(
+            90deg,
+            #2f6b3a 0 28px,
+            #347242 28px 56px
+          );
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .stage::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, rgba(10, 20, 14, 0.35), transparent 45%);
+        pointer-events: none;
+      }
+      .score-fake {
+        position: absolute;
+        left: 50%;
+        top: 52px;
+        transform: translateX(-50%);
+        width: min(340px, 70%);
+        height: 54px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #2a3344, #151b28);
+        border: 2px solid #0b1020;
+        box-shadow: 0 4px 0 #0b1020;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #e2e8f0;
+        font-family: var(--display);
+        font-size: 1.2rem;
+        letter-spacing: 0.04em;
+      }
+
+      /* ===== A: Frosted chips ===== */
+      .a-bar {
+        position: absolute;
+        left: 50%;
+        top: 12px;
+        transform: translateX(-50%);
+        z-index: 2;
+        display: flex;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+      .a-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px 3px 3px;
+        border-radius: 999px;
+        background: rgba(255, 252, 245, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      }
+      .a-chip img { width: 28px; height: 28px; object-fit: contain; }
+      .a-chip b {
+        font-family: var(--display);
+        font-size: 1.05rem;
+        font-weight: 400;
+        color: var(--ink);
+        min-width: 1.4em;
+      }
+      .a-chip.gold b { color: #a16207; }
+      .a-chip.bier b { color: #b45309; }
+      .a-chip.merch b { color: #1d4ed8; }
+      .a-chip.sec b { color: #0369a1; }
+
+      /* ===== B: Wood plank ===== */
+      .b-bar {
+        position: absolute;
+        left: 50%;
+        top: 10px;
+        transform: translateX(-50%);
+        z-index: 2;
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        min-width: min(520px, 86%);
+        padding: 8px 10px;
+        border-radius: 16px;
+        background:
+          linear-gradient(180deg, rgba(255, 236, 200, 0.22), rgba(80, 45, 18, 0.28)),
+          url("./menu-rail-brown-tile.png") center / cover;
+        border: 3px solid #5c3418;
+        box-shadow:
+          inset 0 2px 0 rgba(255, 230, 180, 0.4),
+          inset 0 -3px 8px rgba(40, 20, 8, 0.35),
+          0 6px 14px rgba(0, 0, 0, 0.35);
+      }
+      .b-slot {
+        flex: 1 1 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 4px 6px;
+        position: relative;
+      }
+      .b-slot:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 18%;
+        bottom: 18%;
+        width: 2px;
+        background: linear-gradient(180deg, transparent, rgba(60, 30, 10, 0.45), transparent);
+      }
+      .b-slot img {
+        width: 34px;
+        height: 34px;
+        object-fit: contain;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+      }
+      .b-slot b {
+        font-family: var(--display);
+        font-size: 1.25rem;
+        color: #fff8eb;
+        text-shadow: 0 2px 0 rgba(40, 20, 8, 0.55);
+      }
+
+      /* ===== C: Embossed tray under scoreboard ===== */
+      .c-wrap {
+        position: absolute;
+        left: 50%;
+        top: 10px;
+        transform: translateX(-50%);
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: min(420px, 78%);
+      }
+      .c-score {
+        width: 100%;
+        height: 48px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #2a3344, #151b28);
+        border: 2px solid #0b1020;
+        box-shadow: 0 4px 0 #0b1020;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--display);
+        font-size: 1.15rem;
+        color: #e2e8f0;
+      }
+      .c-bar {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        padding: 7px;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #3a2818, #24170e);
+        border: 2px solid #6b4424;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 220, 160, 0.25),
+          0 5px 0 #1a1008;
+      }
+      .c-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        padding: 6px 4px 5px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, #5a3a22, #3d2616);
+        border: 1px solid rgba(255, 220, 160, 0.18);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+      }
+      .c-cell img {
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+      }
+      .c-cell b {
+        font-family: var(--display);
+        font-size: 1.05rem;
+        color: #fff4d6;
+        line-height: 1;
+      }
+      .c-cell small {
+        font-size: 0.58rem;
+        font-weight: 800;
+        color: #d4b48a;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .note {
+        margin: 8px 18px 16px;
+        font-size: 0.8rem;
+        color: #a9bba6;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Wallet-Bar — 3 Vorschläge</h1>
+    <p class="lede">
+      Kanon-Icons (Stand 2026-10-08, Branch
+      <code>cursor/currency-icons-clean-dba3</code>): Gold-Münze mit Krone, Bierglas,
+      Fanartikel-Schal, Sicherheitsschild. HUD zeigt nur Logo + Live-Zahl
+      (laut <code>CURRENCY_FX_CANON.md</code>).
+    </p>
+
+    <div class="canon" aria-label="Kanon-Icons">
+      <div class="ico"><img src="./currency-gold.png" alt="" /> Gold</div>
+      <div class="ico"><img src="./currency-bier.png" alt="" /> Bier</div>
+      <div class="ico"><img src="./currency-fanartikel.png" alt="" /> Fanartikel</div>
+      <div class="ico"><img src="./currency-sicherheit.png" alt="" /> Sicherheit</div>
+    </div>
+
+    <div class="grid">
+      <!-- A -->
+      <section class="proposal" id="vorschlag-a">
+        <header>
+          <h2>A · Frosted Chips</h2>
+          <span>leicht · über dem Rasen · nah am Ist-Zustand</span>
+        </header>
+        <p class="desc">
+          Vier einzelne Pills in einem gemeinsamen Glas-Ring, zentriert über dem
+          Spielfeld. Icons groß lesbar, Zahlen farbig. Minimaler Flächenbedarf —
+          Scoreboard darunter bleibt frei.
+        </p>
+        <div class="stage" data-shot="a">
+          <div class="a-bar">
+            <span class="a-chip gold"><img src="./currency-gold.png" alt="" /><b>84</b></span>
+            <span class="a-chip bier"><img src="./currency-bier.png" alt="" /><b>12</b></span>
+            <span class="a-chip merch"><img src="./currency-fanartikel.png" alt="" /><b>6</b></span>
+            <span class="a-chip sec"><img src="./currency-sicherheit.png" alt="" /><b>18</b></span>
+          </div>
+          <div class="score-fake">0 : 0 &nbsp;·&nbsp; 39′</div>
+        </div>
+        <p class="note">Passt zu Mobile/Querformat; wenig Holz-Chrome im HUD.</p>
+      </section>
+
+      <!-- B -->
+      <section class="proposal" id="vorschlag-b">
+        <header>
+          <h2>B · Holz-Leiste</h2>
+          <span>Matchday-Comic · wie Seiten-Rails</span>
+        </header>
+        <p class="desc">
+          Eine durchgehende geschnitzte Leiste (gleiche Holz-Textur wie Personen-/Gebäude-Rail).
+          Vier gleich breite Slots mit Trennern — Icon + Zahl, keine Pill-Rahmen.
+          Wirkt wie Teil des Matchday-UI-Systems.
+        </p>
+        <div class="stage" data-shot="b">
+          <div class="b-bar">
+            <div class="b-slot"><img src="./currency-gold.png" alt="" /><b>84</b></div>
+            <div class="b-slot"><img src="./currency-bier.png" alt="" /><b>12</b></div>
+            <div class="b-slot"><img src="./currency-fanartikel.png" alt="" /><b>6</b></div>
+            <div class="b-slot"><img src="./currency-sicherheit.png" alt="" /><b>18</b></div>
+          </div>
+          <div class="score-fake">0 : 0 &nbsp;·&nbsp; 39′</div>
+        </div>
+        <p class="note">Empfohlen, wenn Wallet optisch zu den braunen Action-Cards gehören soll.</p>
+      </section>
+
+      <!-- C -->
+      <section class="proposal" id="vorschlag-c">
+        <header>
+          <h2>C · Scoreboard-Tray</h2>
+          <span>gebunden an Anzeige · Labels klein</span>
+        </header>
+        <p class="desc">
+          Wallet sitzt direkt unter dem Scoreboard als dunkles Tray mit vier
+          eingelassenen Zellen. Icon oben, Zahl, kurzes Label — klarer Cluster
+          „Match-Status“, mehr vertikale Höhe.
+        </p>
+        <div class="stage" data-shot="c">
+          <div class="c-wrap">
+            <div class="c-score">0 : 0 &nbsp;·&nbsp; 39′</div>
+            <div class="c-bar">
+              <div class="c-cell">
+                <img src="./currency-gold.png" alt="" />
+                <b>84</b>
+                <small>Gold</small>
+              </div>
+              <div class="c-cell">
+                <img src="./currency-bier.png" alt="" />
+                <b>12</b>
+                <small>Bier</small>
+              </div>
+              <div class="c-cell">
+                <img src="./currency-fanartikel.png" alt="" />
+                <b>6</b>
+                <small>Fanart.</small>
+              </div>
+              <div class="c-cell">
+                <img src="./currency-sicherheit.png" alt="" />
+                <b>18</b>
+                <small>Sicherh.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="note">Mehr Lesbarkeit/Labels; braucht etwas Platz über dem Spielfeld.</p>
+      </section>
+    </div>
+  </body>
+</html>
