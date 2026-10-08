@@ -44,11 +44,12 @@ Pfad Spiel: `game/public/icons/` · Übersicht: `docs/mockups/icons/preview-all.
 - Farbe nach HP: Grün → Gelb → Orange → Rot · Preview: `ui/preview-hp-bars.jpg`
 
 ### Noch fehlende Freisteller (Audit)
-Lückenliste: **`docs/icons/ASSET_GAP_AUDIT.md`**
+Lückenliste + **Branch-Abgleich**: **`docs/icons/ASSET_GAP_AUDIT.md`**
 
-| Prio | Fehlt | Warum |
+| Prio | Fehlt / Drift | Warum |
 |---|---|---|
-| Hoch | Stadion-BG + Tribünen (blue/grey/red) | verbindlich in Rule; auf diesem Branch noch nicht |
-| Hoch | `btn-anwerben` / `btn-bauen` (green/grey) | Mockup SEND+HIRE / BAUEN — nur Kaufen/Senden vorhanden |
+| Hoch | Branches **nicht sync** | Currency = FX/HP; Game = Stadium+BAUEN; Main/Icons = älter |
+| Hoch | Stadion-BG + Tribünen | auf Currency/Main/Icons fehlend (Game/Stadium haben gleiche Hashes) |
+| Hoch | `btn-anwerben` | nirgends; `btn-bauen`/`btn-upgrade` nur auf Game-Linien |
 | Hoch | Status-Icons Durst · Interesse · Stimmung · Pyro · Fremdtrinken | zentrale Systeme, bisher nur Text/CSS |
 | Mittel | Gesang/Pyro/Klatschen-Aktionschips, Selection-Marker, Lane-Pfeil | Lesbarkeit / Matchday-Polish |

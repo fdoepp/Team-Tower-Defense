@@ -1,6 +1,7 @@
 # Asset-Lücken — Spielverständnis & Gameplay
 
-Stand: Audit gegen `MATCHDAY_UI_SUMMARY`, `UI_ASSETS`, `GAME_DESIGN` (Konzept), Mockup `matchday-gesamt-final.jpg`, Runtime auf `matchday-game`, und den freigegebenen Kanons (Stände / Units / HP / FX).
+Stand: Audit gegen `MATCHDAY_UI_SUMMARY`, `UI_ASSETS`, `GAME_DESIGN` (Konzept), Mockup `matchday-gesamt-final.jpg`, Runtime auf `matchday-game`, und den freigegebenen Kanons (Stände / Units / HP / FX).  
+**Branch-Abgleich** (erneut): relevante Branches ziehen **nicht** denselben Grafik-Satz heran — siehe Abschnitt unten.
 
 Ziel: Welche **freigestellten Einzel-Assets** fehlen noch, damit Match-UI und Systeme ohne Ad-hoc-Canvas-Zeichnung klar lesbar umsetzbar sind.
 
@@ -23,7 +24,7 @@ Ziel: Welche **freigestellten Einzel-Assets** fehlen noch, damit Match-UI und Sy
 
 ### 1. Stadion-Hintergrund + Tribünen-Blöcke
 
-In der Rule und README verbindlich, **auf diesem Branch aber nicht vorhanden** (`game/public/assets/` fehlt). Liegen fertig auf `cursor/stadium-floodlight-bg-dba3`:
+In der Rule und README verbindlich. **Identische Pixel** liegen auf `stadium-floodlight-bg-dba3`, `matchday-game-a9b1`, `buildings-on-plots-4235` — **fehlen** u. a. auf `currency-icons-clean-dba3`, `main`, `matchday-icons-a9b1`, `wallet-bar-vorschlaege-3755`.
 
 | Asset | Zweck |
 |---|---|
@@ -31,25 +32,24 @@ In der Rule und README verbindlich, **auf diesem Branch aber nicht vorhanden** (
 | `tribune-block-blue.png` | Heim-Block (ohne Figuren) |
 | `tribune-block-grey.png` | Neutral-Block |
 | `tribune-block-red.png` | Gäste-Block |
-| `tribune-blocks-sheet.png` | Übersicht (optional) |
+| `tribune-blocks-sheet.png` | Übersicht (optional; nur Stadium-Branch) |
 
-**Aktion:** Einspielen auf den Icon-/Currency-Branch (kein Neuzeichnen nötig).
+**Aktion:** In jeden spielrelevanten Branch einspielen (kein Neuzeichnen).
 
 ### 2. Aktions-Buttons laut Gesamtmockup
 
-Mockup-Rail: **SEND + HIRE**; Build-Panel: **BAUEN**. Vorhanden sind nur:
+Mockup-Rail: **SEND + HIRE**; Build-Panel: **BAUEN**.
 
-- `btn-senden-{green\|grey}.png` ≈ SEND  
-- `btn-kaufen-{green\|grey}.png` ≈ generisches Kaufen  
+| Button | Wo vorhanden | Lücke |
+|---|---|---|
+| `btn-senden-{green\|grey}` | fast überall mit Icons | OK |
+| `btn-kaufen-{green\|grey}` | fast überall mit Icons | OK (Pixel teils ≠ currency) |
+| `btn-bauen-{amber\|grey}` | `matchday-game`, `buildings-on-plots`, `icon-ui-einzeln`, `wallet-bar` | fehlt auf currency / main / icons |
+| `btn-upgrade-{purple\|grey}` | dieselben Game-Branches | fehlt auf currency / main |
+| `btn-senden-blue` | dieselben Game-Branches | extra Variante |
+| `btn-anwerben` / `btn-hire` | **nirgends** | noch erstellen |
 
-Fehlt als freigestelltes Paar (ready / disabled):
-
-| Vorgeschlagen | Verwendung |
-|---|---|
-| `btn-anwerben-{green\|grey}.png` bzw. `btn-hire-*` | Figuren / Ordner anheuern (Mockup-HIRE) |
-| `btn-bauen-{green\|grey}.png` | Rechte Rail / Gebäude platzieren |
-
-Ohne eigene Buttons bleibt die Rail sprachlich uneinheitlich (Kaufen überall) und weicht vom freigegebenen Gesamtscreen ab.
+Ohne `btn-anwerben` bleibt HIRE nur als Kaufen-Label; BAUEN existiert schon auf Game-Branches, ist aber nicht überall synchron.
 
 ### 3. Status- / System-Icons (Logo-only, wie Währungen)
 
@@ -119,13 +119,50 @@ Mockup: weiße Bodenpfeile Block → Gang. Derzeit oft nur Layout/Code.
 
 ## Empfohlene Reihenfolge
 
-1. **Tribünen + Derby-BG** vom Stadium-Branch einspielen  
-2. **`btn-anwerben` + `btn-bauen`** (green/grey)  
+1. **Einen Kanon-Satz syncen:** Stadium/Tribünen + currency FX/HP/Logos + Game-`btn-bauen`/`btn-upgrade` auf alle spielrelevanten Branches  
+2. **`btn-anwerben`** neu erstellen (fehlt überall)  
 3. **Fünf Status-Icons** (Durst, Interesse, Stimmung, Pyro, Fremdtrinken)  
 4. Danach: Aktionschips Gesang/Pyro/Klatschen, Selection-Marker  
 
 ---
 
+## Branch-Abgleich — ziehen alle denselben Grafik-Satz?
+
+**Nein.** Stand Runtime `game/public/` (Vergleichsbasis: `currency-icons-clean-dba3`).
+
+| Branch | stadium/tribune | FX | HP | currency logos | stands | units | btn-bauen/upgrade | Anmerkung |
+|---|---|---|---|---|---|---|---|---|
+| `currency-icons-clean-dba3` | ✗ | ✓ (9) | ✓ (12) | ✓ logo-only Kanon | ✓ 60 | ✓ 80 | ✗ | FX/HP nur hier (+ Wallet-FX) |
+| `stadium-floodlight-bg-dba3` | ✓ (7) | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | nur BG/Tribünen |
+| `matchday-game-a9b1` | ✓ (4, **gleiche Hashes**) | ✗ | ✗ | vorhanden, **andere Pixel** | ✓, teils ≠ | 140, **andere Pixel** | ✓ | Spiel-Branch, nicht kanon-FX/HP |
+| `buildings-on-plots-4235` | ✓ wie game | ✗ | ✗ | ≠ currency | ✓ | 140 ≠ | ✓ | wie game |
+| `wallet-bar-vorschlaege-3755` | ✗ | ✓ (**gleiche Hashes** wie currency) | ✗ | ✓ = currency | ✓ | 140 ≠ | ✓ | FX übernommen, kein HP/Stadium |
+| `matchday-icons-a9b1` | ✗ | ✗ | ✗ | ≠ | teils ältere stands | 80 | ✗ | Icon-Basis vor FX/HP |
+| `icon-ui-einzeln-3755` | ✗ | ✗ | ✗ | ≠ | ✓ | 140 | ✓ | UI-Varianten |
+| `main` / `matchday-logic-main-939c` / `scoreboard-cutout-main-a9b1` | ✗ | ✗ | ✗ | ≠ | ✓ | 60 (ohne Unit-Fallbacks) | ✗ | älterer Satz + Slot-Iso-Varianten |
+| `block-spacing-ultra-combat-dba3` / `team-td-konzept-dba3` | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ | keine Runtime-Grafiken |
+
+### Inhaltliche Abweichungen (gleicher Pfad, andere Datei)
+
+Gegen `currency-icons-clean-dba3` weichen u. a. ab:
+
+- **Währungs-Logos** auf `main` / `matchday-game` / `matchday-icons` (nicht die logo-only-Kanons)
+- **Ordnerposten / Units** auf Game- und Main-Linien (ältere oder andere Composites)
+- **`btn-kaufen-green`**, **`slot-empty`** auf Game vs Currency
+- **Scoreboard** ist auf mehreren Branches **identisch** mit Currency (`scoreboard-momentum.png`)
+- **Stadium/Tribünen** auf Game = Stadium-Branch (Hashes gleich)
+
+### Binding-Code / Rules
+
+| Artefakt | Nur auf … |
+|---|---|
+| `docs/icons/*_CANON.md`, `ASSET_GAP_AUDIT.md` | vor allem `currency-icons-clean-dba3` (FX-Canon auch auf `wallet-bar`) |
+| `game/src/assets/{currencyFx,hpBars,stands}.ts` | **nur** `currency-icons-clean-dba3` |
+| `game/src/game/assets.ts` | Game-/Main-Linien (nicht Currency) |
+| `.cursor/rules/stadium-background.mdc` | Currency, Stadium, Matchday-Game, … — **nicht** überall |
+
+---
+
 ## Kurzfazit
 
-Kern-Figuren, Buden, Währungen, FX und HP sind abgedeckt. Für eine schöne, verständliche Match-Umsetzung fehlen vor allem noch: **Stadion/Tribünen auf diesem Branch**, **HIRE/BAUEN-Buttons**, und die **fünf System-Status-Icons** — ohne die bleiben die zentralen Meter (Durst/Interesse/Stimmung/Pyro/Fremdtrinken) nur Text und schwerer zu scannen.
+Kern-Figuren, Buden, Währungen, FX und HP sind als Kanon auf dem Currency-Branch abgedeckt — **aber die relevanten Branches sind nicht synchron.** Game hat Stadium/BAUEN/Upgrade, Currency hat FX/HP/logo-only; Main und Icons fehlen beides teilweise. Überall noch offen: **`btn-anwerben`** und die **fünf Status-Icons**.
