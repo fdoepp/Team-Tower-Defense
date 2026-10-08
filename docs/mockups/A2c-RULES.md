@@ -61,12 +61,21 @@ Deploy-Default-Orientierung: **parallel** zum Bildrand (`SLOT_EMPTY_ORIENTATION`
 4. Register: `docs/mockups/icons/ASSET_DB.json` · Spiegel: `game/public/icons/ASSET_DB.json`.
 5. Alte gelbe Bauzaun-Optik nicht mehr neu generieren; `slot-empty.png` zeigt auf die parallele Neutrale.
 
-## Gebäude-Action-Cards (Neubau / Upgrade) — soft-bound
+## Action Cards (Gebäude + Einheiten) — soft-bound & live balance
 
-Rechte Rail komponiert Karten zur Laufzeit — **keine** fest eingebackenen Gebäude-Kachel-PNGs.
+Linke und rechte Rail komponieren Karten zur Laufzeit — **keine** eingebackenen Icon- oder Kosten-Sprites.
 
-1. Stand-Icon immer über `standIconPath(kind, teamColor, level)` aus `game/public/icons/stands/`.
-2. Upgrade-Stats über `productionPerMinute` / `productionUnitLabel` (Bier/min, Fanart./min, Sich./min).
-3. Buttons: `btn-bauen-*.png` / `btn-upgrade-*.png` in `UI_ICONS`.
-4. Icon-Updates an Buden (z. B. Ordnerposten) greifen automatisch beim nächsten Deploy/Match-Preload.
-5. Spec: `docs/mockups/icons/ui-review/btn-vorschlaege/ACTION_CARD.md`.
+### Gebäude
+1. Icon: `standIconPath` → `game/public/icons/stands/`
+2. Stats: `productionPerMinute` / `productionUnitLabel`
+3. Kosten: `BUILD_COST` / `UPGRADE_COST` (Live im Sync)
+4. Buttons: `btn-bauen-*` / `btn-upgrade-*`
+
+### Einheiten
+1. Icon: `unitIconPath` → `game/public/icons/units/`
+2. Kaufkosten: `unitBuyCost` ← `BUY_COST` / `STEWARD_HIRE_GOLD`
+3. Senden: `PYRO_FIGHT_MERCH` / `HOOLIGAN_ORDER_BEER`
+4. Buttons: `btn-kaufen-*` / `btn-senden-blue`
+
+Icon- oder Balance-Updates greifen automatisch beim nächsten Deploy/Match-Preload.  
+Spec: `docs/mockups/icons/ui-review/btn-vorschlaege/ACTION_CARD.md`.

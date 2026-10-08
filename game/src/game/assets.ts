@@ -26,6 +26,11 @@ export function standIconPath(
   return `icons/stands/${kind}-${color}-${lv}.png`;
 }
 
+/**
+ * Kanonischer Unit-Icon-Pfad (soft-bound).
+ * Action Cards laden immer diese Datei — Updates unter
+ * `game/public/icons/units/` greifen beim Preload.
+ */
 export function unitIconPath(
   kind: FanKind | "ordner",
   color: TeamColor,
@@ -68,6 +73,7 @@ export const UI_ICONS = {
   btnKaufenGreen: "icons/ui/btn-kaufen-green.png",
   btnSendenGrey: "icons/ui/btn-senden-grey.png",
   btnSendenGreen: "icons/ui/btn-senden-green.png",
+  btnSendenBlue: "icons/ui/btn-senden-blue.png",
   btnBauenAmber: "icons/ui/btn-bauen-amber.png",
   btnBauenGrey: "icons/ui/btn-bauen-grey.png",
   btnUpgradePurple: "icons/ui/btn-upgrade-purple.png",
@@ -78,6 +84,15 @@ export const UI_ICONS = {
   menuRail: "icons/ui/menu-rail-brown.png",
   scoreboard: "icons/ui/scoreboard-momentum.png",
 } as const;
+
+export function currencyIconPath(
+  currency: "beer" | "merch" | "security" | "gold",
+): string {
+  if (currency === "beer") return UI_ICONS.currencyBier;
+  if (currency === "merch") return UI_ICONS.currencyFanartikel;
+  if (currency === "security") return UI_ICONS.currencySicherheit;
+  return UI_ICONS.currencyGold;
+}
 
 /**
  * Leerer Bauplatz-Icon je Kontrolle.

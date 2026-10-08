@@ -79,10 +79,13 @@
     "keys": [
       "UI_ICONS.pennantKsc",
       "UI_ICONS.pennantVfb",
+      "UI_ICONS.btnBauenAmber",
+      "UI_ICONS.btnUpgradePurple",
       "slotEmptyIconPath",
+      "standIconPath",
       "SLOT_EMPTY_ORIENTATION"
     ],
-    "render": "drawBaustelle → slotControlForPlot → slotEmptyIconPath; drawTerritoryPennants für gebaute Buden",
+    "render": "drawBaustelle → slotControlForPlot → slotEmptyIconPath; drawTerritoryPennants für gebaute Buden; Action Cards → standIconPath",
     "autoSwap": {
       "teamControl": "Standarte-Farbe ein (blue/red Plot-Icon)",
       "greyControl": "Standarte aus (neutrales Plot-Icon)",
@@ -92,10 +95,27 @@
         "blockOwner[blockId]",
         "inPlayerTerritory / inAiTerritory"
       ]
+    },
+    "actionCards": {
+      "rule": "Gebäude- und Einheiten-Karten komponieren Icons soft (standIconPath / unitIconPath) und lesen Kosten/Stats live aus types.ts — keine eingebackenen Kachel-Werte.",
+      "sync": [
+        "syncPendingBuildUi",
+        "syncUpgradeActionCard",
+        "syncUnitActionCards"
+      ],
+      "liveBalance": [
+        "BUILD_COST",
+        "UPGRADE_COST",
+        "productionPerMinute",
+        "BUY_COST",
+        "STEWARD_HIRE_GOLD",
+        "PYRO_FIGHT_MERCH",
+        "HOOLIGAN_ORDER_BEER"
+      ]
     }
   },
   "deploy": {
     "sourceDir": "game/public/icons/",
-    "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss locked Standarten + Bauplatz-Varianten aus diesem Register preloaded verwenden. Runtime tauscht Bauplatz-Icons automatisch bei Team-/Grau-Kontrolle."
+    "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss locked Standarten + Bauplatz-Varianten aus diesem Register preloaded verwenden. Runtime tauscht Bauplatz-Icons automatisch bei Team-/Grau-Kontrolle. Action Cards laden Stand-/Unit-Icons soft und Balance-Werte live aus types.ts."
   }
 }

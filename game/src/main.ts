@@ -12,6 +12,7 @@ import {
 import { drawMatch, hitSeat, hitSlot } from "./game/render";
 import {
   UI_ICONS,
+  currencyIconPath,
   preloadIcons,
   standIconPath,
   teamColor,
@@ -20,21 +21,24 @@ import {
 import {
   BUILD_COST,
   BUILDING_FULL_LABEL,
-  BUY_COST,
+  CURRENCY_LABEL,
   HOOLIGAN_ORDER_BEER,
   MIX_MAX,
   MIX_MIN,
   PYRO_FIGHT_MERCH,
   STEWARD_HIRE_GOLD,
+  UNIT_FULL_LABEL,
   UPGRADE_COST,
   UPGRADE_MAX,
   productionPerMinute,
   productionUnitLabel,
+  unitBuyCost,
   type BuildingKind,
   type FanKind,
   type FanMix,
   type SoloSettings,
   type TeamId,
+  type UnitUiKind,
 } from "./game/types";
 import {
   defaultMix,
@@ -208,66 +212,65 @@ function renderMatchScreen(): void {
         <header class="rail-banner">Personen</header>
         <p class="freie-plaetze">Freie Plätze <b id="free-seats">0</b></p>
         <div class="unit-rows">
-          <div class="ur-row">
-            <img class="ur-icon" data-unit-icon="normalos" src="${unitIconPath("normalos", tc, 1)}" alt="">
-            <div class="ur-body">
-              <div class="ur-meta"><span class="ur-name">Fans</span><b class="ur-count" id="fb-n">0</b></div>
-              <p class="ur-cost">${BUY_COST.normalos.security} Sicherheit</p>
-              <div class="ur-actions">
-                <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="normalos" title="Kaufen">
-                  <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                  <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="ur-row">
-            <img class="ur-icon" data-unit-icon="ultras" src="${unitIconPath("ultras", tc, 1)}" alt="">
-            <div class="ur-body">
-              <div class="ur-meta"><span class="ur-name">Ultras</span><b class="ur-count" id="fb-u">0</b></div>
-              <p class="ur-cost">${BUY_COST.ultras.merch} Fanartikel</p>
-              <div class="ur-actions">
-                <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="ultras" title="Kaufen">
-                  <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                  <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-                </button>
-                <button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Senden">
-                  <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
+          ${(["normalos", "ultras", "hooligans", "ordner"] as UnitUiKind[])
+            .map((kind) => {
+              const buy = unitBuyCost(kind);
+              const icon = unitIconPath(kind, tc, 1);
+              const countId =
+                kind === "normalos"
+                  ? "fb-n"
+                  : kind === "ultras"
+                    ? "fb-u"
+                    : kind === "hooligans"
+                      ? "fb-h"
+                      : "fb-o";
+              const send =
+                kind === "ultras"
+                  ? `<button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Senden">
+                  <img class="btn-ready" src="${UI_ICONS.btnSendenBlue}" alt="Senden">
                   <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
                 </button>
-              </div>
-            </div>
-          </div>
-          <div class="ur-row">
-            <img class="ur-icon" data-unit-icon="hooligans" src="${unitIconPath("hooligans", tc, 1)}" alt="">
-            <div class="ur-body">
-              <div class="ur-meta"><span class="ur-name">Hooligans</span><b class="ur-count" id="fb-h">0</b></div>
-              <p class="ur-cost">${BUY_COST.hooligans.beer} Bier</p>
-              <div class="ur-actions">
-                <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="hooligans" title="Kaufen">
-                  <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                  <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-                </button>
-                <button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Senden">
-                  <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
+                <div class="ac-cost ac-cost-send" data-send-cost="ultras">
+                  <img src="${UI_ICONS.currencyFanartikel}" alt="">
+                  <span data-send-text>${PYRO_FIGHT_MERCH} ${CURRENCY_LABEL.merch}</span>
+                </div>`
+                  : kind === "hooligans"
+                    ? `<button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Senden">
+                  <img class="btn-ready" src="${UI_ICONS.btnSendenBlue}" alt="Senden">
                   <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
                 </button>
-              </div>
-            </div>
-          </div>
-          <div class="ur-row ur-row-ordner">
-            <img class="ur-icon" data-unit-icon="ordner" src="${unitIconPath("ordner", tc, 1)}" alt="">
-            <div class="ur-body">
-              <div class="ur-meta"><span class="ur-name">Ordner</span><b class="ur-count" id="fb-o">0</b></div>
-              <p class="ur-cost">${STEWARD_HIRE_GOLD} Gold</p>
-              <div class="ur-actions">
-                <button type="button" class="ar-icon-btn ar-kaufen" id="btn-hire-ordner" title="Kaufen">
+                <div class="ac-cost ac-cost-send" data-send-cost="hooligans">
+                  <img src="${UI_ICONS.currencyBier}" alt="">
+                  <span data-send-text>${HOOLIGAN_ORDER_BEER} ${CURRENCY_LABEL.beer}</span>
+                </div>`
+                    : "";
+              const buyBtn =
+                kind === "ordner"
+                  ? `<button type="button" class="ar-icon-btn ar-kaufen" id="btn-hire-ordner" title="Kaufen">
                   <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
                   <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-                </button>
-              </div>
+                </button>`
+                  : `<button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="${kind}" title="Kaufen">
+                  <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+                  <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
+                </button>`;
+              return `<div class="action-card unit-card" data-unit-card="${kind}">
+            <div class="ac-title-row">
+              <h3 class="ac-title">${UNIT_FULL_LABEL[kind]}</h3>
+              <b class="ur-count" id="${countId}">0</b>
             </div>
-          </div>
+            <img class="ac-icon" data-unit-icon="${kind}" src="${icon.startsWith("/") ? icon : `/${icon}`}" alt="${UNIT_FULL_LABEL[kind]}">
+            <div class="ac-cost" data-unit-cost="${kind}">
+              <img data-cost-icon src="${currencyIconPath(buy.currency)}" alt="">
+              <span data-cost-text>${buy.amount} ${CURRENCY_LABEL[buy.currency]}</span>
+            </div>
+            <div class="ur-actions">
+              ${buyBtn}
+              ${send}
+            </div>
+          </div>`;
+            })
+            .join("")}
         </div>
         <div class="fanbase-col gast" aria-label="Gegner">
           <span class="fb"><i>N</i><b id="fb-en">0</b></span>
@@ -305,18 +308,18 @@ function renderMatchScreen(): void {
         <div class="toast" id="toast"></div>
         <div class="popup-menu hidden" id="seat-menu">
           <p class="popup-title">Fan kaufen</p>
-          <button data-buy="normalos" id="buy-normalos" class="popup-buy">
-            <img src="${unitIconPath("normalos", tc, 1)}" alt="">
-            <span>Fan <small>${BUY_COST.normalos.security} Sicherheit</small></span>
-          </button>
-          <button data-buy="ultras" id="buy-ultras" class="popup-buy">
-            <img src="${unitIconPath("ultras", tc, 1)}" alt="">
-            <span>Ultra <small>${BUY_COST.ultras.merch} Fanartikel</small></span>
-          </button>
-          <button data-buy="hooligans" id="buy-hooligans" class="popup-buy">
-            <img src="${unitIconPath("hooligans", tc, 1)}" alt="">
-            <span>Hooligan <small>${BUY_COST.hooligans.beer} Bier</small></span>
-          </button>
+          ${(["normalos", "ultras", "hooligans"] as FanKind[])
+            .map((kind) => {
+              const buy = unitBuyCost(kind);
+              const src = unitIconPath(kind, tc, 1);
+              const label =
+                kind === "normalos" ? "Fan" : kind === "ultras" ? "Ultra" : "Hooligan";
+              return `<button data-buy="${kind}" id="buy-${kind}" class="popup-buy">
+            <img src="${src.startsWith("/") ? src : `/${src}`}" alt="">
+            <span>${label} <small data-popup-cost="${kind}">${buy.amount} ${CURRENCY_LABEL[buy.currency]}</small></span>
+          </button>`;
+            })
+            .join("")}
           <button class="popup-cancel" id="seat-cancel">Abbrechen</button>
         </div>
         <div class="popup-menu hidden" id="build-menu">
@@ -325,7 +328,7 @@ function renderMatchScreen(): void {
           <div id="upgrade-options" class="hidden">
             <button id="btn-hire-steward" class="hidden popup-buy">
               <img src="${unitIconPath("ordner", tc, 1)}" alt="">
-              <span>Ordner anheuern <small>${STEWARD_HIRE_GOLD}€</small></span>
+              <span>Ordner anheuern <small data-popup-cost="ordner">${STEWARD_HIRE_GOLD} Gold</small></span>
             </button>
             <button id="btn-upgrade">Upgrade <small></small></button>
           </div>
@@ -526,13 +529,14 @@ function renderMatchScreen(): void {
     hireBtn.classList.toggle("cd", !canHire);
   };
 
-  /** Soft-bound Neubau-Karten: Icons immer via standIconPath(kind, team, 1). */
+  /** Soft-bound Neubau: Icons + Live-Gold aus BUILD_COST. */
   const syncPendingBuildUi = () => {
     const hint = app.querySelector("#build-hint");
     app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
       const kind = btn.dataset.pendingBuild as BuildingKind;
       const on = state.pendingBuild === kind;
-      const poor = m.gold < BUILD_COST[kind];
+      const cost = BUILD_COST[kind];
+      const poor = m.gold < cost;
       btn.classList.toggle("selected", on);
       btn.classList.toggle("cd", poor);
       const icon = btn.querySelector<HTMLImageElement>("[data-stand-kind]");
@@ -540,6 +544,8 @@ function renderMatchScreen(): void {
         const src = standIconPath(kind, tc, 1);
         icon.src = src.startsWith("/") ? src : `/${src}`;
       }
+      const costText = btn.querySelector(".ac-cost span");
+      if (costText) costText.textContent = `${cost} Gold`;
       const actionBtn = btn.querySelector<HTMLImageElement>(".build-action-btn");
       if (actionBtn) {
         actionBtn.src = poor ? UI_ICONS.btnBauenGrey : UI_ICONS.btnBauenAmber;
@@ -549,6 +555,47 @@ function renderMatchScreen(): void {
       hint.textContent = state.buildTarget
         ? "Gebäude für diesen Plot wählen"
         : "Plot tippen";
+    }
+  };
+
+  /** Soft-bound Einheiten: unitIconPath + Live-Kosten aus BUY_COST / Senden-Konstanten. */
+  const syncUnitActionCards = () => {
+    let unitLv = 1;
+    for (const s of m.slots) {
+      if (s.building && s.owner === m.playerTeam && !s.greyNeutral) {
+        unitLv = Math.max(unitLv, s.level || 1);
+      }
+    }
+    unitLv = Math.max(1, Math.min(5, unitLv));
+    const tcNow = teamColor(m.playerTeam);
+
+    app.querySelectorAll<HTMLElement>("[data-unit-card]").forEach((card) => {
+      const kind = card.dataset.unitCard as UnitUiKind;
+      const buy = unitBuyCost(kind);
+      const icon = card.querySelector<HTMLImageElement>("[data-unit-icon]");
+      if (icon) {
+        const src = unitIconPath(kind, tcNow, unitLv);
+        const next = src.startsWith("/") ? src : `/${src}`;
+        if (icon.getAttribute("src") !== next) icon.src = next;
+      }
+      const costIcon = card.querySelector<HTMLImageElement>("[data-cost-icon]");
+      const costText = card.querySelector("[data-cost-text]");
+      if (costIcon) costIcon.src = currencyIconPath(buy.currency);
+      if (costText) costText.textContent = `${buy.amount} ${CURRENCY_LABEL[buy.currency]}`;
+    });
+
+    const ultraSend = app.querySelector('[data-send-cost="ultras"] [data-send-text]');
+    if (ultraSend) ultraSend.textContent = `${PYRO_FIGHT_MERCH} ${CURRENCY_LABEL.merch}`;
+    const hoolSend = app.querySelector('[data-send-cost="hooligans"] [data-send-text]');
+    if (hoolSend) hoolSend.textContent = `${HOOLIGAN_ORDER_BEER} ${CURRENCY_LABEL.beer}`;
+
+    // Hire-Ordner cost on upgrade rail
+    const hireCost = app.querySelector("#rail-hire-ordner .ac-cost span");
+    if (hireCost) hireCost.textContent = `${STEWARD_HIRE_GOLD} Gold`;
+    const hireIcon = app.querySelector<HTMLImageElement>("#rail-hire-ordner [data-unit-kind]");
+    if (hireIcon) {
+      const src = unitIconPath("ordner", tcNow, unitLv);
+      hireIcon.src = src.startsWith("/") ? src : `/${src}`;
     }
   };
 
@@ -653,7 +700,17 @@ function renderMatchScreen(): void {
       btn.classList.toggle("ready", ok);
       btn.classList.toggle("cd", !ok);
       btn.disabled = !ok;
+      const buy = unitBuyCost(kind);
+      const costEl = btn.querySelector("[data-popup-cost]");
+      if (costEl) costEl.textContent = `${buy.amount} ${CURRENCY_LABEL[buy.currency]}`;
+      const img = btn.querySelector("img");
+      if (img) {
+        const src = unitIconPath(kind, teamColor(m.playerTeam), 1);
+        img.src = src.startsWith("/") ? src : `/${src}`;
+      }
     });
+    const hireSmall = app.querySelector("[data-popup-cost='ordner']");
+    if (hireSmall) hireSmall.textContent = `${STEWARD_HIRE_GOLD} Gold`;
   };
 
   canvas.addEventListener("pointerdown", (e) => {
@@ -689,16 +746,16 @@ function renderMatchScreen(): void {
     hb.classList.toggle("cd", !hready);
     hb.disabled = !hready;
     hb.title = hready
-      ? `Senden · ${HOOLIGAN_ORDER_BEER} Bier`
-      : `Senden · braucht ${HOOLIGAN_ORDER_BEER} Bier`;
+      ? `Senden · ${HOOLIGAN_ORDER_BEER} ${CURRENCY_LABEL.beer}`
+      : `Senden · braucht ${HOOLIGAN_ORDER_BEER} ${CURRENCY_LABEL.beer}`;
     const pf = app.querySelector<HTMLButtonElement>("#btn-pyro-fight")!;
     const pready = m.pyroFightReady();
     pf.classList.toggle("ready", pready);
     pf.classList.toggle("cd", !pready);
     pf.disabled = !pready;
     pf.title = pready
-      ? `Senden · ${PYRO_FIGHT_MERCH} Fanartikel`
-      : `Senden · braucht ${PYRO_FIGHT_MERCH} Fanartikel`;
+      ? `Senden · ${PYRO_FIGHT_MERCH} ${CURRENCY_LABEL.merch}`
+      : `Senden · braucht ${PYRO_FIGHT_MERCH} ${CURRENCY_LABEL.merch}`;
     (["ultras", "normalos", "hooligans"] as FanKind[]).forEach((kind) => {
       const plus = app.querySelector<HTMLButtonElement>(
         `[data-quick-buy="${kind}"]`,
@@ -713,6 +770,7 @@ function renderMatchScreen(): void {
     if (freeEl) freeEl.textContent = String(m.countFreeBuySeats());
     if (!seatMenu.classList.contains("hidden")) syncBuyButtons();
     syncPendingBuildUi();
+    syncUnitActionCards();
     if (
       state.buildTarget &&
       !buildUpgradeRows.classList.contains("hidden") &&
@@ -835,20 +893,7 @@ function renderMatchScreen(): void {
       setFb("#fb-en", foe.normalos);
       setFb("#fb-eh", foe.hooligans);
       setFb("#fb-eo", foe.ordner);
-      // Sidebar icons follow team building level (Lv1–5 sheets)
-      let unitLv = 1;
-      for (const s of m.slots) {
-        if (s.building && s.owner === m.playerTeam && !s.greyNeutral) {
-          unitLv = Math.max(unitLv, s.level || 1);
-        }
-      }
-      unitLv = Math.max(1, Math.min(5, unitLv));
-      const tcNow = teamColor(m.playerTeam);
-      app.querySelectorAll<HTMLImageElement>("[data-unit-icon]").forEach((img) => {
-        const kind = img.dataset.unitIcon as FanKind | "ordner";
-        const next = unitIconPath(kind, tcNow, unitLv);
-        if (img.getAttribute("src") !== next) img.src = next;
-      });
+      syncUnitActionCards();
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
       if (hireBtn) {
         const canHire = m.slots.some(

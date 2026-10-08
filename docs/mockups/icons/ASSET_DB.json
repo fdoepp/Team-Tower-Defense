@@ -97,15 +97,25 @@
       ]
     },
     "actionCards": {
-      "rule": "Neubau/Upgrade-Karten komponieren Icons soft über standIconPath — keine eingebackenen Gebäude-Kachel-PNGs. Neue Stand-PNGs unter stands/ greifen beim Preload.",
+      "rule": "Gebäude- und Einheiten-Karten komponieren Icons soft (standIconPath / unitIconPath) und lesen Kosten/Stats live aus types.ts — keine eingebackenen Kachel-Werte.",
       "sync": [
         "syncPendingBuildUi",
-        "syncUpgradeActionCard"
+        "syncUpgradeActionCard",
+        "syncUnitActionCards"
+      ],
+      "liveBalance": [
+        "BUILD_COST",
+        "UPGRADE_COST",
+        "productionPerMinute",
+        "BUY_COST",
+        "STEWARD_HIRE_GOLD",
+        "PYRO_FIGHT_MERCH",
+        "HOOLIGAN_ORDER_BEER"
       ]
     }
   },
   "deploy": {
     "sourceDir": "game/public/icons/",
-    "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss locked Standarten + Bauplatz-Varianten aus diesem Register preloaded verwenden. Runtime tauscht Bauplatz-Icons automatisch bei Team-/Grau-Kontrolle. Gebäude-Action-Cards laden Stand-Icons immer soft via standIconPath."
+    "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss locked Standarten + Bauplatz-Varianten aus diesem Register preloaded verwenden. Runtime tauscht Bauplatz-Icons automatisch bei Team-/Grau-Kontrolle. Action Cards laden Stand-/Unit-Icons soft und Balance-Werte live aus types.ts."
   }
 }

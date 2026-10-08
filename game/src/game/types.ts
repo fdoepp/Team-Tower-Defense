@@ -90,12 +90,29 @@ export type Currencies = {
 
 export const START_GOLD = 75;
 
-/** Buy costs — each type tied to its currency */
+/** Buy costs — each type tied to its currency (live balance source). */
 export const BUY_COST = {
   normalos: { beer: 0, merch: 0, security: 12, gold: 0 },
   ultras: { beer: 0, merch: 14, security: 0, gold: 0 },
   hooligans: { beer: 14, merch: 0, security: 0, gold: 0 },
 } as const;
+
+export type UnitUiKind = FanKind | "ordner";
+export type CostCurrency = "beer" | "merch" | "security" | "gold";
+
+export const UNIT_FULL_LABEL: Record<UnitUiKind, string> = {
+  normalos: "Fans",
+  ultras: "Ultras",
+  hooligans: "Hooligans",
+  ordner: "Ordner",
+};
+
+export const CURRENCY_LABEL: Record<CostCurrency, string> = {
+  beer: "Bier",
+  merch: "Fanartikel",
+  security: "Sicherheit",
+  gold: "Gold",
+};
 
 export const BUILD_COST: Record<BuildingKind, number> = {
   bier: 65,
@@ -157,6 +174,20 @@ export const RANGED_DAMAGE_SCALE = 0.85;
 export const PYRO_FIGHT_HP_MUL = 0.45;
 
 export const STEWARD_HIRE_GOLD = 22;
+
+/** Live Kaufkosten für Action Cards — immer aus BUY_COST / STEWARD_HIRE_GOLD. */
+export function unitBuyCost(kind: UnitUiKind): {
+  amount: number;
+  currency: CostCurrency;
+} {
+  if (kind === "ordner") return { amount: STEWARD_HIRE_GOLD, currency: "gold" };
+  const c = BUY_COST[kind];
+  if (c.security > 0) return { amount: c.security, currency: "security" };
+  if (c.merch > 0) return { amount: c.merch, currency: "merch" };
+  if (c.beer > 0) return { amount: c.beer, currency: "beer" };
+  return { amount: c.gold, currency: "gold" };
+}
+
 export const STEWARD_CAP = 2;
 export const NEUTRAL_STEWARD_RESPAWN = 32;
 export const BLOCK_STORM_COUNT = 3;
