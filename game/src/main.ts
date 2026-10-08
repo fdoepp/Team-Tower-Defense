@@ -16,6 +16,7 @@ import {
   preloadIcons,
   standIconPath,
   teamColor,
+  unitHeadIconPath,
   unitIconPath,
 } from "./game/assets";
 import {
@@ -216,7 +217,7 @@ function renderMatchScreen(): void {
           ${(["normalos", "ultras", "hooligans", "ordner"] as UnitUiKind[])
             .map((kind) => {
               const buy = unitBuyCost(kind);
-              const icon = unitIconPath(kind, tc, 1);
+              const icon = unitHeadIconPath(kind, tc, 1);
               const countId =
                 kind === "normalos"
                   ? "fb-n"
@@ -265,7 +266,9 @@ function renderMatchScreen(): void {
               <b class="ur-count" id="${countId}">×0</b>
             </div>
             <div class="ur-body">
-              <img class="ac-icon" data-unit-icon="${kind}" src="${icon.startsWith("/") ? icon : `/${icon}`}" alt="${UNIT_FULL_LABEL[kind]}">
+              <div class="ur-head" data-unit-head="${kind}" data-lv="1">
+                <img class="ac-icon" data-unit-icon="${kind}" src="${icon.startsWith("/") ? icon : `/${icon}`}" alt="${UNIT_FULL_LABEL[kind]}">
+              </div>
               <div class="ur-actions">
                 ${buyBtn}
                 ${send}
@@ -564,9 +567,11 @@ function renderMatchScreen(): void {
       const kind = card.dataset.unitCard as UnitUiKind;
       const buy = unitBuyCost(kind);
       const lv = m.unitLevelOf(m.playerTeam, kind);
+      const head = card.querySelector<HTMLElement>("[data-unit-head]");
+      if (head) head.dataset.lv = String(lv);
       const icon = card.querySelector<HTMLImageElement>("[data-unit-icon]");
       if (icon) {
-        const src = unitIconPath(kind, tcNow, lv);
+        const src = unitHeadIconPath(kind, tcNow, lv);
         const next = src.startsWith("/") ? src : `/${src}`;
         if (icon.getAttribute("src") !== next) icon.src = next;
       }

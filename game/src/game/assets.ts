@@ -31,19 +31,30 @@ export function standIconPath(
  * Action Cards laden immer diese Datei — Updates unter
  * `game/public/icons/units/` greifen beim Preload.
  */
+const UNIT_FILE: Record<FanKind | "ordner", string> = {
+  normalos: "fan",
+  ultras: "ultra",
+  hooligans: "hooligan",
+  ordner: "ordner",
+};
+
 export function unitIconPath(
   kind: FanKind | "ordner",
   color: TeamColor,
   level = 1,
 ): string {
-  const map: Record<FanKind | "ordner", string> = {
-    normalos: "fan",
-    ultras: "ultra",
-    hooligans: "hooligan",
-    ordner: "ordner",
-  };
   const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
-  return `icons/units/${map[kind]}-${color}-${lv}.png`;
+  return `icons/units/${UNIT_FILE[kind]}-${color}-${lv}.png`;
+}
+
+/** Kopf-Crop (Kinn → Kopfbedeckung) für kompakte Personen-Rail — Level soft-bound. */
+export function unitHeadIconPath(
+  kind: FanKind | "ordner",
+  color: TeamColor,
+  level = 1,
+): string {
+  const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
+  return `icons/units/heads/${UNIT_FILE[kind]}-${color}-${lv}.png`;
 }
 
 /**
@@ -155,7 +166,10 @@ function allIconPaths(): string[] {
   }
   for (const kind of ["normalos", "ultras", "hooligans", "ordner"] as const) {
     for (const color of ["blue", "red", "grey"] as TeamColor[]) {
-      for (let lv = 1; lv <= 5; lv++) paths.add(unitIconPath(kind, color, lv));
+      for (let lv = 1; lv <= 5; lv++) {
+        paths.add(unitIconPath(kind, color, lv));
+        paths.add(unitHeadIconPath(kind, color, lv));
+      }
     }
   }
   return [...paths];

@@ -329,16 +329,18 @@ select {
   overflow: hidden;
 }
 
-/* Unit Action Cards — Icon links, Buttons rechts (kompakt, alle 4 sichtbar) */
-.match-shell.matchday .unit-card {
+/* Unit Action Cards — Kopf links, gleich große Buttons rechts */
+.match-shell.matchday .action-card.unit-card {
+  --ur-pad: 8px;
   gap: 4px;
-  padding: 6px 7px 7px;
+  padding: 6px var(--ur-pad) 7px;
   flex: 1 1 0;
   min-height: 0;
   justify-content: flex-start;
+  align-items: stretch;
 }
 
-.match-shell.matchday .unit-card .ac-title-row {
+.match-shell.matchday .action-card.unit-card .ac-title-row {
   position: relative;
   display: flex;
   width: 100%;
@@ -348,33 +350,51 @@ select {
   flex: 0 0 auto;
 }
 
-.match-shell.matchday .unit-card .ac-title {
+.match-shell.matchday .action-card.unit-card .ac-title {
   font-size: 0.82rem;
   text-align: center;
   margin: 0;
 }
 
-.match-shell.matchday .unit-card .ur-count {
+.match-shell.matchday .action-card.unit-card .ur-count {
   position: absolute;
   right: 0;
   top: 0;
 }
 
-.match-shell.matchday .unit-card .ur-body {
+.match-shell.matchday .action-card.unit-card .ur-body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 6px;
+  gap: var(--ur-pad);
   width: 100%;
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.match-shell.matchday .unit-card .ac-icon {
-  width: 58px;
-  height: 58px;
+/* Kopf-Crop: etwas größer, wächst leicht mit Level */
+.match-shell.matchday .action-card.unit-card .ur-head {
+  --head-size: 62px;
+  width: var(--head-size);
+  height: var(--head-size);
   flex: 0 0 auto;
-  align-self: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="2"] { --head-size: 66px; }
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="3"] { --head-size: 70px; }
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="4"] { --head-size: 74px; }
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="5"] { --head-size: 78px; }
+
+.match-shell.matchday .action-card.unit-card .ur-head .ac-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 
 .match-shell.matchday .ur-count {
@@ -390,7 +410,7 @@ select {
   display: none;
 }
 
-/* Stacked cost-in-button bars (KAUFEN / SENDEN / UPGRADE) */
+/* Gleich große Bars — Schrift inkl. UPGRADE immer vollständig innen */
 .match-shell.matchday .ur-actions {
   display: flex;
   flex-direction: column;
@@ -406,31 +426,39 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
+  box-sizing: border-box;
   width: 100%;
-  min-height: 30px;
-  height: 30px;
-  padding: 0 8px;
+  min-height: 32px;
+  height: 32px;
+  max-height: 32px;
+  padding: 0 6px;
   border: none;
-  border-radius: 11px;
+  border-radius: 10px;
   cursor: pointer;
   color: #fff;
   font-family: var(--display), system-ui, sans-serif;
   font-weight: 900;
-  font-size: 0.78rem;
-  letter-spacing: 0.02em;
+  font-size: 0.7rem;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.28);
   transition: transform 0.08s ease, filter 0.08s ease;
 }
 
 .match-shell.matchday .ar-cost-btn .ar-verb {
   line-height: 1;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
 .match-shell.matchday .ar-cost-btn .ar-cost-ico {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   object-fit: contain;
   pointer-events: none;
   flex: 0 0 auto;
@@ -439,7 +467,8 @@ select {
 .match-shell.matchday .ar-cost-btn .ar-cost-amt {
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  min-width: 1.2em;
+  min-width: 1.1em;
+  flex: 0 0 auto;
 }
 
 .match-shell.matchday .ar-cost-btn.ar-kaufen {
@@ -714,16 +743,22 @@ select {
   .match-shell.matchday .ar-cost-btn {
     min-height: 28px;
     height: 28px;
-    font-size: 0.72rem;
+    max-height: 28px;
+    font-size: 0.64rem;
     gap: 4px;
-    border-radius: 10px;
+    border-radius: 9px;
+    padding: 0 5px;
   }
-  .match-shell.matchday .ar-cost-btn .ar-cost-ico { width: 14px; height: 14px; }
+  .match-shell.matchday .ar-cost-btn .ar-cost-ico { width: 13px; height: 13px; }
   .match-shell.matchday .action-card .ac-icon { width: 72px; height: 72px; }
   .match-shell.matchday .action-card .ac-icons .ac-icon { width: 64px; height: 64px; }
   .match-shell.matchday .action-card .ac-btn-img { height: 46px; }
-  .match-shell.matchday .unit-card .ac-icon { width: 48px; height: 48px; }
-  .match-shell.matchday .unit-card .ac-title { font-size: 0.76rem; }
+  .match-shell.matchday .action-card.unit-card .ur-head { --head-size: 52px; }
+  .match-shell.matchday .action-card.unit-card .ur-head[data-lv="2"] { --head-size: 55px; }
+  .match-shell.matchday .action-card.unit-card .ur-head[data-lv="3"] { --head-size: 58px; }
+  .match-shell.matchday .action-card.unit-card .ur-head[data-lv="4"] { --head-size: 61px; }
+  .match-shell.matchday .action-card.unit-card .ur-head[data-lv="5"] { --head-size: 64px; }
+  .match-shell.matchday .action-card.unit-card .ac-title { font-size: 0.76rem; }
 }
 
 /* Pitch HUD — frosted Apple chrome over green field only */

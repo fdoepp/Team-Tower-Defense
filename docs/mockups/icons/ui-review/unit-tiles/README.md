@@ -6,11 +6,12 @@ Mock only. Runtime: `syncUnitActionCards` — `unitIconPath` + `unitBuyCost` / S
 
 ```
 Titel                              ×Count
-[Figur]  [ KAUFEN  💰 n ]
-         [ SENDEN  💰 n ]   ← nur Ultras / Hooligans
-         [ UPGRADE 💰 n ]
+[Kopf]  [ KAUFEN  💰 n ]
+        [ SENDEN  💰 n ]   ← nur Ultras / Hooligans
+        [ UPGRADE 💰 n ]
 ```
 
-Icon links neben den Buttons (kompakt, alle 4 Typen untereinander sichtbar).  
-Keine Gegner-Fanbase in der linken Rail.  
-Kosten **im** Button. Soft-bound: `unitIconPath` / `currencyIconPath` / Live-Preise.
+Kopf-Crop (Kinn → Kopfbedeckung) links, Level via `unitHeadIconPath`.  
+Gleich große Buttons (UPGRADE vollständig sichtbar).  
+Gleicher Rand links zum Kopf wie rechts zu den Buttons / Gap dazwischen.  
+Keine Gegner-Fanbase. Kosten **im** Button, soft-bound.
