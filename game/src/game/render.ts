@@ -837,14 +837,8 @@ function lerpHex(a: string, b: string, t: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1)}`;
 }
 
-function unitVisualLevel(m: Match, team: FanUnit["team"]): number {
-  let maxLv = 1;
-  for (const s of m.slots) {
-    if (s.building && s.owner === team && !s.greyNeutral) {
-      maxLv = Math.max(maxLv, s.level || 1);
-    }
-  }
-  return Math.max(1, Math.min(5, maxLv));
+function unitVisualLevel(f: FanUnit): number {
+  return Math.max(1, Math.min(5, Math.floor(f.level) || 1));
 }
 
 function fanFacing(f: FanUnit): number {
@@ -883,7 +877,7 @@ function drawMannchen(
     f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
   const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
   const color = teamColor(f.team);
-  const lv = unitVisualLevel(m, f.team);
+  const lv = unitVisualLevel(f);
   const src = unitIconPath(f.kind, color, lv);
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing = fanFacing(f);
@@ -941,6 +935,12 @@ function drawMannchen(
     ctx.fillRect(x - bw / 2, y + size * 0.12, bw, 3.5);
     ctx.fillStyle = pct > 0.45 ? "#22c55e" : pct > 0.2 ? "#f59e0b" : "#ef4444";
     ctx.fillRect(x - bw / 2, y + size * 0.12, bw * pct, 3.5);
+    if ((f.level || 1) > 1) {
+      ctx.fillStyle = "rgba(15,23,42,0.7)";
+      ctx.font = `bold ${Math.max(9, size * 0.22)}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(`Lv${f.level}`, x, y + size * 0.12 + 12);
+    }
   }
 }
 
@@ -1229,7 +1229,7 @@ function drawSteward(
   const neutral = f.team === "neutral";
   const hpCol = neutral ? "#a8a29e" : "#facc15";
   const size = Math.max(24, h * 0.07);
-  const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(m, f.team));
+  const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(f));
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const onGang = f.state === "gang" || f.state === "moving";
 

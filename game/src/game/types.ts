@@ -1,5 +1,5 @@
 export type TeamId = "ksc" | "vfb";
-/** Fan (normalos) = Gesang/Sicherheit · Ultra = Pyro/Fanartikel · Hooligan = Nahkampf/Bier */
+/** Fan = Stimmung/Sicherheit/Fanshop · Ultra = Pyro/beide Stände · Hool = Nahkampf/Bier */
 export type FanKind = "ultras" | "normalos" | "hooligans";
 export type FanMix = Record<FanKind, number>;
 export type AiDifficulty = "easy" | "normal" | "hard";
@@ -60,6 +60,8 @@ export type FanUnit = {
   rangedPyro: boolean;
   /** Sent via Angriff / Pyro Wurf — keep pushing, don't auto-return to seat */
   onOffense: boolean;
+  /** Unit level 1..UPGRADE_MAX — combat + visit payout scale with this */
+  level: number;
   _after?: string;
   _homeSeat?: number | null;
 };
@@ -89,12 +91,18 @@ export type Currencies = {
 };
 
 export const START_GOLD = 75;
+/** Starting Sicherheit; grey mid-post can regen back up to this cap. */
+export const START_SECURITY = 50;
+/** Without own Ordnerposten, Sicherheit cannot exceed this. */
+export const SECURITY_BASE_CAP = 50;
+/** Regen toward SECURITY_BASE_CAP from intact grey neutral Ordnerposten when safe. */
+export const SECURITY_BASE_REGEN = 0.55;
 
-/** Buy costs — each type tied to its currency */
+/** Buy costs — each type tied to its currency (early costs aligned) */
 export const BUY_COST = {
-  normalos: { beer: 0, merch: 0, security: 10, gold: 0 },
-  ultras: { beer: 0, merch: 14, security: 0, gold: 0 },
-  hooligans: { beer: 14, merch: 0, security: 0, gold: 0 },
+  normalos: { beer: 0, merch: 0, security: 12, gold: 0 },
+  ultras: { beer: 0, merch: 12, security: 0, gold: 0 },
+  hooligans: { beer: 12, merch: 0, security: 0, gold: 0 },
 } as const;
 
 export const BUILD_COST: Record<BuildingKind, number> = {
@@ -110,10 +118,30 @@ export const BUILD_LABEL: Record<BuildingKind, string> = {
 };
 
 export const UPGRADE_MAX = 5;
+/** Building upgrade gold to reach level index (Lv2..Lv5) */
 export const UPGRADE_COST = [0, 0, 40, 75, 120, 180] as const;
+/**
+ * Unit upgrade gold to reach level index (Lv2..Lv5).
+ * Cheaper than buildings — you upgrade many people.
+ */
+export const UNIT_UPGRADE_COST = [0, 0, 22, 40, 65, 100] as const;
+/** +% HP / Atk / Def / Jubel per level above 1 */
+export const UNIT_LEVEL_STAT = 0.14;
 
 export function productionRate(level: number): number {
   return 0.7 + level * 0.5;
+}
+
+/** Multiplier for combat / payout stats at unit level */
+export function unitLevelMul(level: number): number {
+  const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
+  return 1 + (lv - 1) * UNIT_LEVEL_STAT;
+}
+
+export function unitUpgradeCost(fromLevel: number): number | null {
+  const next = Math.floor(fromLevel) + 1;
+  if (next > UPGRADE_MAX) return null;
+  return UNIT_UPGRADE_COST[next] ?? null;
 }
 
 export const MIX_MIN = { normalos: 1, ultras: 1, hooligans: 1 } as const;
@@ -136,8 +164,12 @@ export const MELEE_RANGE = 0.14;
 /** Fernkämpfer (Bengalo) ≈ 5× Nahkampf */
 export const RANGED_RANGE = MELEE_RANGE * 5;
 
-export const ORDNER_POST_HP = 280;
-export const ORDNER_POST_HP_PER_LEVEL = 90;
+/**
+ * Gebäude-HP: Lv1 schon klar über jeder Figur (auch Ordner/Hool Lv-max).
+ * Ein Posten soll lange stehen — es ist ein Bauwerk, kein Runner.
+ */
+export const ORDNER_POST_HP = 1100;
+export const ORDNER_POST_HP_PER_LEVEL = 220;
 export const HIT_DAMAGE_SCALE = 0.7;
 /** Pyro ranged damage scale (vs melee) */
 export const RANGED_DAMAGE_SCALE = 0.85;
@@ -149,8 +181,28 @@ export const PYRO_FIGHT_HP_MUL = 0.65;
 export const CEMENT_SLOW_MUL = 0.35;
 /** Cement gate: HP lost per second while pressing past cement */
 export const CEMENT_DOT_PER_SEC = 10;
-/** How far past cement edge attackers may creep before hard stop */
-export const CEMENT_BREAKTHROUGH = 0.07;
+/**
+ * How far past cement edge attackers may creep.
+ * 0 = must clear front Ordner/post before advancing (no random walkthrough).
+ */
+export const CEMENT_BREAKTHROUGH = 0;
+/**
+ * Standarte / Fortschrittsbalken: base crawl toward living attacker depth
+ * (gangX per second). Extra catch-up scales with lag so the banner does
+ * not sit still while Ultras walk ahead.
+ */
+export const BANNER_ADVANCE_SPEED = 0.055;
+/** Extra advance per second per gangX of lag behind the attack front */
+export const BANNER_CATCHUP = 0.22;
+/**
+ * Standarte retreat toward the cemented floor — slower than advance so
+ * the frontier stays forward and only slowly gives ground.
+ */
+export const BANNER_RETREAT_SPEED = 0.012;
+/** Minimum grey gap between opposing Standarten (gangX). */
+export const BANNER_MIN_GAP = 0.05;
+/** Standarte / build rights stop this far before an enemy Ordnerpost. */
+export const BANNER_POST_STANDOFF = 0.035;
 
 export const STEWARD_HIRE_GOLD = 22;
 export const STEWARD_CAP = 2;
@@ -159,15 +211,76 @@ export const BLOCK_STORM_COUNT = 4;
 export const BLOCK_STORM_SEC = 7;
 export const STAND_CONVERT_SEC = 11;
 export const STAND_CONVERT_SEAT_MAJORITY = true;
-export const STEWARD_GOLD_PER_SEC = 0.55;
-export const ULTRA_BEER_INTERVAL = 24;
-export const NORMALO_BEER_INTERVAL = 28;
-export const HOOLIGAN_BEER_INTERVAL = 20;
+/** Soft gold upkeep per Ordner / s — low enough that defense stays affordable */
+export const STEWARD_GOLD_PER_SEC = 0.32;
+
+/**
+ * How often each group walks to Bier / Fanshop (real seconds, Lv1).
+ * `0` = this group never visits that stand.
+ * Fans = Stimmung + Fanshop · Hools = Bier only · Ultras = both (light).
+ */
+export const VISIT_INTERVAL = {
+  normalos: { beer: 0, shop: 26 },
+  ultras: { beer: 32, shop: 38 },
+  hooligans: { beer: 16, shop: 0 },
+} as const;
+
+/** @deprecated use VISIT_INTERVAL — kept as aliases for clarity in call sites */
+export const ULTRA_BEER_INTERVAL = VISIT_INTERVAL.ultras.beer;
+export const NORMALO_BEER_INTERVAL = VISIT_INTERVAL.normalos.beer;
+export const HOOLIGAN_BEER_INTERVAL = VISIT_INTERVAL.hooligans.beer;
+
+/** Gold paid into the till when a unit buys at a Bierstand (Lv1 base) */
+export const BEER_VISIT_GOLD = 6;
+/** Gold paid into the till when a unit buys at a Fanshop (Lv1 base) */
+export const SHOP_VISIT_GOLD = 7;
+/** Visit interval shrinks this much per unit level above 1 */
+export const VISIT_LEVEL_SPEED = 0.04;
+
+/** `null` = this kind never visits that place */
+export function visitInterval(
+  kind: FanKind,
+  place: "beer" | "shop",
+  level: number,
+): number | null {
+  const base = VISIT_INTERVAL[kind][place];
+  if (base <= 0) return null;
+  const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
+  return base * (1 - (lv - 1) * VISIT_LEVEL_SPEED);
+}
+
+export function canVisit(kind: FanKind, place: "beer" | "shop"): boolean {
+  return VISIT_INTERVAL[kind][place] > 0;
+}
+
+/** Gold earned by stand owner from one visit (scales with buyer level) */
+export function visitGoldPayout(
+  place: "beer" | "shop",
+  level: number,
+): number {
+  const base = place === "beer" ? BEER_VISIT_GOLD : SHOP_VISIT_GOLD;
+  return Math.max(1, Math.round(base * unitLevelMul(level)));
+}
 
 export const PROD_BEER = 0.28;
 export const PROD_SECURITY = 0.3;
 export const PROD_MERCH = 0.34;
-export const PROD_SHOP_MOOD = 0.018;
+
+/**
+ * Block power → Momentum (people only, own home block).
+ * Fans weigh most (Stimmung), Ultras/Hools less while seated.
+ */
+export const MOMENTUM_WEIGHT: Record<FanKind, number> = {
+  normalos: 1.0,
+  ultras: 0.55,
+  hooligans: 0.35,
+};
+/** Softener in (pH−pG)/(pH+pG+ε) so small crowds don't flip hard */
+export const MOMENTUM_EPS = 2.5;
+/** How fast momentum tracks relative block power (1/s scale via exp) */
+export const MOMENTUM_APPROACH = 0.5;
+/** Mood HUD tracks the same power (display scale 0…3) */
+export const MOOD_FROM_POWER = 0.09;
 
 /** Seconds between pitch goal rolls (before fever) */
 export const GOAL_ROLL_INTERVAL = 22;
@@ -201,7 +314,8 @@ export const FAN_STATS: Record<
     defense: 0.6,
     fight: 0.55,
     drink: 0.7,
-    jubel: 1.25,
+    /** Mood specialist — stays seated, shops merch, drives Stimmung */
+    jubel: 1.35,
     color: "#16a34a",
     label: "Fan",
   },
@@ -209,7 +323,8 @@ export const FAN_STATS: Record<
     maxHp: 140,
     attack: 0.9,
     defense: 0.7,
-    fight: 1.1,
+    /** Schneller als Hools → mehrere Pyro-Würfe bevor Nahkampf */
+    fight: 1.15,
     drink: 0.6,
     jubel: 0.85,
     color: "#1f6feb",
@@ -219,22 +334,32 @@ export const FAN_STATS: Record<
     maxHp: 240,
     attack: 1.35,
     defense: 1.05,
-    fight: 1.45,
+    /** Langsamer als Ultras; Nahkampf bleibt über Atk/HP stark */
+    fight: 0.72,
     drink: 1.1,
-    jubel: 0.55,
+    jubel: 0.75,
     color: "#b45309",
     label: "Hooligan",
   },
 };
 
+/**
+ * Ordner: niedrigere Basis-HP, dafür langsame Heilung nahe dem Posten.
+ * Tempo unter Ultra-Gang-Speed, damit Ultras Abstand halten können.
+ */
 export const STEWARD_STATS = {
-  maxHpBase: 280,
-  maxHpPerLevel: 35,
+  maxHpBase: 170,
+  maxHpPerLevel: 22,
   attack: 0.85,
   defense: 1.25,
   vsUltraMul: 1.2,
-  patrolSpeed: 0.12,
-  chaseSpeed: 0.2,
+  patrolSpeed: 0.05,
+  /** Under Ultra gang speed (~0.075) so Ultras can open range for Pyro */
+  chaseSpeed: 0.06,
+  /** Patrol / heal radius around own post (gangX) */
+  postRadius: 0.11,
+  chaseRadius: 0.2,
+  healPerSec: 10,
 };
 
 export const BLOCK_META = [
