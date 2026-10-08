@@ -100,13 +100,18 @@ function dist(ax: number, ay: number, bx: number, by: number): number {
   return Math.hypot(ax - bx, ay - by);
 }
 
+export type CurrencyIconKey = "gold" | "beer" | "merch" | "security";
+
 export type FloatFx = {
   x: number;
   y: number;
   text: string;
   good: boolean;
   t: number;
+  /** positive = rise, negative = fall (spend) */
   vy: number;
+  /** freigestelltes Währungs-Icon (heutige Assets) */
+  currency?: CurrencyIconKey;
 };
 
 export type ConfettiBit = {
@@ -502,7 +507,7 @@ export class Match {
   }
 
   floatAt(x: number, y: number, text: string, good: boolean): void {
-    this.floats.push({ x, y, text, good, t: 1.6, vy: 0.05 });
+    this.floats.push({ x, y, text, good, t: 1.6, vy: good ? 0.055 : -0.045 });
   }
 
   floatAtSlot(s: BuildSlot, text: string, good: boolean): void {
@@ -510,18 +515,45 @@ export class Match {
     this.floatAt(p.x, p.y - 0.02, text, good);
   }
 
+  /** Dynamic currency popup: gain rises, spend falls, then fades out */
+  floatCurrency(
+    x: number,
+    y: number,
+    amount: number,
+    currency: CurrencyIconKey,
+    spend: boolean,
+  ): void {
+    const n = Math.max(1, Math.round(Math.abs(amount)));
+    this.floats.push({
+      x,
+      y,
+      text: `${spend ? "−" : "+"}${n}`,
+      good: !spend,
+      t: 1.45,
+      vy: spend ? -0.05 : 0.06,
+      currency,
+    });
+  }
+
+  floatCurrencyAtSlot(
+    s: BuildSlot,
+    amount: number,
+    currency: CurrencyIconKey,
+    spend: boolean,
+  ): void {
+    const p = this.standWorld(s);
+    this.floatCurrency(p.x, p.y - 0.02, amount, currency, spend);
+  }
+
   private spend(
     key: keyof Currencies,
     amount: number,
     at?: { x: number; y: number },
-    label?: string,
+    _label?: string,
   ): boolean {
     if (this.currency[key] < amount) return false;
     this.currency[key] = Math.max(0, this.currency[key] - amount);
-    if (at) {
-      const tag = label ?? key.toUpperCase();
-      this.floatAt(at.x, at.y, `−${Math.round(amount)} ${tag}`, false);
-    }
+    if (at) this.floatCurrency(at.x, at.y, amount, key, true);
     return true;
   }
 
@@ -529,13 +561,17 @@ export class Match {
     key: keyof Currencies,
     amount: number,
     at?: { x: number; y: number },
-    label?: string,
+    _label?: string,
   ): void {
     this.currency[key] = Math.max(0, this.currency[key] + amount);
-    if (at) {
-      const tag = label ?? key.toUpperCase();
-      this.floatAt(at.x, at.y, `+${Math.round(amount)} ${tag}`, true);
-    }
+    if (at) this.floatCurrency(at.x, at.y, amount, key, false);
+  }
+
+  private spendGold(amount: number, at?: { x: number; y: number }): boolean {
+    if (this.gold < amount) return false;
+    this.gold -= amount;
+    if (at) this.floatCurrency(at.x, at.y, amount, "gold", true);
+    return true;
   }
 
   setSpeed(s: SpeedMode): void {
@@ -1136,10 +1172,7 @@ canBuy(kind: FanKind): boolean {
     if (c.beer > 0) this.spend("beer", c.beer, p, "BIER");
     if (c.merch > 0) this.spend("merch", c.merch, p, "FANARTIKEL");
     if (c.security > 0) this.spend("security", c.security, p, "SICHERHEIT");
-    if (c.gold > 0) {
-      this.gold -= c.gold;
-      this.floatAt(p.x, p.y, `−${c.gold}€`, false);
-    }
+    if (c.gold > 0) this.spendGold(c.gold, p);
     this.fans.push(this.makeFan(kind, this.playerTeam, blockId, seatIndex));
     this.seatMenu = null;
     this.floatAt(p.x, p.y + 0.02, `+${FAN_STATS[kind].label}`, true);
@@ -1198,7 +1231,11 @@ canBuy(kind: FanKind): boolean {
       this.toast(`${cost}€ nötig`);
       return false;
     }
-    this.gold -= cost;
+    const p = this.standWorld(s);
+    if (!this.spendGold(cost, p)) {
+      this.toast(`${cost}€ nötig`);
+      return false;
+    }
     if (!s.building) s.building = kind;
     else if (s.greyNeutral || s.owner === "neutral") {
       /* keep existing type on claim unless empty */
@@ -1215,8 +1252,6 @@ canBuy(kind: FanKind): boolean {
       if (s.structHp <= 0) this.initOrdnerPostHp(s);
     }
     this.buildMenu = null;
-    const p = this.standWorld(s);
-    this.floatAt(p.x, p.y, `−${cost}€`, false);
     this.toast(
       `${s.building === "bier" ? "Bierstand" : s.building === "ordner" ? "Ordnerposten" : "Fanshop"} ${cost < BUILD_COST[kind] ? "übernommen" : "gebaut"}`,
     );
@@ -1248,7 +1283,7 @@ canBuy(kind: FanKind): boolean {
       this.toast(`${cost}€ nötig`);
       return false;
     }
-    this.gold -= cost;
+    this.spendGold(cost, this.standWorld(s));
     s.level++;
     if (s.building === "ordner") {
       const prev = s.structHp;
@@ -1430,25 +1465,20 @@ canBuy(kind: FanKind): boolean {
         if (s.owner !== this.playerTeam && s.owner !== this.aiTeam) continue;
         const n = Math.max(1, Math.round(productionRate(s.level || 1)));
         s.prodFlash = 1;
-        if (s.owner === this.playerTeam) {
-          if (s.building === "bier") this.floatAtSlot(s, `+${n} Bier`, true);
-          else if (s.building === "ordner")
-            this.floatAtSlot(s, `+${n} Sicherheit`, true);
-          else if (s.building === "fanshop") {
-            this.floatAtSlot(s, `+${n} Fanartikel`, true);
+        if (s.building === "bier") {
+          this.floatCurrencyAtSlot(s, n, "beer", false);
+        } else if (s.building === "ordner") {
+          this.floatCurrencyAtSlot(s, n, "security", false);
+        } else if (s.building === "fanshop") {
+          this.floatCurrencyAtSlot(s, n, "merch", false);
+          if (s.owner === this.playerTeam) {
             this.floatAt(
               this.standWorld(s).x,
-              this.standWorld(s).y - 0.04,
+              this.standWorld(s).y - 0.05,
               "+Stimmung",
               true,
             );
           }
-        } else {
-          // AI stands also show production so both sides are readable
-          if (s.building === "bier") this.floatAtSlot(s, `+${n} Bier`, false);
-          else if (s.building === "ordner")
-            this.floatAtSlot(s, `+${n} Sicherheit`, false);
-          else this.floatAtSlot(s, `+${n} Shop`, false);
         }
       }
     }
@@ -1512,10 +1542,9 @@ canBuy(kind: FanKind): boolean {
       this.toast(`${STEWARD_HIRE_GOLD}€ nötig`);
       return false;
     }
-    this.gold -= STEWARD_HIRE_GOLD;
+    this.spendGold(STEWARD_HIRE_GOLD, this.standWorld(s));
     const st = this.makeSteward(this.playerTeam, s);
     this.fans.push(st);
-    this.floatAtSlot(s, `−${STEWARD_HIRE_GOLD}€ Ordner`, true);
     this.toast("Ordner angeheuert");
     return true;
   }

@@ -20,6 +20,7 @@ import {
 } from "./layout";
 import {
   UI_ICONS,
+  currencyIconPath,
   drawIcon,
   drawToyIcon,
   standIconPath,
@@ -1333,17 +1334,31 @@ function drawFloats(
   for (const f of m.floats) {
     const alpha = Math.min(1, f.t / 0.35);
     ctx.globalAlpha = alpha;
-    ctx.font = `700 ${Math.floor(h * 0.026)}px Manrope, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(0,0,0,0.55)";
-    ctx.fillStyle = f.good ? "#6bcb77" : "#f87171";
     const x = f.x * w;
     const y = f.y * h;
-    ctx.strokeText(f.text, x, y);
-    ctx.fillText(f.text, x, y);
+    ctx.font = `800 ${Math.floor(h * 0.028)}px Outfit, Manrope, sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(0,0,0,0.55)";
+    ctx.fillStyle = f.good ? "#86efac" : "#fca5a5";
+
+    if (f.currency) {
+      const sz = Math.min(w, h) * 0.055;
+      const ix = x - sz * 0.85;
+      const iy = y - sz * 0.5;
+      drawIcon(ctx, currencyIconPath(f.currency), ix, iy, sz, sz, 0.04);
+      ctx.textAlign = "left";
+      ctx.strokeText(f.text, x + sz * 0.2, y);
+      ctx.fillText(f.text, x + sz * 0.2, y);
+    } else {
+      ctx.textAlign = "center";
+      ctx.strokeText(f.text, x, y);
+      ctx.fillText(f.text, x, y);
+    }
   }
   ctx.globalAlpha = 1;
+  ctx.textBaseline = "alphabetic";
 }
 
 function drawConfetti(

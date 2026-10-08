@@ -48,8 +48,18 @@ export const UI_ICONS = {
   pennantKsc: "icons/ui/pennant-ksc.png",
   pennantVfb: "icons/ui/pennant-vfb.png",
   menuRail: "icons/ui/menu-rail-brown.png",
+  menuRailTile: "icons/ui/menu-rail-brown-tile.png",
   scoreboard: "icons/ui/scoreboard-momentum.png",
 } as const;
+
+export function currencyIconPath(
+  key: "gold" | "beer" | "merch" | "security",
+): string {
+  if (key === "gold") return UI_ICONS.currencyGold;
+  if (key === "beer") return UI_ICONS.currencyBier;
+  if (key === "merch") return UI_ICONS.currencyFanartikel;
+  return UI_ICONS.currencySicherheit;
+}
 
 function loadOne(src: string): Promise<HTMLImageElement> {
   const hit = cache.get(src);
