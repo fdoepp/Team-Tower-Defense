@@ -5,13 +5,12 @@ Mock only. Runtime: `syncUnitActionCards` — `unitIconPath` + `unitBuyCost` / S
 ## Layout (Freigabe)
 
 ```
-Titel ×Count
-Figur-Icon (Level = Typ-Level)
-[ KAUFEN  💰 n ]
-[ SENDEN  💰 n ]   ← nur Ultras / Hooligans
-[ UPGRADE 💰 n ]
+Titel                              ×Count
+[Figur]  [ KAUFEN  💰 n ]
+         [ SENDEN  💰 n ]   ← nur Ultras / Hooligans
+         [ UPGRADE 💰 n ]
 ```
 
-Kosten stehen **im** Button (kein Extra-Chip). Soft-bound: Icons und Zahlen kommen live aus `types.ts` / `unitIconPath` / `currencyIconPath`.
-
-Beispiel-Freigabe: [`examples/ultras-upgrade-cost-in-btn-blue.png`](examples/ultras-upgrade-cost-in-btn-blue.png)
+Icon links neben den Buttons (kompakt, alle 4 Typen untereinander sichtbar).  
+Keine Gegner-Fanbase in der linken Rail.  
+Kosten **im** Button. Soft-bound: `unitIconPath` / `currencyIconPath` / Live-Preise.

@@ -264,21 +264,17 @@ function renderMatchScreen(): void {
               <h3 class="ac-title">${UNIT_FULL_LABEL[kind]}</h3>
               <b class="ur-count" id="${countId}">×0</b>
             </div>
-            <img class="ac-icon" data-unit-icon="${kind}" src="${icon.startsWith("/") ? icon : `/${icon}`}" alt="${UNIT_FULL_LABEL[kind]}">
-            <div class="ur-actions">
-              ${buyBtn}
-              ${send}
-              ${upgrade}
+            <div class="ur-body">
+              <img class="ac-icon" data-unit-icon="${kind}" src="${icon.startsWith("/") ? icon : `/${icon}`}" alt="${UNIT_FULL_LABEL[kind]}">
+              <div class="ur-actions">
+                ${buyBtn}
+                ${send}
+                ${upgrade}
+              </div>
             </div>
           </div>`;
             })
             .join("")}
-        </div>
-        <div class="fanbase-col gast" aria-label="Gegner">
-          <span class="fb"><i>N</i><b id="fb-en">0</b></span>
-          <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
-          <span class="fb"><i>H</i><b id="fb-eh">0</b></span>
-          <span class="fb"><i>O</i><b id="fb-eo">0</b></span>
         </div>
       </aside>
       <div id="game-wrap">
@@ -920,19 +916,14 @@ function renderMatchScreen(): void {
       if (merch) merch.textContent = String(m.currencyPct("merch"));
       if (sec) sec.textContent = String(m.currencyPct("security"));
       const own = m.countTeamFans(m.playerTeam);
-      const foe = m.countTeamFans(m.aiTeam);
-      const setFb = (id: string, n: number, cross = false) => {
+      const setFb = (id: string, n: number) => {
         const el = app.querySelector(id);
-        if (el) el.textContent = cross ? `×${n}` : String(n);
+        if (el) el.textContent = `×${n}`;
       };
-      setFb("#fb-u", own.ultras, true);
-      setFb("#fb-n", own.normalos, true);
-      setFb("#fb-h", own.hooligans, true);
-      setFb("#fb-o", own.ordner, true);
-      setFb("#fb-eu", foe.ultras);
-      setFb("#fb-en", foe.normalos);
-      setFb("#fb-eh", foe.hooligans);
-      setFb("#fb-eo", foe.ordner);
+      setFb("#fb-u", own.ultras);
+      setFb("#fb-n", own.normalos);
+      setFb("#fb-h", own.hooligans);
+      setFb("#fb-o", own.ordner);
       syncUnitActionCards();
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
       if (hireBtn) {
