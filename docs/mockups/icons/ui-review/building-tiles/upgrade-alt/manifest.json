@@ -7,9 +7,9 @@
     "from": 1,
     "to": 2,
     "cost_gold": 40,
-    "stat_from": 1.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Bier"
+    "stat_from": 14,
+    "stat_delta": 6,
+    "stat_unit": "Bier/min"
   },
   {
     "file": "upgrade-alt-bier-blue-2to3.png",
@@ -19,9 +19,9 @@
     "from": 2,
     "to": 3,
     "cost_gold": 75,
-    "stat_from": 1.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Bier"
+    "stat_from": 20,
+    "stat_delta": 6,
+    "stat_unit": "Bier/min"
   },
   {
     "file": "upgrade-alt-bier-blue-3to4.png",
@@ -31,9 +31,9 @@
     "from": 3,
     "to": 4,
     "cost_gold": 120,
-    "stat_from": 2.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Bier"
+    "stat_from": 26,
+    "stat_delta": 6,
+    "stat_unit": "Bier/min"
   },
   {
     "file": "upgrade-alt-bier-blue-4to5.png",
@@ -43,9 +43,9 @@
     "from": 4,
     "to": 5,
     "cost_gold": 180,
-    "stat_from": 2.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Bier"
+    "stat_from": 32,
+    "stat_delta": 6,
+    "stat_unit": "Bier/min"
   },
   {
     "file": "upgrade-alt-fanshop-blue-1to2.png",
@@ -55,9 +55,9 @@
     "from": 1,
     "to": 2,
     "cost_gold": 40,
-    "stat_from": 1.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Fanartikel"
+    "stat_from": 24,
+    "stat_delta": 11,
+    "stat_unit": "Fanart./min"
   },
   {
     "file": "upgrade-alt-fanshop-blue-2to3.png",
@@ -67,9 +67,9 @@
     "from": 2,
     "to": 3,
     "cost_gold": 75,
-    "stat_from": 1.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Fanartikel"
+    "stat_from": 35,
+    "stat_delta": 10,
+    "stat_unit": "Fanart./min"
   },
   {
     "file": "upgrade-alt-fanshop-blue-3to4.png",
@@ -79,9 +79,9 @@
     "from": 3,
     "to": 4,
     "cost_gold": 120,
-    "stat_from": 2.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Fanartikel"
+    "stat_from": 45,
+    "stat_delta": 10,
+    "stat_unit": "Fanart./min"
   },
   {
     "file": "upgrade-alt-fanshop-blue-4to5.png",
@@ -91,9 +91,9 @@
     "from": 4,
     "to": 5,
     "cost_gold": 180,
-    "stat_from": 2.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Fanartikel"
+    "stat_from": 55,
+    "stat_delta": 10,
+    "stat_unit": "Fanart./min"
   },
   {
     "file": "upgrade-alt-ordner-blue-1to2.png",
@@ -103,9 +103,9 @@
     "from": 1,
     "to": 2,
     "cost_gold": 40,
-    "stat_from": 1.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Sicherheit"
+    "stat_from": 22,
+    "stat_delta": 9,
+    "stat_unit": "Sich./min"
   },
   {
     "file": "upgrade-alt-ordner-blue-2to3.png",
@@ -115,9 +115,9 @@
     "from": 2,
     "to": 3,
     "cost_gold": 75,
-    "stat_from": 1.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Sicherheit"
+    "stat_from": 31,
+    "stat_delta": 9,
+    "stat_unit": "Sich./min"
   },
   {
     "file": "upgrade-alt-ordner-blue-3to4.png",
@@ -127,9 +127,9 @@
     "from": 3,
     "to": 4,
     "cost_gold": 120,
-    "stat_from": 2.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Sicherheit"
+    "stat_from": 40,
+    "stat_delta": 9,
+    "stat_unit": "Sich./min"
   },
   {
     "file": "upgrade-alt-ordner-blue-4to5.png",
@@ -139,9 +139,9 @@
     "from": 4,
     "to": 5,
     "cost_gold": 180,
-    "stat_from": 2.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Sicherheit"
+    "stat_from": 49,
+    "stat_delta": 9,
+    "stat_unit": "Sich./min"
   },
   {
     "file": "upgrade-alt-bier-red-1to2.png",
@@ -151,9 +151,9 @@
     "from": 1,
     "to": 2,
     "cost_gold": 40,
-    "stat_from": 1.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Bier"
+    "stat_from": 14,
+    "stat_delta": 6,
+    "stat_unit": "Bier/min"
   },
   {
     "file": "upgrade-alt-bier-red-2to3.png",
@@ -163,9 +163,9 @@
     "from": 2,
     "to": 3,
     "cost_gold": 75,
-    "stat_from": 1.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Bier"
+    "stat_from": 20,
+    "stat_delta": 6,
+    "stat_unit": "Bier/min"
   },
   {
     "file": "upgrade-alt-bier-red-3to4.png",
@@ -175,9 +175,9 @@
     "from": 3,
     "to": 4,
     "cost_gold": 120,
-    "stat_from": 2.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Bier"
+    "stat_from": 26,
+    "stat_delta": 6,
+    "stat_unit": "Bier/min"
   },
   {
     "file": "upgrade-alt-bier-red-4to5.png",
@@ -187,9 +187,9 @@
     "from": 4,
     "to": 5,
     "cost_gold": 180,
-    "stat_from": 2.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Bier"
+    "stat_from": 32,
+    "stat_delta": 6,
+    "stat_unit": "Bier/min"
   },
   {
     "file": "upgrade-alt-fanshop-red-1to2.png",
@@ -199,9 +199,9 @@
     "from": 1,
     "to": 2,
     "cost_gold": 40,
-    "stat_from": 1.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Fanartikel"
+    "stat_from": 24,
+    "stat_delta": 11,
+    "stat_unit": "Fanart./min"
   },
   {
     "file": "upgrade-alt-fanshop-red-2to3.png",
@@ -211,9 +211,9 @@
     "from": 2,
     "to": 3,
     "cost_gold": 75,
-    "stat_from": 1.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Fanartikel"
+    "stat_from": 35,
+    "stat_delta": 10,
+    "stat_unit": "Fanart./min"
   },
   {
     "file": "upgrade-alt-fanshop-red-3to4.png",
@@ -223,9 +223,9 @@
     "from": 3,
     "to": 4,
     "cost_gold": 120,
-    "stat_from": 2.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Fanartikel"
+    "stat_from": 45,
+    "stat_delta": 10,
+    "stat_unit": "Fanart./min"
   },
   {
     "file": "upgrade-alt-fanshop-red-4to5.png",
@@ -235,9 +235,9 @@
     "from": 4,
     "to": 5,
     "cost_gold": 180,
-    "stat_from": 2.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Fanartikel"
+    "stat_from": 55,
+    "stat_delta": 10,
+    "stat_unit": "Fanart./min"
   },
   {
     "file": "upgrade-alt-ordner-red-1to2.png",
@@ -247,9 +247,9 @@
     "from": 1,
     "to": 2,
     "cost_gold": 40,
-    "stat_from": 1.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Sicherheit"
+    "stat_from": 22,
+    "stat_delta": 9,
+    "stat_unit": "Sich./min"
   },
   {
     "file": "upgrade-alt-ordner-red-2to3.png",
@@ -259,9 +259,9 @@
     "from": 2,
     "to": 3,
     "cost_gold": 75,
-    "stat_from": 1.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Sicherheit"
+    "stat_from": 31,
+    "stat_delta": 9,
+    "stat_unit": "Sich./min"
   },
   {
     "file": "upgrade-alt-ordner-red-3to4.png",
@@ -271,9 +271,9 @@
     "from": 3,
     "to": 4,
     "cost_gold": 120,
-    "stat_from": 2.2,
-    "stat_delta": 0.5,
-    "stat_unit": "Sicherheit"
+    "stat_from": 40,
+    "stat_delta": 9,
+    "stat_unit": "Sich./min"
   },
   {
     "file": "upgrade-alt-ordner-red-4to5.png",
@@ -283,8 +283,8 @@
     "from": 4,
     "to": 5,
     "cost_gold": 180,
-    "stat_from": 2.7,
-    "stat_delta": 0.5,
-    "stat_unit": "Sicherheit"
+    "stat_from": 49,
+    "stat_delta": 9,
+    "stat_unit": "Sich./min"
   }
 ]
