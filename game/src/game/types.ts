@@ -1,5 +1,5 @@
 export type TeamId = "ksc" | "vfb";
-/** Fan (normalos) = Gesang/Sicherheit · Ultra = Pyro/Fanartikel · Hooligan = Nahkampf/Bier */
+/** Fan = Stimmung/Sicherheit/Fanshop · Ultra = Pyro/beide Stände · Hool = Nahkampf/Bier */
 export type FanKind = "ultras" | "normalos" | "hooligans";
 export type FanMix = Record<FanKind, number>;
 export type AiDifficulty = "easy" | "normal" | "hard";
@@ -216,13 +216,13 @@ export const STEWARD_GOLD_PER_SEC = 0.32;
 
 /**
  * How often each group walks to Bier / Fanshop (real seconds, Lv1).
- * Higher unit levels visit slightly faster (see visitInterval).
- * Fans: beer-heavy · Ultras: both · Hools: shop-leaning but still drink.
+ * `0` = this group never visits that stand.
+ * Fans = Stimmung + Fanshop · Hools = Bier only · Ultras = both (light).
  */
 export const VISIT_INTERVAL = {
-  normalos: { beer: 30, shop: 52 },
-  ultras: { beer: 26, shop: 40 },
-  hooligans: { beer: 24, shop: 26 },
+  normalos: { beer: 0, shop: 26 },
+  ultras: { beer: 32, shop: 38 },
+  hooligans: { beer: 16, shop: 0 },
 } as const;
 
 /** @deprecated use VISIT_INTERVAL — kept as aliases for clarity in call sites */
@@ -231,20 +231,26 @@ export const NORMALO_BEER_INTERVAL = VISIT_INTERVAL.normalos.beer;
 export const HOOLIGAN_BEER_INTERVAL = VISIT_INTERVAL.hooligans.beer;
 
 /** Gold paid into the till when a unit buys at a Bierstand (Lv1 base) */
-export const BEER_VISIT_GOLD = 5;
+export const BEER_VISIT_GOLD = 6;
 /** Gold paid into the till when a unit buys at a Fanshop (Lv1 base) */
-export const SHOP_VISIT_GOLD = 6;
+export const SHOP_VISIT_GOLD = 7;
 /** Visit interval shrinks this much per unit level above 1 */
 export const VISIT_LEVEL_SPEED = 0.04;
 
+/** `null` = this kind never visits that place */
 export function visitInterval(
   kind: FanKind,
   place: "beer" | "shop",
   level: number,
-): number {
+): number | null {
   const base = VISIT_INTERVAL[kind][place];
+  if (base <= 0) return null;
   const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
   return base * (1 - (lv - 1) * VISIT_LEVEL_SPEED);
+}
+
+export function canVisit(kind: FanKind, place: "beer" | "shop"): boolean {
+  return VISIT_INTERVAL[kind][place] > 0;
 }
 
 /** Gold earned by stand owner from one visit (scales with buyer level) */
@@ -293,8 +299,8 @@ export const FAN_STATS: Record<
     defense: 0.6,
     fight: 0.55,
     drink: 0.7,
-    /** Slightly toned so Hool-mixes aren't hopeless on momentum */
-    jubel: 1.1,
+    /** Mood specialist — stays seated, shops merch, drives Stimmung */
+    jubel: 1.35,
     color: "#16a34a",
     label: "Fan",
   },

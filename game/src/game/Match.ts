@@ -55,6 +55,7 @@ import {
   productionRate,
   unitLevelMul,
   unitUpgradeCost,
+  canVisit,
   visitGoldPayout,
   visitInterval,
   type AiDifficulty,
@@ -339,8 +340,14 @@ export class Match {
       hp: maxHp,
       maxHp,
       thirst: 25 + Math.random() * 25,
-      satisfiedUntil: this.realElapsed + beerIv * (0.35 + Math.random() * 0.55),
-      shopUntil: this.realElapsed + shopIv * (0.35 + Math.random() * 0.55),
+      satisfiedUntil:
+        beerIv == null
+          ? 1e9
+          : this.realElapsed + beerIv * (0.35 + Math.random() * 0.55),
+      shopUntil:
+        shopIv == null
+          ? 1e9
+          : this.realElapsed + shopIv * (0.35 + Math.random() * 0.55),
       aggro: kind === "hooligans" ? 40 : kind === "ultras" ? 30 : 10,
       lean: 0,
       captureProg: 0,
@@ -1934,13 +1941,16 @@ export class Match {
 
   /**
    * Pick Bier or Fanshop when timers are due.
-   * Fans prefer beer, Hools prefer shop, Ultras beer-first if both ready.
+   * Fans → Fanshop only · Hools → Bier only · Ultras → both (beer-first).
    */
   private maybeStartStandVisit(f: FanUnit): void {
     if (f.team !== this.playerTeam && f.team !== this.aiTeam) return;
     const team = f.team as TeamId;
-    const beerReady = this.realElapsed >= (f.satisfiedUntil || 0);
-    const shopReady = this.realElapsed >= (f.shopUntil || 0);
+    const wantsBeer = canVisit(f.kind, "beer");
+    const wantsShop = canVisit(f.kind, "shop");
+    const beerReady =
+      wantsBeer && this.realElapsed >= (f.satisfiedUntil || 0);
+    const shopReady = wantsShop && this.realElapsed >= (f.shopUntil || 0);
     if (!beerReady && !shopReady) return;
 
     const bier = beerReady ? this.nearestBierStand(team, f.blockId) : null;
@@ -1948,7 +1958,8 @@ export class Match {
 
     let pick: "beer" | "shop" | null = null;
     if (bier && shop) {
-      pick = f.kind === "hooligans" ? "shop" : "beer";
+      // Ultras only reach here with both — prefer beer slightly
+      pick = "beer";
     } else if (bier) pick = "beer";
     else if (shop) pick = "shop";
 
@@ -1988,19 +1999,21 @@ export class Match {
     if (stand?.building === "bier" && stand.beer >= 1) {
       stand.beer -= 1;
       f.thirst = 5;
+      const beerIv = visitInterval(f.kind, "beer", lv);
       f.satisfiedUntil =
-        this.realElapsed + visitInterval(f.kind, "beer", lv);
+        beerIv == null ? 1e9 : this.realElapsed + beerIv;
       const pay = visitGoldPayout("beer", lv);
       this.payVisitGold(stand, pay);
       this.floatAtSlot(stand, "−1 Fass", false);
     } else if (stand?.building === "fanshop") {
-      f.shopUntil = this.realElapsed + visitInterval(f.kind, "shop", lv);
+      const shopIv = visitInterval(f.kind, "shop", lv);
+      f.shopUntil = shopIv == null ? 1e9 : this.realElapsed + shopIv;
       const pay = visitGoldPayout("shop", lv);
       this.payVisitGold(stand, pay);
     } else {
       // Visit failed (empty bier / missing stand) — short backoff
-      f.satisfiedUntil = this.realElapsed + 8;
-      f.shopUntil = this.realElapsed + 8;
+      if (canVisit(f.kind, "beer")) f.satisfiedUntil = this.realElapsed + 8;
+      if (canVisit(f.kind, "shop")) f.shopUntil = this.realElapsed + 8;
     }
 
     const home =
@@ -2924,38 +2937,12 @@ export class Match {
     void dt;
   }
 
-  /** Block unsafe → hooligansList relocate then leave */
-  private tickFamilyFlight(dt: number): void {
-    void dt;
-    for (const blockId of [HEIM_BLOCK, GAST_BLOCK]) {
-      const owner = blockId === HEIM_BLOCK ? this.playerTeam : this.aiTeam;
-      const unsafe = this.enemyUltraInBlock(blockId, owner);
-      if (!unsafe) continue;
-      // Normalos leave when enemy Ultra storms the block
-      const normals = this.fans.filter(
-        (f) =>
-          f.hp > 0 &&
-          f.team === owner &&
-          f.kind === "normalos" &&
-          f.blockId === blockId &&
-          f.state === "block",
-      );
-      for (const n of normals) {
-        const safeHome = owner === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
-        const alt = this.freeSeat(safeHome);
-        if (alt !== n.seatIndex && !this.enemyUltraInBlock(safeHome, owner)) {
-          n.seatIndex = alt;
-          const p = seatPos(safeHome, alt);
-          n.x = p.x;
-          n.y = p.y;
-          this.toast("Normalo wechselt Platz");
-        } else if (unsafe) {
-          n.hp = 0;
-          this.toast("Normalo wandert ab!");
-          this.floatAt(n.x, n.y, "Abwanderung", false);
-        }
-      }
-    }
+  /**
+   * Fans never flee / Abwanderung — they stay for Stimmung.
+   * Kept as a no-op hook so call sites remain stable.
+   */
+  private tickFamilyFlight(_dt: number): void {
+    void _dt;
   }
 
   /**
