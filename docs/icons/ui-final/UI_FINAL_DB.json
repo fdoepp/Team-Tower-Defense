@@ -1532,6 +1532,1716 @@
       "notes": "Freigegeben (Personen-Restbestand).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:50:19.091879+00:00"
+    },
+    "standBierBlue1": {
+      "id": "standBierBlue1",
+      "file": "bier-blue-1.png",
+      "source": "game/public/icons/stands/bier-blue-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.6432,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          75,
+          16,
+          435,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.321302+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.237120+00:00"
+    },
+    "standBierBlue2": {
+      "id": "standBierBlue2",
+      "file": "bier-blue-2.png",
+      "source": "game/public/icons/stands/bier-blue-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5822,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          16,
+          26,
+          495,
+          484
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.414694+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.334836+00:00"
+    },
+    "standBierBlue3": {
+      "id": "standBierBlue3",
+      "file": "bier-blue-3.png",
+      "source": "game/public/icons/stands/bier-blue-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5434,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          31,
+          16,
+          479,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.516124+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.427299+00:00"
+    },
+    "standBierBlue4": {
+      "id": "standBierBlue4",
+      "file": "bier-blue-4.png",
+      "source": "game/public/icons/stands/bier-blue-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5255,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          69,
+          16,
+          442,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.612097+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.530007+00:00"
+    },
+    "standBierBlue5": {
+      "id": "standBierBlue5",
+      "file": "bier-blue-5.png",
+      "source": "game/public/icons/stands/bier-blue-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5355,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          77,
+          16,
+          434,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.707113+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.625621+00:00"
+    },
+    "standBierGrey1": {
+      "id": "standBierGrey1",
+      "file": "bier-grey-1.png",
+      "source": "game/public/icons/stands/bier-grey-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.642,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          75,
+          16,
+          435,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.802436+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.720402+00:00"
+    },
+    "standBierGrey2": {
+      "id": "standBierGrey2",
+      "file": "bier-grey-2.png",
+      "source": "game/public/icons/stands/bier-grey-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5823,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          16,
+          27,
+          495,
+          484
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.899571+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.815826+00:00"
+    },
+    "standBierGrey3": {
+      "id": "standBierGrey3",
+      "file": "bier-grey-3.png",
+      "source": "game/public/icons/stands/bier-grey-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5434,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          31,
+          16,
+          479,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.994810+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.913189+00:00"
+    },
+    "standBierGrey4": {
+      "id": "standBierGrey4",
+      "file": "bier-grey-4.png",
+      "source": "game/public/icons/stands/bier-grey-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5262,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          68,
+          16,
+          442,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.088977+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.008187+00:00"
+    },
+    "standBierGrey5": {
+      "id": "standBierGrey5",
+      "file": "bier-grey-5.png",
+      "source": "game/public/icons/stands/bier-grey-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.537,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          77,
+          16,
+          433,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.187338+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.102925+00:00"
+    },
+    "standBierRed1": {
+      "id": "standBierRed1",
+      "file": "bier-red-1.png",
+      "source": "game/public/icons/stands/bier-red-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.6413,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          75,
+          18,
+          435,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.286284+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.200491+00:00"
+    },
+    "standBierRed2": {
+      "id": "standBierRed2",
+      "file": "bier-red-2.png",
+      "source": "game/public/icons/stands/bier-red-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5808,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          17,
+          27,
+          495,
+          484
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.384862+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.299954+00:00"
+    },
+    "standBierRed3": {
+      "id": "standBierRed3",
+      "file": "bier-red-3.png",
+      "source": "game/public/icons/stands/bier-red-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5427,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          32,
+          17,
+          479,
+          493
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.484354+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.398255+00:00"
+    },
+    "standBierRed4": {
+      "id": "standBierRed4",
+      "file": "bier-red-4.png",
+      "source": "game/public/icons/stands/bier-red-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5235,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          69,
+          17,
+          441,
+          494
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.583123+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.498251+00:00"
+    },
+    "standBierRed5": {
+      "id": "standBierRed5",
+      "file": "bier-red-5.png",
+      "source": "game/public/icons/stands/bier-red-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5327,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          77,
+          16,
+          434,
+          497
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.681479+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.596683+00:00"
+    },
+    "standFanshopBlue1": {
+      "id": "standFanshopBlue1",
+      "file": "fanshop-blue-1.png",
+      "source": "game/public/icons/stands/fanshop-blue-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7447,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          109,
+          40,
+          412,
+          453
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.778746+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.694977+00:00"
+    },
+    "standFanshopBlue2": {
+      "id": "standFanshopBlue2",
+      "file": "fanshop-blue-2.png",
+      "source": "game/public/icons/stands/fanshop-blue-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7016,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          85,
+          54,
+          423,
+          465
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.876484+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.792562+00:00"
+    },
+    "standFanshopBlue3": {
+      "id": "standFanshopBlue3",
+      "file": "fanshop-blue-3.png",
+      "source": "game/public/icons/stands/fanshop-blue-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.6348,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          111,
+          39,
+          417,
+          459
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.973611+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.889927+00:00"
+    },
+    "standFanshopBlue4": {
+      "id": "standFanshopBlue4",
+      "file": "fanshop-blue-4.png",
+      "source": "game/public/icons/stands/fanshop-blue-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5563,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          111,
+          17,
+          448,
+          477
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.075937+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.989236+00:00"
+    },
+    "standFanshopBlue5": {
+      "id": "standFanshopBlue5",
+      "file": "fanshop-blue-5.png",
+      "source": "game/public/icons/stands/fanshop-blue-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5695,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          105,
+          18,
+          429,
+          481
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.175970+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.090745+00:00"
+    },
+    "standFanshopGrey1": {
+      "id": "standFanshopGrey1",
+      "file": "fanshop-grey-1.png",
+      "source": "game/public/icons/stands/fanshop-grey-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7434,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          109,
+          40,
+          411,
+          450
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.274459+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.189924+00:00"
+    },
+    "standFanshopGrey2": {
+      "id": "standFanshopGrey2",
+      "file": "fanshop-grey-2.png",
+      "source": "game/public/icons/stands/fanshop-grey-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7058,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          85,
+          55,
+          421,
+          462
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.369512+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.288266+00:00"
+    },
+    "standFanshopGrey3": {
+      "id": "standFanshopGrey3",
+      "file": "fanshop-grey-3.png",
+      "source": "game/public/icons/stands/fanshop-grey-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.6409,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          112,
+          41,
+          416,
+          457
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.467499+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.383082+00:00"
+    },
+    "standFanshopGrey4": {
+      "id": "standFanshopGrey4",
+      "file": "fanshop-grey-4.png",
+      "source": "game/public/icons/stands/fanshop-grey-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5605,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          111,
+          18,
+          446,
+          475
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.565972+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.481857+00:00"
+    },
+    "standFanshopGrey5": {
+      "id": "standFanshopGrey5",
+      "file": "fanshop-grey-5.png",
+      "source": "game/public/icons/stands/fanshop-grey-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5724,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          106,
+          19,
+          429,
+          480
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.661073+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.579033+00:00"
+    },
+    "standFanshopRed1": {
+      "id": "standFanshopRed1",
+      "file": "fanshop-red-1.png",
+      "source": "game/public/icons/stands/fanshop-red-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.745,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          109,
+          40,
+          412,
+          451
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.756822+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.674197+00:00"
+    },
+    "standFanshopRed2": {
+      "id": "standFanshopRed2",
+      "file": "fanshop-red-2.png",
+      "source": "game/public/icons/stands/fanshop-red-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7037,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          85,
+          54,
+          422,
+          463
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.851077+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.770069+00:00"
+    },
+    "standFanshopRed3": {
+      "id": "standFanshopRed3",
+      "file": "fanshop-red-3.png",
+      "source": "game/public/icons/stands/fanshop-red-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.6364,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          111,
+          40,
+          416,
+          459
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.947150+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.864205+00:00"
+    },
+    "standFanshopRed4": {
+      "id": "standFanshopRed4",
+      "file": "fanshop-red-4.png",
+      "source": "game/public/icons/stands/fanshop-red-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5557,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          111,
+          17,
+          447,
+          477
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.043976+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.960878+00:00"
+    },
+    "standFanshopRed5": {
+      "id": "standFanshopRed5",
+      "file": "fanshop-red-5.png",
+      "source": "game/public/icons/stands/fanshop-red-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5688,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          105,
+          18,
+          429,
+          481
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.139747+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.057686+00:00"
+    },
+    "standOrdnerBlue1": {
+      "id": "standOrdnerBlue1",
+      "file": "stand-ordner-blue-1.png",
+      "source": "game/public/icons/stands/ordner-blue-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8378,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          127,
+          46,
+          383,
+          480
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.233754+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.152900+00:00"
+    },
+    "standOrdnerBlue2": {
+      "id": "standOrdnerBlue2",
+      "file": "stand-ordner-blue-2.png",
+      "source": "game/public/icons/stands/ordner-blue-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.747,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          102,
+          41,
+          408,
+          485
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.329908+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.247348+00:00"
+    },
+    "standOrdnerBlue3": {
+      "id": "standOrdnerBlue3",
+      "file": "stand-ordner-blue-3.png",
+      "source": "game/public/icons/stands/ordner-blue-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5874,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          88,
+          54,
+          423,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.425660+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.343783+00:00"
+    },
+    "standOrdnerBlue4": {
+      "id": "standOrdnerBlue4",
+      "file": "stand-ordner-blue-4.png",
+      "source": "game/public/icons/stands/ordner-blue-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.6037,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          91,
+          54,
+          419,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.521372+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.438958+00:00"
+    },
+    "standOrdnerBlue5": {
+      "id": "standOrdnerBlue5",
+      "file": "stand-ordner-blue-5.png",
+      "source": "game/public/icons/stands/ordner-blue-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.6518,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          103,
+          54,
+          407,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.615274+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.534686+00:00"
+    },
+    "standOrdnerGrey1": {
+      "id": "standOrdnerGrey1",
+      "file": "stand-ordner-grey-1.png",
+      "source": "game/public/icons/stands/ordner-grey-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8444,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          127,
+          46,
+          383,
+          480
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.707605+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.628069+00:00"
+    },
+    "standOrdnerGrey2": {
+      "id": "standOrdnerGrey2",
+      "file": "stand-ordner-grey-2.png",
+      "source": "game/public/icons/stands/ordner-grey-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.746,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          102,
+          41,
+          409,
+          485
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.800521+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.721279+00:00"
+    },
+    "standOrdnerGrey3": {
+      "id": "standOrdnerGrey3",
+      "file": "stand-ordner-grey-3.png",
+      "source": "game/public/icons/stands/ordner-grey-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5875,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          88,
+          54,
+          423,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.897562+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.814272+00:00"
+    },
+    "standOrdnerGrey4": {
+      "id": "standOrdnerGrey4",
+      "file": "stand-ordner-grey-4.png",
+      "source": "game/public/icons/stands/ordner-grey-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.6048,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          91,
+          54,
+          419,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.994520+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.910910+00:00"
+    },
+    "standOrdnerGrey5": {
+      "id": "standOrdnerGrey5",
+      "file": "stand-ordner-grey-5.png",
+      "source": "game/public/icons/stands/ordner-grey-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.6518,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          103,
+          54,
+          407,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.087590+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.007802+00:00"
+    },
+    "standOrdnerRed1": {
+      "id": "standOrdnerRed1",
+      "file": "stand-ordner-red-1.png",
+      "source": "game/public/icons/stands/ordner-red-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.843,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          127,
+          46,
+          383,
+          480
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.181327+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.100106+00:00"
+    },
+    "standOrdnerRed2": {
+      "id": "standOrdnerRed2",
+      "file": "stand-ordner-red-2.png",
+      "source": "game/public/icons/stands/ordner-red-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7476,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          102,
+          41,
+          408,
+          485
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.273619+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.194654+00:00"
+    },
+    "standOrdnerRed3": {
+      "id": "standOrdnerRed3",
+      "file": "stand-ordner-red-3.png",
+      "source": "game/public/icons/stands/ordner-red-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5924,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          89,
+          54,
+          422,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.369824+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.286653+00:00"
+    },
+    "standOrdnerRed4": {
+      "id": "standOrdnerRed4",
+      "file": "stand-ordner-red-4.png",
+      "source": "game/public/icons/stands/ordner-red-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.6057,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          92,
+          54,
+          419,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.463911+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.383034+00:00"
+    },
+    "standOrdnerRed5": {
+      "id": "standOrdnerRed5",
+      "file": "stand-ordner-red-5.png",
+      "source": "game/public/icons/stands/ordner-red-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.651,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          103,
+          54,
+          407,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.558049+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.476889+00:00"
     }
   },
   "pending": {
@@ -3581,1626 +5291,6 @@
         "checkedAt": "2026-10-08T22:34:00.570014+00:00"
       },
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierBlue1": {
-      "id": "standBierBlue1",
-      "file": "bier-blue-1.png",
-      "source": "game/public/icons/stands/bier-blue-1.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6432,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          75,
-          16,
-          435,
-          495
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:15.575637+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierBlue2": {
-      "id": "standBierBlue2",
-      "file": "bier-blue-2.png",
-      "source": "game/public/icons/stands/bier-blue-2.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5822,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          16,
-          26,
-          495,
-          484
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:15.672735+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierBlue3": {
-      "id": "standBierBlue3",
-      "file": "bier-blue-3.png",
-      "source": "game/public/icons/stands/bier-blue-3.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5434,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          31,
-          16,
-          479,
-          495
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:15.770407+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierBlue4": {
-      "id": "standBierBlue4",
-      "file": "bier-blue-4.png",
-      "source": "game/public/icons/stands/bier-blue-4.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5255,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          69,
-          16,
-          442,
-          495
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:15.864943+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierBlue5": {
-      "id": "standBierBlue5",
-      "file": "bier-blue-5.png",
-      "source": "game/public/icons/stands/bier-blue-5.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5355,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          77,
-          16,
-          434,
-          495
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:15.959845+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierGrey1": {
-      "id": "standBierGrey1",
-      "file": "bier-grey-1.png",
-      "source": "game/public/icons/stands/bier-grey-1.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.642,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          75,
-          16,
-          435,
-          495
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.057645+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierGrey2": {
-      "id": "standBierGrey2",
-      "file": "bier-grey-2.png",
-      "source": "game/public/icons/stands/bier-grey-2.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5823,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          16,
-          27,
-          495,
-          484
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.152081+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierGrey3": {
-      "id": "standBierGrey3",
-      "file": "bier-grey-3.png",
-      "source": "game/public/icons/stands/bier-grey-3.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5434,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          31,
-          16,
-          479,
-          495
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.244484+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierGrey4": {
-      "id": "standBierGrey4",
-      "file": "bier-grey-4.png",
-      "source": "game/public/icons/stands/bier-grey-4.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5262,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          68,
-          16,
-          442,
-          495
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.337998+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierGrey5": {
-      "id": "standBierGrey5",
-      "file": "bier-grey-5.png",
-      "source": "game/public/icons/stands/bier-grey-5.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.537,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          77,
-          16,
-          433,
-          495
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.429673+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierRed1": {
-      "id": "standBierRed1",
-      "file": "bier-red-1.png",
-      "source": "game/public/icons/stands/bier-red-1.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6413,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          75,
-          18,
-          435,
-          495
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.521431+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierRed2": {
-      "id": "standBierRed2",
-      "file": "bier-red-2.png",
-      "source": "game/public/icons/stands/bier-red-2.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5808,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          17,
-          27,
-          495,
-          484
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.613042+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierRed3": {
-      "id": "standBierRed3",
-      "file": "bier-red-3.png",
-      "source": "game/public/icons/stands/bier-red-3.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5427,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          32,
-          17,
-          479,
-          493
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.705067+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierRed4": {
-      "id": "standBierRed4",
-      "file": "bier-red-4.png",
-      "source": "game/public/icons/stands/bier-red-4.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5235,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          69,
-          17,
-          441,
-          494
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.798329+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standBierRed5": {
-      "id": "standBierRed5",
-      "file": "bier-red-5.png",
-      "source": "game/public/icons/stands/bier-red-5.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5327,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          77,
-          16,
-          434,
-          497
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.891843+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopBlue1": {
-      "id": "standFanshopBlue1",
-      "file": "fanshop-blue-1.png",
-      "source": "game/public/icons/stands/fanshop-blue-1.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7447,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          109,
-          40,
-          412,
-          453
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:16.984602+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopBlue2": {
-      "id": "standFanshopBlue2",
-      "file": "fanshop-blue-2.png",
-      "source": "game/public/icons/stands/fanshop-blue-2.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7016,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          85,
-          54,
-          423,
-          465
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:17.101691+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopBlue3": {
-      "id": "standFanshopBlue3",
-      "file": "fanshop-blue-3.png",
-      "source": "game/public/icons/stands/fanshop-blue-3.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6348,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          111,
-          39,
-          417,
-          459
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:17.194665+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopBlue4": {
-      "id": "standFanshopBlue4",
-      "file": "fanshop-blue-4.png",
-      "source": "game/public/icons/stands/fanshop-blue-4.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5563,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          111,
-          17,
-          448,
-          477
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:17.289904+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopBlue5": {
-      "id": "standFanshopBlue5",
-      "file": "fanshop-blue-5.png",
-      "source": "game/public/icons/stands/fanshop-blue-5.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5695,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          105,
-          18,
-          429,
-          481
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:17.383233+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopGrey1": {
-      "id": "standFanshopGrey1",
-      "file": "fanshop-grey-1.png",
-      "source": "game/public/icons/stands/fanshop-grey-1.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7434,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          109,
-          40,
-          411,
-          450
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:17.476308+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopGrey2": {
-      "id": "standFanshopGrey2",
-      "file": "fanshop-grey-2.png",
-      "source": "game/public/icons/stands/fanshop-grey-2.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7058,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          85,
-          55,
-          421,
-          462
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:17.569559+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopGrey3": {
-      "id": "standFanshopGrey3",
-      "file": "fanshop-grey-3.png",
-      "source": "game/public/icons/stands/fanshop-grey-3.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6409,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          112,
-          41,
-          416,
-          457
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:17.661701+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopGrey4": {
-      "id": "standFanshopGrey4",
-      "file": "fanshop-grey-4.png",
-      "source": "game/public/icons/stands/fanshop-grey-4.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5605,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          111,
-          18,
-          446,
-          475
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:17.755914+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopGrey5": {
-      "id": "standFanshopGrey5",
-      "file": "fanshop-grey-5.png",
-      "source": "game/public/icons/stands/fanshop-grey-5.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5724,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          106,
-          19,
-          429,
-          480
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:17.849243+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopRed1": {
-      "id": "standFanshopRed1",
-      "file": "fanshop-red-1.png",
-      "source": "game/public/icons/stands/fanshop-red-1.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.745,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          109,
-          40,
-          412,
-          451
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:17.942516+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopRed2": {
-      "id": "standFanshopRed2",
-      "file": "fanshop-red-2.png",
-      "source": "game/public/icons/stands/fanshop-red-2.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7037,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          85,
-          54,
-          422,
-          463
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.037491+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopRed3": {
-      "id": "standFanshopRed3",
-      "file": "fanshop-red-3.png",
-      "source": "game/public/icons/stands/fanshop-red-3.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6364,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          111,
-          40,
-          416,
-          459
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.131696+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopRed4": {
-      "id": "standFanshopRed4",
-      "file": "fanshop-red-4.png",
-      "source": "game/public/icons/stands/fanshop-red-4.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5557,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          111,
-          17,
-          447,
-          477
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.225989+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standFanshopRed5": {
-      "id": "standFanshopRed5",
-      "file": "fanshop-red-5.png",
-      "source": "game/public/icons/stands/fanshop-red-5.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5688,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          105,
-          18,
-          429,
-          481
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.319111+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerBlue1": {
-      "id": "standOrdnerBlue1",
-      "file": "stand-ordner-blue-1.png",
-      "source": "game/public/icons/stands/ordner-blue-1.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8378,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          127,
-          46,
-          383,
-          480
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.409285+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerBlue2": {
-      "id": "standOrdnerBlue2",
-      "file": "stand-ordner-blue-2.png",
-      "source": "game/public/icons/stands/ordner-blue-2.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.747,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          102,
-          41,
-          408,
-          485
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.512431+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerBlue3": {
-      "id": "standOrdnerBlue3",
-      "file": "stand-ordner-blue-3.png",
-      "source": "game/public/icons/stands/ordner-blue-3.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5874,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          88,
-          54,
-          423,
-          473
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.606439+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerBlue4": {
-      "id": "standOrdnerBlue4",
-      "file": "stand-ordner-blue-4.png",
-      "source": "game/public/icons/stands/ordner-blue-4.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6037,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          91,
-          54,
-          419,
-          473
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.698247+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerBlue5": {
-      "id": "standOrdnerBlue5",
-      "file": "stand-ordner-blue-5.png",
-      "source": "game/public/icons/stands/ordner-blue-5.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6518,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          103,
-          54,
-          407,
-          473
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.788953+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerGrey1": {
-      "id": "standOrdnerGrey1",
-      "file": "stand-ordner-grey-1.png",
-      "source": "game/public/icons/stands/ordner-grey-1.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8444,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          127,
-          46,
-          383,
-          480
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.879817+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerGrey2": {
-      "id": "standOrdnerGrey2",
-      "file": "stand-ordner-grey-2.png",
-      "source": "game/public/icons/stands/ordner-grey-2.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.746,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          102,
-          41,
-          409,
-          485
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:18.970262+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerGrey3": {
-      "id": "standOrdnerGrey3",
-      "file": "stand-ordner-grey-3.png",
-      "source": "game/public/icons/stands/ordner-grey-3.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5875,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          88,
-          54,
-          423,
-          473
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:19.060955+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerGrey4": {
-      "id": "standOrdnerGrey4",
-      "file": "stand-ordner-grey-4.png",
-      "source": "game/public/icons/stands/ordner-grey-4.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6048,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          91,
-          54,
-          419,
-          473
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:19.155766+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerGrey5": {
-      "id": "standOrdnerGrey5",
-      "file": "stand-ordner-grey-5.png",
-      "source": "game/public/icons/stands/ordner-grey-5.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6518,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          103,
-          54,
-          407,
-          473
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:19.247370+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerRed1": {
-      "id": "standOrdnerRed1",
-      "file": "stand-ordner-red-1.png",
-      "source": "game/public/icons/stands/ordner-red-1.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.843,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          127,
-          46,
-          383,
-          480
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:19.337309+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerRed2": {
-      "id": "standOrdnerRed2",
-      "file": "stand-ordner-red-2.png",
-      "source": "game/public/icons/stands/ordner-red-2.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7476,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          102,
-          41,
-          408,
-          485
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:19.428742+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerRed3": {
-      "id": "standOrdnerRed3",
-      "file": "stand-ordner-red-3.png",
-      "source": "game/public/icons/stands/ordner-red-3.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5924,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          89,
-          54,
-          422,
-          473
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:19.521067+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerRed4": {
-      "id": "standOrdnerRed4",
-      "file": "stand-ordner-red-4.png",
-      "source": "game/public/icons/stands/ordner-red-4.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6057,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          92,
-          54,
-          419,
-          473
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:19.613098+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "standOrdnerRed5": {
-      "id": "standOrdnerRed5",
-      "file": "stand-ordner-red-5.png",
-      "source": "game/public/icons/stands/ordner-red-5.png",
-      "status": "pendingApproval",
-      "role": "stand",
-      "category": "buildings",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 512,
-          "h": 512
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.651,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          103,
-          54,
-          407,
-          473
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:19.704923+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "runtimeBinding": {
@@ -5213,15 +5303,15 @@
     ]
   },
   "inventory": {
-    "pendingCount": 102,
-    "releasedCount": 40,
+    "pendingCount": 57,
+    "releasedCount": 85,
     "byCategory": {
       "ui": 34,
       "persons": 60,
       "tribunes": 3,
       "buildings": 45
     },
-    "gatheredAt": "2026-10-08T22:50:20.548601+00:00",
+    "gatheredAt": "2026-10-08T22:55:24.570856+00:00",
     "canon": {
       "persons": "units/{fan|ordner|hooligan|ultra}-{grey|blue|red}-{1..5}.png (60)",
       "buildings": "stands/{bier|fanshop|ordner}-{grey|blue|red}-{1..5}.png (45) as stand*",
