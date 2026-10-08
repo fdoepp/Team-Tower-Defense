@@ -940,7 +940,8 @@ canBuy(kind: FanKind): boolean {
       this.jubelMulHeim.normalos = 1.7;
       this.jubelMulHeim.hooligans = 1.15;
       const before = this.momentum;
-      this.momentum = clamp(this.momentum + 0.095 * n, -1, 1);
+      // Softened vs 0.095 — burst was stacking too hard with people-pressure.
+      this.momentum = clamp(this.momentum + 0.06 * n, -1, 1);
       this.moodKick = Math.min(1, 0.7 + Math.abs(this.momentum - before));
       this.floatMood(door.x, door.y - 0.04, "+Momentum");
       this.triggerCheer("gesang", this.playerTeam, HEIM_BLOCK);
@@ -954,7 +955,7 @@ canBuy(kind: FanKind): boolean {
       this.moodGaeste = clamp(this.moodGaeste - 0.1 * n, 0, 3);
       this.jubelMulHeim.ultras = 1.45;
       const before = this.momentum;
-      this.momentum = clamp(this.momentum + 0.07 * n, -1, 1);
+      this.momentum = clamp(this.momentum + 0.048 * n, -1, 1);
       this.moodKick = Math.min(1, 0.8 + Math.abs(this.momentum - before));
       this.floatMood(door.x, door.y - 0.04, "+Momentum");
       this.triggerCheer("pyro", this.playerTeam, HEIM_BLOCK);
@@ -1688,7 +1689,7 @@ canBuy(kind: FanKind): boolean {
     const nrm = this.countInBlock(this.playerTeam, HEIM_BLOCK, "normalos");
     this.gold += (1.0 + nrm * 0.2) * dt;
     const aiN = this.countInBlock(this.aiTeam, GAST_BLOCK, "normalos");
-    this.aiGold += (1.1 + aiN * 0.22) * dt;
+    this.aiGold += (1.05 + aiN * 0.2) * dt;
 
     // Steward upkeep €/s per person
     const stewards = this.fans.filter(
@@ -3593,6 +3594,7 @@ canBuy(kind: FanKind): boolean {
       return;
     }
     const claim = !!(s.building && (s.owner === "neutral" || s.greyNeutral));
+    // Match player claim discount (0.7) — was 0.65 AI-favored.
     const cost = claim
       ? Math.floor(BUILD_COST[kind] * 0.7)
       : BUILD_COST[kind];
