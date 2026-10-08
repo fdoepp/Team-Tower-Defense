@@ -1,6 +1,12 @@
 import type { BuildingKind, FanKind, TeamId } from "./types";
+import { uiFinalIconPath } from "./uiFinal";
 
 export type TeamColor = "blue" | "red" | "grey";
+
+/** Prefer Final-UI DB when released; else legacy icons/ui/. */
+function uiPath(id: string, legacy: string): string {
+  return uiFinalIconPath(id) ?? legacy;
+}
 
 const cache = new Map<string, HTMLImageElement>();
 let preloadPromise: Promise<void> | null = null;
@@ -59,38 +65,38 @@ export type SlotControl = "blue" | "red" | "grey";
  * Scoreboard: `scoreboard-top.png` (HUD_TOP_CANON) — nicht scoreboard-momentum.
  */
 export const UI_ICONS = {
-  slotEmpty: "icons/ui/slot-empty.png",
-  slotEmptyParallel: "icons/ui/slot-empty-parallel.png",
-  slotEmptyIso: "icons/ui/slot-empty-iso.png",
-  slotEmptyParallelBlue: "icons/ui/slot-empty-parallel-blue.png",
-  slotEmptyParallelRed: "icons/ui/slot-empty-parallel-red.png",
-  slotEmptyIsoBlue: "icons/ui/slot-empty-iso-blue.png",
-  slotEmptyIsoRed: "icons/ui/slot-empty-iso-red.png",
+  slotEmpty: uiPath("slotEmpty", "icons/ui/slot-empty.png"),
+  slotEmptyParallel: uiPath("slotEmptyParallel", "icons/ui/slot-empty-parallel.png"),
+  slotEmptyIso: uiPath("slotEmptyIso", "icons/ui/slot-empty-iso.png"),
+  slotEmptyParallelBlue: uiPath("slotEmptyParallelBlue", "icons/ui/slot-empty-parallel-blue.png"),
+  slotEmptyParallelRed: uiPath("slotEmptyParallelRed", "icons/ui/slot-empty-parallel-red.png"),
+  slotEmptyIsoBlue: uiPath("slotEmptyIsoBlue", "icons/ui/slot-empty-iso-blue.png"),
+  slotEmptyIsoRed: uiPath("slotEmptyIsoRed", "icons/ui/slot-empty-iso-red.png"),
   /** Axis-aligned, flagless source — ground tinted by team; warped into floor-grid quads. */
-  slotEmptyOrtho: "icons/ui/slot-empty-ortho.png",
-  slotEmptyOrthoBlue: "icons/ui/slot-empty-ortho-blue.png",
-  slotEmptyOrthoRed: "icons/ui/slot-empty-ortho-red.png",
-  currencyGold: "icons/ui/currency-gold.png",
-  currencyBier: "icons/ui/currency-bier.png",
-  currencyFanartikel: "icons/ui/currency-fanartikel.png",
-  currencySicherheit: "icons/ui/currency-sicherheit.png",
-  btnKaufenGrey: "icons/ui/btn-kaufen-grey.png",
-  btnKaufenGreen: "icons/ui/btn-kaufen-green.png",
-  btnSendenGrey: "icons/ui/btn-senden-grey.png",
-  btnSendenGreen: "icons/ui/btn-senden-green.png",
-  btnSendenBlue: "icons/ui/btn-senden-blue.png",
-  btnBauenAmber: "icons/ui/btn-bauen-amber.png",
-  btnBauenGrey: "icons/ui/btn-bauen-grey.png",
-  btnUpgradePurple: "icons/ui/btn-upgrade-purple.png",
-  btnUpgradeGrey: "icons/ui/btn-upgrade-grey.png",
-  pennantKsc: "icons/ui/pennant-ksc.png",
-  pennantVfb: "icons/ui/pennant-vfb.png",
-  menuRail: "icons/ui/menu-rail-brown.png",
-  menuRailTile: "icons/ui/menu-rail-brown-tile.png",
+  slotEmptyOrtho: uiPath("slotEmptyOrtho", "icons/ui/slot-empty-ortho.png"),
+  slotEmptyOrthoBlue: uiPath("slotEmptyOrthoBlue", "icons/ui/slot-empty-ortho-blue.png"),
+  slotEmptyOrthoRed: uiPath("slotEmptyOrthoRed", "icons/ui/slot-empty-ortho-red.png"),
+  currencyGold: uiPath("currencyGold", "icons/ui/currency-gold.png"),
+  currencyBier: uiPath("currencyBier", "icons/ui/currency-bier.png"),
+  currencyFanartikel: uiPath("currencyFanartikel", "icons/ui/currency-fanartikel.png"),
+  currencySicherheit: uiPath("currencySicherheit", "icons/ui/currency-sicherheit.png"),
+  btnKaufenGrey: uiPath("btnKaufenGrey", "icons/ui/btn-kaufen-grey.png"),
+  btnKaufenGreen: uiPath("btnKaufenGreen", "icons/ui/btn-kaufen-green.png"),
+  btnSendenGrey: uiPath("btnSendenGrey", "icons/ui/btn-senden-grey.png"),
+  btnSendenGreen: uiPath("btnSendenGreen", "icons/ui/btn-senden-green.png"),
+  btnSendenBlue: uiPath("btnSendenBlue", "icons/ui/btn-senden-blue.png"),
+  btnBauenAmber: uiPath("btnBauenAmber", "icons/ui/btn-bauen-amber.png"),
+  btnBauenGrey: uiPath("btnBauenGrey", "icons/ui/btn-bauen-grey.png"),
+  btnUpgradePurple: uiPath("btnUpgradePurple", "icons/ui/btn-upgrade-purple.png"),
+  btnUpgradeGrey: uiPath("btnUpgradeGrey", "icons/ui/btn-upgrade-grey.png"),
+  pennantKsc: uiPath("pennantKsc", "icons/ui/pennant-ksc.png"),
+  pennantVfb: uiPath("pennantVfb", "icons/ui/pennant-vfb.png"),
+  menuRail: uiPath("menuRail", "icons/ui/menu-rail-brown.png"),
+  menuRailTile: uiPath("menuRailTile", "icons/ui/menu-rail-brown-tile.png"),
   /** HUD_TOP_CANON — Broadcast Bubble (freigestellt) */
-  scoreboard: "icons/ui/scoreboard-top.png",
-  scoreboardOrbHeim: "icons/ui/scoreboard-top-orb-heim.png",
-  scoreboardOrbGast: "icons/ui/scoreboard-top-orb-gast.png",
+  scoreboard: uiPath("scoreboard", "icons/ui/scoreboard-top.png"),
+  scoreboardOrbHeim: uiPath("scoreboardOrbHeim", "icons/ui/scoreboard-top-orb-heim.png"),
+  scoreboardOrbGast: uiPath("scoreboardOrbGast", "icons/ui/scoreboard-top-orb-gast.png"),
 } as const;
 
 /** Native pixel size of scoreboard-top.png — never squash/stretch away from this AR. */
