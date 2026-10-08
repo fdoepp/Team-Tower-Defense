@@ -30,7 +30,7 @@ import {
 import {
   SCENE_ASSETS,
   UI_ICONS,
-  currencyIconPath,
+  fxCurrencyIconPath,
   drawIcon,
   drawIconQuad,
   drawImageCover,
@@ -44,7 +44,14 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
-import { floorGangBand, scaleQuad } from "./floorGrid";
+import {
+  floorGangBand,
+  pointInQuad,
+  quadCenter,
+  scaleQuad,
+  xAtDepth,
+  type QuadNorm,
+} from "./floorGrid";
 
 export { SEATS_PER_BLOCK } from "./layout";
 export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
@@ -165,7 +172,6 @@ function drawBlocks(
   h: number,
 ): void {
   syncTribuneLayout(w, h);
-  const labels = ["Heim", "Neutral", "Gäste"];
 
   for (const b of BLOCK_META) {
     const tr = tribuneRect(b.id);
@@ -217,28 +223,6 @@ function drawBlocks(
       ctx.fill();
     }
 
-    // label chip
-    const label = labels[b.id] ?? "Block";
-    const chipW = Math.max(54, bw * 0.48);
-    const chipH = Math.max(18, h * 0.024);
-    const chipY = top + 4;
-    ctx.fillStyle = "rgba(255,255,255,0.94)";
-    roundRect(ctx, cx - chipW / 2, chipY, chipW, chipH, 9);
-    ctx.fill();
-    if (owner === "ksc" || owner === "vfb") {
-      drawClubCrest(ctx, cx - chipW * 0.28, chipY + chipH / 2, chipH * 0.38, owner);
-    }
-    ctx.fillStyle = "#0f172a";
-    ctx.font = `800 ${Math.floor(chipH * 0.55)}px Outfit, Manrope, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(
-      label,
-      cx + (owner === "ksc" || owner === "vfb" ? 6 : 0),
-      chipY + chipH / 2 + 0.5,
-    );
-    ctx.textBaseline = "alphabetic";
-
     // Exit path toward gang (tribune arches already in PNG)
     const d = doorPos(b.id);
     const doorW = bw * L.doorFrac * 0.85;
@@ -283,34 +267,57 @@ function drawGang(
   w: number,
   h: number,
 ): void {
-  const y = h * gangY();
-  const gh = h * gangHeight();
-  const left = w * blocksLeftNorm();
-  const span = w * (blocksRightNorm() - blocksLeftNorm());
-  const px = left + span * m.linePlayer;
-  const ax = left + span * m.lineAi;
+  const band = floorGangBand();
+  const y0 = band.y0 * h;
+  const y1 = band.y1 * h;
+  const leftN = blocksLeftNorm();
+  const rightN = blocksRightNorm();
+  const spanN = rightN - leftN;
 
-  // Soft open concourse — light territory wash only
-  const pEdge = Math.min(px, ax);
-  const aEdge = Math.max(px, ax);
+  // Map linePlayer/lineAi (0..1 across blocks) → near-plane X, then ray through VP.
+  const nearX = (t: number) => leftN + spanN * t;
+  const rayX = (t: number, yNorm: number) => xAtDepth(nearX(t), yNorm) * w;
+
+  const pTop = rayX(m.linePlayer, band.y0);
+  const pBot = rayX(m.linePlayer, band.y1);
+  const aTop = rayX(m.lineAi, band.y0);
+  const aBot = rayX(m.lineAi, band.y1);
+  const lTop = rayX(0, band.y0);
+  const lBot = rayX(0, band.y1);
+  const rTop = rayX(1, band.y0);
+  const rBot = rayX(1, band.y1);
+
+  // Soft territory wash as perspective quads
   ctx.fillStyle = "rgba(59,130,246,0.18)";
-  ctx.fillRect(left, y, Math.max(0, pEdge - left), gh);
+  ctx.beginPath();
+  ctx.moveTo(lTop, y0);
+  ctx.lineTo(pTop, y0);
+  ctx.lineTo(pBot, y1);
+  ctx.lineTo(lBot, y1);
+  ctx.closePath();
+  ctx.fill();
   ctx.fillStyle = "rgba(239,68,68,0.18)";
-  ctx.fillRect(aEdge, y, left + span - aEdge, gh);
+  ctx.beginPath();
+  ctx.moveTo(aTop, y0);
+  ctx.lineTo(rTop, y0);
+  ctx.lineTo(rBot, y1);
+  ctx.lineTo(aBot, y1);
+  ctx.closePath();
+  ctx.fill();
 
-  // Front lines (thicker so territory edge is obvious)
+  // Front lines tilted along perspective rays
   ctx.save();
   ctx.setLineDash([7, 5]);
   ctx.lineWidth = 3.5;
   ctx.strokeStyle = "rgba(59,130,246,0.95)";
   ctx.beginPath();
-  ctx.moveTo(px, y + 4);
-  ctx.lineTo(px, y + gh - 4);
+  ctx.moveTo(pTop, y0 + 2);
+  ctx.lineTo(pBot, y1 - 2);
   ctx.stroke();
   ctx.strokeStyle = "rgba(239,68,68,0.95)";
   ctx.beginPath();
-  ctx.moveTo(ax, y + 4);
-  ctx.lineTo(ax, y + gh - 4);
+  ctx.moveTo(aTop, y0 + 2);
+  ctx.lineTo(aBot, y1 - 2);
   ctx.stroke();
   ctx.restore();
 }
@@ -544,26 +551,13 @@ function drawBuilding(
     return;
   }
 
-  // Built plot: Leerfläche is gone. Anchor the stand on the floor-grid cell center.
+  // Built plot: warp stand into the floor-grid cell (depth perspective).
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
   let size = Math.min(bw, bh) * 0.98;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    const mid = {
-      x: (pq.tl.x + pq.tr.x + pq.br.x + pq.bl.x) / 4,
-      y: (pq.tl.y + pq.tr.y + pq.br.y + pq.bl.y) / 4,
-    };
-    const near = {
-      x: (pq.bl.x + pq.br.x) / 2,
-      y: (pq.bl.y + pq.br.y) / 2,
-    };
-    // Slightly bias foot toward the near edge so the stand sits in the cell.
-    cx = mid.x * 0.55 + near.x * 0.45;
-    footY = mid.y * 0.4 + near.y * 0.6;
-    const cellW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
-    size = Math.max(28, cellW * 0.95);
   }
 
   const color = teamColor(
@@ -572,21 +566,37 @@ function drawBuilding(
   const lv = Math.max(1, Math.min(5, s.level || 1));
   const iconSrc = standIconPath(s.building, color, lv);
 
-  // Soft ground contact on the plot (no empty Bauplatz under a built stand).
-  ctx.fillStyle = "rgba(15,23,42,0.35)";
-  ctx.beginPath();
-  ctx.ellipse(cx, footY + size * 0.06, size * 0.32, size * 0.08, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Buildings stay planted — no idle bob / sway (not movable props).
-  const drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
-    t: m.realElapsed,
-    phase: s.blockId * 1.7 + s.index * 0.9,
-    mode: "idle",
-    facing: 1,
-    hop: 0,
-    still: true,
-  });
+  let drew = false;
+  if (pq) {
+    // Soft contact under the near edge of the cell.
+    const near = {
+      x: (pq.bl.x + pq.br.x) / 2,
+      y: (pq.bl.y + pq.br.y) / 2,
+    };
+    cx = near.x;
+    footY = near.y;
+    const cellW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
+    size = Math.max(28, cellW * 0.92);
+    ctx.fillStyle = "rgba(15,23,42,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(cx, footY + 2, cellW * 0.28, cellW * 0.07, 0, 0, Math.PI * 2);
+    ctx.fill();
+    drew = drawIconQuad(ctx, iconSrc, pq.tl, pq.tr, pq.br, pq.bl);
+  }
+  if (!drew) {
+    ctx.fillStyle = "rgba(15,23,42,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(cx, footY + size * 0.06, size * 0.32, size * 0.08, 0, 0, Math.PI * 2);
+    ctx.fill();
+    drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
+      t: m.realElapsed,
+      phase: s.blockId * 1.7 + s.index * 0.9,
+      mode: "idle",
+      facing: 1,
+      hop: 0,
+      still: true,
+    });
+  }
   if (!drew) {
     ctx.fillStyle = grey ? "#e2e8f0" : player ? "#eff6ff" : ai ? "#fef2f2" : "#f8fafc";
     roundRect(ctx, x, y, bw, bh, r);
@@ -692,7 +702,7 @@ function drawBuilding(
 }
 
 /** Vereinswappen on captured stands / stormed blocks */
-function drawClubCrest(
+export function drawClubCrest(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -899,16 +909,16 @@ function drawMannchen(
   }
   const onGang = f.state === "gang" || f.invading;
   const moving = f.state === "moving" || onGang;
+  // Ultras −10%, Rest +30% vs prior base multipliers.
   const sizeMul =
-    f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
-  // Bigger in the fight corridor (and near it) so gang reads vs booth props.
+    f.kind === "ultras" ? 1.1 : f.kind === "hooligans" ? 1.456 : 1.3;
   const gy = y / Math.max(1, h);
   const gang = floorGangBand();
   const nearGang =
     gy >= gang.y0 - 0.04 && gy <= gang.y1 + 0.05;
   const size = Math.max(
-    40,
-    h * (onGang || moving || nearGang ? 0.195 : 0.09) * sizeMul,
+    42,
+    h * (onGang || moving || nearGang ? 0.2 : 0.1) * sizeMul,
   );
   const color = teamColor(f.team);
   const lv = unitVisualLevel(m, f.team, f.kind);
@@ -916,15 +926,17 @@ function drawMannchen(
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing = fanFacing(f);
   const anim = personAnimMode(m, f);
+  const seated = f.state === "block" || f.state === "stand";
 
   const drew = drawToyIcon(ctx, src, x, y, size, {
     t: m.realElapsed,
     phase,
-    mode: anim.mode,
+    mode: seated && anim.mode === "idle" ? "idle" : anim.mode,
     facing,
-    hop: anim.hop,
+    hop: seated ? 0 : anim.hop,
     strike: anim.strike,
     actionProg: anim.actionProg,
+    still: seated && anim.mode === "idle",
   });
   if (drew && anim.prop) {
     drawToyProp(
@@ -1245,7 +1257,8 @@ function drawSteward(
   const neutral = f.team === "neutral";
   const hpCol = neutral ? "#a8a29e" : "#facc15";
   const onGang = f.state === "gang" || f.state === "moving" || f.invading;
-  const size = Math.max(36, h * (onGang ? 0.16 : 0.08));
+  // Ordner +30% vs prior base (Rest der Personen)
+  const size = Math.max(40, h * (onGang ? 0.208 : 0.104));
   const src = unitIconPath(
     "ordner",
     teamColor(f.team),
@@ -1377,21 +1390,31 @@ function drawFloats(
     ctx.globalAlpha = alpha;
     const x = f.x * w;
     const y = f.y * h;
-    ctx.font = `800 ${Math.floor(h * 0.028)}px Outfit, Manrope, sans-serif`;
+    ctx.font = `800 ${Math.floor(h * (f.damage ? 0.034 : 0.028))}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = f.damage ? 4 : 3;
     ctx.strokeStyle = "rgba(0,0,0,0.55)";
-    ctx.fillStyle = f.good ? "#86efac" : "#fca5a5";
+    ctx.fillStyle = f.damage
+      ? "#ef4444"
+      : f.good
+        ? "#86efac"
+        : "#fca5a5";
 
-    if (f.currency) {
-      const sz = Math.min(w, h) * 0.055;
+    const fxSrc = f.mood
+      ? UI_ICONS.fxGainMomentum
+      : f.currency
+        ? fxCurrencyIconPath(f.currency, !!f.spend)
+        : null;
+
+    if (fxSrc) {
+      const sz = Math.min(w, h) * 0.07;
       const ix = x - sz * 0.85;
       const iy = y - sz * 0.5;
-      drawIcon(ctx, currencyIconPath(f.currency), ix, iy, sz, sz, 0.04);
+      drawIcon(ctx, fxSrc, ix, iy, sz, sz, 0.04);
       ctx.textAlign = "left";
-      ctx.strokeText(f.text, x + sz * 0.2, y);
-      ctx.fillText(f.text, x + sz * 0.2, y);
+      ctx.strokeText(f.text, x + sz * 0.22, y);
+      ctx.fillText(f.text, x + sz * 0.22, y);
     } else {
       ctx.textAlign = "center";
       ctx.strokeText(f.text, x, y);
@@ -1400,6 +1423,21 @@ function drawFloats(
   }
   ctx.globalAlpha = 1;
   ctx.textBaseline = "alphabetic";
+}
+
+/** Slightly expand a floor-cell quad for friendlier tap targets. */
+function inflateQuad(q: QuadNorm, pad: number): QuadNorm {
+  const c = quadCenter(q);
+  const grow = (p: { x: number; y: number }) => ({
+    x: c.x + (p.x - c.x) * (1 + pad),
+    y: c.y + (p.y - c.y) * (1 + pad),
+  });
+  return {
+    tl: grow(q.tl),
+    tr: grow(q.tr),
+    br: grow(q.br),
+    bl: grow(q.bl),
+  };
 }
 
 function drawConfetti(
@@ -1481,15 +1519,28 @@ export function hitSlot(
   mx: number,
   my: number,
 ): { blockId: number; index: number } | null {
+  const nx = mx / Math.max(1, m.width);
+  const ny = my / Math.max(1, m.height);
   let best: { blockId: number; index: number; d: number } | null = null;
   for (const s of m.slots) {
     // AI home plots are not clickable for the player
     if (s.blockId === GAST_BLOCK && s.owner === m.aiTeam && s.building) continue;
+    if (FLOOR_GRID_COUPLE) {
+      // Inflate so perspective traps still catch near-edge taps
+      const q = inflateQuad(boothQuad(s.blockId, s.index), 0.22);
+      if (!pointInQuad(q, nx, ny)) continue;
+      const c = quadCenter(q);
+      const d = Math.hypot(nx - c.x, ny - c.y);
+      if (!best || d < best.d) best = { blockId: s.blockId, index: s.index, d };
+      continue;
+    }
     const r = boothRect(s.blockId, s.index);
-    const x0 = r.x * m.width;
-    const y0 = r.y * m.height;
-    const x1 = (r.x + r.w) * m.width;
-    const y1 = (r.y + r.h) * m.height;
+    const padX = r.w * 0.12;
+    const padY = r.h * 0.12;
+    const x0 = (r.x - padX) * m.width;
+    const y0 = (r.y - padY) * m.height;
+    const x1 = (r.x + r.w + padX) * m.width;
+    const y1 = (r.y + r.h + padY) * m.height;
     if (mx >= x0 && mx <= x1 && my >= y0 && my <= y1) {
       const cx = (x0 + x1) / 2;
       const cy = (y0 + y1) / 2;

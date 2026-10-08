@@ -35,8 +35,11 @@ export const FLOOR_Y_NEAR = 0.985;
  * Anchors are tuned in inv-depth so the middle band stays wider than a cell
  * (room for fights) while plots stay packed toward the bottom edge.
  */
-/** Far Bau · Gang · Near Bau — packed toward the bottom so tribune feet can sit lower. */
-export const FLOOR_ROW_YS = [0.78, 0.818, 0.922, 0.988] as const;
+/**
+ * Far Bau · Gang · Near Bau — packed toward the bottom so tribune feet sit lower.
+ * Gang band is intentionally narrow (upper half cut) so fight corridor is the lower strip.
+ */
+export const FLOOR_ROW_YS = [0.78, 0.86, 0.925, 0.988] as const;
 
 /** Bau-row r ∈ {0,1} → starting index into FLOOR_ROW_YS (skips the Gang). */
 const BAU_ROW_LINE = [0, 2] as const;
@@ -71,19 +74,41 @@ export function floorRowYs(): readonly number[] {
   return [yFromInv(idFarTop), yFromInv(idFarBot), yFromInv(idNearTop), yFromInv(idNear)];
 }
 
-/** Fight corridor between the two Bau rows (normalized y). */
+/**
+ * Fight corridor between the two Bau rows (normalized y).
+ * Uses only the lower half of the raw gang band (“obere Hälfte wegschneiden”).
+ */
 export function floorGangBand(): { y0: number; y1: number; mid: number; h: number } {
   const rows = floorRowYs();
-  const y0 = rows[1]!;
+  const raw0 = rows[1]!;
   const y1 = rows[2]!;
+  const y0 = (raw0 + y1) / 2;
   return { y0, y1, mid: (y0 + y1) / 2, h: y1 - y0 };
 }
 
-function xAtDepth(xNear: number, y: number): number {
+/** Map a near-plane X (at FLOOR_Y_NEAR) to X at depth y — perspective ray. */
+export function xAtDepth(xNear: number, y: number): number {
   return (
     FLOOR_VP.x +
     ((y - FLOOR_VP.y) * (xNear - FLOOR_VP.x)) / (FLOOR_Y_NEAR - FLOOR_VP.y)
   );
+}
+
+/** Point-in-trapezoid (TL→TR→BR→BL), normalized coords. */
+export function pointInQuad(q: QuadNorm, x: number, y: number): boolean {
+  const pts = [q.tl, q.tr, q.br, q.bl];
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const xi = pts[i]!.x;
+    const yi = pts[i]!.y;
+    const xj = pts[j]!.x;
+    const yj = pts[j]!.y;
+    const intersect =
+      yi > y !== yj > y &&
+      x < ((xj - xi) * (y - yi)) / (yj - yi + 1e-12) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
 }
 
 /** Cell (c,r) with c∈0..5, r∈0..1 → perspective quad (skips Gang line). */

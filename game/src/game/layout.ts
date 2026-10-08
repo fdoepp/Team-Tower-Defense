@@ -267,10 +267,11 @@ export function seatPos(blockId: number, seatIndex: number): { x: number; y: num
   const r = tribuneRect(blockId);
   const cx = r.x + r.w / 2;
   const bw = r.w;
-  const top = r.y + r.h * 0.2;
-  const usableH = r.h * 0.68;
-  const left = cx - bw * 0.36;
-  const stepX = (bw * 0.72) / (SEAT_COLS - 1 || 1);
+  // Sit on the platform deck (lower band of tribune rect) — no floating mid-air.
+  const top = r.y + r.h * 0.48;
+  const usableH = r.h * 0.32;
+  const left = cx - bw * 0.34;
+  const stepX = (bw * 0.68) / (SEAT_COLS - 1 || 1);
   const stepY = usableH / (SEAT_ROWS - 1 || 1);
   return {
     x: left + col * stepX,

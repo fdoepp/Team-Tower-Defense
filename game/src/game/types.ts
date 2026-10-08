@@ -186,7 +186,8 @@ export const HOOLIGAN_ORDER_BEER = 6;
 export const PYRO_FIGHT_MERCH = 6;
 
 export const HIT_DAMAGE = 22;
-export const HIT_CD = 0.55;
+/** Slower melee cadence — was 0.55; fights should read clearly. */
+export const HIT_CD = 1.35;
 /** Melee must be nearly overlapping */
 export const MELEE_RANGE = 0.14;
 /** Fernkämpfer (Bengalo) ≈ 5× Nahkampf */

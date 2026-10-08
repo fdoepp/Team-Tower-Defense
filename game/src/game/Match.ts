@@ -81,6 +81,7 @@ import {
   slotIndicesForBlock,
   syncTribuneLayout,
 } from "./layout";
+// doorPos used for uncapped fan spawns when seats are full
 
 export type MatchConfig = {
   settings: SoloSettings;
@@ -122,6 +123,12 @@ export type FloatFx = {
   vy: number;
   /** freigestelltes Währungs-Icon (heutige Assets) */
   currency?: CurrencyIconKey;
+  /** true = spend FX logo, false/undefined = gain */
+  spend?: boolean;
+  /** Stimmungs-/Momentum-FX (fx-gain-momentum) */
+  mood?: boolean;
+  /** Kampf-Damage in Rot */
+  damage?: boolean;
 };
 
 export type ConfettiBit = {
@@ -259,30 +266,25 @@ export class Match {
       }
     }
 
-    // Neutralzone: grauer Bier-Claim + Ordnerposten mit 2 Ordnern
-    this.placeBuilding(NEUTRAL_BLOCK, 0, "bier", true, "neutral");
-    const s0 = this.slots.find((x) => x.blockId === NEUTRAL_BLOCK && x.index === 0);
-    if (s0) {
-      s0.greyNeutral = true;
-      s0.beer = 25;
-    }
-    this.placeBuilding(NEUTRAL_BLOCK, 1, "ordner", true, "neutral");
-    const bufferPost = this.slots.find(
-      (x) => x.blockId === NEUTRAL_BLOCK && x.index === 1,
-    );
-    if (bufferPost) {
-      bufferPost.greyNeutral = false;
-      bufferPost.owner = "neutral";
-      bufferPost.level = 1;
-      bufferPost.stewardCd = NEUTRAL_STEWARD_RESPAWN;
-      const post = this.stewardPostPos(bufferPost);
+    // Neutralzone: zwei Ordnerposten (kein grauer Bierstand) mit je 2 Ordnern
+    for (const idx of [0, 1] as const) {
+      this.placeBuilding(NEUTRAL_BLOCK, idx, "ordner", true, "neutral");
+      const postSlot = this.slots.find(
+        (x) => x.blockId === NEUTRAL_BLOCK && x.index === idx,
+      );
+      if (!postSlot) continue;
+      postSlot.greyNeutral = false;
+      postSlot.owner = "neutral";
+      postSlot.level = 1;
+      postSlot.stewardCd = NEUTRAL_STEWARD_RESPAWN;
+      const post = this.stewardPostPos(postSlot);
       for (let i = 0; i < 2; i++) {
-        const st = this.makeSteward("neutral", bufferPost);
+        const st = this.makeSteward("neutral", postSlot);
         st.state = "gang";
         st.path = [];
         st.pathI = 0;
         this.setAfter(st, "");
-        const spread = (i - 0.5) * 0.04;
+        const spread = (i - 0.5) * 0.035 + (idx - 0.5) * 0.03;
         st.x = post.x + spread;
         st.y = post.y;
         st.gangX = blockIdToGangX(NEUTRAL_BLOCK) + spread * 0.5;
@@ -613,6 +615,7 @@ export class Match {
       t: 1.45,
       vy: spend ? -0.05 : 0.06,
       currency,
+      spend,
     });
   }
 
@@ -624,6 +627,19 @@ export class Match {
   ): void {
     const p = this.standWorld(s);
     this.floatCurrency(p.x, p.y - 0.02, amount, currency, spend);
+  }
+
+  /** Stimmungs-/Momentum-Gewinn mit fx-gain-momentum Logo */
+  floatMood(x: number, y: number, text = "+Stimmung"): void {
+    this.floats.push({
+      x,
+      y,
+      text,
+      good: true,
+      t: 1.55,
+      vy: 0.065,
+      mood: true,
+    });
   }
 
   private spend(
@@ -792,7 +808,7 @@ canBuy(kind: FanKind): boolean {
     return n;
   }
 
-  /** Erster freier Platz: Heim → eroberte Neutrals */
+  /** Erster freier Platz: Heim → eroberte Neutrals; sonst Heim-Door (kein Cap). */
   buySlotForPlayer(): { blockId: number; seatIndex: number } | null {
     const order: number[] = [HEIM_BLOCK];
     for (let b = 0; b < BLOCK_COUNT; b++) {
@@ -803,6 +819,7 @@ canBuy(kind: FanKind): boolean {
       const seatIndex = this.freeSeat(blockId);
       if (seatIndex != null) return { blockId, seatIndex };
     }
+    if (this.canBuyInBlock(HEIM_BLOCK)) return { blockId: HEIM_BLOCK, seatIndex: -1 };
     return null;
   }
 
@@ -866,6 +883,7 @@ canBuy(kind: FanKind): boolean {
       const before = this.momentum;
       this.momentum = clamp(this.momentum + 0.095 * n, -1, 1);
       this.moodKick = Math.min(1, 0.7 + Math.abs(this.momentum - before));
+      this.floatMood(door.x, door.y - 0.04, "+Momentum");
       this.triggerCheer("gesang", this.playerTeam, HEIM_BLOCK);
       this.toast(`Gesang ×${n}`);
     } else {
@@ -879,6 +897,7 @@ canBuy(kind: FanKind): boolean {
       const before = this.momentum;
       this.momentum = clamp(this.momentum + 0.07 * n, -1, 1);
       this.moodKick = Math.min(1, 0.8 + Math.abs(this.momentum - before));
+      this.floatMood(door.x, door.y - 0.04, "+Momentum");
       this.triggerCheer("pyro", this.playerTeam, HEIM_BLOCK);
       this.toast(`Pyro ×${n}`);
     }
@@ -1238,25 +1257,37 @@ canBuy(kind: FanKind): boolean {
       this.toast("Block noch nicht unter Kontrolle");
       return false;
     }
-    if (this.blockFanCount(blockId) >= SEATS_PER_BLOCK) {
-      this.toast("Block voll (12)");
-      return false;
-    }
-    if (this.seatOccupied(blockId, seatIndex)) {
-      this.toast("Platz belegt");
-      return false;
+    // No hard seat cap — stack on free seat or door if full.
+    const free = this.freeSeat(blockId);
+    if (free == null && this.seatOccupied(blockId, seatIndex) && seatIndex >= 0) {
+      // fall through to door spawn via makeFan stacking at door
     }
     if (!this.canBuy(kind)) {
       this.toast("Zu wenig Ressourcen");
       return false;
     }
     const c = BUY_COST[kind];
-    const p = seatPos(blockId, seatIndex);
+    const spawnSeat = free != null ? free : -1;
+    const p =
+      spawnSeat >= 0
+        ? seatPos(blockId, spawnSeat)
+        : { x: doorPos(blockId).x, y: doorPos(blockId).y };
     if (c.beer > 0) this.spend("beer", c.beer, p, "BIER");
     if (c.merch > 0) this.spend("merch", c.merch, p, "FANARTIKEL");
     if (c.security > 0) this.spend("security", c.security, p, "SICHERHEIT");
     if (c.gold > 0) this.spendGold(c.gold, p);
-    this.fans.push(this.makeFan(kind, this.playerTeam, blockId, seatIndex));
+    const fan = this.makeFan(
+      kind,
+      this.playerTeam,
+      blockId,
+      spawnSeat >= 0 ? spawnSeat : 0,
+    );
+    if (spawnSeat < 0) {
+      fan.seatIndex = null;
+      fan.x = p.x;
+      fan.y = p.y;
+    }
+    this.fans.push(fan);
     this.seatMenu = null;
     this.floatAt(p.x, p.y + 0.02, `+${FAN_STATS[kind].label}`, true);
     this.toast(`${FAN_STATS[kind].label} gekauft`);
@@ -1573,12 +1604,8 @@ canBuy(kind: FanKind): boolean {
         } else if (s.building === "fanshop") {
           this.floatCurrencyAtSlot(s, n, "merch", false);
           if (s.owner === this.playerTeam) {
-            this.floatAt(
-              this.standWorld(s).x,
-              this.standWorld(s).y - 0.05,
-              "+Stimmung",
-              true,
-            );
+            const sw = this.standWorld(s);
+            this.floatMood(sw.x, sw.y - 0.05);
           }
         }
       }
@@ -2686,18 +2713,40 @@ canBuy(kind: FanKind): boolean {
     if (attacker.isSteward && meleeFoe) atkMul = STEWARD_STATS.vsUltraMul;
     if (target.isSteward && meleeAtk) defMul = STEWARD_STATS.vsUltraMul;
     const rangedMul = attacker.rangedPyro ? RANGED_DAMAGE_SCALE : 1;
+    let dmg: number;
     if (target.kind === "normalos" && !target.isSteward) {
-      const dmg =
-        (HIT_DAMAGE * HIT_DAMAGE_SCALE * rangedMul * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
+      dmg =
+        (HIT_DAMAGE *
+          HIT_DAMAGE_SCALE *
+          rangedMul *
+          this.attackOf(attacker) *
+          this.neighborBonus(attacker) *
+          atkMul) /
         Math.max(0.35, this.defenseOf(target) * defMul);
-      target.hp -= dmg * 0.55;
-      if (target.hp <= 0) target.hp = 0;
-      return;
+      dmg *= 0.55;
+    } else {
+      dmg =
+        (HIT_DAMAGE *
+          HIT_DAMAGE_SCALE *
+          rangedMul *
+          this.attackOf(attacker) *
+          this.neighborBonus(attacker) *
+          atkMul) /
+        Math.max(
+          0.35,
+          (this.defenseOf(target) * defMul) / this.neighborBonus(target),
+        );
     }
-    const dmg =
-      (HIT_DAMAGE * HIT_DAMAGE_SCALE * rangedMul * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
-      Math.max(0.35, (this.defenseOf(target) * defMul) / this.neighborBonus(target));
     target.hp -= dmg;
+    this.floats.push({
+      x: target.x,
+      y: target.y - 0.03,
+      text: `−${Math.max(1, Math.round(dmg))}`,
+      good: false,
+      t: 1.35,
+      vy: 0.07,
+      damage: true,
+    });
     // Hitting an attacker must not cancel their push (aggro→100 used to recall them)
     if (!target.onOffense) {
       target.aggro = clamp(target.aggro + 12, 0, 100);

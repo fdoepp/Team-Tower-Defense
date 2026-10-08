@@ -211,7 +211,6 @@ function renderMatchScreen(): void {
     <div class="match-shell matchday">
       <aside class="side-rail left-rail" aria-label="Personen">
         <header class="rail-banner">Personen</header>
-        <p class="freie-plaetze">Freie Plätze <b id="free-seats">0</b></p>
         <div class="unit-rows">
           ${(["normalos", "ultras", "hooligans", "ordner"] as UnitUiKind[])
             .map((kind) => {
@@ -278,19 +277,15 @@ function renderMatchScreen(): void {
             })
             .join("")}
         </div>
-        <div class="fanbase-col gast" aria-label="Gegner">
-          <span class="fb"><i>N</i><b id="fb-en">0</b></span>
-          <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
-          <span class="fb"><i>H</i><b id="fb-eh">0</b></span>
-          <span class="fb"><i>O</i><b id="fb-eo">0</b></span>
-        </div>
       </aside>
       <div id="game-wrap">
+        <div class="wallet-row wallet-fixed" aria-label="Ressourcen">
+          <span class="wi gold chip"><img src="${UI_ICONS.currencyGold}" alt=""><b id="gold">0</b></span>
+          <span class="wi bier chip"><img src="${UI_ICONS.currencyBier}" alt=""><b id="cur-beer">0</b></span>
+          <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
+          <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
+        </div>
         <div class="top-hud" id="pitch-hud">
-          <!--
-            Freigestelltes Top-HUD = b-final-cutout.png.
-            Zentriert, Uhrzeit-Orb möglichst nah am oberen Rand.
-          -->
           <div
             class="scoreboard-slot"
             id="scoreboard-slot"
@@ -306,23 +301,22 @@ function renderMatchScreen(): void {
               alt=""
               draggable="false"
             >
-            <div class="scoreboard-live">
-              <span class="sr-only" id="hud-minute">0′</span>
-              <b class="sr-only" id="hud-score">0 : 0</b>
-              <span class="sr-only" id="mom-p-heim">Heim 50%</span>
-              <span class="sr-only" id="mom-p-gast">Gast 50%</span>
-              <span class="sr-only" id="mom-p-tor">Torchance 28%</span>
-              <span class="sr-only" id="mom-heim"></span>
-              <span class="sr-only" id="mom-gast"></span>
-              <span class="sr-only" id="mom-knob"></span>
-              <span class="sr-only" id="momentum-bar"></span>
+            <div class="scoreboard-live" aria-live="polite">
+              <span class="sb-minute" id="hud-minute">0′</span>
+              <b class="sb-score" id="hud-score">0 : 0</b>
+              <div class="sb-mom" id="momentum-bar">
+                <div class="sb-mom-heim" id="mom-heim" style="width:50%">
+                  <span id="mom-p-heim">Heim 50%</span>
+                </div>
+                <div class="sb-mom-gast" id="mom-gast" style="width:50%">
+                  <span id="mom-p-gast">Gast 50%</span>
+                </div>
+                <div class="sb-mom-knob" id="mom-knob">
+                  <span class="sb-tor-label">Torchance</span>
+                  <span class="sb-tor-pct" id="mom-p-tor">28%</span>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="wallet-row" aria-label="Ressourcen">
-            <span class="wi gold chip"><img src="${UI_ICONS.currencyGold}" alt=""><b id="gold">0</b></span>
-            <span class="wi bier chip"><img src="${UI_ICONS.currencyBier}" alt=""><b id="cur-beer">0</b></span>
-            <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
-            <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
@@ -658,9 +652,8 @@ function renderMatchScreen(): void {
     if (slot && (!slot.building || slot.greyNeutral || slot.owner === "neutral")) {
       if (!m.inPlayerTerritory(blockId, index)) {
         m.toast("Frontlinie noch nicht hier — keine Fahne");
-        closeBuildRail();
-        return;
       }
+      // Always open place rail on a tapped empty plot (build still gated in tryBuild)
       openBuildRail("place", { blockId, index });
       return;
     }
@@ -682,6 +675,14 @@ function renderMatchScreen(): void {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
+    // Bauplots first — seats used to steal taps near the floor edge
+    const hit = hitSlot(m, mx, my);
+    if (hit) {
+      showBuildMenu(hit.blockId, hit.index);
+      syncOverlay();
+      return;
+    }
+
     const seat = hitSeat(m, mx, my);
     if (seat && !m.seatOccupied(seat.blockId, seat.seatIndex)) {
       if (!m.canBuyInBlock(seat.blockId)) {
@@ -691,13 +692,6 @@ function renderMatchScreen(): void {
       m.selectedSeat = seat;
       showSeatMenu(seat.blockId, seat.seatIndex);
       m.toast(`Platz ${seat.seatIndex + 1}`);
-      return;
-    }
-
-    const hit = hitSlot(m, mx, my);
-    if (hit) {
-      showBuildMenu(hit.blockId, hit.index);
-      syncOverlay();
       return;
     }
     hideMenus();
@@ -812,8 +806,6 @@ function renderMatchScreen(): void {
       hireBtn.classList.toggle("ready", canHire);
       hireBtn.classList.toggle("cd", !canHire);
     }
-    const freeEl = app.querySelector("#free-seats");
-    if (freeEl) freeEl.textContent = String(m.countFreeBuySeats());
     if (!seatMenu.classList.contains("hidden")) syncBuyButtons();
     syncPendingBuildUi();
     syncUnitActionCards();
@@ -927,7 +919,6 @@ function renderMatchScreen(): void {
       if (merch) merch.textContent = String(m.currencyPct("merch"));
       if (sec) sec.textContent = String(m.currencyPct("security"));
       const own = m.countTeamFans(m.playerTeam);
-      const foe = m.countTeamFans(m.aiTeam);
       const setFb = (id: string, n: number) => {
         const el = app.querySelector(id);
         if (el) el.textContent = String(n);
@@ -936,10 +927,6 @@ function renderMatchScreen(): void {
       setFb("#fb-n", own.normalos);
       setFb("#fb-h", own.hooligans);
       setFb("#fb-o", own.ordner);
-      setFb("#fb-eu", foe.ultras);
-      setFb("#fb-en", foe.normalos);
-      setFb("#fb-eh", foe.hooligans);
-      setFb("#fb-eo", foe.ordner);
       syncUnitActionCards();
       const hudScore = app.querySelector("#hud-score");
       const hudMin = app.querySelector("#hud-minute");
@@ -953,9 +940,12 @@ function renderMatchScreen(): void {
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
       if (lpH) lpH.textContent = `Heim ${pH}%`;
-      if (lpT) lpT.textContent = `Torchance ${Math.round(ch.pTor * 100)}%`;
+      if (lpT) lpT.textContent = `${Math.round(ch.pTor * 100)}%`;
       if (lpG) lpG.textContent = `Gast ${pG}%`;
-      // Orb-Position: freigestellte Cutout-Varianten (Heim / Mitte / Gast) — Kunst bleibt Original
+      const momHeim = app.querySelector<HTMLElement>("#mom-heim");
+      const momGast = app.querySelector<HTMLElement>("#mom-gast");
+      if (momHeim) momHeim.style.width = `${pH}%`;
+      if (momGast) momGast.style.width = `${pG}%`;
       const art = app.querySelector<HTMLImageElement>("#scoreboard-art");
       if (art) {
         const nextSrc =
