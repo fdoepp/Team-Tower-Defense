@@ -165,15 +165,18 @@ export const CEMENT_DOT_PER_SEC = 10;
  */
 export const CEMENT_BREAKTHROUGH = 0;
 /**
- * Standarte / Fortschrittsbalken: how fast the banner crawls forward
- * toward living attacker depth (gangX per second).
+ * Standarte / Fortschrittsbalken: base crawl toward living attacker depth
+ * (gangX per second). Extra catch-up scales with lag so the banner does
+ * not sit still while Ultras walk ahead.
  */
-export const BANNER_ADVANCE_SPEED = 0.048;
+export const BANNER_ADVANCE_SPEED = 0.055;
+/** Extra advance per second per gangX of lag behind the attack front */
+export const BANNER_CATCHUP = 0.22;
 /**
  * Standarte retreat toward the cemented floor — slower than advance so
  * the frontier stays forward and only slowly gives ground.
  */
-export const BANNER_RETREAT_SPEED = 0.014;
+export const BANNER_RETREAT_SPEED = 0.012;
 /** Minimum grey gap between opposing Standarten (gangX). */
 export const BANNER_MIN_GAP = 0.05;
 /** Standarte / build rights stop this far before an enemy Ordnerpost. */

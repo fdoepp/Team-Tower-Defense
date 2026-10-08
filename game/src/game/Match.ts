@@ -7,6 +7,7 @@ import {
   BUILD_COST,
   BUY_COST,
   BANNER_ADVANCE_SPEED,
+  BANNER_CATCHUP,
   BANNER_MIN_GAP,
   BANNER_POST_STANDOFF,
   BANNER_RETREAT_SPEED,
@@ -85,6 +86,7 @@ import {
   plotGangX,
   seatPos,
   slotIndicesForBlock,
+  worldXToGangX,
 } from "./layout";
 
 export type MatchConfig = {
@@ -1719,7 +1721,13 @@ export class Match {
     return clamp(edge, 0.08, 0.92);
   }
 
-  /** Slow Standarte crawl: advance moderate, retreat deliberately slow */
+  /** Living attacker depth along the gang (uses world X while pathing) */
+  private attackerDepthGx(f: FanUnit): number {
+    if (f.state === "gang" || f.invading) return f.gangX;
+    return worldXToGangX(f.x);
+  }
+
+  /** Slow Standarte crawl: advance with mild catch-up, retreat deliberately slow */
   private approachBanner(
     cur: number,
     target: number,
@@ -1729,7 +1737,9 @@ export class Match {
     const delta = target - cur;
     if (Math.abs(delta) < 1e-5) return target;
     const advancing = delta * advanceDir > 0;
-    const speed = advancing ? BANNER_ADVANCE_SPEED : BANNER_RETREAT_SPEED;
+    const speed = advancing
+      ? BANNER_ADVANCE_SPEED + Math.abs(delta) * BANNER_CATCHUP
+      : BANNER_RETREAT_SPEED;
     const step = Math.sign(delta) * Math.min(Math.abs(delta), speed * dt);
     return cur + step;
   }
@@ -2257,10 +2267,16 @@ export class Match {
     let pTarget = pFloor;
     let aTarget = aFloor;
     if (pFront.length) {
-      pTarget = Math.max(pTarget, ...pFront.map((f) => f.gangX));
+      pTarget = Math.max(
+        pTarget,
+        ...pFront.map((f) => this.attackerDepthGx(f)),
+      );
     }
     if (aFront.length) {
-      aTarget = Math.min(aTarget, ...aFront.map((f) => f.gangX));
+      aTarget = Math.min(
+        aTarget,
+        ...aFront.map((f) => this.attackerDepthGx(f)),
+      );
     }
 
     // Intact Ordnerposten hard-cap the opposing Standarte (and build rights)
