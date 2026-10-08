@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "description": "Kanonische Icon-Pfade für Matchday. Deploy und neue Spiele laden ausschließlich diese Dateien unter game/public/icons/.",
+  "ui": {
+    "pennantKsc": {
+      "path": "ui/pennant-ksc.png",
+      "team": "ksc",
+      "color": "blue-white",
+      "role": "standarte",
+      "style": "holzpfosten-streifenfahne-vorschlag-a",
+      "locked": true,
+      "notes": "Heim-Besitz/Front-Marker. Kein Logo, kein Chrom-Ständer."
+    },
+    "pennantVfb": {
+      "path": "ui/pennant-vfb.png",
+      "team": "vfb",
+      "color": "red-white",
+      "role": "standarte",
+      "style": "holzpfosten-streifenfahne-vorschlag-a",
+      "locked": true,
+      "notes": "Gäste-Besitz/Front-Marker. Gleiche Form wie pennantKsc, nur rot-weiß."
+    }
+  },
+  "runtimeBinding": {
+    "module": "game/src/game/assets.ts",
+    "keys": ["UI_ICONS.pennantKsc", "UI_ICONS.pennantVfb"],
+    "render": "drawTerritoryPennants → plotPennantTeam"
+  },
+  "deploy": {
+    "sourceDir": "game/public/icons/",
+    "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss die locked Standarten aus diesem Register verwenden. Alte metallische Logo-Wimpel sind verworfen."
+  }
+}
