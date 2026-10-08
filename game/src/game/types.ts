@@ -90,7 +90,7 @@ export type Currencies = {
   security: number;
 };
 
-export const START_GOLD = 75;
+export const START_GOLD = 90;
 /** Starting Sicherheit; grey mid-post can regen back up to this cap. */
 export const START_SECURITY = 50;
 /** Without own Ordnerposten, Sicherheit cannot exceed this. */
@@ -106,8 +106,8 @@ export const BUY_COST = {
 } as const;
 
 export const BUILD_COST: Record<BuildingKind, number> = {
-  bier: 65,
-  ordner: 45,
+  bier: 55,
+  ordner: 40,
   fanshop: 35,
 };
 
@@ -122,9 +122,9 @@ export const UPGRADE_MAX = 5;
 export const UPGRADE_COST = [0, 0, 40, 75, 120, 180] as const;
 /**
  * Unit upgrade gold to reach level index (Lv2..Lv5).
- * Cheaper than buildings — you upgrade many people.
+ * Lv2 cheap to teach the loop; Lv3+ steeper so Fan-spam doesn't snowball.
  */
-export const UNIT_UPGRADE_COST = [0, 0, 22, 40, 65, 100] as const;
+export const UNIT_UPGRADE_COST = [0, 0, 22, 40, 80, 130] as const;
 /** +% HP / Atk / Def / Jubel per level above 1 */
 export const UNIT_LEVEL_STAT = 0.14;
 
@@ -284,11 +284,11 @@ export const MOOD_FROM_POWER = 0.09;
 
 /** Seconds between pitch goal rolls (before fever) */
 export const GOAL_ROLL_INTERVAL = 22;
-/** Base p(goal) on a roll; scales with |momentum| */
-export const GOAL_P_TOR_BASE = 0.14;
-export const GOAL_P_TOR_MOMENTUM = 0.35;
+/** Base p(goal) on a roll; scales with |momentum| (softened vs 0.35) */
+export const GOAL_P_TOR_BASE = 0.12;
+export const GOAL_P_TOR_MOMENTUM = 0.22;
 export const GOAL_P_TOR_MIN = 0.08;
-export const GOAL_P_TOR_MAX = 0.7;
+export const GOAL_P_TOR_MAX = 0.55;
 
 /** AI start gold bonus over START_GOLD */
 export const AI_START_GOLD_BONUS = 5;
