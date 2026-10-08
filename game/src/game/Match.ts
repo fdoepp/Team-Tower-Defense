@@ -1238,6 +1238,27 @@ export class Match {
     return u ? u.level || 1 : 1;
   }
 
+  maxUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
+    let max = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.team !== team) continue;
+      if (kind === "ordner") {
+        if (!f.isSteward) continue;
+      } else if (f.isSteward || f.kind !== kind) continue;
+      max = Math.max(max, f.level || 1);
+    }
+    return max;
+  }
+
+  /** Sidebar label: "Lv3" or "Lv1–3" when the squad is mixed */
+  unitLevelLabel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): string {
+    const lo = this.minUnitLevel(kind, team);
+    const hi = this.maxUnitLevel(kind, team);
+    if (hi <= 0) return "Lv1";
+    if (lo === hi) return `Lv${lo}`;
+    return `Lv${lo}–${hi}`;
+  }
+
   unitUpgradeCostFor(kind: FanKind | "ordner"): number | null {
     const u = this.lowestLevelUnit(kind, this.playerTeam);
     if (!u) return null;
