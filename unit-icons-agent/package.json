@@ -1,0 +1,18 @@
+{
+  "name": "unit-icons-agent",
+  "private": true,
+  "type": "module",
+  "description": "Personen-Icon Inventar & Galerie (freigeschnitten grey/blue/red Lv1-5)",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "dev": "bdk dev"
+  },
+  "dependencies": {
+    "@cursor/bdk": "^0.2.21",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "typescript": "6.0.3"
+  }
+}

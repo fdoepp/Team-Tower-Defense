@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Personen-Icons freigeschnitten — Grau / Blau / Rot · Stufen 1–5</title>
+  <style>
+    :root {
+      --ink: #1a1c1e;
+      --muted: #5c6570;
+      --line: #c9d0d8;
+      --paper: #eef1f4;
+      --accent: #0b6e4f;
+      --warn: #9b2226;
+      --checker-a: #d9dee5;
+      --checker-b: #f4f6f8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #d7e8ff 0%, transparent 55%),
+        radial-gradient(900px 420px at 100% 0%, #ffd6d2 0%, transparent 50%),
+        var(--paper);
+      line-height: 1.35;
+    }
+    header {
+      padding: 1.5rem clamp(1rem, 3vw, 2.5rem) 0.75rem;
+      border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, white 70%, transparent);
+      backdrop-filter: blur(6px);
+    }
+    h1 { margin: 0 0 0.35rem; font-size: clamp(1.4rem, 2.4vw, 2rem); }
+    .meta { color: var(--muted); margin: 0; font-size: 0.95rem; }
+    main { padding: 1rem clamp(1rem, 3vw, 2.5rem) 3rem; }
+    .unit { margin-top: 1.75rem; }
+    .unit h2 {
+      margin: 0 0 0.6rem;
+      font-size: 1.15rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: baseline;
+    }
+    .unit h2 code {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0.45rem;
+    }
+    th, td { text-align: center; vertical-align: top; }
+    thead th {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    tbody th {
+      text-align: left;
+      padding-top: 2.4rem;
+      font-size: 0.9rem;
+      width: 4.5rem;
+    }
+    .slot {
+      display: grid;
+      gap: 0.35rem;
+      justify-items: center;
+      padding: 0.55rem;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background:
+        linear-gradient(45deg, var(--checker-a) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--checker-a) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--checker-a) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--checker-a) 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+      background-color: var(--checker-b);
+    }
+    .slot img {
+      display: block;
+      width: min(128px, 18vw);
+      height: auto;
+      image-rendering: auto;
+    }
+    .slot code {
+      font-size: 0.65rem;
+      color: var(--muted);
+      word-break: break-all;
+    }
+    .slot.empty {
+      min-height: 150px;
+      place-content: center;
+      color: var(--warn);
+      background: #fff5f5;
+    }
+    .slot.empty span { font-weight: 700; text-transform: uppercase; font-size: 0.75rem; }
+    .ok { color: var(--accent); font-weight: 600; }
+    details { margin-top: 1rem; }
+    summary { cursor: pointer; font-weight: 600; color: var(--warn); }
+    @media (max-width: 720px) {
+      table, thead, tbody, th, td, tr { display: block; }
+      thead { display: none; }
+      tbody th {
+        padding: 0.75rem 0 0.25rem;
+        width: auto;
+      }
+      .slot img { width: 96px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Personen-Icons freigeschnitten — Grau / Blau / Rot · Stufen 1–5</h1>
+    <p class="meta">
+      Erwartet: <strong>60</strong>
+      · Gefunden: <strong>60</strong>
+      · Fehlt: <strong>0</strong>
+      · Quelle: <code>/workspace/unit-icons-agent/assets/units</code>
+    </p>
+    <p class="ok">Alle 60 erwarteten freigeschnittenen Farb-Icons sind vorhanden.</p>
+  </header>
+  <main>
+    
+<section class="unit">
+  <h2>Fan / Normalo <code>fan</code></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Farbe</th>
+        <th>Lv 1</th><th>Lv 2</th><th>Lv 3</th><th>Lv 4</th><th>Lv 5</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Grau</th><td><div class="slot"><img src="../../assets/units/fan-grey-1.png" alt="fan-grey-1.png" width="128" height="128" loading="lazy" /><code>fan-grey-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-grey-2.png" alt="fan-grey-2.png" width="128" height="128" loading="lazy" /><code>fan-grey-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-grey-3.png" alt="fan-grey-3.png" width="128" height="128" loading="lazy" /><code>fan-grey-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-grey-4.png" alt="fan-grey-4.png" width="128" height="128" loading="lazy" /><code>fan-grey-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-grey-5.png" alt="fan-grey-5.png" width="128" height="128" loading="lazy" /><code>fan-grey-5.png</code></div></td></tr>
+<tr><th scope="row">Blau</th><td><div class="slot"><img src="../../assets/units/fan-blue-1.png" alt="fan-blue-1.png" width="128" height="128" loading="lazy" /><code>fan-blue-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-blue-2.png" alt="fan-blue-2.png" width="128" height="128" loading="lazy" /><code>fan-blue-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-blue-3.png" alt="fan-blue-3.png" width="128" height="128" loading="lazy" /><code>fan-blue-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-blue-4.png" alt="fan-blue-4.png" width="128" height="128" loading="lazy" /><code>fan-blue-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-blue-5.png" alt="fan-blue-5.png" width="128" height="128" loading="lazy" /><code>fan-blue-5.png</code></div></td></tr>
+<tr><th scope="row">Rot</th><td><div class="slot"><img src="../../assets/units/fan-red-1.png" alt="fan-red-1.png" width="128" height="128" loading="lazy" /><code>fan-red-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-red-2.png" alt="fan-red-2.png" width="128" height="128" loading="lazy" /><code>fan-red-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-red-3.png" alt="fan-red-3.png" width="128" height="128" loading="lazy" /><code>fan-red-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-red-4.png" alt="fan-red-4.png" width="128" height="128" loading="lazy" /><code>fan-red-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/fan-red-5.png" alt="fan-red-5.png" width="128" height="128" loading="lazy" /><code>fan-red-5.png</code></div></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="unit">
+  <h2>Ultra <code>ultra</code></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Farbe</th>
+        <th>Lv 1</th><th>Lv 2</th><th>Lv 3</th><th>Lv 4</th><th>Lv 5</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Grau</th><td><div class="slot"><img src="../../assets/units/ultra-grey-1.png" alt="ultra-grey-1.png" width="128" height="128" loading="lazy" /><code>ultra-grey-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-grey-2.png" alt="ultra-grey-2.png" width="128" height="128" loading="lazy" /><code>ultra-grey-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-grey-3.png" alt="ultra-grey-3.png" width="128" height="128" loading="lazy" /><code>ultra-grey-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-grey-4.png" alt="ultra-grey-4.png" width="128" height="128" loading="lazy" /><code>ultra-grey-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-grey-5.png" alt="ultra-grey-5.png" width="128" height="128" loading="lazy" /><code>ultra-grey-5.png</code></div></td></tr>
+<tr><th scope="row">Blau</th><td><div class="slot"><img src="../../assets/units/ultra-blue-1.png" alt="ultra-blue-1.png" width="128" height="128" loading="lazy" /><code>ultra-blue-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-blue-2.png" alt="ultra-blue-2.png" width="128" height="128" loading="lazy" /><code>ultra-blue-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-blue-3.png" alt="ultra-blue-3.png" width="128" height="128" loading="lazy" /><code>ultra-blue-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-blue-4.png" alt="ultra-blue-4.png" width="128" height="128" loading="lazy" /><code>ultra-blue-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-blue-5.png" alt="ultra-blue-5.png" width="128" height="128" loading="lazy" /><code>ultra-blue-5.png</code></div></td></tr>
+<tr><th scope="row">Rot</th><td><div class="slot"><img src="../../assets/units/ultra-red-1.png" alt="ultra-red-1.png" width="128" height="128" loading="lazy" /><code>ultra-red-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-red-2.png" alt="ultra-red-2.png" width="128" height="128" loading="lazy" /><code>ultra-red-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-red-3.png" alt="ultra-red-3.png" width="128" height="128" loading="lazy" /><code>ultra-red-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-red-4.png" alt="ultra-red-4.png" width="128" height="128" loading="lazy" /><code>ultra-red-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/ultra-red-5.png" alt="ultra-red-5.png" width="128" height="128" loading="lazy" /><code>ultra-red-5.png</code></div></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="unit">
+  <h2>Hooligan <code>hooligan</code></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Farbe</th>
+        <th>Lv 1</th><th>Lv 2</th><th>Lv 3</th><th>Lv 4</th><th>Lv 5</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Grau</th><td><div class="slot"><img src="../../assets/units/hooligan-grey-1.png" alt="hooligan-grey-1.png" width="128" height="128" loading="lazy" /><code>hooligan-grey-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-grey-2.png" alt="hooligan-grey-2.png" width="128" height="128" loading="lazy" /><code>hooligan-grey-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-grey-3.png" alt="hooligan-grey-3.png" width="128" height="128" loading="lazy" /><code>hooligan-grey-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-grey-4.png" alt="hooligan-grey-4.png" width="128" height="128" loading="lazy" /><code>hooligan-grey-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-grey-5.png" alt="hooligan-grey-5.png" width="128" height="128" loading="lazy" /><code>hooligan-grey-5.png</code></div></td></tr>
+<tr><th scope="row">Blau</th><td><div class="slot"><img src="../../assets/units/hooligan-blue-1.png" alt="hooligan-blue-1.png" width="128" height="128" loading="lazy" /><code>hooligan-blue-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-blue-2.png" alt="hooligan-blue-2.png" width="128" height="128" loading="lazy" /><code>hooligan-blue-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-blue-3.png" alt="hooligan-blue-3.png" width="128" height="128" loading="lazy" /><code>hooligan-blue-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-blue-4.png" alt="hooligan-blue-4.png" width="128" height="128" loading="lazy" /><code>hooligan-blue-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-blue-5.png" alt="hooligan-blue-5.png" width="128" height="128" loading="lazy" /><code>hooligan-blue-5.png</code></div></td></tr>
+<tr><th scope="row">Rot</th><td><div class="slot"><img src="../../assets/units/hooligan-red-1.png" alt="hooligan-red-1.png" width="128" height="128" loading="lazy" /><code>hooligan-red-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-red-2.png" alt="hooligan-red-2.png" width="128" height="128" loading="lazy" /><code>hooligan-red-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-red-3.png" alt="hooligan-red-3.png" width="128" height="128" loading="lazy" /><code>hooligan-red-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-red-4.png" alt="hooligan-red-4.png" width="128" height="128" loading="lazy" /><code>hooligan-red-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/hooligan-red-5.png" alt="hooligan-red-5.png" width="128" height="128" loading="lazy" /><code>hooligan-red-5.png</code></div></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="unit">
+  <h2>Ordner <code>ordner</code></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Farbe</th>
+        <th>Lv 1</th><th>Lv 2</th><th>Lv 3</th><th>Lv 4</th><th>Lv 5</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Grau</th><td><div class="slot"><img src="../../assets/units/ordner-grey-1.png" alt="ordner-grey-1.png" width="128" height="128" loading="lazy" /><code>ordner-grey-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-grey-2.png" alt="ordner-grey-2.png" width="128" height="128" loading="lazy" /><code>ordner-grey-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-grey-3.png" alt="ordner-grey-3.png" width="128" height="128" loading="lazy" /><code>ordner-grey-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-grey-4.png" alt="ordner-grey-4.png" width="128" height="128" loading="lazy" /><code>ordner-grey-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-grey-5.png" alt="ordner-grey-5.png" width="128" height="128" loading="lazy" /><code>ordner-grey-5.png</code></div></td></tr>
+<tr><th scope="row">Blau</th><td><div class="slot"><img src="../../assets/units/ordner-blue-1.png" alt="ordner-blue-1.png" width="128" height="128" loading="lazy" /><code>ordner-blue-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-blue-2.png" alt="ordner-blue-2.png" width="128" height="128" loading="lazy" /><code>ordner-blue-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-blue-3.png" alt="ordner-blue-3.png" width="128" height="128" loading="lazy" /><code>ordner-blue-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-blue-4.png" alt="ordner-blue-4.png" width="128" height="128" loading="lazy" /><code>ordner-blue-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-blue-5.png" alt="ordner-blue-5.png" width="128" height="128" loading="lazy" /><code>ordner-blue-5.png</code></div></td></tr>
+<tr><th scope="row">Rot</th><td><div class="slot"><img src="../../assets/units/ordner-red-1.png" alt="ordner-red-1.png" width="128" height="128" loading="lazy" /><code>ordner-red-1.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-red-2.png" alt="ordner-red-2.png" width="128" height="128" loading="lazy" /><code>ordner-red-2.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-red-3.png" alt="ordner-red-3.png" width="128" height="128" loading="lazy" /><code>ordner-red-3.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-red-4.png" alt="ordner-red-4.png" width="128" height="128" loading="lazy" /><code>ordner-red-4.png</code></div></td><td><div class="slot"><img src="../../assets/units/ordner-red-5.png" alt="ordner-red-5.png" width="128" height="128" loading="lazy" /><code>ordner-red-5.png</code></div></td></tr>
+    </tbody>
+  </table>
+</section>
+  </main>
+</body>
+</html>
