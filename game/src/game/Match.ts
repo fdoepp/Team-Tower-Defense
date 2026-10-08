@@ -29,6 +29,7 @@ import {
   REGULAR_REAL_SEC,
   STAND_CONVERT_SEC,
   STAND_CONVERT_SEAT_MAJORITY,
+  START_CURRENCY,
   START_GOLD,
   STEWARD_CAP,
   STEWARD_GOLD_PER_SEC,
@@ -212,18 +213,19 @@ export class Match {
   defectAcc = 0;
   buildPulse = 0;
   captureAcc: Record<string, number> = {};
-  aiGold = START_GOLD + 20;
+  /** Slight gold lead only — was +20 (too snowbally with soft regen). */
+  aiGold = START_GOLD + 8;
   aiBuildRot = 0;
   /** soft AI mood resources (not shared with player wallet) */
-  aiMerch = 40;
-  aiBeer = 40;
-  aiSecurity = 40;
+  aiMerch = 22;
+  aiBeer = 22;
+  aiSecurity = 22;
   width = 960;
   height = 440;
   pensRound = 0;
   pens: { ksc: boolean | null; vfb: boolean | null }[] = [];
   pensTimer = 0;
-  currency: Currencies = { beer: 0, merch: 0, security: 0 };
+  currency: Currencies = { ...START_CURRENCY };
   blockOwner: (TeamId | "neutral" | null)[] = [null, null, null, null];
   floats: FloatFx[] = [];
   /** Blocksturm hold timers */
@@ -881,7 +883,8 @@ canBuy(kind: FanKind): boolean {
       this.jubelMulHeim.normalos = 1.7;
       this.jubelMulHeim.hooligans = 1.15;
       const before = this.momentum;
-      this.momentum = clamp(this.momentum + 0.095 * n, -1, 1);
+      // Softened vs 0.095 — burst was stacking too hard with people-pressure.
+      this.momentum = clamp(this.momentum + 0.06 * n, -1, 1);
       this.moodKick = Math.min(1, 0.7 + Math.abs(this.momentum - before));
       this.floatMood(door.x, door.y - 0.04, "+Momentum");
       this.triggerCheer("gesang", this.playerTeam, HEIM_BLOCK);
@@ -895,7 +898,7 @@ canBuy(kind: FanKind): boolean {
       this.moodGaeste = clamp(this.moodGaeste - 0.1 * n, 0, 3);
       this.jubelMulHeim.ultras = 1.45;
       const before = this.momentum;
-      this.momentum = clamp(this.momentum + 0.07 * n, -1, 1);
+      this.momentum = clamp(this.momentum + 0.048 * n, -1, 1);
       this.moodKick = Math.min(1, 0.8 + Math.abs(this.momentum - before));
       this.floatMood(door.x, door.y - 0.04, "+Momentum");
       this.triggerCheer("pyro", this.playerTeam, HEIM_BLOCK);
@@ -1553,7 +1556,7 @@ canBuy(kind: FanKind): boolean {
     const nrm = this.countInBlock(this.playerTeam, HEIM_BLOCK, "normalos");
     this.gold += (1.0 + nrm * 0.2) * dt;
     const aiN = this.countInBlock(this.aiTeam, GAST_BLOCK, "normalos");
-    this.aiGold += (1.1 + aiN * 0.22) * dt;
+    this.aiGold += (1.05 + aiN * 0.2) * dt;
 
     // Steward upkeep €/s per person
     const stewards = this.fans.filter(
@@ -3085,10 +3088,10 @@ canBuy(kind: FanKind): boolean {
     for (const k of Object.keys(this.aiCd) as (keyof typeof this.aiCd)[]) {
       if (this.aiCd[k] > 0) this.aiCd[k] = Math.max(0, this.aiCd[k] - dt);
     }
-    // Soft regen of AI mood resources
-    this.aiMerch = Math.min(120, this.aiMerch + dt * 1.1);
-    this.aiBeer = Math.min(120, this.aiBeer + dt * 1.0);
-    this.aiSecurity = Math.min(120, this.aiSecurity + dt * 1.05);
+    // Soft regen — was ~1/s (free gang spam); closer to a low-level booth.
+    this.aiMerch = Math.min(120, this.aiMerch + dt * 0.55);
+    this.aiBeer = Math.min(120, this.aiBeer + dt * 0.5);
+    this.aiSecurity = Math.min(120, this.aiSecurity + dt * 0.52);
 
     const interval = 7 / diffMul(this.cfg.settings.difficulty);
     // Gesang/Pyro actions removed — momentum comes from block people-count only
@@ -3188,8 +3191,9 @@ canBuy(kind: FanKind): boolean {
       return;
     }
     const claim = !!(s.building && (s.owner === "neutral" || s.greyNeutral));
+    // Match player claim discount (0.7) — was 0.65 AI-favored.
     const cost = claim
-      ? Math.floor(BUILD_COST[kind] * 0.65)
+      ? Math.floor(BUILD_COST[kind] * 0.7)
       : BUILD_COST[kind];
     if (this.aiGold < cost) return;
     this.aiGold -= cost;

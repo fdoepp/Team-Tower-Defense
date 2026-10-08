@@ -101,11 +101,19 @@ export type Currencies = {
 
 export const START_GOLD = 75;
 
+/** Soft currencies at kickoff — enough for one early recruit / mood beat. */
+export const START_CURRENCY: Currencies = {
+  beer: 6,
+  merch: 8,
+  security: 8,
+};
+
 /** Buy costs — each type tied to its currency */
 export const BUY_COST = {
   normalos: { beer: 0, merch: 0, security: 12, gold: 0 },
   ultras: { beer: 0, merch: 14, security: 0, gold: 0 },
-  hooligans: { beer: 14, merch: 0, security: 0, gold: 0 },
+  /** Parity with Fans (12) — Bierstand is already the pricey building. */
+  hooligans: { beer: 12, merch: 0, security: 0, gold: 0 },
 } as const;
 
 export type UnitUiKind = FanKind | "ordner";
@@ -228,7 +236,8 @@ export function defaultUnitLevels(): Record<UnitUiKind, number> {
 }
 
 export const STEWARD_CAP = 2;
-export const NEUTRAL_STEWARD_RESPAWN = 32;
+/** Slightly slower grey reinforcements — 4 neutral Ordner already gate the mid. */
+export const NEUTRAL_STEWARD_RESPAWN = 40;
 export const BLOCK_STORM_COUNT = 3;
 export const BLOCK_STORM_SEC = 5;
 export const STAND_CONVERT_SEC = 11;
@@ -238,7 +247,8 @@ export const ULTRA_BEER_INTERVAL = 24;
 export const NORMALO_BEER_INTERVAL = 28;
 export const HOOLIGAN_BEER_INTERVAL = 20;
 
-export const PROD_BEER = 0.2;
+/** Was 0.2 — Bier lagged Merch/Security and starved Hooligan tempo mid-game. */
+export const PROD_BEER = 0.26;
 export const PROD_SECURITY = 0.3;
 export const PROD_MERCH = 0.34;
 export const PROD_SHOP_MOOD = 0.018;
