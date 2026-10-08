@@ -28,6 +28,15 @@ Dann http://localhost:5173/ (Portrait/Handy-Breite ideal). **Solo vs KI** ist sp
 
 Dauerhaftes Hosting: Branch `gh-pages` ist vorbereitet. In GitHub → Settings → Pages → Source **Deploy from a branch** → `gh-pages` / `/` speichern. Danach: `https://fdoepp.github.io/Team-Tower-Defense/`
 
+## Visuelles Match-Layout (verbindlich)
+
+Ab sofort für Implementierungen:
+
+- **Hintergrund:** `game/public/assets/stadium-floodlight-derby-bg.jpg` (volle Ränge, Flutlicht, blanke Anzeigetafel oben)
+- **Tribünen darauf:** `tribune-block-blue.png` / `tribune-block-grey.png` / `tribune-block-red.png` in der richtigen Skalierung einbetten (ohne Figuren im Asset — Units rendert das Spiel)
+
+Siehe auch `.cursor/rules/stadium-background.mdc`.
+
 ## Dokument
 
 - **[Game Design Concept](docs/GAME_DESIGN.md)** — vollständiges Konzept
