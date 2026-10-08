@@ -39,14 +39,24 @@ Kein Team-Schriftzug, kein metallischer Ständer.
 - Register: `docs/mockups/icons/ASSET_DB.json` (`locked: true`).
 - Alte Logo-/Chrom-Wimpel dürfen nicht mehr geladen oder neu generiert werden.
 
-## Bauplatz (leer / eigener)
+## Bauplatz (leer / eigener) — kanonisch + Auto-Swap
 
-Design: **vier Holzpfosten + Seil**, Steinrand, Erde, `+` (Vorschlag C).
+Design: **vier Holzpfosten + Seil**, Steinrand, Erde, `+` (Vorschlag C).  
+Deploy-Default-Orientierung: **parallel** zum Bildrand (`SLOT_EMPTY_ORIENTATION`).
 
-| Zustand | Bedeutung | Assets |
+| Zustand | Bedeutung | Asset (parallel-Default) |
 |---|---|---|
-| Ohne Standarte | Plot vorhanden, noch nicht als eigener Bau-Slot markiert | `slot-empty-iso.png` / `slot-empty-parallel.png` |
-| Mit Standarte blau | **Eigener** Heim-Bauplatz — hier darf KSC bauen | `slot-empty-*-blue.png` |
-| Mit Standarte rot | **Eigener** Gäste-Bauplatz — hier darf VfB bauen | `slot-empty-*-red.png` |
+| Grau / Neutral | Bereich nicht team-kontrolliert — **keine** Standarte | `slot-empty-parallel.png` (= `slot-empty.png`) |
+| Team blau (KSC) | Eigener/kontrollierter Bauplatz — bauen erlaubt | `slot-empty-parallel-blue.png` |
+| Team rot (VfB) | Eigener/kontrollierter Bauplatz — bauen erlaubt | `slot-empty-parallel-red.png` |
 
-Orientierung (`iso` vs `parallel`) noch wählbar; Besitz-Varianten liegen für beide vor.
+### Pflicht für jedes neue Spiel / jeden Deploy
+1. Diese Bauplatz-Assets aus `game/public/icons/ui/` laden (Preload über `preloadIcons()` / `slotEmptyIconPath`).
+2. **Automatischer Austausch zur Laufzeit** (kein manuelles Icon-Setzen im Match-Code außer über die Helper):
+   - Kontrolle **Team** (Slot-Owner oder Blockkontrolle + Frontlinie/`inPlayerTerritory`/`inAiTerritory`) → Icon **mit** Standarte in Teamfarbe.
+   - Kontrolle **grau/neutral** (`greyNeutral`, `owner === "neutral"`, oder Block wieder grau) → Standarte **fällt weg**, wieder neutrales Plot-Icon.
+3. Implementierung:
+   - `slotEmptyIconPath(control)` in `game/src/game/assets.ts`
+   - `slotControlForPlot(m, s)` + `drawBaustelle(...)` in `game/src/game/render.ts`
+4. Register: `docs/mockups/icons/ASSET_DB.json` · Spiegel: `game/public/icons/ASSET_DB.json`.
+5. Alte gelbe Bauzaun-Optik nicht mehr neu generieren; `slot-empty.png` zeigt auf die parallele Neutrale.

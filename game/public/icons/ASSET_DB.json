@@ -18,6 +18,38 @@
       "locked": false,
       "notes": "Gewähltes Design C, Kanten parallel zum Bildrand. Nach Auswahl → slot-empty.png ersetzen."
     },
+    "slotEmptyIsoBlue": {
+      "path": "ui/slot-empty-iso-blue.png",
+      "role": "bauplatz-eigen",
+      "team": "ksc",
+      "orientation": "isometric-diamond",
+      "locked": false,
+      "notes": "Eigener Bauplatz Heim: Plot + Standarte blau-weiß. Zeigt Bau-Erlaubnis/Besitz."
+    },
+    "slotEmptyIsoRed": {
+      "path": "ui/slot-empty-iso-red.png",
+      "role": "bauplatz-eigen",
+      "team": "vfb",
+      "orientation": "isometric-diamond",
+      "locked": false,
+      "notes": "Eigener Bauplatz Gäste: Plot + Standarte rot-weiß."
+    },
+    "slotEmptyParallelBlue": {
+      "path": "ui/slot-empty-parallel-blue.png",
+      "role": "bauplatz-eigen",
+      "team": "ksc",
+      "orientation": "axis-aligned",
+      "locked": false,
+      "notes": "Eigener Bauplatz Heim (parallel): Plot + Standarte blau-weiß."
+    },
+    "slotEmptyParallelRed": {
+      "path": "ui/slot-empty-parallel-red.png",
+      "role": "bauplatz-eigen",
+      "team": "vfb",
+      "orientation": "axis-aligned",
+      "locked": false,
+      "notes": "Eigener Bauplatz Gäste (parallel): Plot + Standarte rot-weiß."
+    },
     "pennantKsc": {
       "path": "ui/pennant-ksc.png",
       "team": "ksc",

@@ -36,4 +36,10 @@ Pfad Spiel: `game/public/icons/` · Übersicht: `docs/mockups/icons/preview-all.
 - Register & Deploy-Pflicht: `docs/mockups/icons/ASSET_DB.json` · Regel: `docs/mockups/A2c-RULES.md` → Standarten
 - Preview: `docs/mockups/icons/ui-review/pennant-final/preview-pennants-final.jpg`
 
+### Bauplatz (UI, kanonisch + Auto-Swap)
+- Neutral/grau: `ui/slot-empty.png` (= parallel ohne Standarte)
+- Eigen blau/rot: `ui/slot-empty-parallel-blue.png` / `-red.png` (iso-Varianten analog)
+- **Jedes neue Spiel:** Icons preloaded; Runtime tauscht bei Teamkontrolle Standarte ein, bei Grau wieder aus (`slotEmptyIconPath` / `slotControlForPlot`).
+- Regel: `docs/mockups/A2c-RULES.md` → Bauplatz
+
 **35 Icons** Stände/Figuren + kanonische UI-Standarten.
