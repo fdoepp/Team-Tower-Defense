@@ -11,6 +11,12 @@ export function teamColor(team: TeamId | "neutral" | null | undefined): TeamColo
   return "grey";
 }
 
+/**
+ * Kanonischer Stand-Icon-Pfad (soft-bound).
+ * Action Cards / Rail / Render laden immer diese Datei zur Laufzeit —
+ * keine eingebackenen Gebäude-Kachel-PNGs. Icon-Updates unter
+ * `game/public/icons/stands/` greifen beim nächsten Deploy/Preload.
+ */
 export function standIconPath(
   kind: BuildingKind,
   color: TeamColor,
@@ -62,6 +68,10 @@ export const UI_ICONS = {
   btnKaufenGreen: "icons/ui/btn-kaufen-green.png",
   btnSendenGrey: "icons/ui/btn-senden-grey.png",
   btnSendenGreen: "icons/ui/btn-senden-green.png",
+  btnBauenAmber: "icons/ui/btn-bauen-amber.png",
+  btnBauenGrey: "icons/ui/btn-bauen-grey.png",
+  btnUpgradePurple: "icons/ui/btn-upgrade-purple.png",
+  btnUpgradeGrey: "icons/ui/btn-upgrade-grey.png",
   /** Kanonische Standarten (Holz + Streifenfahne) */
   pennantKsc: "icons/ui/pennant-ksc.png",
   pennantVfb: "icons/ui/pennant-vfb.png",

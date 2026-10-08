@@ -1,54 +1,59 @@
 {
-  "version": 1,
+  "version": 2,
   "description": "Kanonische Icon-Pfade für Matchday. Deploy und neue Spiele laden ausschließlich diese Dateien unter game/public/icons/.",
   "ui": {
-    "slotEmptyIso": {
-      "path": "ui/slot-empty-iso.png",
+    "slotEmpty": {
+      "path": "ui/slot-empty.png",
       "role": "bauplatz",
       "style": "pfosten-seil-vorschlag-c",
-      "orientation": "isometric-diamond",
-      "locked": false,
-      "notes": "Gewähltes Design C, isometrische Raute (wie Stände). Orientierung noch offen vs. parallel."
+      "orientation": "axis-aligned",
+      "control": "grey",
+      "locked": true,
+      "notes": "Deploy-Default = parallel ohne Standarte. Alias von slot-empty-parallel.png."
     },
     "slotEmptyParallel": {
       "path": "ui/slot-empty-parallel.png",
       "role": "bauplatz",
-      "style": "pfosten-seil-vorschlag-c",
-      "orientation": "axis-aligned",
-      "locked": false,
-      "notes": "Gewähltes Design C, Kanten parallel zum Bildrand. Nach Auswahl → slot-empty.png ersetzen."
+      "control": "grey",
+      "locked": true,
+      "notes": "Neutral/grau — Standarte aus."
     },
-    "slotEmptyIsoBlue": {
-      "path": "ui/slot-empty-iso-blue.png",
-      "role": "bauplatz-eigen",
-      "team": "ksc",
-      "orientation": "isometric-diamond",
-      "locked": false,
-      "notes": "Eigener Bauplatz Heim: Plot + Standarte blau-weiß. Zeigt Bau-Erlaubnis/Besitz."
-    },
-    "slotEmptyIsoRed": {
-      "path": "ui/slot-empty-iso-red.png",
-      "role": "bauplatz-eigen",
-      "team": "vfb",
-      "orientation": "isometric-diamond",
-      "locked": false,
-      "notes": "Eigener Bauplatz Gäste: Plot + Standarte rot-weiß."
+    "slotEmptyIso": {
+      "path": "ui/slot-empty-iso.png",
+      "role": "bauplatz",
+      "control": "grey",
+      "locked": true,
+      "notes": "Iso-Neutrale Variante (Orientierungs-Alternative)."
     },
     "slotEmptyParallelBlue": {
       "path": "ui/slot-empty-parallel-blue.png",
       "role": "bauplatz-eigen",
       "team": "ksc",
-      "orientation": "axis-aligned",
-      "locked": false,
-      "notes": "Eigener Bauplatz Heim (parallel): Plot + Standarte blau-weiß."
+      "control": "blue",
+      "locked": true,
+      "notes": "Teamkontrolle KSC — Standarte blau ein."
     },
     "slotEmptyParallelRed": {
       "path": "ui/slot-empty-parallel-red.png",
       "role": "bauplatz-eigen",
       "team": "vfb",
-      "orientation": "axis-aligned",
-      "locked": false,
-      "notes": "Eigener Bauplatz Gäste (parallel): Plot + Standarte rot-weiß."
+      "control": "red",
+      "locked": true,
+      "notes": "Teamkontrolle VfB — Standarte rot ein."
+    },
+    "slotEmptyIsoBlue": {
+      "path": "ui/slot-empty-iso-blue.png",
+      "role": "bauplatz-eigen",
+      "team": "ksc",
+      "control": "blue",
+      "locked": true
+    },
+    "slotEmptyIsoRed": {
+      "path": "ui/slot-empty-iso-red.png",
+      "role": "bauplatz-eigen",
+      "team": "vfb",
+      "control": "red",
+      "locked": true
     },
     "pennantKsc": {
       "path": "ui/pennant-ksc.png",
@@ -71,11 +76,26 @@
   },
   "runtimeBinding": {
     "module": "game/src/game/assets.ts",
-    "keys": ["UI_ICONS.pennantKsc", "UI_ICONS.pennantVfb"],
-    "render": "drawTerritoryPennants → plotPennantTeam"
+    "keys": [
+      "UI_ICONS.pennantKsc",
+      "UI_ICONS.pennantVfb",
+      "slotEmptyIconPath",
+      "SLOT_EMPTY_ORIENTATION"
+    ],
+    "render": "drawBaustelle → slotControlForPlot → slotEmptyIconPath; drawTerritoryPennants für gebaute Buden",
+    "autoSwap": {
+      "teamControl": "Standarte-Farbe ein (blue/red Plot-Icon)",
+      "greyControl": "Standarte aus (neutrales Plot-Icon)",
+      "triggers": [
+        "slot.owner",
+        "slot.greyNeutral",
+        "blockOwner[blockId]",
+        "inPlayerTerritory / inAiTerritory"
+      ]
+    }
   },
   "deploy": {
     "sourceDir": "game/public/icons/",
-    "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss die locked Standarten aus diesem Register verwenden. Alte metallische Logo-Wimpel sind verworfen."
+    "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss locked Standarten + Bauplatz-Varianten aus diesem Register preloaded verwenden. Runtime tauscht Bauplatz-Icons automatisch bei Team-/Grau-Kontrolle."
   }
 }

@@ -109,6 +109,13 @@ export const BUILD_LABEL: Record<BuildingKind, string> = {
   fanshop: "Shop",
 };
 
+/** Volle UI-Namen für Action Cards (Neubau / Upgrade). */
+export const BUILDING_FULL_LABEL: Record<BuildingKind, string> = {
+  bier: "Bierstand",
+  fanshop: "Fanshop",
+  ordner: "Ordnerposten",
+};
+
 export const UPGRADE_MAX = 5;
 export const UPGRADE_COST = [0, 0, 40, 75, 120, 180] as const;
 
@@ -165,6 +172,20 @@ export const PROD_BEER = 0.2;
 export const PROD_SECURITY = 0.3;
 export const PROD_MERCH = 0.34;
 export const PROD_SHOP_MOOD = 0.018;
+
+/** Produktion/min für Action-Card-Stats (PROD_* × productionRate × 60). */
+export function productionPerMinute(kind: BuildingKind, level: number): number {
+  const rate = productionRate(level);
+  const perSec =
+    kind === "bier" ? PROD_BEER * rate : kind === "fanshop" ? PROD_MERCH * rate : PROD_SECURITY * rate;
+  return Math.round(perSec * 60);
+}
+
+export function productionUnitLabel(kind: BuildingKind): string {
+  if (kind === "bier") return "Bier/min";
+  if (kind === "fanshop") return "Fanart./min";
+  return "Sich./min";
+}
 
 export type MoodAction = "gesang" | "pyro";
 

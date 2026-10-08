@@ -51,12 +51,24 @@ Eine Karte = **ein Objekt**. Mehrere Aktionen am gleichen Objekt = mehrere Butto
 - Karte min. ~72 dp hoch; Button-Bar in der Karte min. ~44–48 dp.
 - Ganze Karte darf *selektieren*, aber **kaufen/senden/bauen** nur über den Button (kein Fehlkauf).
 
-## Implementierung (bestehend → Ziel)
+## Soft-Binding Stand-Icons (Pflicht)
 
-Heute schon nah dran (`ur-row` / `build-card`). Ziel-Anpassung:
+Gebäude-Action-Cards **backen keine Stand-Sprites ein**.
 
-- Bau-Karten: `build-kaufen` → **BAUEN**-Asset (amber).
-- Upgrade: `rail-upgrade` → **UPGRADE**-Asset + Chip mit Live-Kosten.
-- Kostenzeile immer als Chip mit `currency-*.png`, nicht nur Text „12 Sicherheit“.
+| Schicht | Quelle |
+|---|---|
+| Icon | `standIconPath(kind, teamColor, level)` → `icons/stands/{kind}-{color}-{lv}.png` |
+| Name | `BUILDING_FULL_LABEL` |
+| Stats (Upgrade) | `productionPerMinute` / `productionUnitLabel` |
+| Kosten | `BUILD_COST` / `UPGRADE_COST` (Live-Text) |
+| Button | `UI_ICONS.btnBauenAmber` / `btnUpgradePurple` (grau wenn disabled) |
 
-Siehe Mock: `preview-action-card.jpg` / `action-card-pattern` unter Artifacts.
+Wenn Ordnerposten/Fanshop/Bierstand-PNGs unter `game/public/icons/stands/` aktualisiert werden, ziehen Neubau- und Upgrade-Karten beim nächsten Preload/Deploy automatisch die neue Datei — ohne neue Kachel-Assets.
+
+Freigabe-Mockups unter `building-tiles/` sind nur Vorschau; Runtime = DOM-Komposition in `main.ts` (`syncPendingBuildUi` / `syncUpgradeActionCard`).
+
+## Implementierung
+
+- Rechte Rail · Neubau: `.action-card.build-card` + **BAUEN**
+- Rechte Rail · Upgrade: `.action-card.upgrade-card` + Stats /min + **UPGRADE**
+- Kostenzeile: `currency-gold.png` + Zahl auf Holz (kein weißer Chip)

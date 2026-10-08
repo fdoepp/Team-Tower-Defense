@@ -34,4 +34,5 @@ Alle liegen als 256×256 RGBA in `docs/mockups/icons/ui/` und `game/public/icons
 2. **Standarten:** Vorschlag A festgelegt → final blau+rot unter [`pennant-final/`](pennant-final/); Deploy-Pflicht in [`../ASSET_DB.json`](../ASSET_DB.json) und [`../../A2c-RULES.md`](../../A2c-RULES.md).
 3. **Bauplatz:** Design C (Pfosten+Seil) gewählt → beide Orientierungen unter [`slot-final/`](slot-final/) (`iso` / `parallel`).
 4. **Buttons:** benötigte Hof-Aktionen + Holz-Bar-Vorschläge unter [`btn-vorschlaege/`](btn-vorschlaege/) (Kaufen/Senden/Bauen/Upgrade).
-5. Parallel: Personen-Icons (Farben/Stufen) laufen in einem separaten Agent und sind hier bewusst ausgeklammert.
+5. **Gebäude-Kacheln:** Neubau + Upgrade Action Cards zur Freigabe unter [`building-tiles/`](building-tiles/).
+6. Parallel: Personen-Icons (Farben/Stufen) laufen in einem separaten Agent und sind hier bewusst ausgeklammert.
