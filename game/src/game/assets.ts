@@ -23,7 +23,8 @@ export function standIconPath(
   level: number,
 ): string {
   const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
-  return `icons/stands/${kind}-${color}-${lv}.png`;
+  const finalId = `stand${kind[0].toUpperCase()}${kind.slice(1)}${color[0].toUpperCase()}${color.slice(1)}${lv}`;
+  return uiPath(finalId, `icons/stands/${kind}-${color}-${lv}.png`);
 }
 
 export function unitIconPath(
@@ -38,7 +39,9 @@ export function unitIconPath(
     ordner: "ordner",
   };
   const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
-  return `icons/units/${map[kind]}-${color}-${lv}.png`;
+  const base = map[kind];
+  const finalId = `${base}${color[0].toUpperCase()}${color.slice(1)}${lv}`;
+  return uiPath(finalId, `icons/units/${base}-${color}-${lv}.png`);
 }
 
 export type SlotControl = "blue" | "red" | "grey";
@@ -47,9 +50,9 @@ export type SlotEmptyOrientation = "parallel" | "iso";
 export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "parallel";
 
 export const SCENE_ASSETS = {
-  tribuneBlue: "assets/tribune-block-blue.png",
-  tribuneGrey: "assets/tribune-block-grey.png",
-  tribuneRed: "assets/tribune-block-red.png",
+  tribuneBlue: uiPath("tribuneBlue", "assets/tribune-block-blue.png"),
+  tribuneGrey: uiPath("tribuneGrey", "assets/tribune-block-grey.png"),
+  tribuneRed: uiPath("tribuneRed", "assets/tribune-block-red.png"),
 } as const;
 
 export function tribuneIconPath(blockId: number): string {
