@@ -1,14 +1,24 @@
-# Fan Upgrade-Progression (Gimmicks)
+# Fan Upgrade-Progression
 
-Ziel: Stufen 1–5 müssen auf einen Blick unterscheidbar sein — jedes Level addiert ein klares Fan-Gimmick.
+Stilziel: wie **Ordner/Ultras** (Bloons-/Comic, ganzfigurig).
 
-| Level | Neu dazu | Gesamt |
-| --- | --- | --- |
-| 1 | normales Outfit + kleines Fähnchen | Fähnchen |
-| 2 | Schal | Fähnchen + Schal |
-| 3 | Mütze | Fähnchen + Schal + Mütze |
-| 4 | Trikot (statt Pullover) | Fähnchen + Schal + Mütze + Trikot |
-| 5 | große Fahne | alles + große Fahne |
+## Outfit (immer)
 
-Aktuell neu: **grau** (`fan-grey-1.png` … `fan-grey-5.png`).
-Blau/Rot folgen per Farbübertragung, sobald Grau freigegeben ist.
+- kurzes Trikot + kurze Hose + Sneaker
+- Bierkrug in einer Hand
+- Trikot-Nummer = Level (1…5)
+- Fahne/Fähnchen einfarbig in Fanlager-Farbe
+- Baseball-Cap (nicht Mütze) in Fanlager-Farbe — ab Level 3
+
+## Stufen
+
+| Level | Neu / sichtbar |
+| --- | --- |
+| 1 | Trikot #1 + Bier — kein Fähnchen, kein Schal, keine Cap |
+| 2 | + kleines Fähnchen · Trikot #2 |
+| 3 | + Schal + Baseball-Cap · Trikot #3 |
+| 4 | Fahne wird größer · Trikot #4 |
+| 5 | noch größere Fahne · Trikot #5 |
+
+Aktueller Grau-Vorschlag: `proposals/d-fan-grey-*.png` (Vorschlag D).
+Blau/Rot folgen nach Freigabe.

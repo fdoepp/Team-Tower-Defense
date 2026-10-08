@@ -42,3 +42,14 @@ Datei: `proposal-c-strip.png` / `c-fan-grey-1.png` … `5.png`
 - Weniger „echt“, mehr Comic/Toy (Bloons TD)
 - Ganzfigurig, Gimmick-Leiter ohne Ordner-Props (kein Clipboard)
 - Vergleich: `proposal-c-vs-ordner.png`
+
+
+## Vorschlag D — neue Regeln (kurz, Cap, Bier, Nummer=Level)
+
+Datei: `proposal-d-strip.png` / `d-fan-grey-1.png` … `5.png`
+
+- kurze Hose + kurzes Trikot
+- Bierkrug immer
+- Nummer auf dem Trikot = Level
+- Lv1 ohne Fähnchen; Lv2 Fähnchen; Lv3 Schal+Baseball-Cap; Lv4/5 größere Fahne
+- Fahne einfarbig grau (Teamfarbe)
