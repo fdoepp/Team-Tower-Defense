@@ -539,23 +539,104 @@ select {
   background: linear-gradient(180deg, #f0b14a 0%, #d4891f 72%, #b86e14 100%);
 }
 
+/* Neubau: Nutzen / Produktion pro Minute (Währungsicon soft-bound) */
+.match-shell.matchday .action-card.build-card .br-benefit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 1em;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: clamp(0.58rem, 3cqw, 0.72rem);
+  color: #5adc78;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.match-shell.matchday .action-card.build-card .br-benefit .br-prod-ico {
+  width: clamp(12px, 6.5cqw, 16px);
+  height: clamp(12px, 6.5cqw, 16px);
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.match-shell.matchday .action-card.build-card .br-benefit small {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: #ffecc8;
+}
+
+/* Upgrade: Icon aktuell → Icon Folgelevel, darunter Prod / +Delta */
+.match-shell.matchday .action-card.build-card.upgrade-card {
+  gap: clamp(3px, 1.4cqw, 5px);
+}
+
+.match-shell.matchday .action-card.build-card .br-compare {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(2px, 1.2cqw, 4px);
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.match-shell.matchday .action-card.build-card .br-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.match-shell.matchday .action-card.build-card .br-compare .ur-head {
+  width: min(clamp(40px, 28cqw, 58px), 100%);
+  height: min(clamp(40px, 28cqw, 58px), 100%);
+}
+
+.match-shell.matchday .action-card.build-card .br-compare .ac-arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  font-size: clamp(0.9rem, 5cqw, 1.2rem);
+  font-weight: 900;
+  color: #ffdca0;
+  line-height: 1;
+  padding-bottom: 0.9em; /* optisch zur Icon-Mitte, nicht zu den Stats */
+}
+
 .match-shell.matchday .action-card.build-card .br-stat {
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 1px;
   min-height: 1em;
   font-family: var(--display);
   font-weight: 900;
   font-size: clamp(0.62rem, 3.2cqw, 0.78rem);
-  color: #5adc78;
   line-height: 1;
 }
 
+.match-shell.matchday .action-card.build-card .br-stat.current {
+  color: #beb8ae;
+}
+
+.match-shell.matchday .action-card.build-card .br-stat.next {
+  color: #5adc78;
+}
+
 .match-shell.matchday .action-card.build-card .br-stat small {
-  font-size: 0.85em;
+  font-size: 0.78em;
   font-weight: 700;
   color: #ffecc8;
+  white-space: nowrap;
+}
+
+.match-shell.matchday .action-card.build-card .br-upgrade-actions {
+  width: 100%;
+  flex: 0 0 auto;
 }
 
 .match-shell.matchday .action-card.build-card.cd {

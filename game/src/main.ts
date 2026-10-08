@@ -358,6 +358,11 @@ function renderMatchScreen(): void {
               const gold = UI_ICONS.currencyGold.startsWith("/")
                 ? UI_ICONS.currencyGold
                 : `/${UI_ICONS.currencyGold}`;
+              const prodCur =
+                kind === "bier" ? "beer" : kind === "fanshop" ? "merch" : "security";
+              const prodIco = currencyIconPath(prodCur);
+              const prodAmt = productionPerMinute(kind, 1);
+              const prodUnit = productionUnitLabel(kind);
               return `<div class="action-card build-card" data-pending-build="${kind}" role="button" tabindex="0">
             <div class="ac-title-row">
               <h3 class="ac-title">${BUILDING_FULL_LABEL[kind]}</h3>
@@ -367,6 +372,11 @@ function renderMatchScreen(): void {
                 <img class="ac-icon" data-stand-kind="${kind}" data-stand-level="1" src="${src.startsWith("/") ? src : `/${src}`}" alt="${BUILDING_FULL_LABEL[kind]}">
               </div>
               <div class="ur-actions">
+                <div class="br-benefit" title="Ressourcenproduktion">
+                  <img class="br-prod-ico" data-build-prod-icon src="${prodIco.startsWith("/") ? prodIco : `/${prodIco}`}" alt="">
+                  <b data-build-prod-amt>+${prodAmt}</b>
+                  <small data-build-prod-unit>${prodUnit}</small>
+                </div>
                 <button type="button" class="ar-cost-btn ar-bauen" data-build-place="${kind}" title="Bauen">
                   <span class="ar-verb">BAUEN</span>
                   <img class="ar-cost-ico" data-build-cost-icon src="${gold}" alt="">
@@ -384,25 +394,34 @@ function renderMatchScreen(): void {
               <h3 class="ac-title" id="upgrade-title">Gebäude</h3>
               <b class="ur-count" id="upgrade-lv-label">Lv1</b>
             </div>
-            <div class="ur-body">
-              <div class="ur-head br-stand" data-lv="1">
-                <img id="upgrade-from-img" class="ac-icon" src="" alt="">
+            <div class="br-compare" aria-label="Upgrade-Vergleich">
+              <div class="br-col current">
+                <div class="ur-head br-stand" id="upgrade-from-head" data-lv="1">
+                  <img id="upgrade-from-img" class="ac-icon" src="" alt="">
+                </div>
+                <div class="br-stat current">
+                  <b id="upgrade-stat-from">—</b>
+                  <small id="upgrade-stat-unit-from"></small>
+                </div>
               </div>
-              <div class="ur-actions">
-                <div class="br-stat" id="upgrade-stat-line">
+              <span class="ac-arrow" aria-hidden="true">→</span>
+              <div class="br-col next">
+                <div class="ur-head br-stand" id="upgrade-to-head" data-lv="2">
+                  <img id="upgrade-to-img" class="ac-icon" src="" alt="">
+                </div>
+                <div class="br-stat next">
                   <b id="upgrade-stat-delta">—</b>
                   <small id="upgrade-stat-unit-to"></small>
                 </div>
-                <button type="button" class="ar-cost-btn ar-upgrade" id="rail-upgrade" title="Upgrade">
-                  <span class="ar-verb">UPGRADE</span>
-                  <img class="ar-cost-ico" src="${UI_ICONS.currencyGold.startsWith("/") ? UI_ICONS.currencyGold : `/${UI_ICONS.currencyGold}`}" alt="">
-                  <span class="ar-cost-amt" id="rail-upgrade-cost">—</span>
-                </button>
               </div>
             </div>
-            <img id="upgrade-to-img" class="sr-only" src="" alt="">
-            <span id="upgrade-stat-from" class="sr-only"></span>
-            <span id="upgrade-stat-unit-from" class="sr-only"></span>
+            <div class="ur-actions br-upgrade-actions">
+              <button type="button" class="ar-cost-btn ar-upgrade" id="rail-upgrade" title="Upgrade">
+                <span class="ar-verb">UPGRADE</span>
+                <img class="ar-cost-ico" id="rail-upgrade-cost-icon" src="${UI_ICONS.currencyGold.startsWith("/") ? UI_ICONS.currencyGold : `/${UI_ICONS.currencyGold}`}" alt="">
+                <span class="ar-cost-amt" id="rail-upgrade-cost">—</span>
+              </button>
+            </div>
           </div>
           <div class="action-card build-card" id="rail-hire-ordner" role="button" tabindex="0">
             <div class="ac-title-row">
@@ -493,7 +512,7 @@ function renderMatchScreen(): void {
     }
   };
 
-  /** Soft-bound: Stand-Icon + Live-Stats/Kosten im cost-in-button Layout. */
+  /** Soft-bound: from→to Stand-Icons + aktuelle Prod / +Delta + Gold-Kosten. */
   const syncUpgradeActionCard = (target: { blockId: number; index: number }) => {
     const slot = m.slots.find(
       (s) => s.blockId === target.blockId && s.index === target.index,
@@ -503,17 +522,20 @@ function renderMatchScreen(): void {
     const cost = slot ? (UPGRADE_COST as readonly number[])[next] : null;
     const upBtn = app.querySelector<HTMLButtonElement>("#rail-upgrade")!;
     const costEl = app.querySelector("#rail-upgrade-cost");
+    const costIco = app.querySelector<HTMLImageElement>("#rail-upgrade-cost-icon");
     const fromImg = app.querySelector<HTMLImageElement>("#upgrade-from-img");
     const toImg = app.querySelector<HTMLImageElement>("#upgrade-to-img");
     const upTitle = app.querySelector("#upgrade-title");
     const lvLabel = app.querySelector("#upgrade-lv-label");
-    const head = app.querySelector<HTMLElement>("#upgrade-panel .ur-head");
+    const fromHead = app.querySelector<HTMLElement>("#upgrade-from-head");
+    const toHead = app.querySelector<HTMLElement>("#upgrade-to-head");
     const statFrom = app.querySelector("#upgrade-stat-from");
     const statDelta = app.querySelector("#upgrade-stat-delta");
     const unitFrom = app.querySelector("#upgrade-stat-unit-from");
     const unitTo = app.querySelector("#upgrade-stat-unit-to");
     const kind = slot?.building;
     const name = kind ? BUILDING_FULL_LABEL[kind] : "Gebäude";
+    const asSrc = (p: string) => (p.startsWith("/") ? p : `/${p}`);
     if (upTitle) upTitle.textContent = name;
     if (lvLabel) {
       lvLabel.textContent =
@@ -521,17 +543,15 @@ function renderMatchScreen(): void {
           ? `Lv${UPGRADE_MAX}`
           : `Lv${lv}→${Math.min(UPGRADE_MAX, next)}`;
     }
-    if (head) head.dataset.lv = String(Math.min(UPGRADE_MAX, lv));
-    if (kind && fromImg) {
+    if (costIco) costIco.src = asSrc(UI_ICONS.currencyGold);
+    if (kind && fromImg && toImg) {
       const toLv = Math.min(UPGRADE_MAX, next);
-      const fromSrc = standIconPath(kind, tc, lv);
-      const toSrc = standIconPath(kind, tc, toLv);
-      fromImg.src = fromSrc.startsWith("/") ? fromSrc : `/${fromSrc}`;
-      fromImg.alt = `${name}`;
-      if (toImg) {
-        toImg.src = toSrc.startsWith("/") ? toSrc : `/${toSrc}`;
-        toImg.alt = `${name}`;
-      }
+      fromImg.src = asSrc(standIconPath(kind, tc, lv));
+      fromImg.alt = `${name} Lv${lv}`;
+      toImg.src = asSrc(standIconPath(kind, tc, toLv));
+      toImg.alt = `${name} Lv${toLv}`;
+      if (fromHead) fromHead.dataset.lv = String(Math.min(UPGRADE_MAX, lv));
+      if (toHead) toHead.dataset.lv = String(toLv);
       const cur = productionPerMinute(kind, lv);
       const nxt = productionPerMinute(kind, toLv);
       const unit = productionUnitLabel(kind);
@@ -569,7 +589,7 @@ function renderMatchScreen(): void {
     }
   };
 
-  /** Soft-bound Neubau: Icons + Live-Gold im BAUEN-Button. */
+  /** Soft-bound Neubau: Stand-/Währungs-Icons + Prod/min + Live-Gold. */
   const syncPendingBuildUi = () => {
     const hint = app.querySelector("#build-hint");
     app.querySelectorAll<HTMLElement>("[data-pending-build]").forEach((card) => {
@@ -579,18 +599,21 @@ function renderMatchScreen(): void {
       const poor = m.gold < cost;
       card.classList.toggle("selected", on);
       card.classList.toggle("cd", poor);
+      const asSrc = (p: string) => (p.startsWith("/") ? p : `/${p}`);
       const icon = card.querySelector<HTMLImageElement>("[data-stand-kind]");
-      if (icon) {
-        const src = standIconPath(kind, tc, 1);
-        icon.src = src.startsWith("/") ? src : `/${src}`;
-      }
+      if (icon) icon.src = asSrc(standIconPath(kind, tc, 1));
+      const prodCur =
+        kind === "bier" ? "beer" : kind === "fanshop" ? "merch" : "security";
+      const prodIco = card.querySelector<HTMLImageElement>("[data-build-prod-icon]");
+      if (prodIco) prodIco.src = asSrc(currencyIconPath(prodCur));
+      const prodAmt = card.querySelector("[data-build-prod-amt]");
+      if (prodAmt) prodAmt.textContent = `+${productionPerMinute(kind, 1)}`;
+      const prodUnit = card.querySelector("[data-build-prod-unit]");
+      if (prodUnit) prodUnit.textContent = productionUnitLabel(kind);
       const costAmt = card.querySelector("[data-build-cost-amt]");
       if (costAmt) costAmt.textContent = String(cost);
       const goldIco = card.querySelector<HTMLImageElement>("[data-build-cost-icon]");
-      if (goldIco) {
-        const g = UI_ICONS.currencyGold;
-        goldIco.src = g.startsWith("/") ? g : `/${g}`;
-      }
+      if (goldIco) goldIco.src = asSrc(UI_ICONS.currencyGold);
       const buildBtn = card.querySelector<HTMLButtonElement>("[data-build-place]");
       if (buildBtn) {
         buildBtn.disabled = poor;
