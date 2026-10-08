@@ -890,6 +890,8 @@ select {
   min-height: 0;
   grid-column: 2;
   background: #1e293b;
+  container-type: inline-size;
+  container-name: game-wrap;
 }
 
 .match-shell.matchday #game-wrap.placing {
@@ -914,6 +916,98 @@ select {
   overflow: visible;
   height: auto;
 }
+
+/*
+ * Slim Frosted Wallet — Höhe = Side-Rail-Banner-Button (.rail-banner / PERSONEN|BAUEN).
+ * --wb-h wird in layoutHud() aus der gemessenen Banner-Höhe gesetzt (Regel).
+ */
+.match-shell.matchday .wallet-row.wallet-bar {
+  --wb-h: 34px; /* Fallback ≈ .rail-banner @ Desktop */
+  --wb-pad: 2px;
+  --wb-gap: 3px;
+  --wb-chip-h: calc(var(--wb-h) - 2 * var(--wb-pad));
+  --wb-ico: var(--wb-chip-h);
+  /* Abspos über gesamte Shell, nicht in einer Grid-Zelle verdichtet */
+  grid-column: 1 / -1;
+  grid-row: 1;
+  position: absolute;
+  z-index: 12;
+  top: max(6px, env(safe-area-inset-top, 0px));
+  /* Fallback: Mitte zwischen Personen-Rail (~22%) und Bildmitte (50%) */
+  left: 36%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--wb-gap);
+  width: max-content;
+  max-width: min(46vw, 100%);
+  height: var(--wb-h);
+  min-height: var(--wb-h);
+  max-height: var(--wb-h);
+  margin: 0;
+  padding: var(--wb-pad) var(--wb-pad);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: none;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.match-shell.matchday .wallet-bar .wb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wb-gap);
+  height: var(--wb-chip-h);
+  min-height: var(--wb-chip-h);
+  max-height: var(--wb-chip-h);
+  padding: 0 calc(var(--wb-chip-h) * 0.22) 0 0;
+  border-radius: 999px;
+  background: rgba(255, 252, 245, 0.94);
+  border: none;
+  box-shadow: none;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.match-shell.matchday .wallet-bar .wb-plate {
+  width: var(--wb-ico);
+  height: var(--wb-ico);
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.match-shell.matchday .wallet-bar .wb-plate img {
+  width: 90%;
+  height: 90%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  flex: none;
+}
+
+.match-shell.matchday .wallet-bar .wb-chip b {
+  font-family: var(--display);
+  font-size: calc(var(--wb-chip-h) * 0.42);
+  font-weight: 800;
+  line-height: 1;
+  min-width: 1em;
+  color: var(--ink, #1c120a);
+}
+
+.match-shell.matchday .wallet-bar .wb-chip.gold b { color: #a16207; }
+.match-shell.matchday .wallet-bar .wb-chip.bier b { color: #b45309; }
+.match-shell.matchday .wallet-bar .wb-chip.merch b { color: #1d4ed8; }
+.match-shell.matchday .wallet-bar .wb-chip.sec b { color: #0369a1; }
 
 .match-shell.matchday .wallet-row {
   justify-content: center;
