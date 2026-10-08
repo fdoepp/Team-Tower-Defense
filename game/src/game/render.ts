@@ -337,19 +337,22 @@ function drawSeats(
   }
 }
 
-/** Center scoreboard + momentum strip (Matchday Comic / mockup) */
+/** Freigestelltes Top-HUD (HUD_TOP_CANON / b-final-cutout), 1041×508.
+ * Native aspect only — never squash. No fake bar/score chrome on top.
+ */
 function drawScoreboard(
   ctx: CanvasRenderingContext2D,
   m: Match,
   w: number,
   h: number,
 ): void {
-  // Keep scoreboard inside the top third (above the stands)
-  const boardW = Math.min(w * 0.38, h * 0.42);
-  const boardH = Math.min(boardW * (720 / 1280) * 0.68, h * 0.22);
+  const NAT_W = 1041;
+  const NAT_H = 508;
+  const AR = NAT_W / NAT_H;
+  const boardW = Math.min(w * 0.48, 560, h * 0.36 * AR);
+  const boardH = boardW / AR;
   const bx = (w - boardW) / 2;
   const by = h * 0.008;
-  // Soft stadium glow behind board
   const glow = ctx.createRadialGradient(
     w * 0.5,
     by + boardH * 0.55,
@@ -365,59 +368,15 @@ function drawScoreboard(
 
   const drew = drawIcon(ctx, UI_ICONS.scoreboard, bx, by, boardW, boardH, 0.02);
   if (!drew) {
-    // fallback panel
     ctx.fillStyle = "rgba(15,23,42,0.88)";
     roundRect(ctx, bx, by, boardW, boardH * 0.62, 10);
     ctx.fill();
   }
-
-  // Live score + minute overlaid on board face
-  const faceY = by + boardH * 0.22;
-  const faceH = boardH * 0.38;
-  ctx.save();
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "#f8fafc";
-  ctx.font = `900 ${Math.max(16, Math.floor(faceH * 0.72))}px Outfit, Manrope, sans-serif`;
-  ctx.shadowColor = "rgba(0,0,0,0.65)";
-  ctx.shadowBlur = 6;
-  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w * 0.5, faceY + faceH * 0.42);
-  ctx.shadowBlur = 0;
-  ctx.font = `800 ${Math.max(10, Math.floor(faceH * 0.32))}px Outfit, Manrope, sans-serif`;
-  ctx.fillStyle = "#e2e8f0";
-  const min = Math.floor(m.minute ?? 0);
-  ctx.fillText(`${min}′`, w * 0.5 + boardW * 0.38, by + boardH * 0.12);
-
-  // Momentum / Torchance strip under the board
-  const barY = by + boardH * 0.78;
-  const barH = Math.max(14, boardH * 0.16);
-  const barX = bx + boardW * 0.08;
-  const barW = boardW * 0.84;
-  const ch = m.goalChance();
-  const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
-  const gastPct = Math.max(0.05, Math.min(0.95, ch.pGast));
-  const torchance = Math.round(ch.pTor * 100);
-  roundRect(ctx, barX, barY, barW, barH, 6);
-  ctx.fillStyle = "rgba(15,23,42,0.75)";
-  ctx.fill();
-  const split = barX + barW * heimPct;
-  ctx.fillStyle = "#2563eb";
-  roundRect(ctx, barX, barY, Math.max(4, split - barX), barH, 6);
-  ctx.fill();
-  ctx.fillStyle = "#dc2626";
-  roundRect(ctx, split, barY, Math.max(4, barX + barW - split), barH, 6);
-  ctx.fill();
-  ctx.fillStyle = "#f8fafc";
-  ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.55))}px Outfit, Manrope, sans-serif`;
-  ctx.textAlign = "left";
-  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, barX + 6, barY + barH / 2 + 0.5);
-  ctx.textAlign = "right";
-  ctx.fillText(`Gast ${Math.round(gastPct * 100)}%`, barX + barW - 6, barY + barH / 2 + 0.5);
-  ctx.textAlign = "center";
-  ctx.fillStyle = "#fde68a";
-  ctx.fillText(`Torchance ${torchance}%`, w * 0.5, barY + barH / 2 + 0.5);
-  ctx.restore();
+  // Live values stay in the freigestellte art / DOM elsewhere — do not paint
+  // fake Heim/Gast bars or score chrome over the cutout.
+  void m;
 }
+
 
 function drawGang(
   ctx: CanvasRenderingContext2D,
