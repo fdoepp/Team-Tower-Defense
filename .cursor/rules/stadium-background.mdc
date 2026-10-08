@@ -1,0 +1,156 @@
+---
+description: Stadium visual baseline for LaneLink — binding for every game-code change
+alwaysApply: true
+---
+
+# LaneLink stadium visuals (binding)
+
+**Hard rule for every further modification of game / match code** (`game/**`, `drawMatch`, HUD, building placement, upgrade previews, new features) **and every game deployment / new match setup**: always load and render the approved freigestellte building icons below for **all three colors** (blue / red / grey); always use the approved **HP bars** for unit/building health; and always use the approved **currency/momentum floating FX** whenever resources change. Do **not** invent alternate Bierstand / Fanshop / Ordnerposten / health-bar / FX graphics unless the user explicitly requests a redesign.
+
+Applies to: match / gameplay implementations, visual work, deployments, and **any** subsequent code change that touches buildings, stand rendering, health UI, or resource popups. Prefer `game/src/assets/stands.ts`, `hpBars.ts`, and `currencyFx.ts`.
+
+## Background
+
+- Always use **`game/public/assets/stadium-floodlight-derby-bg.jpg`** as the match backdrop.
+- Do **not** redraw a green pitch, flat abstract field, or alternate stadium BG as the primary scene.
+- Keep the blank top **Anzeigetafel** area free for HUD / score overlay (do not paint score text into the bitmap).
+
+## Fan blocks (Tribünen)
+
+- Place the freigestellte tribune assets **on top of** that background, scaled to the playfield layout:
+  - Heim (left): `game/public/assets/tribune-block-blue.png`
+  - Neutral (center): `game/public/assets/tribune-block-grey.png`
+  - Gäste (right): `game/public/assets/tribune-block-red.png`
+- Units, buildings, gang, and combat stay **game-rendered** on/around these blocks — do not bake fans into the tribune PNGs.
+- Optional sheet (all three): `game/public/assets/tribune-blocks-sheet.png`
+
+## Currency HUD symbols
+
+Always use these **logo-only** freigestellte icons for match currencies (no baked-in numbers or labels — counts come from live HUD text):
+
+- Gold → `game/public/icons/ui/currency-gold.png`
+- Bier → `game/public/icons/ui/currency-bier.png`
+- Fanartikel → `game/public/icons/ui/currency-fanartikel.png`
+- Sicherheit → `game/public/icons/ui/currency-sicherheit.png`
+
+Do **not** redraw ad-hoc coin/mug/scarf/shield glyphs in canvas when these assets are available.
+
+## Currency & Momentum floating FX (binding, finalized)
+
+**Status: freigegeben / final.** Whenever a **person or building** triggers a currency **gain or spend**, and whenever a **Fan-Block produces Momentum**, always spawn these freigestellte floating FX (`game/public/icons/ui/fx-*.png`) — do not invent alternate popups unless the user explicitly asks for a redesign.
+
+| Event | Pfad |
+|---|---|
+| ± Gold / Bier / Fanartikel / Sicherheit | `game/public/icons/ui/fx-{gain\|spend}-{currency}.png` |
+| + Momentum (Fan-Block) | `game/public/icons/ui/fx-gain-momentum.png` |
+
+**Look:** currency/momentum logo + green `+` pill (gain) or red `−` pill (spend). Gains rise upward (trail); spends appear near the actor/shopper.
+
+**Runtime:** `currencyFxPath` / `momentumGainFxPath` in `game/src/assets/currencyFx.ts`  
+**Canon:** `docs/icons/CURRENCY_FX_CANON.md`  
+**Reference mock:** Bierstand Kauf = `fx-spend-bier` + `fx-gain-gold` (see `docs/mockups/icons/ui/preview-bierstand-kauf-fx.jpg`).
+
+## Bierstand buildings (default — binding, finalized)
+
+**Status: freigegeben / final.** These are the only Bierstand assets to use in code.
+
+For **every** future match / building render, upgrade preview, new game creation, and **every later game-code change**, always use these freigestellte Bierstand icons for **blau, rot und grau** — do **not** invent new booth art or regenerate from scratch unless the user explicitly asks for a redesign:
+
+| Farbe | Pfade (Lv1–5) |
+|---|---|
+| Heim / blau | `game/public/icons/stands/bier-blue-{1..5}.png` |
+| Gäste / rot | `game/public/icons/stands/bier-red-{1..5}.png` |
+| Neutral / grau | `game/public/icons/stands/bier-grey-{1..5}.png` |
+| Unfarbig / Fallback | `game/public/icons/stands/bier-{1..5}.png` (= grau) |
+
+Canonical mockup copies (same pixels): `docs/mockups/icons/stands-colored/bier-{blue\|red\|grey}-{1..5}.png`  
+Sheets: `docs/mockups/icons/stands-colored/sheet-bier-{blue\|red\|grey}.png`
+
+**Progression contract (do not regress):**
+
+- Lv1: Tracht-Vendor hinter einfacher Theke, 1 Maßglas auf Theke + 1 in der Hand, **1** braunes Fass mit grauen Reifen **vor** dem Stand
+- Lv2: Dach/Rahmen, Vendor mit Kappe + Hosenträger, Gläser auf Theke, **2** Fässer um den Stand
+- Lv3: Markise (Teamfarbe/weiß), Lichterkette, Brezel am Pfosten, **3** Fässer
+- Lv4: Neon-**BIER**-Schild, 2 Vendor (männlich + Dirndl), gestreifte Front, **4** Fässer um den Stand (keine Fässer auf der Theke)
+- Lv5: aufwendigeres Neon, gleiche 2 Vendor, Gläser auf Theke, **5** Fässer um den Stand
+
+Teamfarbe steckt in Theke / Markise / Neon — Fässer bleiben braun mit grauen Reifen.
+
+## Fanshop buildings (default — binding, finalized)
+
+**Status: freigegeben / final.** These are the only Fanshop assets to use in code.
+
+For **every** future match / building render, upgrade preview, new game creation, and **every later game-code change**, always use these freigestellte Fanshop icons for **blau, rot und grau** — do **not** invent new shop art or regenerate from scratch unless the user explicitly asks for a redesign:
+
+| Farbe | Pfade (Lv1–5) |
+|---|---|
+| Heim / blau | `game/public/icons/stands/fanshop-blue-{1..5}.png` |
+| Gäste / rot | `game/public/icons/stands/fanshop-red-{1..5}.png` |
+| Neutral / grau | `game/public/icons/stands/fanshop-grey-{1..5}.png` |
+| Unfarbig / Fallback | `game/public/icons/stands/fanshop-{1..5}.png` (= grau) |
+
+Canonical mockup copies: `docs/mockups/icons/stands-colored/fanshop-{blue\|red\|grey}-{1..5}.png`  
+Sheets: `docs/mockups/icons/stands-colored/sheet-fanshop-{blue\|red\|grey}.png`
+
+**Progression contract (do not regress):**
+
+- Lv1: Holz-Schalständer (**braunes** Gerüst, nicht teamfarbig lackiert), wenige Teamfarbe/weiß-Schals, **1** Vendor **neben** dem Ständer — **keine** Fähnchen
+- Lv2: Theke ohne Markise, Trikots + Schal auf der Theke, **1** Vendor dahinter, **ein** kleines Fähnchen am Tisch erlaubt
+- Lv3: gestreifte Markise (Teamfarbe/weiß), Dachbalken/Rahmen in Teamfarbe (blau bzw. passend), Lampions, mehr Ware, **1** Vendor — **keine** Fähnchen
+- Lv4: Schild **FANSHOP** in Teamfarbe, Theke/Basis eher **grau** (nicht voll teamfarbig lackiert), 2 Vendor, braune Holzkisten, gestreifte Markise — **keine** Fähnchen
+- Lv5: Neon-**FANSHOP** in Teamfarbe, 2 Vendor, max. Ware, braune Holzkisten, Basis grau — **keine** Fähnchen
+
+**Vendor:** Verkäufer tragen immer ein **Fantrikot in Vereinsfarbe** (blau bzw. rot); grau/neutral bleibt grau.  
+Teamfarbe steckt in Schals / Trikots / Markise / Schild / Neon — Schalständer-Holz und Holzkisten bleiben braun.
+
+## Ordnerposten buildings (default — binding, finalized)
+
+**Status: freigegeben / final.** These are the **only** Ordnerposten building assets allowed for **every** future game setup, match render, upgrade preview, **deployment**, and game-code change.
+
+Do **not** invent new post art, reuse older proposals/fenced booths, or regenerate from scratch unless the user explicitly asks for a redesign.
+
+| Farbe | Pfade (Lv1–5) |
+|---|---|
+| Heim / blau | `game/public/icons/stands/ordner-blue-{1..5}.png` |
+| Gäste / rot | `game/public/icons/stands/ordner-red-{1..5}.png` |
+| Neutral / grau | `game/public/icons/stands/ordner-grey-{1..5}.png` |
+| Unfarbig / Fallback | `game/public/icons/stands/ordner-{1..5}.png` (= grau) |
+
+**Runtime (required when wiring buildings):** import `ordnerStandPath` / `ORDNER_STAND_PATHS` from `game/src/assets/stands.ts` — do not hardcode alternate paths.  
+**Canon docs:** `docs/icons/ORDNERPOSTEN_CANON.md` + `docs/icons/ordnerposten-canon.json`  
+Canonical mockup copies: `docs/mockups/icons/stands-colored/ordner-{blue\|red\|grey}-{1..5}.png`  
+Sheets: `docs/mockups/icons/stands-colored/sheet-ordner-{blue\|red\|grey}.png`
+
+**Progression contract (do not regress):**
+
+- Lv1: Stuhl + Standarte/Fahne mit Level-Ziffer; Ordner **sitzend** auf dem Stuhl (Kanon-Unit Lv1, Funk)
+- Lv2: Schreibtisch + Schirm + **gleiche Fahne** mit Ziffer **2**; Ordner **hinter dem Pult** (Lv2, Schlagstock)
+- Lv3: betretbares Ordnerbüro (offene Tür, kein Zaun-Käfig), Schild **3**, Warnleuchte; Ordner **mittig in der Tür** (Lv3)
+- Lv4: **gleiches Büro** + Dach-Antennen, Schild **4**; Ordner mittig in der Tür (Lv4, Schild+Pistole)
+- Lv5: **gleiches Büro** + Antennen/Dish, Schild **5**; Ordner mittig in der Tür (Lv5, Schild+MG)
+
+**Units in der Tür:** Immer die freigegebenen Kanon-Ordner aus `game/public/icons/units/ordner-{color}-{level}.png` (siehe `docs/icons/ORDNER_CANON.md`) — nicht ältere Ordner-Varianten. Figurengröße der freigegebenen Composites nicht durch Mini-/Seiten-Varianten ersetzen.
+
+## Health bars (default — binding, finalized)
+
+**Status: freigegeben / final.** These are the **only** HP bar assets for persons and buildings.
+
+For **every** future match render, combat HUD, building HP, unit HP, **deployment**, and game-code change that shows health: always use these freigestellte bars — do **not** invent alternate bars, plain HTML rectangles, or regenerate unless the user explicitly asks for a redesign.
+
+| Ziel | Pfade |
+|---|---|
+| Person / Unit | `game/public/icons/ui/hp-bar-unit-{full\|high\|mid\|low\|empty}.png` |
+| Gebäude / Stand | `game/public/icons/ui/hp-bar-building-{full\|high\|mid\|low\|empty}.png` |
+| Defaults (high) | `hp-bar-unit.png`, `hp-bar-building.png` |
+
+**Runtime (required):** `unitHpBarPath` / `buildingHpBarPath` from `game/src/assets/hpBars.ts`.  
+**Canon:** `docs/icons/HP_BARS_CANON.md` + `docs/icons/hp-bars-canon.json`  
+**Look:** dark outlined capsule; fill Grün → Gelb → Orange → Rot by HP ratio; building bar wider with Sicherheitsschild + 4 segment ticks. Place above the subject — bars only (no baked-in figures).
+
+## Out of scope / do not regress
+
+- Older assets (`stadium-floodlight-bg.jpg`, `stadium-floodlight-empty-bg.jpg`) are archives only — not the default match BG.
+- Do not put text on crowd flags in new BG art.
+- Do not replace the approved Bierstand, Fanshop, Ordnerposten, or HP-bar defaults above with older sheet art or new generations without an explicit redesign ask.
+- When implementing or modifying stand rendering in code, **wire these finalized PNG paths** — never fall back to procedural/canvas booth drawings while these files exist.
+- When showing health, **wire the finalized HP-bar PNGs** (or stretch fill to match their look via `hpBars.ts`) — never ad-hoc unmarked bars while these files exist.

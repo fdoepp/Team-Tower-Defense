@@ -20,14 +20,36 @@ Zielrichtung: **Matchday Comic** (Stadion-Flair) + Toy-/Chibi-Figuren, Spielsyst
 Pfad Spiel: `game/public/icons/` · Übersicht: `docs/mockups/icons/preview-all.jpg`
 
 ### Stände
-- **Bierstand** `stands/bier-1`…`5` — Lv4 Neon korrekt **BIER**
-- **Fanshop** `stands/fanshop-1`…`5`
-- **Ordnerposten** `stands/ordner-1`…`5`
+- **Bierstand** `stands/bier-{blue\|red\|grey}-1`…`5` (Defaults freigegeben) — Lv4 Neon korrekt **BIER**; Fallback `bier-1`…`5` = grau
+- **Fanshop** `stands/fanshop-{blue\|red\|grey}-1`…`5` (Defaults freigegeben; Fähnchen nur Lv2); Fallback `fanshop-1`…`5` = grau
+- **Ordnerposten** `stands/ordner-{blue\|red\|grey}-1`…`5` (Defaults freigegeben / final — bei jedem Deployment nur diese; `ordnerStandPath`); Fallback `ordner-1`…`5` = grau
 
 ### Figuren
 - **Fans** `units/fan-1`…`5` — offen, freundlich, **Fähnchen**
 - **Ultras** `units/ultra-1`…`5` — Kapuze oben, Sonnenbrille, Bier, Bengalos, Megafon
 - **Hooligans** `units/hooligan-1`…`5`
-- **Ordner** `units/ordner-1`…`5`
+- **Ordner** `units/ordner-{blue\|red\|grey}-1`…`5` (Kanon); Fallback `ordner-1`…`5`
 
 **35 Icons** total.
+
+### UI — Währungs-/Momentum-FX (verbindlich / final)
+- Kauf/Ressource: `ui/fx-gain|spend-{gold,bier,fanartikel,sicherheit}.png` (Logo + `+`/`−`)
+- Fan-Block → Momentum: `ui/fx-gain-momentum.png` aufsteigend
+- Runtime: `currencyFx.ts` · Canon: `docs/icons/CURRENCY_FX_CANON.md`
+
+### UI — Gesundheitsbalken (verbindlich / final)
+- Person: `ui/hp-bar-unit-{full\|high\|mid\|low\|empty}.png` (schmale Kapsel; nur Bar)
+- Gebäude: `ui/hp-bar-building-*.png` (breiter, Sicherheitsschild, 4 Segmente; nur Bar)
+- Bei jedem Deployment: `unitHpBarPath` / `buildingHpBarPath` · Canon: `docs/icons/HP_BARS_CANON.md`
+- Farbe nach HP: Grün → Gelb → Orange → Rot · Preview: `ui/preview-hp-bars.jpg`
+
+### Noch fehlende Freisteller (Audit)
+Lückenliste + **Branch-Abgleich**: **`docs/icons/ASSET_GAP_AUDIT.md`**
+
+| Prio | Fehlt / Drift | Warum |
+|---|---|---|
+| Hoch | Branches **nicht sync** | Currency = FX/HP; Game = Stadium+BAUEN; Main/Icons = älter |
+| Hoch | Stadion-BG + Tribünen | auf Currency/Main/Icons fehlend (Game/Stadium haben gleiche Hashes) |
+| Hoch | `btn-anwerben` | nirgends; `btn-bauen`/`btn-upgrade` nur auf Game-Linien |
+| Hoch | Status-Icons Durst · Interesse · Stimmung · Pyro · Fremdtrinken | zentrale Systeme, bisher nur Text/CSS |
+| Mittel | Gesang/Pyro/Klatschen-Aktionschips, Selection-Marker, Lane-Pfeil | Lesbarkeit / Matchday-Polish |

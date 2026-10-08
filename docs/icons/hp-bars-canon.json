@@ -1,0 +1,43 @@
+{
+  "id": "hp-bars-canon",
+  "status": "final",
+  "updated": "2026-10-08",
+  "description": "Binding health-bar UI assets (bars only) for units and buildings",
+  "unitPattern": "game/public/icons/ui/hp-bar-unit-{state}.png",
+  "buildingPattern": "game/public/icons/ui/hp-bar-building-{state}.png",
+  "runtimeHelper": "game/src/assets/hpBars.ts",
+  "rule": ".cursor/rules/stadium-background.mdc",
+  "states": ["full", "high", "mid", "low", "empty"],
+  "fillThresholds": {
+    "full": 1.0,
+    "high": 0.55,
+    "mid": 0.30,
+    "low": 0.02,
+    "empty": 0.0
+  },
+  "colorsByState": {
+    "full": "green",
+    "high": "green",
+    "mid": "yellow",
+    "low": "orange",
+    "empty": "track-only"
+  },
+  "files": [
+    "game/public/icons/ui/hp-bar-unit-full.png",
+    "game/public/icons/ui/hp-bar-unit-high.png",
+    "game/public/icons/ui/hp-bar-unit-mid.png",
+    "game/public/icons/ui/hp-bar-unit-low.png",
+    "game/public/icons/ui/hp-bar-unit-empty.png",
+    "game/public/icons/ui/hp-bar-unit.png",
+    "game/public/icons/ui/hp-bar-building-full.png",
+    "game/public/icons/ui/hp-bar-building-high.png",
+    "game/public/icons/ui/hp-bar-building-mid.png",
+    "game/public/icons/ui/hp-bar-building-low.png",
+    "game/public/icons/ui/hp-bar-building-empty.png",
+    "game/public/icons/ui/hp-bar-building.png"
+  ],
+  "doNotUse": [
+    "composite mockups with baked-in units/buildings as HP assets",
+    "ad-hoc unmarked rectangles while these PNGs exist"
+  ]
+}
