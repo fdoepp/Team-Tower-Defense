@@ -305,19 +305,20 @@ function drawGang(
   ctx.closePath();
   ctx.fill();
 
-  // Front lines tilted along perspective rays
+  // Front lines tilted along perspective rays (VP → near plane)
   ctx.save();
-  ctx.setLineDash([7, 5]);
-  ctx.lineWidth = 3.5;
+  ctx.setLineDash([8, 6]);
+  ctx.lineWidth = 4;
+  ctx.lineCap = "round";
   ctx.strokeStyle = "rgba(59,130,246,0.95)";
   ctx.beginPath();
-  ctx.moveTo(pTop, y0 + 2);
-  ctx.lineTo(pBot, y1 - 2);
+  ctx.moveTo(pTop, y0);
+  ctx.lineTo(pBot, y1);
   ctx.stroke();
   ctx.strokeStyle = "rgba(239,68,68,0.95)";
   ctx.beginPath();
-  ctx.moveTo(aTop, y0 + 2);
-  ctx.lineTo(aBot, y1 - 2);
+  ctx.moveTo(aTop, y0);
+  ctx.lineTo(aBot, y1);
   ctx.stroke();
   ctx.restore();
 }

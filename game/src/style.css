@@ -941,9 +941,10 @@ select {
 .match-shell.matchday .scoreboard-live .sb-minute {
   position: absolute;
   left: 50%;
-  top: 6.5%;
+  top: 6.2%;
   transform: translateX(-50%);
-  width: 7.5%;
+  min-width: 8%;
+  padding: 0.15em 0.2em;
   text-align: center;
   font-family: var(--display);
   font-weight: 900;
@@ -951,12 +952,15 @@ select {
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
   line-height: 1.1;
+  background: #1c9a3e;
+  border-radius: 999px;
 }
 .match-shell.matchday .scoreboard-live .sb-score {
   position: absolute;
   left: 50%;
-  top: 34%;
+  top: 32%;
   transform: translateX(-50%);
+  padding: 0.08em 0.35em;
   font-family: var(--display);
   font-weight: 900;
   font-size: clamp(1.4rem, 4.2vw, 2.6rem);
@@ -964,6 +968,8 @@ select {
   letter-spacing: 0.04em;
   line-height: 1;
   white-space: nowrap;
+  background: #fadcba;
+  border-radius: 12px;
 }
 .match-shell.matchday .scoreboard-live .sb-mom {
   position: absolute;
