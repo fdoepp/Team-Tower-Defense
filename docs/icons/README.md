@@ -12,4 +12,8 @@
 
 Übersichten: [`fans-all-colors.png`](./fans-all-colors.png) · [`ordners-all-colors.png`](./ordners-all-colors.png) · [`hooligans-all-colors.png`](./hooligans-all-colors.png) · [`ultras-all-colors.png`](./ultras-all-colors.png)
 
-Für **neue Spielversionen** nur diese freigegebenen Dateien verwenden. Stände haben eigene Manifeste.
+**Finale Gesamtliste:** [`FINAL_ICON_INVENTORY.md`](./FINAL_ICON_INVENTORY.md)  
+Gebäude-Übersicht: [`final-buildings-overview.png`](./final-buildings-overview.png) · Personen: [`final-units-overview.png`](./final-units-overview.png)  
+Ressourcen-Vorschlag: [`proposal-resources-rail.png`](./proposal-resources-rail.png)
+
+Für **neue Spielversionen** nur diese freigegebenen Dateien verwenden. Stände: `game/public/icons/stands/`.
