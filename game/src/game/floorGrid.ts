@@ -35,7 +35,7 @@ export const FLOOR_Y_NEAR = 0.985;
  * Anchors are tuned in inv-depth so the middle band stays wider than a cell
  * (room for fights) while plots stay packed toward the bottom edge.
  */
-export const FLOOR_ROW_YS = [0.705, 0.763, 0.88, 0.978] as const;
+export const FLOOR_ROW_YS = [0.683, 0.733, 0.886, 0.978] as const;
 
 /** Bau-row r ∈ {0,1} → starting index into FLOOR_ROW_YS (skips the Gang). */
 const BAU_ROW_LINE = [0, 2] as const;
