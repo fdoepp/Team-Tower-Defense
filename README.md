@@ -1,50 +1,18 @@
-# LaneLink — Stadion Team-TD
+# Team-Tower-Defense
 
-Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fußball auf dem Platz. Flavor: **KSC vs. VfB**.
+LaneLink — Stadion-Tower-Defense.
 
-## Spielen (Handy-Link)
+## Icon-Kanons (verbindlich)
 
-**Live:** https://ivory-midwest-missile-join.trycloudflare.com  
+Für **neue Spielversionen** gelten ausschließlich die freigegebenen Ganzkörper-Icons:
 
-### Vollbild (wichtig)
+| Unit | Regeln | Assets |
+| --- | --- | --- |
+| Fans | [`docs/icons/FAN_CANON.md`](docs/icons/FAN_CANON.md) | `game/public/icons/units/fan-{grey\|blue\|red}-{1..5}.png` |
+| Ordner | [`docs/icons/ORDNER_CANON.md`](docs/icons/ORDNER_CANON.md) | `game/public/icons/units/ordner-{grey\|blue\|red}-{1..5}.png` |
+| Hooligans | [`docs/icons/HOOLIGAN_CANON.md`](docs/icons/HOOLIGAN_CANON.md) | `game/public/icons/units/hooligan-{grey\|blue\|red}-{1..5}.png` |
+| Top-HUD | [`docs/icons/HUD_TOP_CANON.md`](docs/icons/HUD_TOP_CANON.md) | `game/public/icons/ui/scoreboard-top.png` |
+| Ultras (fertig) | [`docs/icons/ULTRA_CANON.md`](docs/icons/ULTRA_CANON.md) | `game/public/icons/units/ultra-{grey\|blue\|red}-{1..5}.png` |
+| UI Final (freigegeben) | [`docs/icons/ui-final/README.md`](docs/icons/ui-final/README.md) | `game/public/icons/ui-final/` — nur nach manueller Freigabe |
 
-Im normalen Safari/Chrome-Tab bleiben Adressleiste und Tabs — das Spielfeld wird unbrauchbar klein.
-
-1. Link öffnen → **Vollbild** tippen (oder beim Match-Start **Vollbild starten**)
-2. Handy **quer** halten
-3. **iPhone:** Teilen → **Zum Home-Bildschirm** → LaneLink von dort starten (echtes Vollbild ohne Tabs)
-
-Hard-Refresh, falls noch die alte Version cached ist.
-
-Lokal:
-
-```bash
-cd game
-npm install
-npm run dev
-```
-
-Dann http://localhost:5173/ (Portrait/Handy-Breite ideal). **Solo vs KI** ist spielbar.
-
-Dauerhaftes Hosting: Branch `gh-pages` ist vorbereitet. In GitHub → Settings → Pages → Source **Deploy from a branch** → `gh-pages` / `/` speichern. Danach: `https://fdoepp.github.io/Team-Tower-Defense/`
-
-## Dokument
-
-- **[Game Design Concept](docs/GAME_DESIGN.md)** — vollständiges Konzept
-- **[UI Final DB](docs/icons/ui-final/README.md)** — freigegebene UI-Elemente (Freigabe-Gate, alle Branches)
-
-## Implementiert (Prototyp)
-
-- Solo vs KI (Schwierigkeit + Verhalten einstellbar)
-- Architect-Setup: Fan-Mix (10 Punkte) + Starttower
-- Kurva-TD: Slots, Towers, Waves, Leaks
-- Bier / Durst / Interesse / Stimmung / Pyro / Fremdtrinken
-- Spielzüge → Tore, Kummerbier, Fieberphase
-- Early Wins: Bier & Stimmung (reguläre Zeit); Curva-Kill bei HP 0
-- 90′ → Verlängerung → Elfmeter (kein Unentschieden)
-
-## Noch nicht
-
-- Echter 2P-Koop / Versus-Online
-- Sushi-Band-UI (Versus)
-- Supplier-Rolle getrennt spielbar
+Ältere Grafiken derselben Typen nicht mehr verwenden. Freigestelltes Final-UI kommt ausschließlich aus der UI Final DB (`released`); Kandidaten liegen in `pending/` bis zur Freigabe.

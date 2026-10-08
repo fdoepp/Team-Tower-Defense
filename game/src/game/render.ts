@@ -28,12 +28,9 @@ import {
   tribuneRect,
 } from "./layout";
 import {
-  SCENE_ASSETS,
   UI_ICONS,
-  currencyIconPath,
   drawIcon,
   drawIconQuad,
-  drawImageCover,
   drawToyIcon,
   drawToyProp,
   type ToyAnimMode,
@@ -44,7 +41,7 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
-import { boothFacadeQuad, scaleQuad } from "./floorGrid";
+import { scaleQuad } from "./floorGrid";
 
 export { SEATS_PER_BLOCK } from "./layout";
 export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
@@ -58,7 +55,7 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   ctx.clearRect(0, 0, w, h);
 
   drawStadiumAtmosphere(ctx, m, w, h);
-  // Scoreboard chrome lives in DOM (.scoreboard-slot) — aspect-locked, no canvas squash
+  drawScoreboard(ctx, m, w, h);
   drawBlocks(ctx, m, w, h);
   drawSeats(ctx, m, w, h);
   drawGang(ctx, m, w, h);
@@ -72,30 +69,69 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawFloats(ctx, m, w, h);
 }
 
-/**
- * Binding stadium plate (stadium-floodlight-derby-bg.jpg) + light overlays.
- * Cover full canvas, uniform scale — never distort the JPG.
- */
+/** Night stadium bowl + floodlights behind the stands (Matchday Comic) */
 function drawStadiumAtmosphere(
   ctx: CanvasRenderingContext2D,
   m: Match,
   w: number,
   h: number,
 ): void {
-  const drewBg = drawImageCover(ctx, SCENE_ASSETS.stadiumBg, 0, 0, w, h);
-  if (!drewBg) {
-    const skyH = h * (L.blockTop + L.blockBodyH * 0.55);
-    const sky = ctx.createLinearGradient(0, 0, 0, skyH);
-    sky.addColorStop(0, "#04070f");
-    sky.addColorStop(0.55, "#15233a");
-    sky.addColorStop(1, "#1f2d44");
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, w, skyH);
+  const skyH = h * (L.blockTop + L.blockBodyH * 0.55);
+  const sky = ctx.createLinearGradient(0, 0, 0, skyH);
+  sky.addColorStop(0, "#04070f");
+  sky.addColorStop(0.3, "#0c1528");
+  sky.addColorStop(0.65, "#15233a");
+  sky.addColorStop(1, "#1f2d44");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, skyH);
+
+  // packed distant bowl — 3 color bands like mockup
+  const rimY = h * 0.02;
+  for (let tier = 0; tier < 4; tier++) {
+    const ty = rimY + tier * h * 0.022;
+    ctx.fillStyle = `rgba(15,23,42,${0.55 + tier * 0.08})`;
+    ctx.beginPath();
+    ctx.ellipse(w * 0.5, ty + h * 0.08, w * (0.78 - tier * 0.03), h * 0.07, 0, Math.PI, 0);
+    ctx.fill();
+    for (let i = 0; i < 120; i++) {
+      const t = i / 120;
+      const x = w * (0.06 + t * 0.88);
+      const y = ty + h * 0.035 + Math.sin(i * 1.7 + tier) * h * 0.01;
+      const side = t < 0.34 ? 0 : t < 0.66 ? 1 : 2;
+      const a = 0.25 + ((i + tier) % 4) * 0.12;
+      ctx.fillStyle =
+        side === 0
+          ? `rgba(59,130,246,${a})`
+          : side === 2
+            ? `rgba(239,68,68,${a})`
+            : `rgba(148,163,184,${a * 0.85})`;
+      ctx.fillRect(x, y, 2.4, 4.2);
+    }
   }
 
-  // Soft dim so freigestellte Tribünen / HUD lesen klarer
-  ctx.fillStyle = "rgba(4, 8, 18, 0.18)";
-  ctx.fillRect(0, 0, w, h * L.blockTop * 0.55);
+  // floodlight masts + beams
+  for (const lx of [0.08, 0.28, 0.72, 0.92]) {
+    const x = w * lx;
+    const y = h * 0.01;
+    ctx.fillStyle = "#1e293b";
+    ctx.fillRect(x - 3, y, 6, h * 0.07);
+    ctx.fillStyle = "#f8fafc";
+    ctx.beginPath();
+    ctx.arc(x, y + h * 0.07, 5.5, 0, Math.PI * 2);
+    ctx.fill();
+    const beam = ctx.createRadialGradient(x, y + h * 0.08, 2, x, y + h * 0.28, h * 0.34);
+    beam.addColorStop(0, "rgba(255,250,220,0.5)");
+    beam.addColorStop(0.4, "rgba(255,250,220,0.14)");
+    beam.addColorStop(1, "rgba(255,250,220,0)");
+    ctx.fillStyle = beam;
+    ctx.beginPath();
+    ctx.moveTo(x - 7, y + h * 0.07);
+    ctx.lineTo(x + 7, y + h * 0.07);
+    ctx.lineTo(x + w * 0.14, y + h * 0.38);
+    ctx.lineTo(x - w * 0.14, y + h * 0.38);
+    ctx.closePath();
+    ctx.fill();
+  }
 
   // pyro / flare glow — guest side warm, heim cool
   {
@@ -135,16 +171,22 @@ function drawStadiumAtmosphere(
     ctx.fillRect(hx - w * 0.26, hy - h * 0.12, w * 0.52, h * 0.28);
   }
 
-  // Soften gang readability without painting over the derby BG floor
+  // open concourse asphalt
   const floorY = h * gangY();
   const floor = ctx.createLinearGradient(0, floorY - h * 0.04, 0, h);
-  floor.addColorStop(0, "rgba(55, 65, 81, 0.22)");
-  floor.addColorStop(0.45, "rgba(68, 64, 60, 0.35)");
-  floor.addColorStop(1, "rgba(28, 25, 23, 0.45)");
+  floor.addColorStop(0, "#9ca3af");
+  floor.addColorStop(0.15, "#6b7280");
+  floor.addColorStop(0.5, "#78716c");
+  floor.addColorStop(1, "#44403c");
   ctx.fillStyle = floor;
   ctx.fillRect(0, floorY - h * 0.04, w, h - floorY + h * 0.04);
 
-  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.fillStyle = "rgba(15,23,42,0.06)";
+  for (let i = 0; i < 28; i++) {
+    ctx.fillRect(0, floorY + (i / 28) * (h - floorY), w, 1);
+  }
+  // soft lane arrows on gang
+  ctx.strokeStyle = "rgba(255,255,255,0.1)";
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 12]);
   ctx.beginPath();
@@ -155,8 +197,7 @@ function drawStadiumAtmosphere(
 }
 
 /**
- * Freigestellte Tribünen (tribune-block-blue/grey/red.png) auf dem Derby-BG.
- * Flush strip: grey centered, blue/red abutting; uniform scale — never distort.
+ * Freigestellte Tribünen — flush strip, grey centered, uniform scale (no distort).
  */
 function drawBlocks(
   ctx: CanvasRenderingContext2D,
@@ -201,14 +242,12 @@ function drawBlocks(
     ctx.fillStyle = g;
     ctx.fillRect(left - 10, top - 8, bw + 20, bh + 20);
 
-    // Soft contact shadow under tribune (no procedural shell)
     ctx.fillStyle = "rgba(0,0,0,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, top + bh * 0.92, bw * 0.42, bh * 0.08, 0, 0, Math.PI * 2);
     ctx.fill();
 
     const tribSrc = tribuneIconPath(b.id);
-    // Exact pack rect, pad=0 — aspect already baked into tribuneLayout.
     const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
     if (!drew) {
       ctx.fillStyle =
@@ -217,7 +256,6 @@ function drawBlocks(
       ctx.fill();
     }
 
-    // label chip
     const label = labels[b.id] ?? "Block";
     const chipW = Math.max(54, bw * 0.48);
     const chipH = Math.max(18, h * 0.024);
@@ -239,7 +277,6 @@ function drawBlocks(
     );
     ctx.textBaseline = "alphabetic";
 
-    // Exit path toward gang (tribune arches already in PNG)
     const d = doorPos(b.id);
     const doorW = bw * L.doorFrac * 0.85;
     const corridorTop = d.y * h;
@@ -253,39 +290,103 @@ function drawBlocks(
 
 function drawSeats(
   ctx: CanvasRenderingContext2D,
-  m: Match,
+  _m: Match,
   w: number,
   h: number,
 ): void {
+  // Decorative terrace marks only — fans wander freely, so no fixed
+  // team-colored "occupied seat" cushions glued to the grid.
   for (const b of BLOCK_META) {
     for (let i = 0; i < SEATS_PER_BLOCK; i++) {
       const p = seatPos(b.id, i);
       const x = p.x * w;
       const y = p.y * h;
-      const occ = m.seatOccupied(b.id, i);
-      // No buy "+" in blocks — hiring is via Personen-Rail only
-      let cushion = occ ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.14)";
-      if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.18)";
-      else if (occ?.team === "vfb") cushion = "rgba(220,38,38,0.18)";
-
-      ctx.fillStyle = cushion;
-      roundRect(ctx, x - 9, y - 3, 18, 8, 3);
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      roundRect(ctx, x - 8, y - 2, 16, 6, 3);
       ctx.fill();
-
-      // Capture ring on converting neutrals
-      if (occ?.team === "neutral" && Math.abs(occ.captureProg) > 0.08) {
-        const prog = Math.abs(occ.captureProg);
-        ctx.strokeStyle =
-          occ.captureProg > 0
-            ? `rgba(59,130,246,${0.4 + prog * 0.5})`
-            : `rgba(239,68,68,${0.4 + prog * 0.5})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
-        ctx.stroke();
-      }
     }
   }
+}
+
+/** Center scoreboard + momentum strip (Matchday Comic / mockup) */
+function drawScoreboard(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  // Keep scoreboard inside the top third (above the stands)
+  const boardW = Math.min(w * 0.38, h * 0.42);
+  const boardH = Math.min(boardW * (720 / 1280) * 0.68, h * 0.22);
+  const bx = (w - boardW) / 2;
+  const by = h * 0.008;
+  // Soft stadium glow behind board
+  const glow = ctx.createRadialGradient(
+    w * 0.5,
+    by + boardH * 0.55,
+    4,
+    w * 0.5,
+    by + boardH * 0.4,
+    boardW * 0.7,
+  );
+  glow.addColorStop(0, "rgba(255,250,220,0.18)");
+  glow.addColorStop(1, "rgba(255,250,220,0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(bx - 20, by - 8, boardW + 40, boardH + 24);
+
+  const drew = drawIcon(ctx, UI_ICONS.scoreboard, bx, by, boardW, boardH, 0.02);
+  if (!drew) {
+    // fallback panel
+    ctx.fillStyle = "rgba(15,23,42,0.88)";
+    roundRect(ctx, bx, by, boardW, boardH * 0.62, 10);
+    ctx.fill();
+  }
+
+  // Live score + minute overlaid on board face
+  const faceY = by + boardH * 0.22;
+  const faceH = boardH * 0.38;
+  ctx.save();
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = `900 ${Math.max(16, Math.floor(faceH * 0.72))}px Outfit, Manrope, sans-serif`;
+  ctx.shadowColor = "rgba(0,0,0,0.65)";
+  ctx.shadowBlur = 6;
+  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w * 0.5, faceY + faceH * 0.42);
+  ctx.shadowBlur = 0;
+  ctx.font = `800 ${Math.max(10, Math.floor(faceH * 0.32))}px Outfit, Manrope, sans-serif`;
+  ctx.fillStyle = "#e2e8f0";
+  const min = Math.floor(m.minute ?? 0);
+  ctx.fillText(`${min}′`, w * 0.5 + boardW * 0.38, by + boardH * 0.12);
+
+  // Momentum strip: who scores next (single % pair — no conflicting Torchance %)
+  const barY = by + boardH * 0.78;
+  const barH = Math.max(14, boardH * 0.16);
+  const barX = bx + boardW * 0.08;
+  const barW = boardW * 0.84;
+  const ch = m.goalChance();
+  const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
+  roundRect(ctx, barX, barY, barW, barH, 6);
+  ctx.fillStyle = "rgba(15,23,42,0.75)";
+  ctx.fill();
+  const split = barX + barW * heimPct;
+  ctx.fillStyle = "#2563eb";
+  roundRect(ctx, barX, barY, Math.max(4, split - barX), barH, 6);
+  ctx.fill();
+  ctx.fillStyle = "#dc2626";
+  roundRect(ctx, split, barY, Math.max(4, barX + barW - split), barH, 6);
+  ctx.fill();
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.55))}px Outfit, Manrope, sans-serif`;
+  ctx.textAlign = "left";
+  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, barX + 6, barY + barH / 2 + 0.5);
+  ctx.textAlign = "right";
+  ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, barX + barW - 6, barY + barH / 2 + 0.5);
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#e2e8f0";
+  ctx.font = `700 ${Math.max(8, Math.floor(barH * 0.42))}px Outfit, Manrope, sans-serif`;
+  ctx.fillText("nächstes Tor", w * 0.5, barY + barH / 2 + 0.5);
+  ctx.restore();
 }
 
 function drawGang(
@@ -415,7 +516,6 @@ function drawSlots(
   }
 }
 
-/** Kontrolle eines leeren Bauplatzes → Icon-Farbe (Standarte im Slot-Asset). */
 function slotControlForPlot(m: Match, s: BuildSlot): SlotControl {
   if (s.greyNeutral || s.owner === "neutral") return "grey";
   if (s.owner === "ksc") return "blue";
@@ -465,9 +565,9 @@ function drawTerritoryPennants(
     if (!team) continue;
     const p = pennantPos(s.blockId, s.index);
     const src = team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
-    const pw = Math.min(w * 0.055, h * 0.065);
+    const pw = Math.min(w * 0.045, h * 0.055);
     const ph = pw * 1.15;
-    const bob = Math.sin(m.realElapsed * 3.2 + s.blockId + s.index) * 2;
+    const bob = Math.sin(m.realElapsed * 3.2 + s.blockId + s.index) * 1.5;
     drawIcon(ctx, src, p.x * w - pw * 0.15, p.y * h - ph * 0.35 + bob, pw, ph, 0.02);
   }
 }
@@ -555,16 +655,25 @@ function drawBuilding(
     return;
   }
 
-  // Built plot: front faces the viewer (upright). Per-slot perspective only
-  // sets foot position + size from the VP facade math — no icon warp/yaw.
+  // Built plot: Leerfläche is gone. Anchor the stand on the floor-grid cell center.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
   let size = Math.min(bw, bh) * 0.98;
   let pq: ReturnType<typeof scaleQuad> | null = null;
-  let facade: ReturnType<typeof boothFacadeQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height);
+    const mid = {
+      x: (pq.tl.x + pq.tr.x + pq.br.x + pq.bl.x) / 4,
+      y: (pq.tl.y + pq.tr.y + pq.br.y + pq.bl.y) / 4,
+    };
+    const near = {
+      x: (pq.bl.x + pq.br.x) / 2,
+      y: (pq.bl.y + pq.br.y) / 2,
+    };
+    cx = mid.x * 0.55 + near.x * 0.45;
+    footY = mid.y * 0.4 + near.y * 0.6;
+    const cellW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
+    size = Math.max(28, cellW * 0.95);
   }
 
   const color = teamColor(
@@ -573,40 +682,19 @@ function drawBuilding(
   const lv = Math.max(1, Math.min(5, s.level || 1));
   const iconSrc = standIconPath(s.building, color, lv);
 
-  let drew = false;
-  if (facade && pq) {
-    cx = (facade.bl.x + facade.br.x) / 2;
-    footY = (facade.bl.y + facade.br.y) / 2;
-    const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
-    const topY = (facade.tl.y + facade.tr.y) / 2;
-    const facadeH = Math.max(1, footY - topY);
-    // Facade math drives size (far slots smaller); blit stays upright to viewer.
-    size = Math.max(32, Math.min(baseW * 1.05, facadeH));
-    ctx.fillStyle = "rgba(15,23,42,0.35)";
-    ctx.beginPath();
-    ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
-    ctx.fill();
-    drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
-      t: m.realElapsed,
-      phase: s.blockId * 1.7 + s.index * 0.9,
-      mode: "idle",
-      facing: 1,
-      hop: 0,
-    });
-  }
-  if (!drew) {
-    ctx.fillStyle = "rgba(15,23,42,0.35)";
-    ctx.beginPath();
-    ctx.ellipse(cx, footY + size * 0.04, size * 0.3, size * 0.075, 0, 0, Math.PI * 2);
-    ctx.fill();
-    drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
-      t: m.realElapsed,
-      phase: s.blockId * 1.7 + s.index * 0.9,
-      mode: "idle",
-      facing: 1,
-      hop: 0,
-    });
-  }
+  // Soft ground contact on the plot (no empty Bauplatz under a built stand).
+  ctx.fillStyle = "rgba(15,23,42,0.35)";
+  ctx.beginPath();
+  ctx.ellipse(cx, footY + size * 0.06, size * 0.32, size * 0.08, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
+    t: m.realElapsed,
+    phase: s.blockId * 1.7 + s.index * 0.9,
+    mode: s.prodFlash > 0.2 ? "cheer" : "idle",
+    facing: 1,
+    hop: 0,
+  });
   if (!drew) {
     ctx.fillStyle = grey ? "#e2e8f0" : player ? "#eff6ff" : ai ? "#fef2f2" : "#f8fafc";
     roundRect(ctx, x, y, bw, bh, r);
@@ -640,74 +728,56 @@ function drawBuilding(
     const left = Math.max(0, STAND_CONVERT_SEC - s.convertAcc);
     const col = s.convertBy === "ksc" ? "#3b82f6" : "#ef4444";
     const rr = Math.min(bw, bh) * 0.16;
-    const ringY = footY - size * 0.55;
     ctx.save();
     ctx.strokeStyle = "rgba(0,0,0,0.45)";
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.arc(cx, ringY, rr, 0, Math.PI * 2);
+    ctx.arc(cx, y + bh * 0.14, rr, 0, Math.PI * 2);
     ctx.stroke();
     ctx.strokeStyle = col;
     ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.arc(cx, ringY, rr, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
+    ctx.arc(cx, y + bh * 0.14, rr, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
     ctx.stroke();
     ctx.fillStyle = "#fff";
     ctx.font = `700 ${Math.max(9, Math.floor(rr * 0.7))}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(`${Math.ceil(left)}`, cx, ringY + 1);
+    ctx.fillText(`${Math.ceil(left)}`, cx, y + bh * 0.14 + 1);
     ctx.textBaseline = "alphabetic";
     ctx.restore();
   }
 
   if (s.building === "ordner" && s.structMaxHp > 0) {
     const pct = Math.max(0, Math.min(1, s.structHp / s.structMaxHp));
-    const barW = size * 0.7;
-    const barX = cx - barW / 2;
-    const barY = footY + size * 0.08;
+    const barW = bw - 10;
     ctx.fillStyle = "rgba(15,23,42,0.55)";
-    ctx.fillRect(barX, barY, barW, 4);
+    ctx.fillRect(x + 5, y + bh - 8, barW, 4);
     ctx.fillStyle = pct > 0.45 ? "#22c55e" : pct > 0.2 ? "#f59e0b" : "#ef4444";
-    ctx.fillRect(barX, barY, barW * pct, 4);
+    ctx.fillRect(x + 5, y + bh - 8, barW * pct, 4);
   }
 
-  // level pips above the stand
+  // level pips
   if (!grey || (s.convertBy && convT > 0.5)) {
-    const pipW = Math.min(7, size / 5 - 1);
-    const pipX0 = cx - (5 * (pipW + 2) - 2) / 2;
-    const pipY = footY - size * 0.95;
+    const pipW = Math.min(7, (bw - 12) / 5 - 1);
     for (let i = 0; i < 5; i++) {
       ctx.fillStyle = i < lv ? "#fde68a" : "rgba(0,0,0,0.45)";
-      ctx.fillRect(pipX0 + i * (pipW + 2), pipY, pipW, 4);
+      ctx.fillRect(x + 5 + i * (pipW + 2), y + 3, pipW, 4);
     }
   }
 
   if (sel) {
     ctx.strokeStyle = "#22c55e";
     ctx.lineWidth = 3;
-    if (pq) {
-      ctx.beginPath();
-      ctx.moveTo(pq.tl.x, pq.tl.y);
-      ctx.lineTo(pq.tr.x, pq.tr.y);
-      ctx.lineTo(pq.br.x, pq.br.y);
-      ctx.lineTo(pq.bl.x, pq.bl.y);
-      ctx.closePath();
-      ctx.stroke();
-    } else {
-      roundRect(ctx, x + 1, y + 1, bw - 2, bh - 2, r);
-      ctx.stroke();
-    }
+    roundRect(ctx, x + 1, y + 1, bw - 2, bh - 2, r);
+    ctx.stroke();
   }
 
   if (s.building === "bier" && !grey) {
-    const barW = size * 0.7;
-    const barX = cx - barW / 2;
-    const barY = footY + size * 0.1;
     ctx.fillStyle = "rgba(0,0,0,0.45)";
-    ctx.fillRect(barX, barY, barW, 4);
+    ctx.fillRect(x + 6, y + bh - 10, bw - 12, 4);
     ctx.fillStyle = "#fde68a";
-    ctx.fillRect(barX, barY, barW * (s.beer / s.capacity), 4);
+    ctx.fillRect(x + 6, y + bh - 10, (bw - 12) * (s.beer / s.capacity), 4);
   }
 }
 
@@ -766,7 +836,26 @@ function drawFans(
     return za - zb || a.y - b.y;
   });
   for (const f of sorted) {
-    drawMannchen(ctx, m, f, f.x * w, f.y * h, h);
+    const x = f.x * w;
+    const y = f.y * h;
+    // Capture ring follows the person (not a fixed seat cell)
+    if (
+      f.team === "neutral" &&
+      !f.isSteward &&
+      f.state === "block" &&
+      Math.abs(f.captureProg) > 0.08
+    ) {
+      const prog = Math.abs(f.captureProg);
+      ctx.strokeStyle =
+        f.captureProg > 0
+          ? `rgba(59,130,246,${0.4 + prog * 0.5})`
+          : `rgba(239,68,68,${0.4 + prog * 0.5})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
+      ctx.stroke();
+    }
+    drawMannchen(ctx, m, f, x, y, h);
   }
 }
 
@@ -799,14 +888,8 @@ function lerpHex(a: string, b: string, t: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1)}`;
 }
 
-function unitVisualLevel(m: Match, team: FanUnit["team"]): number {
-  let maxLv = 1;
-  for (const s of m.slots) {
-    if (s.building && s.owner === team && !s.greyNeutral) {
-      maxLv = Math.max(maxLv, s.level || 1);
-    }
-  }
-  return Math.max(1, Math.min(5, maxLv));
+function unitVisualLevel(f: FanUnit): number {
+  return Math.max(1, Math.min(5, Math.floor(f.level) || 1));
 }
 
 function fanFacing(f: FanUnit): number {
@@ -1275,8 +1358,9 @@ function drawSteward(
   const neutral = f.team === "neutral";
   const hpCol = neutral ? "#a8a29e" : "#facc15";
   const size = Math.max(24, h * 0.07);
-  const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(m, f.team));
+  const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(f));
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
+  const onGang = f.state === "gang" || f.state === "moving";
   const facing =
     f.state === "moving" || f.path.length > f.pathI
       ? fanFacing(f)
@@ -1298,18 +1382,6 @@ function drawSteward(
       actionProg: anim.actionProg,
     })
   ) {
-    if (anim.prop === "fist" || anim.mode === "fight") {
-      drawToyProp(
-        ctx,
-        "fist",
-        x,
-        y,
-        size,
-        facing,
-        m.realElapsed + phase,
-        Math.max(anim.propI, f.armSwing),
-      );
-    }
     const bw = size * 0.7;
     ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fillRect(x - bw / 2, y + size * 0.12, bw, 3);
@@ -1400,31 +1472,17 @@ function drawFloats(
   for (const f of m.floats) {
     const alpha = Math.min(1, f.t / 0.35);
     ctx.globalAlpha = alpha;
-    const x = f.x * w;
-    const y = f.y * h;
-    ctx.font = `800 ${Math.floor(h * 0.028)}px Outfit, Manrope, sans-serif`;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
+    ctx.font = `700 ${Math.floor(h * 0.026)}px Manrope, sans-serif`;
+    ctx.textAlign = "center";
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(0,0,0,0.55)";
-    ctx.fillStyle = f.good ? "#86efac" : "#fca5a5";
-
-    if (f.currency) {
-      const sz = Math.min(w, h) * 0.055;
-      const ix = x - sz * 0.85;
-      const iy = y - sz * 0.5;
-      drawIcon(ctx, currencyIconPath(f.currency), ix, iy, sz, sz, 0.04);
-      ctx.textAlign = "left";
-      ctx.strokeText(f.text, x + sz * 0.2, y);
-      ctx.fillText(f.text, x + sz * 0.2, y);
-    } else {
-      ctx.textAlign = "center";
-      ctx.strokeText(f.text, x, y);
-      ctx.fillText(f.text, x, y);
-    }
+    ctx.fillStyle = f.good ? "#6bcb77" : "#f87171";
+    const x = f.x * w;
+    const y = f.y * h;
+    ctx.strokeText(f.text, x, y);
+    ctx.fillText(f.text, x, y);
   }
   ctx.globalAlpha = 1;
-  ctx.textBaseline = "alphabetic";
 }
 
 function drawConfetti(

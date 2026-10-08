@@ -9,7 +9,7 @@
       "orientation": "perspective-floor",
       "control": "grey",
       "locked": true,
-      "notes": "Deploy-Default = Stadionboden-Perspektive (vorn breiter, hinten schmaler). Alias von slot-empty-persp.png. Fahnenlos; Teamfarbe über Boden."
+      "notes": "Deploy-Default = Stadionboden-Perspektive (vorn breiter, hinten schmaler). Alias von slot-empty-persp.png."
     },
     "slotEmptyParallel": {
       "path": "ui/slot-empty-parallel.png",
@@ -17,7 +17,7 @@
       "control": "grey",
       "orientation": "perspective-floor",
       "locked": true,
-      "notes": "Runtime-Default-Pfad — Inhalt = Stadionboden-Perspektive (identisch slot-empty-persp.png). Fahnenlos; Teamfarbe über Boden."
+      "notes": "Runtime-Default-Pfad — Inhalt = Stadionboden-Perspektive (identisch slot-empty-persp.png)."
     },
     "slotEmptyIso": {
       "path": "ui/slot-empty-iso.png",
@@ -33,7 +33,7 @@
       "control": "blue",
       "orientation": "perspective-floor",
       "locked": true,
-      "notes": "Fahnenlos; Teamfarbe über Bodentönung (nicht Standarte im Icon)."
+      "notes": "Runtime-Pfad = slot-empty-persp-blue.png"
     },
     "slotEmptyParallelRed": {
       "path": "ui/slot-empty-parallel-red.png",
@@ -42,7 +42,7 @@
       "control": "red",
       "orientation": "perspective-floor",
       "locked": true,
-      "notes": "Fahnenlos; Teamfarbe über Bodentönung (nicht Standarte im Icon)."
+      "notes": "Runtime-Pfad = slot-empty-persp-red.png"
     },
     "slotEmptyIsoBlue": {
       "path": "ui/slot-empty-iso-blue.png",
@@ -82,7 +82,7 @@
       "control": "grey",
       "orientation": "perspective-floor",
       "locked": true,
-      "notes": "Trapez-Perspektive passend zum stadium-floodlight-derby-bg Bodenraster. Fahnenlos; Teamfarbe über Boden."
+      "notes": "Trapez-Perspektive passend zum stadium-floodlight-derby-bg Bodenraster."
     },
     "slotEmptyPerspBlue": {
       "path": "ui/slot-empty-persp-blue.png",
@@ -90,8 +90,7 @@
       "team": "ksc",
       "control": "blue",
       "orientation": "perspective-floor",
-      "locked": true,
-      "notes": "Fahnenlos; Teamfarbe über Bodentönung (nicht Standarte im Icon)."
+      "locked": true
     },
     "slotEmptyPerspRed": {
       "path": "ui/slot-empty-persp-red.png",
@@ -99,34 +98,14 @@
       "team": "vfb",
       "control": "red",
       "orientation": "perspective-floor",
-      "locked": true,
-      "notes": "Fahnenlos; Teamfarbe über Bodentönung (nicht Standarte im Icon)."
+      "locked": true
     },
     "slotEmptyOrtho": {
       "path": "ui/slot-empty-ortho.png",
-      "role": "bauplatz",
-      "control": "grey",
+      "role": "bauplatz-archiv",
       "orientation": "axis-aligned",
-      "locked": true,
-      "notes": "Warp-Quelle für Floor-Grid. Keine Fahne — neutraler Boden."
-    },
-    "slotEmptyOrthoBlue": {
-      "path": "ui/slot-empty-ortho-blue.png",
-      "role": "bauplatz-eigen",
-      "team": "ksc",
-      "control": "blue",
-      "orientation": "axis-aligned",
-      "locked": true,
-      "notes": "Warp-Quelle. Keine Fahne — Boden blau getönt."
-    },
-    "slotEmptyOrthoRed": {
-      "path": "ui/slot-empty-ortho-red.png",
-      "role": "bauplatz-eigen",
-      "team": "vfb",
-      "control": "red",
-      "orientation": "axis-aligned",
-      "locked": true,
-      "notes": "Warp-Quelle. Keine Fahne — Boden rot getönt."
+      "locked": false,
+      "notes": "Archiv: früheres gerades Parallel-Icon ohne Boden-Perspektive."
     }
   },
   "runtimeBinding": {

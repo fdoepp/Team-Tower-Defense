@@ -1,12 +1,9 @@
 import type { BuildingKind, FanKind, TeamId } from "./types";
-import { uiFinalIconPath, uiFinalNative } from "./uiFinal";
+import { uiFinalIconPath } from "./uiFinal";
 
 export type TeamColor = "blue" | "red" | "grey";
 
-/**
- * Prefer Final-UI DB (user-approved, freigestellt, preserve-aspect).
- * Falls back to legacy `icons/ui/` until the id is released.
- */
+/** Prefer Final-UI DB when released; else legacy icons/ui/. */
 function uiPath(id: string, legacy: string): string {
   return uiFinalIconPath(id) ?? legacy;
 }
@@ -20,53 +17,52 @@ export function teamColor(team: TeamId | "neutral" | null | undefined): TeamColo
   return "grey";
 }
 
-/** Soft-bound stand icon — always from `game/public/icons/stands/`. */
 export function standIconPath(
   kind: BuildingKind,
   color: TeamColor,
   level: number,
 ): string {
   const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
-  return `icons/stands/${kind}-${color}-${lv}.png`;
+  const finalId = `stand${kind[0].toUpperCase()}${kind.slice(1)}${color[0].toUpperCase()}${color.slice(1)}${lv}`;
+  return uiPath(finalId, `icons/stands/${kind}-${color}-${lv}.png`);
 }
 
-const UNIT_FILE: Record<FanKind | "ordner", string> = {
-  normalos: "fan",
-  ultras: "ultra",
-  hooligans: "hooligan",
-  ordner: "ordner",
-};
-
-/** Soft-bound unit icon — always from `game/public/icons/units/`. */
 export function unitIconPath(
   kind: FanKind | "ordner",
   color: TeamColor,
   level = 1,
 ): string {
+  const map: Record<FanKind | "ordner", string> = {
+    normalos: "fan",
+    ultras: "ultra",
+    hooligans: "hooligan",
+    ordner: "ordner",
+  };
   const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
-  return `icons/units/${UNIT_FILE[kind]}-${color}-${lv}.png`;
+  const base = map[kind];
+  const finalId = `${base}${color[0].toUpperCase()}${color.slice(1)}${lv}`;
+  return uiPath(finalId, `icons/units/${base}-${color}-${lv}.png`);
 }
-
-/** Soft-bound head crop for Personen-Rail (Icon-Agent heads/). */
-export function unitHeadIconPath(
-  kind: FanKind | "ordner",
-  color: TeamColor,
-  level = 1,
-): string {
-  const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
-  return `icons/units/heads/${UNIT_FILE[kind]}-${color}-${lv}.png`;
-}
-
-/** Deploy-Default: parallel zum Bildrand (iso nur Alternate). */
-export type SlotEmptyOrientation = "parallel" | "iso";
-export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "parallel";
 
 export type SlotControl = "blue" | "red" | "grey";
+export type SlotEmptyOrientation = "parallel" | "iso";
+/** Preview orientation when FLOOR_GRID_COUPLE is off. */
+export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "parallel";
+
+export const SCENE_ASSETS = {
+  tribuneBlue: uiPath("tribuneBlue", "assets/tribune-block-blue.png"),
+  tribuneGrey: uiPath("tribuneGrey", "assets/tribune-block-grey.png"),
+  tribuneRed: uiPath("tribuneRed", "assets/tribune-block-red.png"),
+} as const;
+
+export function tribuneIconPath(blockId: number): string {
+  if (blockId === 0) return SCENE_ASSETS.tribuneBlue;
+  if (blockId === 2) return SCENE_ASSETS.tribuneRed;
+  return SCENE_ASSETS.tribuneGrey;
+}
 
 /**
- * Kanonische UI-Assets.
- * Released keys resolve from UI_FINAL_DB (`icons/ui-final/…`);
- * otherwise legacy `icons/ui/…` until you approve them.
+ * UI icons — released keys from UI_FINAL_DB (`icons/ui-final/…`).
  * Draw only with uniform scale (drawIcon / fitUniform) — never distort.
  */
 export const UI_ICONS = {
@@ -83,7 +79,6 @@ export const UI_ICONS = {
   ),
   slotEmptyIsoBlue: uiPath("slotEmptyIsoBlue", "icons/ui/slot-empty-iso-blue.png"),
   slotEmptyIsoRed: uiPath("slotEmptyIsoRed", "icons/ui/slot-empty-iso-red.png"),
-  /** Axis-aligned, flagless source — ground tinted by team; warped into floor-grid quads. */
   slotEmptyOrtho: uiPath("slotEmptyOrtho", "icons/ui/slot-empty-ortho.png"),
   slotEmptyOrthoBlue: uiPath("slotEmptyOrthoBlue", "icons/ui/slot-empty-ortho-blue.png"),
   slotEmptyOrthoRed: uiPath("slotEmptyOrthoRed", "icons/ui/slot-empty-ortho-red.png"),
@@ -95,57 +90,16 @@ export const UI_ICONS = {
   btnKaufenGreen: uiPath("btnKaufenGreen", "icons/ui/btn-kaufen-green.png"),
   btnSendenGrey: uiPath("btnSendenGrey", "icons/ui/btn-senden-grey.png"),
   btnSendenGreen: uiPath("btnSendenGreen", "icons/ui/btn-senden-green.png"),
-  btnSendenBlue: uiPath("btnSendenBlue", "icons/ui/btn-senden-blue.png"),
-  btnBauenAmber: uiPath("btnBauenAmber", "icons/ui/btn-bauen-amber.png"),
-  btnBauenGrey: uiPath("btnBauenGrey", "icons/ui/btn-bauen-grey.png"),
-  btnUpgradePurple: uiPath("btnUpgradePurple", "icons/ui/btn-upgrade-purple.png"),
-  btnUpgradeGrey: uiPath("btnUpgradeGrey", "icons/ui/btn-upgrade-grey.png"),
   pennantKsc: uiPath("pennantKsc", "icons/ui/pennant-ksc.png"),
   pennantVfb: uiPath("pennantVfb", "icons/ui/pennant-vfb.png"),
   menuRail: uiPath("menuRail", "icons/ui/menu-rail-brown.png"),
-  menuRailTile: uiPath("menuRailTile", "icons/ui/menu-rail-brown-tile.png"),
-  /** HUD_TOP_CANON — Broadcast Bubble (freigestellt) */
-  scoreboard: uiPath("scoreboard", "icons/ui/scoreboard-top.png"),
-  scoreboardOrbHeim: uiPath("scoreboardOrbHeim", "icons/ui/scoreboard-top-orb-heim.png"),
-  scoreboardOrbGast: uiPath("scoreboardOrbGast", "icons/ui/scoreboard-top-orb-gast.png"),
+  scoreboard: uiPath("scoreboard", "icons/ui/scoreboard-momentum.png"),
 } as const;
-
-/** Native pixel size — prefer Final-DB; never squash/stretch away from this AR. */
-export const SCOREBOARD_NATIVE = uiFinalNative("scoreboard") ?? { w: 1041, h: 508 };
-export const SCOREBOARD_AR = SCOREBOARD_NATIVE.w / SCOREBOARD_NATIVE.h;
-
-/**
- * Stadium scene (Konzept-Agent / stadium-background.mdc).
- * Derby-BG + freigestellte Tribünen — nie verzerren (Cover/Contain).
- */
-export const SCENE_ASSETS = {
-  stadiumBg: "assets/stadium-floodlight-derby-bg.jpg",
-  tribuneBlue: "assets/tribune-block-blue.png",
-  tribuneGrey: "assets/tribune-block-grey.png",
-  tribuneRed: "assets/tribune-block-red.png",
-} as const;
-
-export function tribuneIconPath(blockId: number): string {
-  if (blockId === 0) return SCENE_ASSETS.tribuneBlue;
-  if (blockId === 2) return SCENE_ASSETS.tribuneRed;
-  return SCENE_ASSETS.tribuneGrey;
-}
-
-export function currencyIconPath(
-  currency: "beer" | "merch" | "security" | "gold",
-): string {
-  if (currency === "beer") return UI_ICONS.currencyBier;
-  if (currency === "merch") return UI_ICONS.currencyFanartikel;
-  if (currency === "security") return UI_ICONS.currencySicherheit;
-  return UI_ICONS.currencyGold;
-}
 
 /**
  * Leerer Bauplatz je Kontrolle.
- * Team → Plot + Standarte im Icon; grau → ohne Standarte.
- *
- * When `orthoSource` is true (floor-grid couple), return the axis-aligned
- * flagless source PNGs (team color via ground tint) — warped into the cell.
+ * When `orthoSource` is true (floor-grid couple), return axis-aligned flagless
+ * source PNGs (team color via ground tint) — warped into the cell.
  */
 export function slotEmptyIconPath(
   control: SlotControl | TeamId | "neutral" | null | undefined,
@@ -173,6 +127,65 @@ export function slotEmptyIconPath(
   return UI_ICONS.slotEmptyParallel;
 }
 
+function loadOne(src: string): Promise<HTMLImageElement> {
+  const hit = cache.get(src);
+  if (hit?.complete && hit.naturalWidth > 0) return Promise.resolve(hit);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.decoding = "async";
+    img.onload = () => {
+      cache.set(src, img);
+      resolve(img);
+    };
+    img.onerror = () => {
+      // Keep a placeholder so callers can fall back to vector draw
+      cache.set(src, img);
+      resolve(img);
+    };
+    img.src = src;
+  });
+}
+
+/** All icon paths used in a match (stands × colors × levels + units + UI). */
+function allIconPaths(): string[] {
+  const paths = new Set<string>([
+    ...Object.values(UI_ICONS),
+    ...Object.values(SCENE_ASSETS),
+  ]);
+  for (const kind of ["bier", "fanshop", "ordner"] as BuildingKind[]) {
+    for (const color of ["blue", "red", "grey"] as TeamColor[]) {
+      for (let lv = 1; lv <= 5; lv++) paths.add(standIconPath(kind, color, lv));
+    }
+  }
+  for (const kind of ["normalos", "ultras", "hooligans", "ordner"] as const) {
+    for (const color of ["blue", "red", "grey"] as TeamColor[]) {
+      for (let lv = 1; lv <= 5; lv++) paths.add(unitIconPath(kind, color, lv));
+    }
+  }
+  for (const orient of ["parallel", "iso"] as SlotEmptyOrientation[]) {
+    for (const c of ["grey", "blue", "red"] as SlotControl[]) {
+      paths.add(slotEmptyIconPath(c, orient));
+    }
+  }
+  for (const c of ["grey", "blue", "red"] as SlotControl[]) {
+    paths.add(slotEmptyIconPath(c, undefined, true));
+  }
+  return [...paths];
+}
+
+export function preloadIcons(): Promise<void> {
+  if (preloadPromise) return preloadPromise;
+  preloadPromise = Promise.all(allIconPaths().map(loadOne)).then(() => undefined);
+  return preloadPromise;
+}
+
+export function getIcon(src: string): HTMLImageElement | null {
+  const img = cache.get(src);
+  if (img && img.complete && img.naturalWidth > 0) return img;
+  if (!cache.has(src)) void loadOne(src);
+  return null;
+}
+
 type Pt = { x: number; y: number };
 
 /**
@@ -192,9 +205,7 @@ export function drawIconQuad(
   const iw = img.naturalWidth;
   const ih = img.naturalHeight;
   if (iw < 2 || ih < 2) return false;
-  // Triangle 1: TL-TR-BL  ←→  (0,0)-(iw,0)-(0,ih)
   drawTexturedTriangle(ctx, img, tl, tr, bl, { x: 0, y: 0 }, { x: iw, y: 0 }, { x: 0, y: ih });
-  // Triangle 2: TR-BR-BL  ←→  (iw,0)-(iw,ih)-(0,ih)
   drawTexturedTriangle(ctx, img, tr, br, bl, { x: iw, y: 0 }, { x: iw, y: ih }, { x: 0, y: ih });
   return true;
 }
@@ -218,15 +229,12 @@ function drawTexturedTriangle(
   ctx.closePath();
   ctx.clip();
 
-  // Solve affine: [x y 1] = [u v 1] * M
   const denom =
     ia.x * (ib.y - ic.y) + ib.x * (ic.y - ia.y) + ic.x * (ia.y - ib.y);
   if (Math.abs(denom) < 1e-6) {
     ctx.restore();
     return;
   }
-  // Map from texture → screen
-  // Using determinant form for the 2x3 affine matrix
   const m11 =
     (a.x * (ib.y - ic.y) + b.x * (ic.y - ia.y) + c.x * (ia.y - ib.y)) / denom;
   const m12 =
@@ -246,86 +254,12 @@ function drawTexturedTriangle(
       c.y * (ia.x * ib.y - ib.x * ia.y)) /
     denom;
 
-  // Multiply onto current transform (keeps main.ts DPR scale).
   ctx.transform(m11, m21, m12, m22, m13, m23);
   ctx.drawImage(img, 0, 0);
   ctx.restore();
 }
 
-function loadOne(src: string): Promise<HTMLImageElement> {
-  const hit = cache.get(src);
-  if (hit?.complete && hit.naturalWidth > 0) return Promise.resolve(hit);
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.decoding = "async";
-    img.onload = () => {
-      cache.set(src, img);
-      resolve(img);
-    };
-    img.onerror = () => {
-      cache.set(src, img);
-      resolve(img);
-    };
-    img.src = src;
-  });
-}
-
-function allIconPaths(): string[] {
-  const paths = new Set<string>([
-    ...Object.values(UI_ICONS),
-    ...Object.values(SCENE_ASSETS),
-  ]);
-  for (const orient of ["parallel", "iso"] as SlotEmptyOrientation[]) {
-    for (const c of ["grey", "blue", "red"] as SlotControl[]) {
-      paths.add(slotEmptyIconPath(c, orient));
-    }
-  }
-  for (const kind of ["bier", "fanshop", "ordner"] as BuildingKind[]) {
-    for (const color of ["blue", "red", "grey"] as TeamColor[]) {
-      for (let lv = 1; lv <= 5; lv++) paths.add(standIconPath(kind, color, lv));
-    }
-  }
-  for (const kind of ["normalos", "ultras", "hooligans", "ordner"] as const) {
-    for (const color of ["blue", "red", "grey"] as TeamColor[]) {
-      for (let lv = 1; lv <= 5; lv++) {
-        paths.add(unitIconPath(kind, color, lv));
-        paths.add(unitHeadIconPath(kind, color, lv));
-      }
-    }
-  }
-  return [...paths];
-}
-
-export function preloadIcons(): Promise<void> {
-  if (preloadPromise) return preloadPromise;
-  preloadPromise = Promise.all(allIconPaths().map(loadOne)).then(() => undefined);
-  return preloadPromise;
-}
-
-export function getIcon(src: string): HTMLImageElement | null {
-  const img = cache.get(src);
-  if (img && img.complete && img.naturalWidth > 0) return img;
-  if (!cache.has(src)) void loadOne(src);
-  return null;
-}
-
-/** Uniform fit of a native size into a max box — never squash. */
-export function fitUniform(
-  natW: number,
-  natH: number,
-  maxW: number,
-  maxH: number,
-): { w: number; h: number; scale: number } {
-  const nw = Math.max(1, natW);
-  const nh = Math.max(1, natH);
-  const scale = Math.min(maxW / nw, maxH / nh);
-  return { w: nw * scale, h: nh * scale, scale };
-}
-
-/**
- * Draw a freigestelltes icon centered in a rect, preserving aspect ratio.
- * Never squash/stretch — only uniform scale (Contain).
- */
+/** Draw a freigestelltes icon centered in a rect, preserving aspect ratio. */
 export function drawIcon(
   ctx: CanvasRenderingContext2D,
   src: string,
@@ -341,61 +275,12 @@ export function drawIcon(
   const py = h * pad;
   const aw = Math.max(1, w - px * 2);
   const ah = Math.max(1, h - py * 2);
-  const { w: dw, h: dh } = fitUniform(img.naturalWidth, img.naturalHeight, aw, ah);
-  const dx = x + (w - dw) / 2;
-  const dy = y + (h - dh) / 2;
-  ctx.drawImage(img, dx, dy, dw, dh);
-  return true;
-}
-
-/**
- * Draw image at exact native aspect into a max box (top-centered).
- * Returns the drawn rect, or null if not loaded.
- */
-export function drawUniformInBox(
-  ctx: CanvasRenderingContext2D,
-  src: string,
-  boxX: number,
-  boxY: number,
-  maxW: number,
-  maxH: number,
-): { x: number; y: number; w: number; h: number } | null {
-  const img = getIcon(src);
-  if (!img) return null;
-  const natW = img.naturalWidth || SCOREBOARD_NATIVE.w;
-  const natH = img.naturalHeight || SCOREBOARD_NATIVE.h;
-  const { w: dw, h: dh } = fitUniform(natW, natH, maxW, maxH);
-  const dx = boxX + (maxW - dw) / 2;
-  const dy = boxY;
-  ctx.drawImage(img, dx, dy, dw, dh);
-  return { x: dx, y: dy, w: dw, h: dh };
-}
-
-/**
- * Cover a rect with an image (uniform scale, crop overflow).
- * Preserves aspect — never distorts.
- */
-export function drawImageCover(
-  ctx: CanvasRenderingContext2D,
-  src: string,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-): boolean {
-  const img = getIcon(src);
-  if (!img) return false;
-  const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  const scale = Math.min(aw / img.naturalWidth, ah / img.naturalHeight);
   const dw = img.naturalWidth * scale;
   const dh = img.naturalHeight * scale;
   const dx = x + (w - dw) / 2;
   const dy = y + (h - dh) / 2;
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x, y, w, h);
-  ctx.clip();
   ctx.drawImage(img, dx, dy, dw, dh);
-  ctx.restore();
   return true;
 }
 
