@@ -792,11 +792,12 @@ select {
   /* Gemessen am Original-Cutout (1041×508): Orb-Zentrum + Score-Ink */
   --sb-orb-cx: 49.75%;
   --sb-orb-cy: 13.5%;
-  --sb-orb-w: 9.9%;
-  --sb-score-l: 35.1%;
-  --sb-score-t: 22.1%;
-  --sb-score-w: 29.7%;
-  --sb-score-h: 31.5%;
+  /* Etwas kleiner als volle Grünfläche → Holzring + Orb-Glanz bleiben vom PNG */
+  --sb-orb-w: 7.6%;
+  --sb-score-l: 33.06%;
+  --sb-score-t: 20.05%;
+  --sb-score-w: 33.68%;
+  --sb-score-h: 37.5%;
   position: relative;
   flex: 0 0 auto;
   width: min(48%, calc(36vh * var(--sb-nat-w) / var(--sb-nat-h)), 560px);
@@ -832,7 +833,10 @@ select {
   pointer-events: none;
 }
 
-/* Cream über eingebranntes 3:2 — gleiche Fläche/Farbe wie Original-Panel */
+/*
+ * Live-Werte über Original-Cutout (b-final-cutout, unverändert).
+ * Score-Maske = Cream-Panel-Farbe; Minute = nur Grünfläche (Holzring bleibt PNG).
+ */
 .match-shell.matchday .sb-score-mask {
   position: absolute;
   left: var(--sb-score-l);
@@ -843,14 +847,14 @@ select {
   align-items: center;
   justify-content: center;
   background: #f9dbb7;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .match-shell.matchday .sb-score {
   margin: 0;
   font-family: var(--display);
   font-weight: 900;
-  font-size: clamp(1.05rem, 5.2cqw, 2.15rem);
+  font-size: clamp(1.15rem, 5.6cqw, 2.35rem);
   color: #00162b;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -861,10 +865,6 @@ select {
   color: #b45309;
 }
 
-/*
- * Minute: nur die grüne Orb-Fläche abdecken (Holzring = Original-PNG).
- * Größe/Position am freigestellten Cutout gemessen — kein kleinerer Fake-Knopf.
- */
 .match-shell.matchday .sb-minute {
   position: absolute;
   left: var(--sb-orb-cx);
@@ -882,8 +882,8 @@ select {
   background: radial-gradient(
     circle at 38% 30%,
     #7ed957 0%,
-    #52b828 40%,
-    #3a9a18 70%,
+    #52b828 42%,
+    #3a9a18 72%,
     #2d7f12 100%
   );
   color: #fff;
