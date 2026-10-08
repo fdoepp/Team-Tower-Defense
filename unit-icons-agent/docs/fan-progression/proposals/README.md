@@ -32,3 +32,13 @@ Datei: `proposal-b-strip.png` / `b-fan-grey-1.png` … `5.png`
 ## Status Assets
 
 `assets/units/fan-grey-*.png` sind wieder die **Original**-Icons, bis ein Vorschlag freigegeben ist.
+
+
+## Vorschlag C — Bloons / Ordner-Stil (aktuell)
+
+Datei: `proposal-c-strip.png` / `c-fan-grey-1.png` … `5.png`
+
+- Grafiksprache wie **Ordner/Ultras**: großer Kopf, kurze Beine, dicke Outlines, flaches Cel-Shading
+- Weniger „echt“, mehr Comic/Toy (Bloons TD)
+- Ganzfigurig, Gimmick-Leiter ohne Ordner-Props (kein Clipboard)
+- Vergleich: `proposal-c-vs-ordner.png`
