@@ -1,0 +1,28 @@
+{
+  "status": "approved",
+  "updated": "2026-10-08",
+  "runtime": {
+    "css": "game/src/style.css",
+    "selectors": [".rail-rows", ".action-card.unit-card", ".action-card.build-card"],
+    "markup": "game/src/main.ts"
+  },
+  "scale": {
+    "token": "--rail-scale",
+    "formula": "clamp(0.68, min(100cqw/220px, 100cqh/480px), 1.08)",
+    "rule": "All card sizes = design base × --ur-scale; no per-property clamp floors"
+  },
+  "basesAtScale1": {
+    "ur-inset": "8px",
+    "ur-btn-h": "30px",
+    "ur-btn-font": "0.68rem",
+    "ur-btn-ico": "14px",
+    "head-base": "54px",
+    "head-max-frac": 0.34
+  },
+  "invariants": [
+    "Personen and Gebäude share the same scale tokens",
+    "Icons stay aspect-ratio 1/1",
+    "Left and right inset equal",
+    "No media-query scale overrides for unit-card/build-card"
+  ]
+}
