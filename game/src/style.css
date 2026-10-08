@@ -848,7 +848,7 @@ select {
   align-items: center;
   justify-content: center;
   background: #f9dbb7;
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .match-shell.matchday .sb-score {
