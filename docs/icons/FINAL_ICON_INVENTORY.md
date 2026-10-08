@@ -25,12 +25,12 @@ Zusätzlich (Legacy ohne Farb-Suffix, falls vorhanden): `bier-1..5.png`, `fansho
 
 ## 2. Lehrplatz & Wimpel (Kanon aus `icon-ui-einzeln-3755`)
 
-Stil Lehrplatz: **Pfosten + Seil** (Vorschlag C). Stil Wimpel: **Holzpfosten + Streifenfahne** (Vorschlag A). Register: `game/public/icons/ASSET_DB.json`.
+Stil Lehrplatz: **Pfosten + Seil** (Vorschlag C), Default-Orientierung **Perspektive** (Boden wird nach hinten schmaler). Stil Wimpel: **Holzpfosten + Streifenfahne** (Vorschlag A). Register: `game/public/icons/ASSET_DB.json`.
 
 | Element | Datei | Rolle |
 | --- | --- | --- |
-| Lehrplatz Default (parallel, grau) | `ui/slot-empty.png` (= `slot-empty-parallel.png`) | Bauplatz, Standarte aus |
-| Lehrplatz Heim / Gast | `ui/slot-empty-parallel-blue.png` / `-red.png` | Teamkontrolle, Standarte ein |
+| Lehrplatz Default (Perspektive, grau) | `ui/slot-empty.png` (= `slot-empty-persp.png`) | Bauplatz am Stadionboden, Standarte aus |
+| Lehrplatz Heim / Gast | `ui/slot-empty-persp-blue.png` / `-red.png` | Teamkontrolle, Standarte ein |
 | Lehrplatz Iso (Alt.) | `ui/slot-empty-iso*.png` | Orientierungs-Variante |
 | Wimpel Heim | `ui/pennant-ksc.png` | Besitz/Front Heim |
 | Wimpel Gast | `ui/pennant-vfb.png` | Besitz/Front Gast |
