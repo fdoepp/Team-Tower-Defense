@@ -1,0 +1,25 @@
+{
+  "id": "currency-fx-canon",
+  "status": "final",
+  "updated": "2026-10-08",
+  "runtimeHelper": "game/src/assets/currencyFx.ts",
+  "rule": ".cursor/rules/stadium-background.mdc",
+  "currencyFxPattern": "game/public/icons/ui/fx-{gain|spend}-{gold|bier|fanartikel|sicherheit}.png",
+  "momentumFx": "game/public/icons/ui/fx-gain-momentum.png",
+  "placement": {
+    "spend": "near_actor_or_shopper",
+    "gain_currency": "near_source_building_rising",
+    "gain_momentum": "above_fan_block_rising"
+  },
+  "files": [
+    "game/public/icons/ui/fx-gain-gold.png",
+    "game/public/icons/ui/fx-spend-gold.png",
+    "game/public/icons/ui/fx-gain-bier.png",
+    "game/public/icons/ui/fx-spend-bier.png",
+    "game/public/icons/ui/fx-gain-fanartikel.png",
+    "game/public/icons/ui/fx-spend-fanartikel.png",
+    "game/public/icons/ui/fx-gain-sicherheit.png",
+    "game/public/icons/ui/fx-spend-sicherheit.png",
+    "game/public/icons/ui/fx-gain-momentum.png"
+  ]
+}
