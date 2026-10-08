@@ -72,10 +72,11 @@ Linke und rechte Rail komponieren Karten zur Laufzeit — **keine** eingebackene
 4. Buttons: `btn-bauen-*` / `btn-upgrade-*`
 
 ### Einheiten
-1. Icon: `unitIconPath` → `game/public/icons/units/`
+1. Icon: `unitIconPath` → `game/public/icons/units/` (Level = zentraler Typ-Level)
 2. Kaufkosten: `unitBuyCost` ← `BUY_COST` / `STEWARD_HIRE_GOLD`
 3. Senden: `PYRO_FIGHT_MERCH` / `HOOLIGAN_ORDER_BEER`
-4. Buttons: `btn-kaufen-*` / `btn-senden-blue`
+4. Upgrade: `UNIT_UPGRADE_COST` / `Match.tryUpgradeUnit` (alle Personentypen)
+5. Buttons: `btn-kaufen-*` / `btn-senden-blue` / `btn-upgrade-*`
 
 Icon- oder Balance-Updates greifen automatisch beim nächsten Deploy/Match-Preload.  
 Spec: `docs/mockups/icons/ui-review/btn-vorschlaege/ACTION_CARD.md`.

@@ -366,6 +366,17 @@ select {
   margin-top: -2px;
 }
 
+.match-shell.matchday .unit-card .ac-cost-upgrade {
+  opacity: 0.95;
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+.match-shell.matchday .unit-card .ac-cost-upgrade.poor,
+.match-shell.matchday .unit-card .ac-cost-upgrade.maxed {
+  opacity: 0.55;
+}
+
 .match-shell.matchday .ur-count {
   font-family: var(--display);
   font-size: 1.15rem;

@@ -39,10 +39,10 @@ Eine Karte = **ein Objekt**. Mehrere Aktionen am gleichen Objekt = mehrere Butto
 
 | Kontext | Objekt | Preis | Button |
 |---|---|---|---|
-| Linke Rail · Fans | Fan-Icon | Sicherheit | KAUFEN |
-| Linke Rail · Ultras | Ultra-Icon | Fanartikel | KAUFEN + SENDEN |
-| Linke Rail · Hooligans | Hooligan-Icon | Bier | KAUFEN + SENDEN |
-| Linke Rail · Ordner | Ordner-Icon | Gold | KAUFEN (Anheuern) |
+| Linke Rail · Fans | Fan-Icon | Sicherheit / Gold | KAUFEN + UPGRADE |
+| Linke Rail · Ultras | Ultra-Icon | Fanartikel / Gold | KAUFEN + SENDEN + UPGRADE |
+| Linke Rail · Hooligans | Hooligan-Icon | Bier / Gold | KAUFEN + SENDEN + UPGRADE |
+| Linke Rail · Ordner | Ordner-Icon | Gold | KAUFEN + UPGRADE |
 | Rechte Rail · Neubau | Stand-Icon Lv1 | Gold | **BAUEN** (nicht Kaufen-Asset) |
 | Rechte Rail · Upgrade | LvN → LvN+1 Icons | Gold (dynamisch) | **UPGRADE** |
 
@@ -69,11 +69,13 @@ Action Cards **backen weder Icons noch Kosten ein**. Sync liest immer aus `types
 
 | Schicht | Quelle |
 |---|---|
-| Icon | `unitIconPath` → `icons/units/…` |
-| Name | `UNIT_FULL_LABEL` |
+| Icon | `unitIconPath` → `icons/units/…` (Level = zentraler Typ-Level) |
+| Name | `UNIT_FULL_LABEL` (+ `LvN` ab Stufe 2) |
 | Kaufkosten | `unitBuyCost` ← `BUY_COST` / `STEWARD_HIRE_GOLD` |
 | Senden-Kosten | `PYRO_FIGHT_MERCH` / `HOOLIGAN_ORDER_BEER` |
-| Button | `btnKaufen*` / `btnSendenBlue` |
+| Upgrade-Kosten | `UNIT_UPGRADE_COST` / `unitUpgradeCost` (Gold) |
+| Typ-Level | `Match.unitLevels` · `tryUpgradeUnit` |
+| Button | `btnKaufen*` / `btnSendenBlue` / `btnUpgrade*` |
 
 Balance-Änderungen an Gold/Sicherheit/Bier/Fanartikel oder Produktionsraten erscheinen in der UI ohne neue Kachel-PNGs.
 
@@ -81,5 +83,5 @@ Runtime: `syncPendingBuildUi` / `syncUpgradeActionCard` / `syncUnitActionCards` 
 
 ## Implementierung
 
-- Linke Rail · Personen: `.action-card.unit-card` + **KAUFEN** (+ **SENDEN**)
+- Linke Rail · Personen: `.action-card.unit-card` + **KAUFEN** (+ **SENDEN**) + **UPGRADE**
 - Rechte Rail · Neubau/Upgrade: `.action-card.build-card` / `.upgrade-card`

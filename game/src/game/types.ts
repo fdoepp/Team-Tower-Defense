@@ -136,6 +136,22 @@ export const BUILDING_FULL_LABEL: Record<BuildingKind, string> = {
 export const UPGRADE_MAX = 5;
 export const UPGRADE_COST = [0, 0, 40, 75, 120, 180] as const;
 
+/** Central per-type unit levels (Fans / Ultras / Hooligans / Ordner). */
+export const UNIT_UPGRADE_MAX = 5;
+/** Gold cost to reach that level — index = target level (1 unused). */
+export const UNIT_UPGRADE_COST = [0, 0, 35, 60, 100, 150] as const;
+
+export function unitUpgradeCost(currentLevel: number): number | null {
+  if (currentLevel >= UNIT_UPGRADE_MAX) return null;
+  return UNIT_UPGRADE_COST[currentLevel + 1] ?? null;
+}
+
+/** Stat multiplier from central unit type level (+12% per level above 1). */
+export function unitStatMul(level: number): number {
+  const lv = Math.max(1, Math.min(UNIT_UPGRADE_MAX, level | 0));
+  return 1 + (lv - 1) * 0.12;
+}
+
 export function productionRate(level: number): number {
   return 0.7 + level * 0.5;
 }
@@ -186,6 +202,17 @@ export function unitBuyCost(kind: UnitUiKind): {
   if (c.merch > 0) return { amount: c.merch, currency: "merch" };
   if (c.beer > 0) return { amount: c.beer, currency: "beer" };
   return { amount: c.gold, currency: "gold" };
+}
+
+export const UNIT_UI_KINDS: UnitUiKind[] = [
+  "normalos",
+  "ultras",
+  "hooligans",
+  "ordner",
+];
+
+export function defaultUnitLevels(): Record<UnitUiKind, number> {
+  return { normalos: 1, ultras: 1, hooligans: 1, ordner: 1 };
 }
 
 export const STEWARD_CAP = 2;

@@ -28,11 +28,13 @@ import {
   PYRO_FIGHT_MERCH,
   STEWARD_HIRE_GOLD,
   UNIT_FULL_LABEL,
+  UNIT_UPGRADE_MAX,
   UPGRADE_COST,
   UPGRADE_MAX,
   productionPerMinute,
   productionUnitLabel,
   unitBuyCost,
+  unitUpgradeCost,
   type BuildingKind,
   type FanKind,
   type FanMix,
@@ -254,6 +256,15 @@ function renderMatchScreen(): void {
                   <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
                   <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
                 </button>`;
+              const upCost = unitUpgradeCost(1);
+              const upgrade = `<div class="ac-cost ac-cost-upgrade" data-unit-upgrade-cost="${kind}">
+                  <img src="${UI_ICONS.currencyGold}" alt="">
+                  <span data-upgrade-text>${upCost ?? "—"} Gold</span>
+                </div>
+                <button type="button" class="ar-icon-btn ar-upgrade" data-unit-upgrade="${kind}" title="Upgrade">
+                  <img class="btn-ready" src="${UI_ICONS.btnUpgradePurple}" alt="Upgrade">
+                  <img class="btn-cd" src="${UI_ICONS.btnUpgradeGrey}" alt="Upgrade">
+                </button>`;
               return `<div class="action-card unit-card" data-unit-card="${kind}">
             <div class="ac-title-row">
               <h3 class="ac-title">${UNIT_FULL_LABEL[kind]}</h3>
@@ -267,6 +278,7 @@ function renderMatchScreen(): void {
             <div class="ur-actions">
               ${buyBtn}
               ${send}
+              ${upgrade}
             </div>
           </div>`;
             })
@@ -558,23 +570,17 @@ function renderMatchScreen(): void {
     }
   };
 
-  /** Soft-bound Einheiten: unitIconPath + Live-Kosten aus BUY_COST / Senden-Konstanten. */
+  /** Soft-bound Einheiten: unitIconPath + Live-Kosten + zentraler Typ-Level. */
   const syncUnitActionCards = () => {
-    let unitLv = 1;
-    for (const s of m.slots) {
-      if (s.building && s.owner === m.playerTeam && !s.greyNeutral) {
-        unitLv = Math.max(unitLv, s.level || 1);
-      }
-    }
-    unitLv = Math.max(1, Math.min(5, unitLv));
     const tcNow = teamColor(m.playerTeam);
 
     app.querySelectorAll<HTMLElement>("[data-unit-card]").forEach((card) => {
       const kind = card.dataset.unitCard as UnitUiKind;
       const buy = unitBuyCost(kind);
+      const lv = m.unitLevelOf(m.playerTeam, kind);
       const icon = card.querySelector<HTMLImageElement>("[data-unit-icon]");
       if (icon) {
-        const src = unitIconPath(kind, tcNow, unitLv);
+        const src = unitIconPath(kind, tcNow, lv);
         const next = src.startsWith("/") ? src : `/${src}`;
         if (icon.getAttribute("src") !== next) icon.src = next;
       }
@@ -582,6 +588,37 @@ function renderMatchScreen(): void {
       const costText = card.querySelector("[data-cost-text]");
       if (costIcon) costIcon.src = currencyIconPath(buy.currency);
       if (costText) costText.textContent = `${buy.amount} ${CURRENCY_LABEL[buy.currency]}`;
+
+      const upCost = m.upgradeUnitCost(kind);
+      const upText = card.querySelector("[data-upgrade-text]");
+      const upBtn = card.querySelector<HTMLButtonElement>("[data-unit-upgrade]");
+      const upRow = card.querySelector<HTMLElement>("[data-unit-upgrade-cost]");
+      if (upCost == null) {
+        if (upText) upText.textContent = `Max Lv${UNIT_UPGRADE_MAX}`;
+        if (upBtn) {
+          upBtn.disabled = true;
+          upBtn.classList.add("cd");
+          upBtn.classList.remove("ready");
+        }
+        if (upRow) upRow.classList.add("maxed");
+      } else {
+        if (upText) upText.textContent = `${upCost} Gold`;
+        const ok = m.gold >= upCost;
+        if (upBtn) {
+          upBtn.disabled = !ok;
+          upBtn.classList.toggle("ready", ok);
+          upBtn.classList.toggle("cd", !ok);
+        }
+        if (upRow) upRow.classList.toggle("poor", !ok);
+      }
+
+      const title = card.querySelector(".ac-title");
+      if (title) {
+        title.textContent =
+          lv > 1
+            ? `${UNIT_FULL_LABEL[kind]} Lv${lv}`
+            : UNIT_FULL_LABEL[kind];
+      }
     });
 
     const ultraSend = app.querySelector('[data-send-cost="ultras"] [data-send-text]');
@@ -594,7 +631,8 @@ function renderMatchScreen(): void {
     if (hireCost) hireCost.textContent = `${STEWARD_HIRE_GOLD} Gold`;
     const hireIcon = app.querySelector<HTMLImageElement>("#rail-hire-ordner [data-unit-kind]");
     if (hireIcon) {
-      const src = unitIconPath("ordner", tcNow, unitLv);
+      const ordLv = m.unitLevelOf(m.playerTeam, "ordner");
+      const src = unitIconPath("ordner", tcNow, ordLv);
       hireIcon.src = src.startsWith("/") ? src : `/${src}`;
     }
   };
@@ -795,6 +833,12 @@ function renderMatchScreen(): void {
   app.querySelectorAll<HTMLButtonElement>("[data-quick-buy]").forEach((btn) => {
     btn.addEventListener("click", () => {
       m.tryBuyFanQuick(btn.dataset.quickBuy as FanKind);
+      syncOverlay();
+    });
+  });
+  app.querySelectorAll<HTMLButtonElement>("[data-unit-upgrade]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      m.tryUpgradeUnit(btn.dataset.unitUpgrade as UnitUiKind);
       syncOverlay();
     });
   });
