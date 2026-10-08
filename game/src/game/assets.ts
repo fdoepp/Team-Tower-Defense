@@ -66,7 +66,7 @@ export const UI_ICONS = {
   slotEmptyParallelRed: "icons/ui/slot-empty-parallel-red.png",
   slotEmptyIsoBlue: "icons/ui/slot-empty-iso-blue.png",
   slotEmptyIsoRed: "icons/ui/slot-empty-iso-red.png",
-  /** Axis-aligned source art — warped live into floor-grid quads. */
+  /** Axis-aligned, flagless source — ground tinted by team; warped into floor-grid quads. */
   slotEmptyOrtho: "icons/ui/slot-empty-ortho.png",
   slotEmptyOrthoBlue: "icons/ui/slot-empty-ortho-blue.png",
   slotEmptyOrthoRed: "icons/ui/slot-empty-ortho-red.png",
@@ -128,7 +128,7 @@ export function currencyIconPath(
  * Team → Plot + Standarte im Icon; grau → ohne Standarte.
  *
  * When `orthoSource` is true (floor-grid couple), return the axis-aligned
- * source PNGs — the renderer warps them into the floor cell trapezoid.
+ * flagless source PNGs (team color via ground tint) — warped into the cell.
  */
 export function slotEmptyIconPath(
   control: SlotControl | TeamId | "neutral" | null | undefined,
