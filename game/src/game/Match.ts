@@ -103,7 +103,6 @@ import {
   gangMidY,
   gangXToWorld,
   plotGangX,
-  seatPos,
   slotIndicesForBlock,
   worldXToGangX,
 } from "./layout";
@@ -934,8 +933,8 @@ export class Match {
         ) {
           const seat = f.seatIndex ?? f._homeSeat ?? this.freeSeat(home);
           if (seat != null) {
-            const end = seatPos(home, seat);
-            this.startPath(f, this.pathViaDoors(f.blockId, home, end), "home");
+            const end = crowdHomePos(home, seat);
+            this.startPath(f, this.pathViaDoors(f, home, end), "home");
             f._homeSeat = seat;
             f.aggro = 10;
             f.onOffense = false;
@@ -1080,10 +1079,14 @@ export class Match {
     f.invading = false;
     f.onOffense = true;
     f.aggro = 40; // offense — keep pushing, don't auto-sit
-    f.path = [
-      { x: door.x, y: door.y },
-      { x: lane.x, y: lane.y },
-    ];
+    // Always leave via center aisle → tunnel door → gang
+    const path: { x: number; y: number }[] = [];
+    if (f.y < door.y - 0.015 && Math.abs(f.x - door.x) > 0.018) {
+      path.push({ x: door.x, y: f.y });
+    }
+    path.push({ x: door.x, y: door.y });
+    path.push({ x: lane.x, y: lane.y });
+    f.path = path;
     f.pathI = 0;
     this.setAfter(f, "gang");
   }
@@ -2118,7 +2121,7 @@ export class Match {
     const sp = this.standWorld(stand);
     this.startPath(
       f,
-      this.pathViaDoors(f.blockId, stand.blockId, sp),
+      this.pathViaDoors(f, stand.blockId, sp),
       pick === "beer" ? "stand" : "shop",
     );
     f.standKey = slotKey(stand.blockId, stand.index);
@@ -2172,8 +2175,9 @@ export class Match {
         : f._homeSeat != null && this.seatOccupied(home, f._homeSeat) === f
           ? f._homeSeat
           : this.freeSeat(home);
-    const end = seat != null ? seatPos(home, seat) : doorPos(home);
-    this.startPath(f, this.pathViaDoors(f.blockId, home, end), "home");
+    const end =
+      seat != null ? crowdHomePos(home, seat) : doorPos(home);
+    this.startPath(f, this.pathViaDoors(f, home, end), "home");
     f._homeSeat = seat;
     f.standKey = null;
   }
@@ -2193,18 +2197,49 @@ export class Match {
     this.setAfter(f, after);
   }
 
+  /**
+   * Leave/enter stands only via the center exit tunnel (Ausgangstor):
+   * horizontal to block center → straight down through the door → gang.
+   * Never cut diagonally across the terrace.
+   */
   private pathViaDoors(
-    fromBlock: number,
+    f: FanUnit,
     toBlock: number,
     end: { x: number; y: number },
   ): { x: number; y: number }[] {
+    const fromBlock = f.blockId;
+    const fromDoor = doorPos(fromBlock);
+    const toDoor = doorPos(toBlock);
+    const midY = gangMidY();
     const path: { x: number; y: number }[] = [];
+
+    // Leave current stand via center aisle → tunnel
+    if (f.y < fromDoor.y - 0.015) {
+      if (Math.abs(f.x - fromDoor.x) > 0.018) {
+        path.push({ x: fromDoor.x, y: f.y });
+      }
+      path.push({ x: fromDoor.x, y: fromDoor.y });
+    }
+
     if (fromBlock !== toBlock) {
-      path.push(doorPos(fromBlock));
       path.push(gangLanePos(fromBlock));
       path.push(gangLanePos(toBlock));
-      path.push(doorPos(toBlock));
+    } else if (end.y >= fromDoor.y - 0.01) {
+      // Same block, gang-level target (Bier/Shop): down the tunnel onto the gang
+      path.push({ x: fromDoor.x, y: midY });
     }
+
+    // Enter destination stand up through its center door
+    if (end.y < toDoor.y - 0.015) {
+      const last = path[path.length - 1];
+      if (!last || Math.hypot(last.x - toDoor.x, last.y - toDoor.y) > 0.02) {
+        path.push({ x: toDoor.x, y: toDoor.y });
+      }
+      if (Math.abs(end.x - toDoor.x) > 0.018) {
+        path.push({ x: toDoor.x, y: end.y });
+      }
+    }
+
     path.push(end);
     return path;
   }
@@ -3229,7 +3264,7 @@ export class Match {
       const sp = this.standWorld(bier);
       this.startPath(
         f,
-        this.pathViaDoors(f.blockId, bier.blockId, sp),
+        this.pathViaDoors(f, bier.blockId, sp),
         "stand",
       );
       f.standKey = slotKey(bier.blockId, bier.index);
