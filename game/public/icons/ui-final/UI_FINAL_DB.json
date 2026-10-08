@@ -2750,7 +2750,7 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:52:59.584643+00:00"
+        "checkedAt": "2026-10-08T22:53:43.599998+00:00"
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
@@ -2774,19 +2774,19 @@
           "h": 256
         },
         "aspectRatio": 1,
-        "alphaCoverage": 0.7623,
+        "alphaCoverage": 0.7279,
         "opaqueCornerRatio": 0,
         "contentBBox": [
-          70,
-          1,
-          182,
+          64,
+          0,
+          187,
           245
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:52:59.677794+00:00"
+        "checkedAt": "2026-10-08T22:53:43.690862+00:00"
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
@@ -2858,7 +2858,7 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:52:59.769439+00:00"
+        "checkedAt": "2026-10-08T22:53:43.781501+00:00"
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
