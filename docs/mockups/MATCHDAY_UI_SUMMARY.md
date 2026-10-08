@@ -42,3 +42,13 @@ Pfad Spiel: `game/public/icons/` · Übersicht: `docs/mockups/icons/preview-all.
 - Gebäude: `ui/hp-bar-building-*.png` (breiter, Sicherheitsschild, 4 Segmente; nur Bar)
 - Bei jedem Deployment: `unitHpBarPath` / `buildingHpBarPath` · Canon: `docs/icons/HP_BARS_CANON.md`
 - Farbe nach HP: Grün → Gelb → Orange → Rot · Preview: `ui/preview-hp-bars.jpg`
+
+### Noch fehlende Freisteller (Audit)
+Lückenliste: **`docs/icons/ASSET_GAP_AUDIT.md`**
+
+| Prio | Fehlt | Warum |
+|---|---|---|
+| Hoch | Stadion-BG + Tribünen (blue/grey/red) | verbindlich in Rule; auf diesem Branch noch nicht |
+| Hoch | `btn-anwerben` / `btn-bauen` (green/grey) | Mockup SEND+HIRE / BAUEN — nur Kaufen/Senden vorhanden |
+| Hoch | Status-Icons Durst · Interesse · Stimmung · Pyro · Fremdtrinken | zentrale Systeme, bisher nur Text/CSS |
+| Mittel | Gesang/Pyro/Klatschen-Aktionschips, Selection-Marker, Lane-Pfeil | Lesbarkeit / Matchday-Polish |

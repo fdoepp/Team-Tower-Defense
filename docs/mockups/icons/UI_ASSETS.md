@@ -66,3 +66,12 @@ Nur die **reinen Bars** (keine Figuren eingebrannt). Bei **jedem** Deployment Ge
 - `docs/mockups/icons/ui/preview-hp-bars.jpg` (nur Balken-Zustände)
 - `docs/mockups/icons/stands-colored/preview-lv3.jpg`
 - `docs/mockups/icons/units-colored/preview-lv3.jpg`
+
+## Lücken (noch zu erstellen / einzuspielen)
+
+Siehe **`docs/icons/ASSET_GAP_AUDIT.md`**. Kurz:
+
+1. `game/public/assets/` — Derby-BG + Tribune-Blöcke (fertig auf Stadium-Branch)
+2. `ui/btn-anwerben-{green\|grey}.png`, `ui/btn-bauen-{green\|grey}.png`
+3. `ui/status-{durst,interesse,stimmung,pyro,fremdtrinken}.png`
+4. Optional: Aktionschips Gesang/Pyro/Klatschen, Selection-Marker, Lane-Pfeil
