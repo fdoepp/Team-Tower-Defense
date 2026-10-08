@@ -3450,28 +3450,30 @@
       },
       "validation": {
         "ok": true,
+        "file": "pennant-ksc.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.7542,
+        "alphaCoverage": 0.7576,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
           62,
-          17,
-          193,
+          15,
+          180,
           238
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:34:00.377459+00:00"
+        "checkedAt": "2026-10-08T23:04:50.953091+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Perspektive angepasst: senkrechter Holzpfosten / viewer-facing für Floor-Grid-Setting (wie Gebäude-Billboards).",
+      "category": "ui",
+      "updatedAt": "2026-10-08T23:04:50.968096+00:00"
     },
     "pennantVfb": {
       "id": "pennantVfb",
@@ -3486,28 +3488,30 @@
       },
       "validation": {
         "ok": true,
+        "file": "pennant-vfb.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.7545,
+        "alphaCoverage": 0.7577,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
           62,
-          17,
-          193,
+          15,
+          181,
           238
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:34:00.466794+00:00"
+        "checkedAt": "2026-10-08T23:04:51.056801+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Perspektive angepasst: senkrechter Holzpfosten / viewer-facing für Floor-Grid-Setting (wie Gebäude-Billboards).",
+      "category": "ui",
+      "updatedAt": "2026-10-08T23:04:51.071071+00:00"
     },
     "slotEmpty": {
       "id": "slotEmpty",
