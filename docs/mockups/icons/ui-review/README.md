@@ -35,4 +35,4 @@ Alle liegen als 256×256 RGBA in `docs/mockups/icons/ui/` und `game/public/icons
 3. **Bauplatz:** Design C (Pfosten+Seil) gewählt → beide Orientierungen unter [`slot-final/`](slot-final/) (`iso` / `parallel`).
 4. **Buttons:** benötigte Hof-Aktionen + Holz-Bar-Vorschläge unter [`btn-vorschlaege/`](btn-vorschlaege/) (Kaufen/Senden/Bauen/Upgrade).
 5. **Gebäude-Kacheln:** Neubau + Upgrade Action Cards unter [`building-tiles/`](building-tiles/) (Runtime soft via `standIconPath` + Live-Kosten).
-6. **Einheiten-Kacheln:** Personen Action Cards unter [`unit-tiles/`](unit-tiles/) (Runtime soft via `unitIconPath` + `unitBuyCost`).
+6. **Einheiten-Kacheln:** Personen Action Cards unter [`unit-tiles/`](unit-tiles/) — Kosten im Button, soft via `unitIconPath` + `currencyIconPath` + Live-Preise; alle Typen mit **UPGRADE**.

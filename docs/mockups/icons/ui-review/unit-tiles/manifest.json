@@ -3,56 +3,56 @@
     "file": "unit-normalos-blue.png",
     "kind": "normalos",
     "color": "blue",
-    "buy": 12,
-    "currency": "Sicherheit"
+    "layout": "head-left",
+    "costInButton": true
   },
   {
     "file": "unit-ultras-blue.png",
     "kind": "ultras",
     "color": "blue",
-    "buy": 14,
-    "currency": "Fanartikel"
+    "layout": "head-left",
+    "costInButton": true
   },
   {
     "file": "unit-hooligans-blue.png",
     "kind": "hooligans",
     "color": "blue",
-    "buy": 14,
-    "currency": "Bier"
+    "layout": "head-left",
+    "costInButton": true
   },
   {
     "file": "unit-ordner-blue.png",
     "kind": "ordner",
     "color": "blue",
-    "buy": 22,
-    "currency": "Gold"
+    "layout": "head-left",
+    "costInButton": true
   },
   {
     "file": "unit-normalos-red.png",
     "kind": "normalos",
     "color": "red",
-    "buy": 12,
-    "currency": "Sicherheit"
+    "layout": "head-left",
+    "costInButton": true
   },
   {
     "file": "unit-ultras-red.png",
     "kind": "ultras",
     "color": "red",
-    "buy": 14,
-    "currency": "Fanartikel"
+    "layout": "head-left",
+    "costInButton": true
   },
   {
     "file": "unit-hooligans-red.png",
     "kind": "hooligans",
     "color": "red",
-    "buy": 14,
-    "currency": "Bier"
+    "layout": "head-left",
+    "costInButton": true
   },
   {
     "file": "unit-ordner-red.png",
     "kind": "ordner",
     "color": "red",
-    "buy": 22,
-    "currency": "Gold"
+    "layout": "head-left",
+    "costInButton": true
   }
 ]

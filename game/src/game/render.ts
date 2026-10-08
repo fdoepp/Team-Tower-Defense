@@ -819,14 +819,12 @@ function lerpHex(a: string, b: string, t: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1)}`;
 }
 
-function unitVisualLevel(m: Match, team: FanUnit["team"]): number {
-  let maxLv = 1;
-  for (const s of m.slots) {
-    if (s.building && s.owner === team && !s.greyNeutral) {
-      maxLv = Math.max(maxLv, s.level || 1);
-    }
-  }
-  return Math.max(1, Math.min(5, maxLv));
+function unitVisualLevel(
+  m: Match,
+  team: FanUnit["team"],
+  kind: FanUnit["kind"] | "ordner",
+): number {
+  return m.unitLevelOf(team, kind);
 }
 
 function fanFacing(f: FanUnit): number {
@@ -865,7 +863,7 @@ function drawMannchen(
     f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
   const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
   const color = teamColor(f.team);
-  const lv = unitVisualLevel(m, f.team);
+  const lv = unitVisualLevel(m, f.team, f.kind);
   const src = unitIconPath(f.kind, color, lv);
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing = fanFacing(f);
@@ -1211,7 +1209,11 @@ function drawSteward(
   const neutral = f.team === "neutral";
   const hpCol = neutral ? "#a8a29e" : "#facc15";
   const size = Math.max(24, h * 0.07);
-  const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(m, f.team));
+  const src = unitIconPath(
+    "ordner",
+    teamColor(f.team),
+    unitVisualLevel(m, f.team, "ordner"),
+  );
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const onGang = f.state === "gang" || f.state === "moving";
 
