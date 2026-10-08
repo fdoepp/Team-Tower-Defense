@@ -270,7 +270,13 @@ export class Match {
       }
     }
 
-    // Neutralzone: Ordnerposten außen (Heim/Gast), Mitte leer zum Claimen
+    /**
+     * CANONICAL neutral mid (all future Matchday versions):
+     * - Ordnerposten on the outer plots (Heim-facing + Gast-facing)
+     * - Two empty center plots for claim/build after the wall breaks
+     * - Never seed Bier/Shop on grey/neutral — only Ordner make sense there
+     * - Soft auto-level while contested (see tickNeutralPostAutoLevel)
+     */
     for (const index of [NEUTRAL_POST_HEIM_INDEX, NEUTRAL_POST_GAST_INDEX]) {
       this.placeBuilding(NEUTRAL_BLOCK, index, "ordner", true, "neutral");
       const post = this.slots.find(

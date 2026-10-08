@@ -210,8 +210,9 @@ export const STEWARD_HIRE_GOLD = 22;
 export const STEWARD_CAP = 2;
 export const NEUTRAL_STEWARD_RESPAWN = 32;
 /**
- * Neutral mid Ordnerposts auto-level while the gang zone is still contested.
- * Soft cap keeps late mid crackable for the trailing side.
+ * CANONICAL neutral mid layout (keep across versions):
+ * outer Ordnerposts + empty center; no grey Bier/Shop seed.
+ * Auto-level only while contested; soft cap keeps late mid crackable.
  */
 export const NEUTRAL_POST_AUTO_LEVEL_CAP = 3;
 /** Real seconds of contested time between auto-levels */
