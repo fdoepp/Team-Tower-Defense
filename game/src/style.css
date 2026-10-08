@@ -426,11 +426,12 @@ select {
   line-height: 1.15;
 }
 
-/* Fat Bloons bars: fixed height, fill the touch target (PNG is 360×100) */
+/* Fat Bloons bars: fixed height, fill the touch target (PNG is 360×100).
+   Dual = Kaufen | Senden side-by-side so all 4 person cards fit on phone. */
 .match-shell.matchday .ur-actions {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex-direction: row;
+  gap: 5px;
   flex: 0 0 auto;
   height: var(--rail-btn-h);
   min-height: var(--rail-btn-h);
@@ -438,23 +439,12 @@ select {
   width: 100%;
 }
 
-/* Kaufen then Senden stacked — each full rail width (readable + tappable) */
 .match-shell.matchday .ur-actions-dual {
-  flex-direction: column;
-  height: calc(var(--rail-btn-h) * 2 + 4px);
-  min-height: calc(var(--rail-btn-h) * 2 + 4px);
-  max-height: calc(var(--rail-btn-h) * 2 + 4px);
+  flex-direction: row;
 }
 
-/* Dual-action cards need more vertical room than single-buy cards */
-.match-shell.matchday .ur-row:has(.ur-actions-dual) {
-  flex: 1.65 1 0;
-  min-height: calc(var(--rail-btn-h) * 2 + 44px);
-}
-
-.match-shell.matchday .ur-row:not(:has(.ur-actions-dual)) {
-  flex: 1 1 0;
-  min-height: calc(var(--rail-btn-h) + 40px);
+.match-shell.matchday .ur-row {
+  min-height: calc(var(--rail-btn-h) + 36px);
 }
 
 .match-shell.matchday .ar-icon-btn {
@@ -859,10 +849,7 @@ select {
   .match-shell.matchday .freie-plaetze {
     font-size: 0.5rem;
   }
-  .match-shell.matchday .ur-row:has(.ur-actions-dual) {
-    min-height: calc(var(--rail-btn-h) * 2 + 32px);
-  }
-  .match-shell.matchday .ur-row:not(:has(.ur-actions-dual)) {
+  .match-shell.matchday .ur-row {
     min-height: calc(var(--rail-btn-h) + 28px);
   }
   .match-shell.matchday .ur-name {
