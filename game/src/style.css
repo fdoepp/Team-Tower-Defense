@@ -890,11 +890,8 @@ select {
   min-height: 0;
   grid-column: 2;
   background: #1e293b;
-  /* Scale-Bezug für Wallet: Spielfeld-Breite */
   container-type: inline-size;
   container-name: game-wrap;
-  /* Referenz ~900px Spielfeldbreite → darunter schrumpft die Leiste proportional */
-  --wb-scale: clamp(0.78, calc(100cqw / 900px), 1.08);
 }
 
 .match-shell.matchday #game-wrap.placing {
@@ -920,9 +917,16 @@ select {
   height: auto;
 }
 
-/* Slim Frosted Wallet — volle Grid-Fläche als Containing Block; left/top via layoutHud() */
+/*
+ * Slim Frosted Wallet — Höhe = Side-Rail-Banner-Button (.rail-banner / PERSONEN|BAUEN).
+ * --wb-h wird in layoutHud() aus der gemessenen Banner-Höhe gesetzt (Regel).
+ */
 .match-shell.matchday .wallet-row.wallet-bar {
-  --wb-scale: 1;
+  --wb-h: 34px; /* Fallback ≈ .rail-banner @ Desktop */
+  --wb-pad: 2px;
+  --wb-gap: 3px;
+  --wb-chip-h: calc(var(--wb-h) - 2 * var(--wb-pad));
+  --wb-ico: var(--wb-chip-h);
   /* Abspos über gesamte Shell, nicht in einer Grid-Zelle verdichtet */
   grid-column: 1 / -1;
   grid-row: 1;
@@ -937,12 +941,14 @@ select {
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  gap: calc(2px * var(--wb-scale));
+  gap: var(--wb-gap);
   width: max-content;
   max-width: min(46vw, 100%);
-  height: max-content;
+  height: var(--wb-h);
+  min-height: var(--wb-h);
+  max-height: var(--wb-h);
   margin: 0;
-  padding: calc(1px * var(--wb-scale)) calc(2px * var(--wb-scale));
+  padding: var(--wb-pad) var(--wb-pad);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -954,17 +960,20 @@ select {
 .match-shell.matchday .wallet-bar .wb-chip {
   display: inline-flex;
   align-items: center;
-  gap: calc(2px * var(--wb-scale));
-  padding: 0 calc(4px * var(--wb-scale)) 0 0;
+  gap: var(--wb-gap);
+  height: var(--wb-chip-h);
+  min-height: var(--wb-chip-h);
+  max-height: var(--wb-chip-h);
+  padding: 0 calc(var(--wb-chip-h) * 0.22) 0 0;
   border-radius: 999px;
   background: rgba(255, 252, 245, 0.94);
   border: none;
   box-shadow: none;
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .match-shell.matchday .wallet-bar .wb-plate {
-  --wb-ico: calc(18px * var(--wb-scale));
   width: var(--wb-ico);
   height: var(--wb-ico);
   aspect-ratio: 1 / 1;
@@ -988,7 +997,7 @@ select {
 
 .match-shell.matchday .wallet-bar .wb-chip b {
   font-family: var(--display);
-  font-size: calc(0.64rem * var(--wb-scale));
+  font-size: calc(var(--wb-chip-h) * 0.42);
   font-weight: 800;
   line-height: 1;
   min-width: 1em;

@@ -474,8 +474,9 @@ function renderMatchScreen(): void {
   const walletBar = app.querySelector<HTMLElement>(".wallet-bar")!;
 
   /**
-   * Wallet immer am oberen Rand der linken Bildhälfte:
-   * horizontal mittig zwischen Rechtskante Personen-Rail und Bildmitte (#game-wrap).
+   * Wallet am oberen Rand der linken Bildhälfte:
+   * - horizontal mittig zwischen Personen-Rail-Rechtskante und Bildmitte (#game-wrap)
+   * - Höhe = Side-Rail-Banner-Button (.rail-banner), gleiche Pixelhöhe
    */
   const layoutHud = () => {
     const wrapRect = wrap.getBoundingClientRect();
@@ -493,13 +494,30 @@ function renderMatchScreen(): void {
     const imageCenterX = wrapRect.left + wrapRect.width * 0.5;
     const railRight = railRect.width > 8 ? railRect.right : wrapRect.left;
     const midX = (railRight + imageCenterX) * 0.5;
-    // Relative zur Shell (Containing Block spannt grid 1 / -1)
-    const leftPx = midX - shellRect.left;
-    walletBar.style.top = "";
-    walletBar.style.left = `${leftPx}px`;
+    walletBar.style.left = `${midX - shellRect.left}px`;
 
-    const scale = Math.min(1.08, Math.max(0.78, wrapRect.width / 900));
-    walletBar.style.setProperty("--wb-scale", String(scale));
+    // Regel: Wallet-Höhe = Banner-Button in den Side-Rails (PERSONEN / BAUEN)
+    const banner =
+      leftRail.querySelector<HTMLElement>(".rail-banner") ??
+      shell.querySelector<HTMLElement>(".rail-banner");
+    const bannerRect = banner?.getBoundingClientRect();
+    if (bannerRect && bannerRect.height > 8) {
+      walletBar.style.setProperty("--wb-h", `${bannerRect.height}px`);
+      // Vertikal an Banner-Oberkante ausrichten (gleiche Leisten-Höhe im gleichen Band)
+      walletBar.style.top = `${Math.max(0, bannerRect.top - shellRect.top)}px`;
+    } else {
+      // Fallback: gleiche Formel wie --ur-btn-h (30px × rail-scale)
+      const rows = leftRail.querySelector<HTMLElement>(".unit-rows, .rail-rows");
+      const rr = rows?.getBoundingClientRect();
+      if (rr && rr.width > 8 && rr.height > 8) {
+        const railScale = Math.min(
+          1.08,
+          Math.max(0.68, Math.min(rr.width / 220, rr.height / 480)),
+        );
+        walletBar.style.setProperty("--wb-h", `${30 * railScale}px`);
+      }
+      walletBar.style.top = "";
+    }
   };
 
   const closeBuildRail = () => {
