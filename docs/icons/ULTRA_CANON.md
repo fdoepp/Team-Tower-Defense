@@ -52,7 +52,8 @@ Rauchfarbe: Lv1 weiß/hell → steigend in die **Teamfarbe** (grau / blau / rot)
 
 ## Regeln für Agents & Deployments
 
-1. Nur die 15 Dateien unter `game/public/icons/units/ultra-{color}-{level}.png` laden.
-2. Keine Regeneration der Ultras, solange dieser Kanon gilt — außer ausdrücklicher Revisions-Auftrag.
-3. Neue Spielstände / Branches übernehmen diese Pfade.
-4. Fans, Ordner, Hooligans haben eigene Kanons.
+1. Nur die 15 Dateien unter `game/public/icons/units/ultra-{color}-{level}.png` laden — **immer** diese als die echten Ultras.
+2. Keine Regeneration und kein anderes Blau/Rot, solange dieser Kanon gilt — außer ausdrücklicher Revisions-Auftrag.
+3. Neue Spielstände, Branches und Deployments übernehmen ausschließlich diese Pfade.
+4. Teamfarben bleiben an Fan/Hooligan/Ordner/Stände gekoppelt (`(31,76,160)` / `(151,27,32)`).
+5. Fans, Ordner, Hooligans haben eigene Kanons.
