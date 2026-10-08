@@ -32,7 +32,8 @@ Pfad Spiel: `game/public/icons/` · Übersicht: `docs/mockups/icons/preview-all.
 
 **35 Icons** total.
 
-### UI — Gesundheitsbalken (Konzept)
-- Person: `ui/hp-bar-unit-{full\|high\|mid\|low\|empty}.png` (schmale Kapsel über dem Kopf)
-- Gebäude: `ui/hp-bar-building-*.png` (breiter, Sicherheitsschild links, 4 Segmente)
-- Farbe nach HP: Grün → Gelb → Orange → Rot · Preview: `ui/preview-hp-ordner-lv3.jpg`, `ui/preview-hp-hooligan-lv3.jpg`
+### UI — Gesundheitsbalken (verbindlich / final)
+- Person: `ui/hp-bar-unit-{full\|high\|mid\|low\|empty}.png` (schmale Kapsel; nur Bar)
+- Gebäude: `ui/hp-bar-building-*.png` (breiter, Sicherheitsschild, 4 Segmente; nur Bar)
+- Bei jedem Deployment: `unitHpBarPath` / `buildingHpBarPath` · Canon: `docs/icons/HP_BARS_CANON.md`
+- Farbe nach HP: Grün → Gelb → Orange → Rot · Preview: `ui/preview-hp-bars.jpg`

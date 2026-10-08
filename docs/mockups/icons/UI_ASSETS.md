@@ -15,7 +15,7 @@ Alle Pfade relativ zu `game/public/icons/`.
 | 5 | `ui/btn-senden-grey.png` / `btn-senden-green.png` | Senden (grau/grün) |
 | 6 | `ui/menu-rail-brown.png` (+ `-tile`) | Durchgehende Bloons-braune Menüleiste |
 | 7 | `ui/pennant-ksc.png` / `pennant-vfb.png` | Fanwimpel-Ständer |
-| 8 | `ui/hp-bar-unit.png` / `ui/hp-bar-building.png` | Gesundheitsbalken (Person kompakt / Gebäude + Sicherheitsschild); Zustände `-{full,high,mid,low,empty}` |
+| 8 | `ui/hp-bar-unit.png` / `ui/hp-bar-building.png` | **Default** Gesundheitsbalken (verbindlich) — Person kompakt / Gebäude + Sicherheitsschild; Zustände `-{full,high,mid,low,empty}` |
 
 ## 9 Buden farbig (`stands/`)
 
@@ -39,18 +39,19 @@ Schema: `{fan\|ultra\|hooligan\|ordner}-{blue\|red\|grey}-{1..5}.png`
 
 → **60** Icons (4 Typen × 3 Farben × 5 Level)
 
-## Gesundheitsbalken (Konzept)
+## Gesundheitsbalken (verbindlich / final)
 
-- **Person:** schmale Kapsel über dem Kopf — Grün → Gelb → Orange → Rot nach HP-Anteil
-- **Gebäude:** etwas breiter + blaues Sicherheitsschild links; 4 Segment-Ticks
-- Runtime-Pfade: `game/public/icons/ui/hp-bar-unit-*.png`, `hp-bar-building-*.png`
-- Beispiele: `ui/preview-hp-ordner-lv3.jpg`, `ui/preview-hp-hooligan-lv3.jpg`, `ui/preview-hp-bars.jpg`
+Nur die **reinen Bars** (keine Figuren eingebrannt). Bei **jedem** Deployment Gesundheit damit anzeigen.
+
+- **Person:** `hp-bar-unit-{full\|high\|mid\|low\|empty}.png` — schmale Kapsel
+- **Gebäude:** `hp-bar-building-*.png` — breiter + Sicherheitsschild, 4 Segmente
+- Farbe nach HP: Grün → Gelb → Orange → Rot
+- Runtime: `game/src/assets/hpBars.ts` → `unitHpBarPath` / `buildingHpBarPath`
+- Canon: `docs/icons/HP_BARS_CANON.md`
 
 ## Previews
 
 - `docs/mockups/icons/ui/preview-ui.jpg`
-- `docs/mockups/icons/ui/preview-hp-bars.jpg`
-- `docs/mockups/icons/ui/preview-hp-ordner-lv3.jpg`
-- `docs/mockups/icons/ui/preview-hp-hooligan-lv3.jpg`
+- `docs/mockups/icons/ui/preview-hp-bars.jpg` (nur Balken-Zustände)
 - `docs/mockups/icons/stands-colored/preview-lv3.jpg`
 - `docs/mockups/icons/units-colored/preview-lv3.jpg`

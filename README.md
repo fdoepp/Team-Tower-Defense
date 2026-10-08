@@ -38,6 +38,7 @@ Ab sofort für Implementierungen:
 - **Bierstand:** final — immer `game/public/icons/stands/bier-{blue\|red\|grey}-{1..5}.png` (bei jeder weiteren Spielcode-Änderung diese Assets laden)
 - **Fanshop:** final — immer `game/public/icons/stands/fanshop-{blue\|red\|grey}-{1..5}.png` (Fähnchen nur Lv2; ebenfalls bei jeder Code-Änderung verbindlich)
 - **Ordnerposten:** final — immer `game/public/icons/stands/ordner-{blue\|red\|grey}-{1..5}.png` via `ordnerStandPath` in `game/src/assets/stands.ts` (Kanon: `docs/icons/ORDNERPOSTEN_CANON.md`; bei jedem Deployment / Spielaufsetzen nur diese Gebäude)
+- **Gesundheitsbalken:** final — immer `ui/hp-bar-unit-*.png` / `ui/hp-bar-building-*.png` via `game/src/assets/hpBars.ts` (Kanon: `docs/icons/HP_BARS_CANON.md`; bei jedem Deployment nur diese Bars)
 
 Siehe auch `.cursor/rules/stadium-background.mdc` (`alwaysApply`).
 

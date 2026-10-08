@@ -5,9 +5,9 @@ alwaysApply: true
 
 # LaneLink stadium visuals (binding)
 
-**Hard rule for every further modification of game / match code** (`game/**`, `drawMatch`, HUD, building placement, upgrade previews, new features) **and every game deployment / new match setup**: always load and render the approved freigestellte building icons below for **all three colors** (blue / red / grey). Do **not** draw placeholder booths, regenerate stand art, or invent alternate Bierstand / Fanshop / Ordnerposten graphics unless the user explicitly requests a redesign.
+**Hard rule for every further modification of game / match code** (`game/**`, `drawMatch`, HUD, building placement, upgrade previews, new features) **and every game deployment / new match setup**: always load and render the approved freigestellte building icons below for **all three colors** (blue / red / grey), and always use the approved **HP bars** for unit/building health. Do **not** draw placeholder booths, invent alternate Bierstand / Fanshop / Ordnerposten / health-bar graphics unless the user explicitly requests a redesign.
 
-Applies to: match / gameplay implementations, visual work, deployments, and **any** subsequent code change that touches buildings or stand rendering. Prefer `game/src/assets/stands.ts` path helpers.
+Applies to: match / gameplay implementations, visual work, deployments, and **any** subsequent code change that touches buildings, stand rendering, or health UI. Prefer `game/src/assets/stands.ts` and `game/src/assets/hpBars.ts` path helpers.
 
 ## Background
 
@@ -116,9 +116,26 @@ Sheets: `docs/mockups/icons/stands-colored/sheet-ordner-{blue\|red\|grey}.png`
 
 **Units in der Tür:** Immer die freigegebenen Kanon-Ordner aus `game/public/icons/units/ordner-{color}-{level}.png` (siehe `docs/icons/ORDNER_CANON.md`) — nicht ältere Ordner-Varianten. Figurengröße der freigegebenen Composites nicht durch Mini-/Seiten-Varianten ersetzen.
 
+## Health bars (default — binding, finalized)
+
+**Status: freigegeben / final.** These are the **only** HP bar assets for persons and buildings.
+
+For **every** future match render, combat HUD, building HP, unit HP, **deployment**, and game-code change that shows health: always use these freigestellte bars — do **not** invent alternate bars, plain HTML rectangles, or regenerate unless the user explicitly asks for a redesign.
+
+| Ziel | Pfade |
+|---|---|
+| Person / Unit | `game/public/icons/ui/hp-bar-unit-{full\|high\|mid\|low\|empty}.png` |
+| Gebäude / Stand | `game/public/icons/ui/hp-bar-building-{full\|high\|mid\|low\|empty}.png` |
+| Defaults (high) | `hp-bar-unit.png`, `hp-bar-building.png` |
+
+**Runtime (required):** `unitHpBarPath` / `buildingHpBarPath` from `game/src/assets/hpBars.ts`.  
+**Canon:** `docs/icons/HP_BARS_CANON.md` + `docs/icons/hp-bars-canon.json`  
+**Look:** dark outlined capsule; fill Grün → Gelb → Orange → Rot by HP ratio; building bar wider with Sicherheitsschild + 4 segment ticks. Place above the subject — bars only (no baked-in figures).
+
 ## Out of scope / do not regress
 
 - Older assets (`stadium-floodlight-bg.jpg`, `stadium-floodlight-empty-bg.jpg`) are archives only — not the default match BG.
 - Do not put text on crowd flags in new BG art.
-- Do not replace the approved Bierstand, Fanshop, or Ordnerposten defaults above with older sheet art or new generations without an explicit redesign ask.
+- Do not replace the approved Bierstand, Fanshop, Ordnerposten, or HP-bar defaults above with older sheet art or new generations without an explicit redesign ask.
 - When implementing or modifying stand rendering in code, **wire these finalized PNG paths** — never fall back to procedural/canvas booth drawings while these files exist.
+- When showing health, **wire the finalized HP-bar PNGs** (or stretch fill to match their look via `hpBars.ts`) — never ad-hoc unmarked bars while these files exist.
