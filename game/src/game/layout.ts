@@ -23,13 +23,13 @@ export const SEAT_ROWS = 4;
  * - bottom: gang with Baustellen
  */
 export const L = {
-  stadiumH: 0.32,
-  /** Stands sit in the middle third */
-  blockTop: 0.32,
-  blockBodyH: 0.3,
-  gangPadTop: 0.01,
-  /** Gang is the bottom ~third — not half the screen */
-  gangH: 0.34,
+  stadiumH: 0.34,
+  /** Stands sit mid-screen; more room above plots for Anzeige */
+  blockTop: 0.34,
+  blockBodyH: 0.32,
+  gangPadTop: 0.008,
+  /** Gang packed lower — Bauplätze sit near bottom edge */
+  gangH: 0.30,
   blocksLeft: 0.04,
   blocksRight: 0.96,
   blockGap: 0.024,

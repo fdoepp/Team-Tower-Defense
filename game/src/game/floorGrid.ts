@@ -27,13 +27,13 @@ export const FLOOR_COL_XS_NEAR = [
 ] as const;
 
 /** Depth of the near column anchors (normalized). */
-export const FLOOR_Y_NEAR = 0.94;
+export const FLOOR_Y_NEAR = 0.985;
 
 /**
  * Row lines far → near (normalized). Equal steps in 1/(y - vp.y).
- * Tuned so both rows sit on the tiled gang floor under the bowl wall.
+ * Packed toward the bottom edge so Tribünen + Anzeige above keep room.
  */
-export const FLOOR_ROW_YS = [0.64, 0.78, 0.935] as const;
+export const FLOOR_ROW_YS = [0.78, 0.875, 0.978] as const;
 
 /** When true, empty plots are drawn warped into floor-grid quads. */
 export const FLOOR_GRID_COUPLE = true;
