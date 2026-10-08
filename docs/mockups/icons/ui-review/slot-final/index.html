@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bauplatz — Orientierungen</title>
+  <style>
+    :root { --bg:#1a1c20; --panel:#242830; --text:#f2f4f7; --muted:#9aa3b2; --line:#343a46; --accent:#c9a46a; }
+    body { margin:0; font-family:"Segoe UI","Helvetica Neue",sans-serif; background:radial-gradient(900px 500px at 10% 0%,#3a3228,transparent 55%),var(--bg); color:var(--text); }
+    header, main, footer { max-width:1000px; margin:0 auto; padding:1.5rem 1.25rem; }
+    h1 { margin:0 0 .4rem; }
+    p { color:var(--muted); }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    @media (max-width:800px){ .grid{ grid-template-columns:1fr; } }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+    .card h2 { margin:0; padding:1rem 1rem .25rem; }
+    .card .tag { padding:0 1rem; color:var(--accent); font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; }
+    .card p { padding:0 1rem 1rem; margin:0; }
+    .frame {
+      margin:0 1rem 1rem; border-radius:8px; min-height:300px; display:grid; place-items:center; background-color:#eee;
+      background-image:linear-gradient(45deg,#c8c8c8 25%,transparent 25%),linear-gradient(-45deg,#c8c8c8 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#c8c8c8 75%),linear-gradient(-45deg,transparent 75%,#c8c8c8 75%);
+      background-size:24px 24px; background-position:0 0,0 12px,12px -12px,-12px 0;
+    }
+    .frame img { max-width:92%; height:auto; }
+    .compare img { width:100%; border-radius:12px; border:1px solid var(--line); margin-top:1rem; }
+    a { color:#7ec8ff; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Bauplatz C — zwei Orientierungen</h1>
+    <p>Design: Pfosten + Seil. A = isometrische Raute · B = Kanten parallel zum Bildrand.
+      <a href="../slot-vorschlaege/">zurück zu den 3 Design-Vorschlägen</a></p>
+  </header>
+  <main>
+    <div class="grid">
+      <article class="card">
+        <div class="tag">Orientierung A</div>
+        <h2>Isometrisch (Raute)</h2>
+        <p><code>slot-empty-iso.png</code> — gleiche Blickrichtung wie die Stände.</p>
+        <div class="frame"><img src="solo/slot-empty-iso-solo.png" alt="Isometrisch" /></div>
+      </article>
+      <article class="card">
+        <div class="tag">Orientierung B</div>
+        <h2>Parallel zum Bildrand</h2>
+        <p><code>slot-empty-parallel.png</code> — Kanten horizontal/vertikal, oft sauberer im UI-Raster.</p>
+        <div class="frame"><img src="solo/slot-empty-parallel-solo.png" alt="Parallel" /></div>
+      </article>
+    </div>
+    <div class="compare">
+      <img src="preview-orientierungen.jpg" alt="Beide Orientierungen" />
+    </div>
+  </main>
+</body>
+</html>
