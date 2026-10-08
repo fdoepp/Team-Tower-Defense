@@ -93,8 +93,14 @@ export const UI_ICONS = {
   pennantKsc: "icons/ui/pennant-ksc.png",
   pennantVfb: "icons/ui/pennant-vfb.png",
   menuRail: "icons/ui/menu-rail-brown.png",
-  scoreboard: "icons/ui/scoreboard-momentum.png",
+  scoreboard: "icons/ui/scoreboard-top.png",
+  scoreboardOrbHeim: "icons/ui/scoreboard-top-orb-heim.png",
+  scoreboardOrbGast: "icons/ui/scoreboard-top-orb-gast.png",
 } as const;
+
+/** Native pixel size of scoreboard-top.png — never squash/stretch. */
+export const SCOREBOARD_NATIVE = { w: 1041, h: 508 } as const;
+export const SCOREBOARD_AR = SCOREBOARD_NATIVE.w / SCOREBOARD_NATIVE.h;
 
 export function currencyIconPath(
   currency: "beer" | "merch" | "security" | "gold",
