@@ -561,8 +561,8 @@ export class Match {
     return this.enemyOnGangNearHome(team);
   }
 
-  toast(text: string): void {
-    this.toasts.push({ text, t: 2.2 });
+  toast(text: string, duration = 2.2): void {
+    this.toasts.push({ text, t: duration });
   }
 
   floatAt(x: number, y: number, text: string, good: boolean): void {
@@ -3110,7 +3110,15 @@ export class Match {
     // Ensure the Bierrunde can actually buy (gold into till)
     if (n > 0) {
       bier.beer = Math.min(bier.capacity, Math.max(bier.beer, n));
-      this.toast("Jubel — Bierrunde!");
+      this.toast("Jubel — Bierrunde!", 4.2);
+      const p = this.standWorld(bier);
+      this.floatAt(p.x, p.y - 0.06, "Bierrunde!", true);
+      this.floatAt(
+        blockCenterX(home),
+        blockTopY(home) + 0.08,
+        "Kurve leer — Bierrunde",
+        true,
+      );
     }
   }
 
