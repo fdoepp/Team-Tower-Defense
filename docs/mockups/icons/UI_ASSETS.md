@@ -16,6 +16,8 @@ Alle Pfade relativ zu `game/public/icons/`.
 | 6 | `ui/menu-rail-brown.png` (+ `-tile`) | Durchgehende Bloons-braune Menüleiste |
 | 7 | `ui/pennant-ksc.png` / `pennant-vfb.png` | Fanwimpel-Ständer |
 | 8 | `ui/hp-bar-unit.png` / `ui/hp-bar-building.png` | **Default** Gesundheitsbalken (verbindlich) — Person kompakt / Gebäude + Sicherheitsschild; Zustände `-{full,high,mid,low,empty}` |
+| 9 | `ui/fx-gain-*.png` / `ui/fx-spend-*.png` | **Default** Floating-FX bei Währungs-± (Logo + grünes `+` / rotes `−`) |
+| 10 | `ui/fx-gain-momentum.png` | **Default** +Momentum vom Fan-Block (aufsteigend) |
 
 ## 9 Buden farbig (`stands/`)
 
@@ -38,6 +40,15 @@ Schema: `{bier\|fanshop\|ordner}-{blue\|red\|grey}-{1..5}.png`
 Schema: `{fan\|ultra\|hooligan\|ordner}-{blue\|red\|grey}-{1..5}.png`
 
 → **60** Icons (4 Typen × 3 Farben × 5 Level)
+
+## Währungs- & Momentum-FX (verbindlich / final)
+
+Bei jeder Einnahme/Ausgabe und bei Momentum vom Fan-Block nur diese freigestellten Pops:
+
+- `fx-gain|spend-{gold,bier,fanartikel,sicherheit}.png`
+- `fx-gain-momentum.png` (aufsteigend über dem Fan-Block)
+- Runtime: `game/src/assets/currencyFx.ts` · Canon: `docs/icons/CURRENCY_FX_CANON.md`
+- Preview: `ui/preview-fx-currency.jpg`, `ui/preview-fx-momentum.jpg`, `ui/preview-bierstand-kauf-fx.jpg`
 
 ## Gesundheitsbalken (verbindlich / final)
 

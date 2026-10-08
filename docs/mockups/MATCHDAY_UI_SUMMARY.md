@@ -32,6 +32,11 @@ Pfad Spiel: `game/public/icons/` · Übersicht: `docs/mockups/icons/preview-all.
 
 **35 Icons** total.
 
+### UI — Währungs-/Momentum-FX (verbindlich / final)
+- Kauf/Ressource: `ui/fx-gain|spend-{gold,bier,fanartikel,sicherheit}.png` (Logo + `+`/`−`)
+- Fan-Block → Momentum: `ui/fx-gain-momentum.png` aufsteigend
+- Runtime: `currencyFx.ts` · Canon: `docs/icons/CURRENCY_FX_CANON.md`
+
 ### UI — Gesundheitsbalken (verbindlich / final)
 - Person: `ui/hp-bar-unit-{full\|high\|mid\|low\|empty}.png` (schmale Kapsel; nur Bar)
 - Gebäude: `ui/hp-bar-building-*.png` (breiter, Sicherheitsschild, 4 Segmente; nur Bar)

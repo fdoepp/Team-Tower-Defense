@@ -5,9 +5,9 @@ alwaysApply: true
 
 # LaneLink stadium visuals (binding)
 
-**Hard rule for every further modification of game / match code** (`game/**`, `drawMatch`, HUD, building placement, upgrade previews, new features) **and every game deployment / new match setup**: always load and render the approved freigestellte building icons below for **all three colors** (blue / red / grey), and always use the approved **HP bars** for unit/building health. Do **not** draw placeholder booths, invent alternate Bierstand / Fanshop / Ordnerposten / health-bar graphics unless the user explicitly requests a redesign.
+**Hard rule for every further modification of game / match code** (`game/**`, `drawMatch`, HUD, building placement, upgrade previews, new features) **and every game deployment / new match setup**: always load and render the approved freigestellte building icons below for **all three colors** (blue / red / grey); always use the approved **HP bars** for unit/building health; and always use the approved **currency/momentum floating FX** whenever resources change. Do **not** invent alternate Bierstand / Fanshop / Ordnerposten / health-bar / FX graphics unless the user explicitly requests a redesign.
 
-Applies to: match / gameplay implementations, visual work, deployments, and **any** subsequent code change that touches buildings, stand rendering, or health UI. Prefer `game/src/assets/stands.ts` and `game/src/assets/hpBars.ts` path helpers.
+Applies to: match / gameplay implementations, visual work, deployments, and **any** subsequent code change that touches buildings, stand rendering, health UI, or resource popups. Prefer `game/src/assets/stands.ts`, `hpBars.ts`, and `currencyFx.ts`.
 
 ## Background
 
@@ -28,12 +28,27 @@ Applies to: match / gameplay implementations, visual work, deployments, and **an
 
 Always use these **logo-only** freigestellte icons for match currencies (no baked-in numbers or labels — counts come from live HUD text):
 
-- Gold → `docs/mockups/icons/ui/currency-gold.png` (runtime: `game/public/icons/ui/currency-gold.png`)
-- Bier → `docs/mockups/icons/ui/currency-bier.png`
-- Fanartikel → `docs/mockups/icons/ui/currency-fanartikel.png`
-- Sicherheit → `docs/mockups/icons/ui/currency-sicherheit.png`
+- Gold → `game/public/icons/ui/currency-gold.png`
+- Bier → `game/public/icons/ui/currency-bier.png`
+- Fanartikel → `game/public/icons/ui/currency-fanartikel.png`
+- Sicherheit → `game/public/icons/ui/currency-sicherheit.png`
 
 Do **not** redraw ad-hoc coin/mug/scarf/shield glyphs in canvas when these assets are available.
+
+## Currency & Momentum floating FX (binding, finalized)
+
+**Status: freigegeben / final.** Whenever a currency is **gained or spent**, and whenever a **Fan-Block produces Momentum**, always use these freigestellte floating FX — do not invent alternate popups unless the user explicitly asks for a redesign.
+
+| Event | Pfad |
+|---|---|
+| ± Gold / Bier / Fanartikel / Sicherheit | `game/public/icons/ui/fx-{gain\|spend}-{currency}.png` |
+| + Momentum (Fan-Block) | `game/public/icons/ui/fx-gain-momentum.png` |
+
+**Look:** currency/momentum logo + green `+` pill (gain) or red `−` pill (spend). Gains rise upward (trail); spends appear near the actor/shopper.
+
+**Runtime:** `currencyFxPath` / `momentumGainFxPath` in `game/src/assets/currencyFx.ts`  
+**Canon:** `docs/icons/CURRENCY_FX_CANON.md`  
+**Reference mock:** Bierstand Kauf = `fx-spend-bier` + `fx-gain-gold` (see `docs/mockups/icons/ui/preview-bierstand-kauf-fx.jpg`).
 
 ## Bierstand buildings (default — binding, finalized)
 
