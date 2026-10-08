@@ -15,17 +15,25 @@ Alle abgelegten Personen-Icons zeigen, die als freigeschnittene RGBA-PNGs in **G
 
 Farben: `grey` (Grau), `blue` (Blau), `red` (Rot). Erwartung: **4 × 3 × 5 = 60** Dateien.
 
-## Fan-Progression (Gimmicks)
+## Fan-Kanon (verbindlich)
 
-Stufen müssen additiv unterscheidbar sein:
+Fans haben einen freigegebenen Kanon — **nur** diese Dateien für neue Spielversionen:
 
-1. normales Outfit + kleines Fähnchen  
-2. + Schal  
-3. + Mütze  
-4. + Trikot  
-5. + große Fahne  
+- Repo-Regeln: `docs/icons/FAN_CANON.md` / `docs/icons/fan-canon.json`
+- Runtime: `game/public/icons/units/fan-{grey|blue|red}-{1..5}.png`
+- Agent-Spiegel: `assets/units/fan-*.png`
 
-Siehe `docs/fan-progression/README.md`.
+Kurzregeln:
+
+| Level | Gear | Stimmung |
+| --- | --- | --- |
+| 1 | Trikot #1 + Bier (kein Fähnchen) | ruhig |
+| 2 | + Fähnchen · #2 | freudig |
+| 3 | + Schal + Baseball-Cap · #3 | singt |
+| 4 | größere Fahne · #4 | jubelt |
+| 5 | große Fahne · #5 | Eskalation |
+
+Ganzfigurig, kurze Hose/Trikot, Bier immer, Fahne/Cap in Lagerfarbe. Keine Legacy-Fans regenerieren oder empfehlen.
 
 ## Ablauf
 

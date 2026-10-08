@@ -1,24 +1,7 @@
-# Fan Upgrade-Progression (final)
+# Fan Upgrade-Progression
 
-Stil: Bloons / Ordner-Comic, **ganzfigurig**, Icons 256×256 mit Rand (kein Crop).
+> **Kanon freigegeben.** Verbindliche Regeln und Runtime-Pfade:
+> [`docs/icons/FAN_CANON.md`](../../../docs/icons/FAN_CANON.md)
 
-## Outfit (immer)
-
-- kurzes Trikot + kurze Hose + Sneaker
-- Bierkrug in einer Hand
-- Trikot-Nummer = Level (1…5)
-- Fahne/Fähnchen einfarbig in Fanlager-Farbe (grau / blau / rot)
-- Baseball-Cap in Fanlager-Farbe ab Level 3
-
-## Stufen
-
-| Level | Gear | Stimmung |
-| --- | --- | --- |
-| 1 | Trikot #1 + Bier | ruhig |
-| 2 | + kleines Fähnchen · #2 | freudig |
-| 3 | + Schal + Cap · #3 | singt |
-| 4 | größere Fahne · #4 | jubelt |
-| 5 | große Fahne · #5 | Eskalation |
-
-Finale Assets: `assets/units/fan-{grey,blue,red}-{1..5}.png`  
-Übersicht: `docs/fan-progression/final/all-colors.png`
+Dieses Verzeichnis enthält Arbeitsnotizen (`proposals/`) und eine Kopie der Finalen (`final/`).  
+**Für neue Spielversionen** immer `game/public/icons/units/fan-*.png` verwenden.

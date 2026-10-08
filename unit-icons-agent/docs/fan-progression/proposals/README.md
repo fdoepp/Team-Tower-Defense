@@ -1,4 +1,7 @@
-# Fan-Vorschläge (Runde 2)
+# Fan-Vorschläge (Archiv)
+
+> **Überholt.** Freigegebener Kanon: [`docs/icons/FAN_CANON.md`](../../../../docs/icons/FAN_CANON.md)  
+> Finale Dateien: `game/public/icons/units/fan-*.png` bzw. `../final/`.
 
 Feedback zur ersten Neugenerierung: Stil zu weit weg vom Original, und Figuren brauchen **vollen Körper** (Beine), damit sie später im Stadion laufen können.
 

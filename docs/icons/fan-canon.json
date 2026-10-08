@@ -1,0 +1,73 @@
+{
+  "id": "fan-canon",
+  "status": "approved",
+  "effectiveFrom": "2026-10-08",
+  "replaces": [
+    "legacy waist-up fan icons",
+    "game/public/icons/units/fan-1.png … fan-5.png as primary art",
+    "earlier matchday fan cutouts without full body / without this gear ladder"
+  ],
+  "style": {
+    "family": "bloons-ordner-comic",
+    "fullBody": true,
+    "sizePx": 256,
+    "format": "image/png",
+    "transparent": true,
+    "noEdgeCrop": true
+  },
+  "colors": ["grey", "blue", "red"],
+  "levels": [1, 2, 3, 4, 5],
+  "pathPattern": "game/public/icons/units/fan-{color}-{level}.png",
+  "agentMirrorPattern": "unit-icons-agent/assets/units/fan-{color}-{level}.png",
+  "always": {
+    "shortJersey": true,
+    "shorts": true,
+    "sneakers": true,
+    "beerMug": true,
+    "jerseyNumberEqualsLevel": true,
+    "flagSolidTeamColor": true,
+    "capType": "baseball",
+    "capFromLevel": 3
+  },
+  "levelsSpec": {
+    "1": {
+      "gear": ["jersey", "shorts", "sneakers", "beer"],
+      "forbidden": ["pennant", "flag", "scarf", "cap"],
+      "mood": "calm"
+    },
+    "2": {
+      "gear": ["jersey", "shorts", "sneakers", "beer", "smallPennant"],
+      "forbidden": ["scarf", "cap", "largeFlag"],
+      "mood": "happy"
+    },
+    "3": {
+      "gear": ["jersey", "shorts", "sneakers", "beer", "smallPennant", "scarf", "baseballCap"],
+      "mood": "singing"
+    },
+    "4": {
+      "gear": ["jersey", "shorts", "sneakers", "beer", "mediumFlag", "scarf", "baseballCap"],
+      "mood": "cheering"
+    },
+    "5": {
+      "gear": ["jersey", "shorts", "sneakers", "beer", "largeFlag", "scarf", "baseballCap"],
+      "mood": "escalation"
+    }
+  },
+  "files": [
+    "game/public/icons/units/fan-grey-1.png",
+    "game/public/icons/units/fan-grey-2.png",
+    "game/public/icons/units/fan-grey-3.png",
+    "game/public/icons/units/fan-grey-4.png",
+    "game/public/icons/units/fan-grey-5.png",
+    "game/public/icons/units/fan-blue-1.png",
+    "game/public/icons/units/fan-blue-2.png",
+    "game/public/icons/units/fan-blue-3.png",
+    "game/public/icons/units/fan-blue-4.png",
+    "game/public/icons/units/fan-blue-5.png",
+    "game/public/icons/units/fan-red-1.png",
+    "game/public/icons/units/fan-red-2.png",
+    "game/public/icons/units/fan-red-3.png",
+    "game/public/icons/units/fan-red-4.png",
+    "game/public/icons/units/fan-red-5.png"
+  ]
+}

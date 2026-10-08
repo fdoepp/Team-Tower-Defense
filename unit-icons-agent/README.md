@@ -4,12 +4,20 @@ BDK-Agent für **freigeschnittene Personen-Icons** (LaneLink / Team-Tower-Defens
 
 Zieht die abgelegten Unit-Cutouts und zeigt alle Varianten in **Grau / Blau / Rot** für die Stufen **1–5**.
 
+## Fan-Kanon
+
+Fans sind freigegeben — Regeln im Repo-Root:
+
+- [`docs/icons/FAN_CANON.md`](../docs/icons/FAN_CANON.md)
+- Assets: `../game/public/icons/units/fan-*.png` (Spiegel: `assets/units/fan-*.png`)
+
 ## Icon-Quelle
 
 | Quelle | Rolle |
 | --- | --- |
-| `assets/units/` | Bundled Snapshot aus `cursor/matchday-icons-a9b1` |
-| `game/public/icons/units/` | Live-Checkout im Monorepo (falls vorhanden) |
+| `../game/public/icons/units/` | **Runtime / Kanon** für Fans |
+| `assets/units/` | Bundled Spiegel für den Agent |
+| `../docs/icons/FAN_CANON.md` | Verbindliche Fan-Regeln |
 
 Schema: `{fan\|ultra\|hooligan\|ordner}-{grey\|blue\|red}-{1..5}.png` → **60** Icons.
 
@@ -34,10 +42,3 @@ npx @cursor/bdk eval --dir . --list
 ```
 
 Galerie öffnen: `docs/gallery/unit-icons-cutouts.html`
-
-## Playground
-
-```bash
-npx @cursor/bdk serve --dir . --mode single --dev
-# http://127.0.0.1:3000/playground
-```

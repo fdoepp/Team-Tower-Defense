@@ -54,11 +54,11 @@ export function defaultIconRoots(extraRoots: string[] = []): string[] {
   const root = projectRoot();
   const candidates = [
     ...extraRoots,
-    join(root, "assets/units"),
-    join(root, "bot/sandbox/workspace/icons/units"),
-    // Monorepo game checkout (when the agent cwd inherits the repo)
+    // Canonical game path first (Fan canon lives here)
     join(root, "../game/public/icons/units"),
     join(process.cwd(), "game/public/icons/units"),
+    join(root, "assets/units"),
+    join(root, "bot/sandbox/workspace/icons/units"),
     join(process.cwd(), "assets/units"),
   ];
   const seen = new Set<string>();
