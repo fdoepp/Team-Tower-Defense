@@ -1,0 +1,11 @@
+{
+  "name": "team-tower-defense",
+  "private": true,
+  "scripts": {
+    "ui-final:validate": "python3 scripts/ui-final/validate.py",
+    "ui-final:propose": "node scripts/ui-final/propose.mjs",
+    "ui-final:approve": "node scripts/ui-final/approve.mjs",
+    "ui-final:sync": "node scripts/ui-final/sync.mjs",
+    "ui-final:check": "node scripts/ui-final/check.mjs"
+  }
+}
