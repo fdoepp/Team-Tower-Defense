@@ -153,7 +153,7 @@ function renderSetup(): void {
   app.innerHTML = `
     <div class="screen menu">
       <div>
-        <p class="sub">8 Fans für den Heimblock (max. 12)</p>
+        <p class="sub">8 Fans für den Heimblock (Startaufstellung)</p>
         <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
       </div>
       <div class="card stack">
@@ -203,7 +203,7 @@ function renderMatchScreen(): void {
     <div class="match-shell matchday">
       <aside class="side-rail left-rail" aria-label="Personen">
         <header class="rail-banner">Personen</header>
-        <p class="freie-plaetze">Freie Plätze <b id="free-seats">0</b></p>
+        <p class="freie-plaetze">Fans im Block <b id="free-seats">0</b></p>
         <div class="unit-rows">
           <div class="ur-row" data-card-buy="normalos">
             <div class="ur-top">
@@ -921,18 +921,17 @@ function renderMatchScreen(): void {
       if (momGast) momGast.style.width = `${pG}%`;
       if (momKnob) {
         momKnob.style.left = `${((ch.momentum + 1) / 2) * 100}%`;
-        momKnob.style.transform =
-          m.moodKick > 0.08 ? `scale(${1 + m.moodKick * 0.85})` : "";
+        momKnob.style.transform = "";
       }
       const lpH = app.querySelector("#mom-p-heim");
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
-      if (lpH) lpH.textContent = `Heim ${pH}%`;
+      if (lpH) lpH.textContent = `Stimmung Heim ${m.moodHeim.toFixed(1)}`;
       if (lpT) lpT.textContent = `Torchance ${Math.round(ch.pTor * 100)}%`;
-      if (lpG) lpG.textContent = `Gast ${pG}%`;
+      if (lpG) lpG.textContent = `Stimmung Gast ${m.moodGaeste.toFixed(1)}`;
       const bar = app.querySelector("#momentum-bar");
       if (bar) {
-        bar.classList.toggle("kick", m.moodKick > 0.08);
+        bar.classList.remove("kick");
       }
       const banner = app.querySelector("#combat-banner");
       if (banner) {
