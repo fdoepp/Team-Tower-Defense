@@ -10,6 +10,7 @@ import {
   onFullscreenChange,
 } from "./game/fullscreen";
 import { drawMatch, hitSeat, hitSlot } from "./game/render";
+import { syncTribuneLayout } from "./game/layout";
 import {
   SCOREBOARD_NATIVE,
   UI_ICONS,
@@ -589,6 +590,8 @@ function renderMatchScreen(): void {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     m.width = cssW;
     m.height = cssH;
+    // Keep tribune pack (block centers / seat lanes) in sync with canvas aspect.
+    syncTribuneLayout(cssW, cssH);
     layoutHud();
     try {
       drawMatch(ctx, m);
