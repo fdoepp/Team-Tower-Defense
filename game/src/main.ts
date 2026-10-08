@@ -289,16 +289,9 @@ function renderMatchScreen(): void {
       </aside>
       <div id="game-wrap">
         <div class="top-hud" id="pitch-hud">
-          <div class="wallet-row" aria-label="Ressourcen">
-            <span class="wi gold chip"><img src="${UI_ICONS.currencyGold}" alt=""><b id="gold">0</b></span>
-            <span class="wi bier chip"><img src="${UI_ICONS.currencyBier}" alt=""><b id="cur-beer">0</b></span>
-            <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
-            <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
-          </div>
           <!--
-            Freigestelltes Top-HUD = b-final-cutout.png (byte-identisch).
-            Nur dieses PNG anzeigen und proportional skalieren — keine Overlay-Chrome.
-            Live-Werte nur a11y; Orb-Position über freigestellte Cutout-Varianten.
+            Freigestelltes Top-HUD = b-final-cutout.png.
+            Zentriert, Uhrzeit-Orb möglichst nah am oberen Rand.
           -->
           <div
             class="scoreboard-slot"
@@ -326,6 +319,12 @@ function renderMatchScreen(): void {
               <span class="sr-only" id="mom-knob"></span>
               <span class="sr-only" id="momentum-bar"></span>
             </div>
+          </div>
+          <div class="wallet-row" aria-label="Ressourcen">
+            <span class="wi gold chip"><img src="${UI_ICONS.currencyGold}" alt=""><b id="gold">0</b></span>
+            <span class="wi bier chip"><img src="${UI_ICONS.currencyBier}" alt=""><b id="cur-beer">0</b></span>
+            <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
+            <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
