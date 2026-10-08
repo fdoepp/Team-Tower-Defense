@@ -1056,6 +1056,41 @@ select {
   letter-spacing: -0.01em;
 }
 
+.ur-lv {
+  font-size: 0.45rem;
+  font-weight: 700;
+  color: #a16207;
+  margin-left: 2px;
+}
+
+.ar-lv-btn {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid #a16207;
+  background: linear-gradient(180deg, #fef3c7, #fde68a);
+  color: #92400e;
+  font-weight: 800;
+  font-size: 0.7rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.ar-lv-btn:disabled,
+.ar-lv-btn.cd {
+  opacity: 0.45;
+  cursor: default;
+  filter: grayscale(0.4);
+}
+.ar-lv-btn.ready:not(:disabled) {
+  box-shadow: 0 0 0 1px rgba(217, 119, 6, 0.35);
+}
+.match-shell.matchday .ur-actions-triple {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
 .ur-count {
   font-family: var(--display);
   font-size: 0.72rem;

@@ -60,6 +60,8 @@ export type FanUnit = {
   rangedPyro: boolean;
   /** Sent via Angriff / Pyro Wurf — keep pushing, don't auto-return to seat */
   onOffense: boolean;
+  /** Unit level 1..UPGRADE_MAX — combat + visit payout scale with this */
+  level: number;
   _after?: string;
   _homeSeat?: number | null;
 };
@@ -96,11 +98,11 @@ export const SECURITY_BASE_CAP = 50;
 /** Regen toward SECURITY_BASE_CAP from intact grey neutral Ordnerposten when safe. */
 export const SECURITY_BASE_REGEN = 0.55;
 
-/** Buy costs — each type tied to its currency */
+/** Buy costs — each type tied to its currency (early costs aligned) */
 export const BUY_COST = {
-  normalos: { beer: 0, merch: 0, security: 10, gold: 0 },
-  ultras: { beer: 0, merch: 14, security: 0, gold: 0 },
-  hooligans: { beer: 14, merch: 0, security: 0, gold: 0 },
+  normalos: { beer: 0, merch: 0, security: 12, gold: 0 },
+  ultras: { beer: 0, merch: 12, security: 0, gold: 0 },
+  hooligans: { beer: 12, merch: 0, security: 0, gold: 0 },
 } as const;
 
 export const BUILD_COST: Record<BuildingKind, number> = {
@@ -116,10 +118,30 @@ export const BUILD_LABEL: Record<BuildingKind, string> = {
 };
 
 export const UPGRADE_MAX = 5;
+/** Building upgrade gold to reach level index (Lv2..Lv5) */
 export const UPGRADE_COST = [0, 0, 40, 75, 120, 180] as const;
+/**
+ * Unit upgrade gold to reach level index (Lv2..Lv5).
+ * Cheaper than buildings — you upgrade many people.
+ */
+export const UNIT_UPGRADE_COST = [0, 0, 22, 40, 65, 100] as const;
+/** +% HP / Atk / Def / Jubel per level above 1 */
+export const UNIT_LEVEL_STAT = 0.14;
 
 export function productionRate(level: number): number {
   return 0.7 + level * 0.5;
+}
+
+/** Multiplier for combat / payout stats at unit level */
+export function unitLevelMul(level: number): number {
+  const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
+  return 1 + (lv - 1) * UNIT_LEVEL_STAT;
+}
+
+export function unitUpgradeCost(fromLevel: number): number | null {
+  const next = Math.floor(fromLevel) + 1;
+  if (next > UPGRADE_MAX) return null;
+  return UNIT_UPGRADE_COST[next] ?? null;
 }
 
 export const MIX_MIN = { normalos: 1, ultras: 1, hooligans: 1 } as const;
@@ -189,10 +211,50 @@ export const BLOCK_STORM_COUNT = 4;
 export const BLOCK_STORM_SEC = 7;
 export const STAND_CONVERT_SEC = 11;
 export const STAND_CONVERT_SEAT_MAJORITY = true;
-export const STEWARD_GOLD_PER_SEC = 0.55;
-export const ULTRA_BEER_INTERVAL = 24;
-export const NORMALO_BEER_INTERVAL = 28;
-export const HOOLIGAN_BEER_INTERVAL = 20;
+/** Soft gold upkeep per Ordner / s — low enough that defense stays affordable */
+export const STEWARD_GOLD_PER_SEC = 0.32;
+
+/**
+ * How often each group walks to Bier / Fanshop (real seconds, Lv1).
+ * Higher unit levels visit slightly faster (see visitInterval).
+ * Fans: beer-heavy · Ultras: both · Hools: shop-leaning but still drink.
+ */
+export const VISIT_INTERVAL = {
+  normalos: { beer: 30, shop: 52 },
+  ultras: { beer: 26, shop: 40 },
+  hooligans: { beer: 24, shop: 26 },
+} as const;
+
+/** @deprecated use VISIT_INTERVAL — kept as aliases for clarity in call sites */
+export const ULTRA_BEER_INTERVAL = VISIT_INTERVAL.ultras.beer;
+export const NORMALO_BEER_INTERVAL = VISIT_INTERVAL.normalos.beer;
+export const HOOLIGAN_BEER_INTERVAL = VISIT_INTERVAL.hooligans.beer;
+
+/** Gold paid into the till when a unit buys at a Bierstand (Lv1 base) */
+export const BEER_VISIT_GOLD = 5;
+/** Gold paid into the till when a unit buys at a Fanshop (Lv1 base) */
+export const SHOP_VISIT_GOLD = 6;
+/** Visit interval shrinks this much per unit level above 1 */
+export const VISIT_LEVEL_SPEED = 0.04;
+
+export function visitInterval(
+  kind: FanKind,
+  place: "beer" | "shop",
+  level: number,
+): number {
+  const base = VISIT_INTERVAL[kind][place];
+  const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
+  return base * (1 - (lv - 1) * VISIT_LEVEL_SPEED);
+}
+
+/** Gold earned by stand owner from one visit (scales with buyer level) */
+export function visitGoldPayout(
+  place: "beer" | "shop",
+  level: number,
+): number {
+  const base = place === "beer" ? BEER_VISIT_GOLD : SHOP_VISIT_GOLD;
+  return Math.max(1, Math.round(base * unitLevelMul(level)));
+}
 
 export const PROD_BEER = 0.28;
 export const PROD_SECURITY = 0.3;
@@ -231,7 +293,8 @@ export const FAN_STATS: Record<
     defense: 0.6,
     fight: 0.55,
     drink: 0.7,
-    jubel: 1.25,
+    /** Slightly toned so Hool-mixes aren't hopeless on momentum */
+    jubel: 1.1,
     color: "#16a34a",
     label: "Fan",
   },
@@ -253,7 +316,7 @@ export const FAN_STATS: Record<
     /** Langsamer als Ultras; Nahkampf bleibt über Atk/HP stark */
     fight: 0.72,
     drink: 1.1,
-    jubel: 0.55,
+    jubel: 0.75,
     color: "#b45309",
     label: "Hooligan",
   },

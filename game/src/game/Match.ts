@@ -25,11 +25,9 @@ import {
   HIT_CD,
   HIT_DAMAGE,
   HIT_DAMAGE_SCALE,
-  HOOLIGAN_BEER_INTERVAL,
   HOOLIGAN_ORDER_BEER,
   MELEE_RANGE,
   NEUTRAL_STEWARD_RESPAWN,
-  NORMALO_BEER_INTERVAL,
   ORDNER_POST_HP,
   ORDNER_POST_HP_PER_LEVEL,
   PROD_BEER,
@@ -51,11 +49,14 @@ import {
   STEWARD_GOLD_PER_SEC,
   STEWARD_HIRE_GOLD,
   STEWARD_STATS,
-  ULTRA_BEER_INTERVAL,
   ULTRA_VS_POST_MUL,
   UPGRADE_COST,
   UPGRADE_MAX,
   productionRate,
+  unitLevelMul,
+  unitUpgradeCost,
+  visitGoldPayout,
+  visitInterval,
   type AiDifficulty,
   type BuildSlot,
   type BuildingKind,
@@ -323,12 +324,10 @@ export class Match {
   ): FanUnit {
     const seat = Math.max(0, seatIndex | 0);
     const p = seatPos(blockId, seat);
-    const beerIv =
-      kind === "hooligans"
-        ? HOOLIGAN_BEER_INTERVAL
-        : kind === "ultras"
-          ? ULTRA_BEER_INTERVAL
-          : NORMALO_BEER_INTERVAL;
+    const level = 1;
+    const beerIv = visitInterval(kind, "beer", level);
+    const shopIv = visitInterval(kind, "shop", level);
+    const maxHp = this.baseMaxHp(kind, level, false);
     return {
       id: uid(),
       kind,
@@ -337,11 +336,11 @@ export class Match {
       state: "block",
       seatIndex: seat,
       standKey: null,
-      hp: FAN_STATS[kind].maxHp,
-      maxHp: FAN_STATS[kind].maxHp,
+      hp: maxHp,
+      maxHp,
       thirst: 25 + Math.random() * 25,
-      satisfiedUntil: this.realElapsed + beerIv * (0.4 + Math.random() * 0.4),
-      shopUntil: 1e9,
+      satisfiedUntil: this.realElapsed + beerIv * (0.35 + Math.random() * 0.55),
+      shopUntil: this.realElapsed + shopIv * (0.35 + Math.random() * 0.55),
       aggro: kind === "hooligans" ? 40 : kind === "ultras" ? 30 : 10,
       lean: 0,
       captureProg: 0,
@@ -360,15 +359,15 @@ export class Match {
       cheerT: 0,
       rangedPyro: false,
       onOffense: false,
+      level,
     };
   }
 
   private makeSteward(team: TeamId | "neutral", stand: BuildSlot): FanUnit {
     const sp = this.stewardPostPos(stand);
     const gx = blockIdToGangX(stand.blockId);
-    const lv = Math.max(1, stand.level || 1);
-    const hp =
-      STEWARD_STATS.maxHpBase + (lv - 1) * STEWARD_STATS.maxHpPerLevel;
+    const level = 1;
+    const hp = this.stewardMaxHp(level);
     // Spawn already on gang — tickFans skips stewards, so a "moving" path
     // would never finish and they'd never patrol.
     return {
@@ -402,7 +401,35 @@ export class Match {
       cheerT: 0,
       rangedPyro: false,
       onOffense: false,
+      level,
     };
+  }
+
+  private stewardMaxHp(level: number): number {
+    const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
+    return STEWARD_STATS.maxHpBase + (lv - 1) * STEWARD_STATS.maxHpPerLevel;
+  }
+
+  private baseMaxHp(kind: FanKind, level: number, rangedPyro: boolean): number {
+    let hp = FAN_STATS[kind].maxHp * unitLevelMul(level);
+    if (rangedPyro) hp *= PYRO_FIGHT_HP_MUL;
+    return Math.max(40, Math.floor(hp));
+  }
+
+  private applyUnitLevelStats(f: FanUnit): void {
+    const lv = Math.max(1, Math.min(UPGRADE_MAX, f.level || 1));
+    f.level = lv;
+    if (f.isSteward) {
+      const next = this.stewardMaxHp(lv);
+      const ratio = f.maxHp > 0 ? f.hp / f.maxHp : 1;
+      f.maxHp = next;
+      f.hp = Math.max(1, Math.min(next, Math.round(next * ratio)));
+      return;
+    }
+    const next = this.baseMaxHp(f.kind, lv, f.rangedPyro);
+    const ratio = f.maxHp > 0 ? f.hp / f.maxHp : 1;
+    f.maxHp = next;
+    f.hp = Math.max(1, Math.min(next, Math.round(next * ratio)));
   }
 
   /** Ordner stand in front of their post (gang side) */
@@ -1001,8 +1028,7 @@ export class Match {
     }
     const u = list[0];
     u.rangedPyro = true;
-    u.maxHp = Math.max(40, Math.floor(u.maxHp * PYRO_FIGHT_HP_MUL));
-    u.hp = Math.min(u.hp, u.maxHp);
+    this.applyUnitLevelStats(u);
     this.sendToGang(u);
     this.cd.pyroFight = 0;
     this.toast("Ultra → Pyro Wurf");
@@ -1176,6 +1202,65 @@ export class Match {
     this.buildMenu = null;
     this.floatAtSlot(s, `Lv${s.level}`, true);
     this.toast(`Upgrade → Lv${s.level}`);
+    return true;
+  }
+
+  /** Lowest-level living player unit of this kind (or Ordner if kind omitted via steward flag) */
+  lowestLevelUnit(
+    kind: FanKind | "ordner",
+    team: TeamId = this.playerTeam,
+  ): FanUnit | null {
+    let best: FanUnit | null = null;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.team !== team) continue;
+      if (kind === "ordner") {
+        if (!f.isSteward) continue;
+      } else {
+        if (f.isSteward || f.kind !== kind) continue;
+      }
+      if (!best || (f.level || 1) < (best.level || 1)) best = f;
+    }
+    return best;
+  }
+
+  minUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
+    const u = this.lowestLevelUnit(kind, team);
+    return u ? u.level || 1 : 1;
+  }
+
+  unitUpgradeCostFor(kind: FanKind | "ordner"): number | null {
+    const u = this.lowestLevelUnit(kind, this.playerTeam);
+    if (!u) return null;
+    return unitUpgradeCost(u.level || 1);
+  }
+
+  canUpgradeUnit(kind: FanKind | "ordner"): boolean {
+    const cost = this.unitUpgradeCostFor(kind);
+    return cost != null && this.gold >= cost;
+  }
+
+  tryUpgradeUnit(kind: FanKind | "ordner"): boolean {
+    const u = this.lowestLevelUnit(kind, this.playerTeam);
+    if (!u) {
+      this.toast(kind === "ordner" ? "Kein Ordner" : "Keine Einheit");
+      return false;
+    }
+    const cost = unitUpgradeCost(u.level || 1);
+    if (cost == null) {
+      this.toast("Max. Stufe");
+      return false;
+    }
+    if (this.gold < cost) {
+      this.toast(`${cost}€ nötig`);
+      return false;
+    }
+    this.gold -= cost;
+    u.level = (u.level || 1) + 1;
+    this.applyUnitLevelStats(u);
+    const label =
+      kind === "ordner" ? "Ordner" : FAN_STATS[kind].label;
+    this.floatAt(u.x, u.y, `${label} Lv${u.level}`, true);
+    this.toast(`${label} → Lv${u.level}`);
     return true;
   }
 
@@ -1833,40 +1918,9 @@ export class Match {
           f.x += (tx - f.x) * Math.min(1, 2.8 * dt);
           f.y += (ty - f.y) * Math.min(1, 2.8 * dt);
         }
-        if (f.kind === "ultras" || f.kind === "normalos") {
-          f.thirst += FAN_STATS[f.kind].drink * 3.2 * dt;
-          const ready = this.realElapsed >= (f.satisfiedUntil || 0);
-          if (f.thirst > 55 && ready) {
-            const stand = this.nearestBierStand(
-              f.team === "neutral" ? this.playerTeam : f.team,
-              f.blockId,
-            );
-            // Neutrals don't buy beer for now; only team fans
-            if (stand && f.team !== "neutral") {
-              const sp = this.standWorld(stand);
-              this.startPath(
-                f,
-                this.pathViaDoors(f.blockId, stand.blockId, sp),
-                "stand",
-              );
-              f.standKey = slotKey(stand.blockId, stand.index);
-            }
-          }
-        } else if (f.kind === "hooligans" && f.team !== "neutral") {
-          if (this.realElapsed >= f.shopUntil) {
-            const shop = this.nearestFanshop(f.team as TeamId, f.blockId);
-            if (shop) {
-              const sp = this.standWorld(shop);
-              this.startPath(
-                f,
-                this.pathViaDoors(f.blockId, shop.blockId, sp),
-                "shop",
-              );
-              f.standKey = slotKey(shop.blockId, shop.index);
-            } else {
-              f.shopUntil = this.realElapsed + 8;
-            }
-          }
+        // Team fans visit Bier + Fanshop on separate timers (gold into till)
+        if (f.team !== "neutral" && !f.onOffense) {
+          this.maybeStartStandVisit(f);
         }
       } else if (f.state === "moving") {
         this.followPath(f, dt);
@@ -1878,21 +1932,75 @@ export class Match {
     }
   }
 
+  /**
+   * Pick Bier or Fanshop when timers are due.
+   * Fans prefer beer, Hools prefer shop, Ultras beer-first if both ready.
+   */
+  private maybeStartStandVisit(f: FanUnit): void {
+    if (f.team !== this.playerTeam && f.team !== this.aiTeam) return;
+    const team = f.team as TeamId;
+    const beerReady = this.realElapsed >= (f.satisfiedUntil || 0);
+    const shopReady = this.realElapsed >= (f.shopUntil || 0);
+    if (!beerReady && !shopReady) return;
+
+    const bier = beerReady ? this.nearestBierStand(team, f.blockId) : null;
+    const shop = shopReady ? this.nearestFanshop(team, f.blockId) : null;
+
+    let pick: "beer" | "shop" | null = null;
+    if (bier && shop) {
+      pick = f.kind === "hooligans" ? "shop" : "beer";
+    } else if (bier) pick = "beer";
+    else if (shop) pick = "shop";
+
+    if (!pick) {
+      // No stand available — retry soon instead of locking forever
+      if (beerReady) f.satisfiedUntil = this.realElapsed + 6;
+      if (shopReady) f.shopUntil = this.realElapsed + 6;
+      return;
+    }
+
+    const stand = pick === "beer" ? bier! : shop!;
+    const sp = this.standWorld(stand);
+    this.startPath(
+      f,
+      this.pathViaDoors(f.blockId, stand.blockId, sp),
+      pick === "beer" ? "stand" : "shop",
+    );
+    f.standKey = slotKey(stand.blockId, stand.index);
+  }
+
+  private payVisitGold(stand: BuildSlot, amount: number): void {
+    if (amount <= 0) return;
+    if (stand.owner === this.playerTeam) {
+      this.gold += amount;
+      this.floatAtSlot(stand, `+${amount}€`, true);
+    } else if (stand.owner === this.aiTeam) {
+      this.aiGold += amount;
+      this.floatAtSlot(stand, `+${amount}€`, false);
+    }
+  }
+
   private finishStandVisit(f: FanUnit): void {
     const stand = this.slots.find(
       (s) => slotKey(s.blockId, s.index) === f.standKey,
     );
-    if (stand && stand.building === "bier" && stand.beer >= 1) {
+    const lv = f.level || 1;
+    if (stand?.building === "bier" && stand.beer >= 1) {
       stand.beer -= 1;
       f.thirst = 5;
-      const iv =
-        f.kind === "hooligans"
-          ? HOOLIGAN_BEER_INTERVAL
-          : f.kind === "ultras"
-            ? ULTRA_BEER_INTERVAL
-            : NORMALO_BEER_INTERVAL;
-      f.satisfiedUntil = this.realElapsed + iv;
+      f.satisfiedUntil =
+        this.realElapsed + visitInterval(f.kind, "beer", lv);
+      const pay = visitGoldPayout("beer", lv);
+      this.payVisitGold(stand, pay);
       this.floatAtSlot(stand, "−1 Fass", false);
+    } else if (stand?.building === "fanshop") {
+      f.shopUntil = this.realElapsed + visitInterval(f.kind, "shop", lv);
+      const pay = visitGoldPayout("shop", lv);
+      this.payVisitGold(stand, pay);
+    } else {
+      // Visit failed (empty bier / missing stand) — short backoff
+      f.satisfiedUntil = this.realElapsed + 8;
+      f.shopUntil = this.realElapsed + 8;
     }
 
     const home =
@@ -1901,7 +2009,6 @@ export class Match {
         : f.team === this.aiTeam
           ? GAST_BLOCK
           : f.blockId;
-    // Prefer reserved seat
     const seat =
       f.seatIndex != null && !this.seatOccupied(home, f.seatIndex)
         ? f.seatIndex
@@ -1911,7 +2018,6 @@ export class Match {
     const end = seat != null ? seatPos(home, seat) : doorPos(home);
     this.startPath(f, this.pathViaDoors(f.blockId, home, end), "home");
     f._homeSeat = seat;
-    // keep seatIndex reserved for ultras; for others assign on home
     f.standKey = null;
   }
 
@@ -2417,13 +2523,15 @@ export class Match {
   }
 
   private attackOf(f: FanUnit): number {
-    if (f.isSteward) return STEWARD_STATS.attack;
-    return FAN_STATS[f.kind].attack;
+    const mul = unitLevelMul(f.level || 1);
+    if (f.isSteward) return STEWARD_STATS.attack * mul;
+    return FAN_STATS[f.kind].attack * mul;
   }
 
   private defenseOf(f: FanUnit): number {
-    if (f.isSteward) return STEWARD_STATS.defense;
-    return FAN_STATS[f.kind].defense;
+    const mul = unitLevelMul(f.level || 1);
+    if (f.isSteward) return STEWARD_STATS.defense * mul;
+    return FAN_STATS[f.kind].defense * mul;
   }
 
   private enemyUltraInBlock(blockId: number, defenderTeam: TeamId): boolean {
@@ -2860,7 +2968,7 @@ export class Match {
     for (const f of this.fans) {
       if (f.hp <= 0 || f.isSteward) continue;
       if (f.state !== "block" && f.state !== "stand") continue;
-      const j = FAN_STATS[f.kind].jubel;
+      const j = FAN_STATS[f.kind].jubel * unitLevelMul(f.level || 1);
       if (f.team === this.playerTeam) jubelHeim += j;
       else if (f.team === this.aiTeam) jubelGast += j;
     }
@@ -3040,6 +3148,7 @@ export class Match {
     this.aiTryBuild();
     this.aiTryHireSteward();
     this.aiTryBuyFans();
+    this.aiTryUpgradeUnits();
     const act = aiActionMul(diff);
     const hools = this.fans.filter(
       (f) =>
@@ -3079,9 +3188,29 @@ export class Match {
       this.aiMerch -= PYRO_FIGHT_MERCH;
       const u = ultras[0];
       u.rangedPyro = true;
-      u.maxHp = Math.max(40, Math.floor(u.maxHp * PYRO_FIGHT_HP_MUL));
-      u.hp = Math.min(u.hp, u.maxHp);
+      this.applyUnitLevelStats(u);
       this.sendToGang(u);
+    }
+  }
+
+  private aiTryUpgradeUnits(): void {
+    if (this.aiGold < 22) return;
+    if (Math.random() > 0.4) return;
+    const kinds: (FanKind | "ordner")[] = [
+      "hooligans",
+      "ultras",
+      "normalos",
+      "ordner",
+    ];
+    for (const kind of kinds) {
+      const u = this.lowestLevelUnit(kind, this.aiTeam);
+      if (!u) continue;
+      const cost = unitUpgradeCost(u.level || 1);
+      if (cost == null || this.aiGold < cost) continue;
+      this.aiGold -= cost;
+      u.level = (u.level || 1) + 1;
+      this.applyUnitLevelStats(u);
+      return;
     }
   }
 
