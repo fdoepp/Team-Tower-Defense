@@ -295,7 +295,11 @@ function renderMatchScreen(): void {
             <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
             <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
           </div>
-          <!-- Freigestelltes Top-HUD: native ${SCOREBOARD_NATIVE.w}×${SCOREBOARD_NATIVE.h}, CSS aspect-lock -->
+          <!--
+            Freigestelltes Top-HUD (HUD_TOP_CANON / b-final-cutout):
+            nur das Original-PNG skalieren — keine Ersatz-Balken/Uhr-Chrome.
+            Live-Werte: Score + Minute als Text über dem Asset; Orb-X über Cutout-Swap.
+          -->
           <div
             class="scoreboard-slot"
             id="scoreboard-slot"
@@ -304,6 +308,7 @@ function renderMatchScreen(): void {
           >
             <img
               class="scoreboard-art"
+              id="scoreboard-art"
               src="${UI_ICONS.scoreboard}"
               width="${SCOREBOARD_NATIVE.w}"
               height="${SCOREBOARD_NATIVE.h}"
@@ -315,16 +320,14 @@ function renderMatchScreen(): void {
               <div class="sb-score-mask">
                 <b class="sb-score" id="hud-score">0 : 0</b>
               </div>
-              <div class="sb-bar" id="momentum-bar">
-                <div class="sb-bar-heim" id="mom-heim"></div>
-                <div class="sb-bar-gast" id="mom-gast"></div>
-                <span class="sb-p-heim" id="mom-p-heim">Heim 50%</span>
-                <span class="sb-p-gast" id="mom-p-gast">Gast 50%</span>
-                <div class="sb-orb" id="mom-knob">
-                  <small>Torchance</small>
-                  <b id="mom-p-tor">28%</b>
-                </div>
-              </div>
+              <!-- a11y / sync hooks — visuals come from the freigestellte PNG -->
+              <span class="sr-only" id="mom-p-heim">Heim 50%</span>
+              <span class="sr-only" id="mom-p-gast">Gast 50%</span>
+              <span class="sr-only" id="mom-p-tor">Torchance 28%</span>
+              <span class="sr-only" id="mom-heim"></span>
+              <span class="sr-only" id="mom-gast"></span>
+              <span class="sr-only" id="mom-knob"></span>
+              <span class="sr-only" id="momentum-bar"></span>
             </div>
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
@@ -918,32 +921,25 @@ function renderMatchScreen(): void {
       }
       if (hudMin) hudMin.textContent = `${Math.floor(m.minute)}′`;
       const ch = m.goalChance();
-      const momHeim = app.querySelector<HTMLElement>("#mom-heim");
-      const momGast = app.querySelector<HTMLElement>("#mom-gast");
-      const momKnob = app.querySelector<HTMLElement>("#mom-knob");
       const heimPct = Math.max(0.08, Math.min(0.92, ch.pHeim));
       const pH = Math.round(heimPct * 100);
       const pG = 100 - pH;
-      if (momHeim) momHeim.style.width = `${pH}%`;
-      if (momGast) momGast.style.width = `${pG}%`;
-      // Orb X: left when Heim strong, right when Gast strong (uniform in % of bar)
-      if (momKnob) {
-        const orbPct = (1 - heimPct) * 100;
-        momKnob.style.left = `${orbPct}%`;
-        momKnob.style.transform =
-          m.moodKick > 0.08
-            ? `translate(-50%, -50%) scale(${1 + m.moodKick * 0.85})`
-            : "translate(-50%, -50%)";
-      }
       const lpH = app.querySelector("#mom-p-heim");
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
       if (lpH) lpH.textContent = `Heim ${pH}%`;
-      if (lpT) lpT.textContent = `${Math.round(ch.pTor * 100)}%`;
+      if (lpT) lpT.textContent = `Torchance ${Math.round(ch.pTor * 100)}%`;
       if (lpG) lpG.textContent = `Gast ${pG}%`;
-      const bar = app.querySelector("#momentum-bar");
-      if (bar) {
-        bar.classList.toggle("kick", m.moodKick > 0.08);
+      // Orb-Position: freigestellte Cutout-Varianten (Heim / Mitte / Gast) — Kunst bleibt Original
+      const art = app.querySelector<HTMLImageElement>("#scoreboard-art");
+      if (art) {
+        const nextSrc =
+          heimPct >= 0.62
+            ? UI_ICONS.scoreboardOrbHeim
+            : heimPct <= 0.38
+              ? UI_ICONS.scoreboardOrbGast
+              : UI_ICONS.scoreboard;
+        if (art.getAttribute("src") !== nextSrc) art.src = nextSrc;
       }
       const slot = app.querySelector<HTMLElement>("#scoreboard-slot");
       if (slot) {

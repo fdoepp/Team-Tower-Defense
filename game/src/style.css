@@ -782,9 +782,9 @@ select {
 }
 
 /*
- * Freigestelltes Top-HUD (scoreboard-top.png, 1041×508).
- * Width from viewport; height follows native aspect-ratio only —
- * never squash/stretch on any screen size.
+ * Freigestelltes Top-HUD — scoreboard-top.png (= b-final-cutout), 1041×508.
+ * Nur Original-Kunst skalieren (object-fit:contain + aspect-ratio).
+ * Keine Ersatz-Balken / kein Ersatz-Uhr-Chrome.
  */
 .match-shell.matchday .scoreboard-slot {
   --sb-nat-w: 1041;
@@ -824,18 +824,18 @@ select {
   pointer-events: none;
 }
 
-/* Cover baked score digits; live score keeps asset proportions */
+/* Nur Score-Ziffern abdecken — Crests, Holzrahmen, Balken, Orb = Original-PNG */
 .match-shell.matchday .sb-score-mask {
   position: absolute;
-  left: 28%;
-  top: 28%;
-  width: 44%;
-  height: 30%;
+  left: 33%;
+  top: 32%;
+  width: 34%;
+  height: 22%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5ecd8;
-  border-radius: 8%;
+  background: #f4e7d0;
+  border-radius: 12% / 22%;
 }
 
 .match-shell.matchday .sb-score {
@@ -853,118 +853,28 @@ select {
   color: #b45309;
 }
 
+/* Minute-Ziffern auf dem Original-Badge (Holzring + Grün bleiben im PNG) */
 .match-shell.matchday .sb-minute {
   position: absolute;
   left: 50%;
-  top: 3.5%;
+  top: 5.5%;
   transform: translateX(-50%);
-  min-width: 9.5%;
+  width: 7.2%;
   aspect-ratio: 1;
-  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 0.15em;
-  border-radius: 999px;
-  background: #22c55e;
-  border: 2px solid #166534;
-  color: #fff;
-  font-family: var(--display);
-  font-weight: 800;
-  font-size: clamp(0.55rem, 2.4cqw, 0.95rem);
-  line-height: 1;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
-}
-
-/* Momentum / Stimmungsbarometer — fractions of the locked scoreboard box */
-.match-shell.matchday .sb-bar {
-  position: absolute;
-  left: 8%;
-  top: 72%;
-  width: 84%;
-  height: 18%;
-  border-radius: 999px;
-  overflow: visible;
-  background: #1e293b;
-  container-type: size;
-}
-
-.match-shell.matchday .sb-bar-heim,
-.match-shell.matchday .sb-bar-gast {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  min-width: 8%;
-  border-radius: 999px;
-  transition: width 0.18s ease;
-}
-
-.match-shell.matchday .sb-bar-heim {
-  left: 0;
-  background: linear-gradient(180deg, #3b82f6, #1d4ed8);
-}
-
-.match-shell.matchday .sb-bar-gast {
-  right: 0;
-  background: linear-gradient(180deg, #ef4444, #b91c1c);
-}
-
-.match-shell.matchday .sb-p-heim,
-.match-shell.matchday .sb-p-gast {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: var(--display);
-  font-weight: 800;
-  font-size: clamp(0.45rem, 2cqw, 0.72rem);
-  color: #fff;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
-  white-space: nowrap;
-  z-index: 1;
-}
-
-.match-shell.matchday .sb-p-heim {
-  left: 3%;
-}
-
-.match-shell.matchday .sb-p-gast {
-  right: 3%;
-}
-
-.match-shell.matchday .sb-orb {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(22%, 100cqh);
-  aspect-ratio: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fde68a, #f59e0b 55%, #b45309);
-  border: 2px solid #78350f;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  color: #1c1917;
-  line-height: 1.05;
-}
-
-.match-shell.matchday .sb-orb small {
+  background: #21c45c;
+  color: #fff;
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(0.35rem, 1.5cqw, 0.55rem);
-}
-
-.match-shell.matchday .sb-orb b {
-  font-family: var(--display);
-  font-weight: 900;
-  font-size: clamp(0.5rem, 2.2cqw, 0.78rem);
-}
-
-.match-shell.matchday .sb-bar.kick .sb-orb {
-  filter: brightness(1.08);
+  font-size: clamp(0.48rem, 2.1cqw, 0.85rem);
+  line-height: 1;
+  box-shadow: none;
 }
 
 @media (max-width: 900px) {
