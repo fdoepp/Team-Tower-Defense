@@ -1,12 +1,16 @@
 # Bauplatz-Icons (kanonisch)
 
-| Kontrolle | Datei (Deploy-Default parallel) |
+Deploy-Default: **Stadionboden-Perspektive** — vorn breiter, hinten schmaler, passend zu
+`game/public/assets/stadium-floodlight-derby-bg.jpg`.
+
+| Kontrolle | Datei |
 |---|---|
-| Grau / Neutral | `slot-empty.png` (= `slot-empty-parallel.png`) |
-| KSC / blau | `slot-empty-parallel-blue.png` |
-| VfB / rot | `slot-empty-parallel-red.png` |
+| Grau / Neutral | `slot-empty.png` (= `slot-empty-persp.png` = `slot-empty-parallel.png`) |
+| KSC / blau | `slot-empty-persp-blue.png` (= `slot-empty-parallel-blue.png`) |
+| VfB / rot | `slot-empty-persp-red.png` (= `slot-empty-parallel-red.png`) |
 
-**Jedes neue Spiel:** `preloadIcons()` lädt alle Varianten.  
-**Runtime:** `slotEmptyIconPath(control)` — Standarte kommt bei Teamkontrolle dazu und fällt bei Grau wieder weg.
+Benannte Perspektiv-Dateien: `slot-empty-persp*.png`  
+Ortho-Archiv (altes „gerade“ Parallel): `slot-empty-ortho*.png`  
+Iso-Raute (Alternate): `slot-empty-iso*.png`
 
-Siehe `docs/mockups/A2c-RULES.md` → Bauplatz.
+Runtime (`slotEmptyIconPath`, Default-Orientierung `parallel`) lädt damit automatisch die Perspektiv-Variante.
