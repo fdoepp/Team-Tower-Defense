@@ -839,8 +839,8 @@ select {
 
 @media (orientation: landscape) and (max-height: 420px) {
   .match-shell.matchday {
-    --rail-btn-h: clamp(32px, 9.5vh, 38px);
-    --rail-icon: clamp(28px, 7.5vh, 36px);
+    --rail-btn-h: clamp(38px, 10.5vh, 44px);
+    --rail-icon: clamp(28px, 7vh, 34px);
   }
   .match-shell.matchday .rail-banner {
     padding: 3px 6px;
