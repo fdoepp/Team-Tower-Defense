@@ -3242,6 +3242,196 @@
       "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:24.476889+00:00"
+    },
+    "btnBauenAmber": {
+      "id": "btnBauenAmber",
+      "file": "btn-bauen-amber.png",
+      "source": "game/public/icons/ui/btn-bauen-amber.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5545,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          72,
+          6,
+          246,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:57:00.441407+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
+      "category": "ui",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:57:00.364101+00:00"
+    },
+    "btnBauenGrey": {
+      "id": "btnBauenGrey",
+      "file": "btn-bauen-grey.png",
+      "source": "game/public/icons/ui/btn-bauen-grey.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.55,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          72,
+          6,
+          247,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:57:00.531018+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
+      "category": "ui",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:57:00.455332+00:00"
+    },
+    "btnSendenBlue": {
+      "id": "btnSendenBlue",
+      "file": "btn-senden-blue.png",
+      "source": "game/public/icons/ui/btn-senden-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.6714,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          62,
+          6,
+          257,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:57:00.621381+00:00"
+      },
+      "notes": "Neu in gleicher Form wie btnBauenGrey (Holzrahmen).",
+      "category": "ui",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:57:00.544979+00:00"
+    },
+    "btnUpgradeGrey": {
+      "id": "btnUpgradeGrey",
+      "file": "btn-upgrade-grey.png",
+      "source": "game/public/icons/ui/btn-upgrade-grey.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5669,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          76,
+          6,
+          243,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:57:00.710456+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
+      "category": "ui",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:57:00.634937+00:00"
+    },
+    "btnUpgradePurple": {
+      "id": "btnUpgradePurple",
+      "file": "btn-upgrade-purple.png",
+      "source": "game/public/icons/ui/btn-upgrade-purple.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5696,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          76,
+          6,
+          242,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:57:00.801249+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
+      "category": "ui",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:57:00.723844+00:00"
     }
   },
   "pending": {
@@ -3889,186 +4079,6 @@
         "preserveAspectRequired": true,
         "reasons": [],
         "checkedAt": "2026-10-08T22:33:59.437108+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
-    },
-    "btnSendenBlue": {
-      "id": "btnSendenBlue",
-      "file": "btn-senden-blue.png",
-      "source": "game/public/icons/ui/btn-senden-blue.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 320,
-          "h": 96
-        },
-        "aspectRatio": 3.333333,
-        "alphaCoverage": 0.5551,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          75,
-          6,
-          243,
-          89
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:59.349516+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
-    },
-    "btnBauenAmber": {
-      "id": "btnBauenAmber",
-      "file": "btn-bauen-amber.png",
-      "source": "game/public/icons/ui/btn-bauen-amber.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 320,
-          "h": 96
-        },
-        "aspectRatio": 3.333333,
-        "alphaCoverage": 0.5545,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          72,
-          6,
-          246,
-          89
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:59.000211+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
-    },
-    "btnBauenGrey": {
-      "id": "btnBauenGrey",
-      "file": "btn-bauen-grey.png",
-      "source": "game/public/icons/ui/btn-bauen-grey.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 320,
-          "h": 96
-        },
-        "aspectRatio": 3.333333,
-        "alphaCoverage": 0.55,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          72,
-          6,
-          247,
-          89
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:59.086899+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
-    },
-    "btnUpgradePurple": {
-      "id": "btnUpgradePurple",
-      "file": "btn-upgrade-purple.png",
-      "source": "game/public/icons/ui/btn-upgrade-purple.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 320,
-          "h": 96
-        },
-        "aspectRatio": 3.333333,
-        "alphaCoverage": 0.5696,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          76,
-          6,
-          242,
-          89
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:59.696423+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
-    },
-    "btnUpgradeGrey": {
-      "id": "btnUpgradeGrey",
-      "file": "btn-upgrade-grey.png",
-      "source": "game/public/icons/ui/btn-upgrade-grey.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 320,
-          "h": 96
-        },
-        "aspectRatio": 3.333333,
-        "alphaCoverage": 0.5669,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          76,
-          6,
-          243,
-          89
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:59.610003+00:00"
       },
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
       "category": "ui"
@@ -5303,15 +5313,15 @@
     ]
   },
   "inventory": {
-    "pendingCount": 57,
-    "releasedCount": 85,
+    "pendingCount": 52,
+    "releasedCount": 90,
     "byCategory": {
       "ui": 34,
       "persons": 60,
       "tribunes": 3,
       "buildings": 45
     },
-    "gatheredAt": "2026-10-08T22:55:24.570856+00:00",
+    "gatheredAt": "2026-10-08T22:57:00.814634+00:00",
     "canon": {
       "persons": "units/{fan|ordner|hooligan|ultra}-{grey|blue|red}-{1..5}.png (60)",
       "buildings": "stands/{bier|fanshop|ordner}-{grey|blue|red}-{1..5}.png (45) as stand*",

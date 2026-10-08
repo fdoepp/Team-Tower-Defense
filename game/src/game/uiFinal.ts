@@ -5,6 +5,11 @@
  */
 
 export type UiFinalId =
+  | "btnBauenAmber"
+  | "btnBauenGrey"
+  | "btnSendenBlue"
+  | "btnUpgradeGrey"
+  | "btnUpgradePurple"
   | "fanBlue2"
   | "fanBlue3"
   | "fanBlue4"
@@ -103,6 +108,46 @@ export type UiFinalEntry = {
 
 /** Runtime paths under game/public — only user-approved releases. */
 export const UI_FINAL_PATHS = {
+  "btnBauenAmber": {
+    file: "btn-bauen-amber.png",
+    path: "icons/ui-final/btn-bauen-amber.png",
+    native: { w: 320, h: 96 },
+    aspectRatio: 3.333333,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnBauenGrey": {
+    file: "btn-bauen-grey.png",
+    path: "icons/ui-final/btn-bauen-grey.png",
+    native: { w: 320, h: 96 },
+    aspectRatio: 3.333333,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnSendenBlue": {
+    file: "btn-senden-blue.png",
+    path: "icons/ui-final/btn-senden-blue.png",
+    native: { w: 320, h: 96 },
+    aspectRatio: 3.333333,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnUpgradeGrey": {
+    file: "btn-upgrade-grey.png",
+    path: "icons/ui-final/btn-upgrade-grey.png",
+    native: { w: 320, h: 96 },
+    aspectRatio: 3.333333,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnUpgradePurple": {
+    file: "btn-upgrade-purple.png",
+    path: "icons/ui-final/btn-upgrade-purple.png",
+    native: { w: 320, h: 96 },
+    aspectRatio: 3.333333,
+    preserveAspect: true,
+    freigestellt: true,
+  },
   "fanBlue2": {
     file: "fan-blue-2.png",
     path: "icons/ui-final/fan-blue-2.png",
