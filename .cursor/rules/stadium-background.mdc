@@ -5,9 +5,9 @@ alwaysApply: true
 
 # LaneLink stadium visuals (binding)
 
-**Hard rule for every further modification of game / match code** (`game/**`, `drawMatch`, HUD, building placement, upgrade previews, new features): always load and render the approved freigestellte building icons below for **all three colors** (blue / red / grey). Do **not** draw placeholder booths, regenerate stand art, or invent alternate Bierstand / Fanshop / Ordnerposten graphics unless the user explicitly requests a redesign.
+**Hard rule for every further modification of game / match code** (`game/**`, `drawMatch`, HUD, building placement, upgrade previews, new features) **and every game deployment / new match setup**: always load and render the approved freigestellte building icons below for **all three colors** (blue / red / grey). Do **not** draw placeholder booths, regenerate stand art, or invent alternate Bierstand / Fanshop / Ordnerposten graphics unless the user explicitly requests a redesign.
 
-Applies to: match / gameplay implementations, visual work, and **any** subsequent code change that touches buildings or stand rendering.
+Applies to: match / gameplay implementations, visual work, deployments, and **any** subsequent code change that touches buildings or stand rendering. Prefer `game/src/assets/stands.ts` path helpers.
 
 ## Background
 
@@ -90,9 +90,9 @@ Teamfarbe steckt in Schals / Trikots / Markise / Schild / Neon — Schalständer
 
 ## Ordnerposten buildings (default — binding, finalized)
 
-**Status: freigegeben / final.** These are the only Ordnerposten building assets to use in code.
+**Status: freigegeben / final.** These are the **only** Ordnerposten building assets allowed for **every** future game setup, match render, upgrade preview, **deployment**, and game-code change.
 
-For **every** future match / building render, upgrade preview, new game creation, and **every later game-code change**, always use these freigestellte Ordnerposten icons for **blau, rot und grau** — do **not** invent new post art or regenerate from scratch unless the user explicitly asks for a redesign:
+Do **not** invent new post art, reuse older proposals/fenced booths, or regenerate from scratch unless the user explicitly asks for a redesign.
 
 | Farbe | Pfade (Lv1–5) |
 |---|---|
@@ -101,18 +101,20 @@ For **every** future match / building render, upgrade preview, new game creation
 | Neutral / grau | `game/public/icons/stands/ordner-grey-{1..5}.png` |
 | Unfarbig / Fallback | `game/public/icons/stands/ordner-{1..5}.png` (= grau) |
 
+**Runtime (required when wiring buildings):** import `ordnerStandPath` / `ORDNER_STAND_PATHS` from `game/src/assets/stands.ts` — do not hardcode alternate paths.  
+**Canon docs:** `docs/icons/ORDNERPOSTEN_CANON.md` + `docs/icons/ordnerposten-canon.json`  
 Canonical mockup copies: `docs/mockups/icons/stands-colored/ordner-{blue\|red\|grey}-{1..5}.png`  
 Sheets: `docs/mockups/icons/stands-colored/sheet-ordner-{blue\|red\|grey}.png`
 
 **Progression contract (do not regress):**
 
-- Lv1: Stuhl + Standarte/Fahne mit Level-Ziffer auf dem Sicherheitsschild, Kanon-**Ordner-Unit** Lv1 (Funk)
-- Lv2: Schreibtisch + Schirm + **gleiche Fahne** mit Ziffer **2**, Ordner-Unit Lv2 (Schlagstock)
-- Lv3: betretbares Ordnerbüro (offene Tür, kein Zaun-Käfig), Schild **3** über der Tür, graue/teamfarbige Warnleuchte, Ordner-Unit Lv3
-- Lv4: **gleiches Büro** wie Lv3 + mehr Dach-Antennen, Schild **4**, Ordner-Unit Lv4 (Polizeischild + Pistole)
-- Lv5: **gleiches Büro** + noch mehr Antennen/Dish, Schild **5**, Ordner-Unit Lv5 (Schild + Maschinengewehr)
+- Lv1: Stuhl + Standarte/Fahne mit Level-Ziffer; Ordner **sitzend** auf dem Stuhl (Kanon-Unit Lv1, Funk)
+- Lv2: Schreibtisch + Schirm + **gleiche Fahne** mit Ziffer **2**; Ordner **hinter dem Pult** (Lv2, Schlagstock)
+- Lv3: betretbares Ordnerbüro (offene Tür, kein Zaun-Käfig), Schild **3**, Warnleuchte; Ordner **mittig in der Tür** (Lv3)
+- Lv4: **gleiches Büro** + Dach-Antennen, Schild **4**; Ordner mittig in der Tür (Lv4, Schild+Pistole)
+- Lv5: **gleiches Büro** + Antennen/Dish, Schild **5**; Ordner mittig in der Tür (Lv5, Schild+MG)
 
-**Units in der Tür:** Immer die freigegebenen Kanon-Ordner aus `game/public/icons/units/ordner-{color}-{level}.png` (siehe `docs/icons/ORDNER_CANON.md` / Unit-Icons-Agent) — nicht ältere Ordner-Varianten.
+**Units in der Tür:** Immer die freigegebenen Kanon-Ordner aus `game/public/icons/units/ordner-{color}-{level}.png` (siehe `docs/icons/ORDNER_CANON.md`) — nicht ältere Ordner-Varianten. Figurengröße der freigegebenen Composites nicht durch Mini-/Seiten-Varianten ersetzen.
 
 ## Out of scope / do not regress
 

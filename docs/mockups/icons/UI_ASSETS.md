@@ -30,7 +30,7 @@ Schema: `{bier\|fanshop\|ordner}-{blue\|red\|grey}-{1..5}.png`
 
 **Fanshop Defaults (verbindlich / final):** `fanshop-{blue\|red\|grey}-{1..5}.png` — immer mit Vendor (blau/rot im Vereinstrikot); Lv1 Schalständer (braunes Gerüst), Lv2 Theke (+ ein Fähnchen), Lv3+ gestreifte Markise/Lichter, Lv4–5 **FANSHOP**-Schild in Teamfarbe + braune Holzkisten; Fähnchen nur auf Lv2. Bei **jeder** weiteren Spielcode-Änderung diese Dateien nutzen — nicht neu generieren.
 
-**Ordnerposten Defaults (verbindlich / final):** `ordner-{blue\|red\|grey}-{1..5}.png` — Lv1 Stuhl+Fahne, Lv2 Schreibtisch+gleiche Fahne, Lv3–5 gleiches Ordnerbüro (Antennen ab Lv4); in der Tür immer Kanon-Ordner-Units `units/ordner-{color}-{level}.png` (Funk → Stock → Pads → Schild+Pistole → Schild+MG). Bei jedem neuen Spielaufsetzen / jeder Code-Änderung diese Posten nutzen — nicht neu generieren.
+**Ordnerposten Defaults (verbindlich / final):** `ordner-{blue\|red\|grey}-{1..5}.png` — Lv1 sitzend auf Stuhl+Fahne, Lv2 hinter Pult+gleiche Fahne, Lv3–5 mittig in der Tür im Ordnerbüro (Antennen ab Lv4); Kanon-Ordner-Units `units/ordner-{color}-{level}.png`. Runtime: `game/src/assets/stands.ts` → `ordnerStandPath`. Canon: `docs/icons/ORDNERPOSTEN_CANON.md`. Bei **jedem** Deployment / Spielaufsetzen / Code-Änderung nur diese Posten — nicht neu generieren.
 
 ## 10 Figuren farbig (`units/`)
 
