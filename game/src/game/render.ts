@@ -1,5 +1,8 @@
 import { Match } from "./Match";
 import {
+  ANIM_DRINK_SEC,
+  ANIM_SHOP_SEC,
+  ANIM_THROW_SEC,
   BLOCK_META,
   STAND_CONVERT_SEC,
   type BuildSlot,
@@ -32,6 +35,8 @@ import {
   drawIconQuad,
   drawImageCover,
   drawToyIcon,
+  drawToyProp,
+  type ToyAnimMode,
   slotEmptyIconPath,
   standIconPath,
   teamColor,
@@ -803,6 +808,93 @@ function fanFacing(f: FanUnit): number {
   return f.patrolDir < 0 ? -1 : 1;
 }
 
+function personAnimMode(m: Match, f: FanUnit): {
+  mode: ToyAnimMode;
+  hop: number;
+  strike: number;
+  actionProg: number;
+  prop: "beer" | "pyro" | "fist" | "scarf" | "bag" | null;
+  propI: number;
+} {
+  const onGang = f.state === "gang" || f.invading;
+  const exiting =
+    f.state === "moving" && f.y < gangY() + gangHeight() * 0.22;
+  const moving = f.state === "moving" || onGang;
+  const fighting =
+    (onGang || f.invading || f.isSteward) &&
+    (f.armSwing > 0.15 || f.attackCd > 0.05) &&
+    f.throwT <= 0;
+  const throwing = f.throwT > 0;
+  const drinking = f.drinkT > 0;
+  const shopping = f.shopT > 0;
+  const cheering =
+    !moving &&
+    !drinking &&
+    !shopping &&
+    !throwing &&
+    (f.cheerT > 0 ||
+      (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) >
+        0.7);
+
+  let mode: ToyAnimMode = "idle";
+  if (throwing) mode = "throw";
+  else if (fighting) mode = "fight";
+  else if (drinking) mode = "drink";
+  else if (shopping) mode = "shop";
+  else if (exiting) mode = "exit";
+  else if (moving) mode = "walk";
+  else if (cheering) mode = "cheer";
+
+  const throwProg =
+    f.throwT > 0 ? 1 - f.throwT / Math.max(0.01, ANIM_THROW_SEC) : 0;
+  const drinkProg =
+    f.drinkT > 0 ? 1 - f.drinkT / Math.max(0.01, ANIM_DRINK_SEC) : 0;
+  const shopProg =
+    f.shopT > 0 ? 1 - f.shopT / Math.max(0.01, ANIM_SHOP_SEC) : 0;
+
+  let prop: "beer" | "pyro" | "fist" | "scarf" | "bag" | null = null;
+  let propI = 0;
+  if (drinking) {
+    prop = "beer";
+    propI = 0.55 + 0.45 * Math.min(1, drinkProg * 1.2);
+  } else if (throwing) {
+    prop = "pyro";
+    propI = 0.4 + 0.6 * throwProg;
+  } else if (fighting) {
+    prop = "fist";
+    propI = Math.max(f.armSwing, 0.35);
+  } else if (shopping) {
+    prop = "bag";
+    propI = 0.5 + 0.4 * shopProg;
+  } else if (cheering && f.kind === "normalos" && !f.isSteward) {
+    prop = "scarf";
+    propI = Math.min(1, f.cheerT / 2);
+  } else if (cheering && f.kind === "ultras") {
+    prop = "pyro";
+    propI = 0.35 + 0.3 * Math.sin(m.realElapsed * 8);
+  }
+
+  return {
+    mode,
+    hop: moving || exiting ? 1 : fighting ? 0.7 : 0,
+    strike: Math.max(
+      f.armSwing,
+      fighting ? 0.35 : 0,
+      throwing ? 0.5 + 0.5 * throwProg : 0,
+      drinking ? 0.4 : 0,
+    ),
+    actionProg: throwing
+      ? throwProg
+      : drinking
+        ? drinkProg
+        : shopping
+          ? shopProg
+          : Math.max(f.armSwing, fighting ? 0.35 : 0),
+    prop,
+    propI,
+  };
+}
+
 function drawMannchen(
   ctx: CanvasRenderingContext2D,
   m: Match,
@@ -816,15 +908,7 @@ function drawMannchen(
     return;
   }
   const onGang = f.state === "gang" || f.invading;
-  const exiting =
-    f.state === "moving" && f.y < gangY() + gangHeight() * 0.22;
   const moving = f.state === "moving" || onGang;
-  const fighting =
-    (onGang || f.invading) && (f.armSwing > 0.15 || f.attackCd > 0.05);
-  const cheering =
-    !moving &&
-    (f.cheerT > 0 ||
-      (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) > 0.7);
   const sizeMul =
     f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
   const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
@@ -833,15 +917,7 @@ function drawMannchen(
   const src = unitIconPath(f.kind, color, lv);
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing = fanFacing(f);
-  const mode = fighting
-    ? "fight"
-    : exiting
-      ? "exit"
-      : moving
-        ? "walk"
-        : cheering
-          ? "cheer"
-          : "idle";
+  const anim = personAnimMode(m, f);
 
   if (Math.abs(f.captureProg) > 0.12 && f.team === "neutral") {
     ctx.strokeStyle =
@@ -863,11 +939,24 @@ function drawMannchen(
   const drew = drawToyIcon(ctx, src, x, y, size, {
     t: m.realElapsed,
     phase,
-    mode,
+    mode: anim.mode,
     facing,
-    hop: moving ? 1 : 0,
-    strike: Math.max(f.armSwing, fighting ? 0.35 : 0),
+    hop: anim.hop,
+    strike: anim.strike,
+    actionProg: anim.actionProg,
   });
+  if (drew && anim.prop) {
+    drawToyProp(
+      ctx,
+      anim.prop,
+      x,
+      y,
+      size,
+      facing,
+      m.realElapsed + phase,
+      anim.propI,
+    );
+  }
   if (!drew) {
     const s = size / 2.85;
     const jersey = teamJersey(f);
@@ -1177,17 +1266,39 @@ function drawSteward(
   const size = Math.max(24, h * 0.07);
   const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(m, f.team));
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
-  const onGang = f.state === "gang" || f.state === "moving";
+  const facing =
+    f.state === "moving" || f.path.length > f.pathI
+      ? fanFacing(f)
+      : f.patrolDir < 0
+        ? -1
+        : 1;
+  const anim = personAnimMode(m, f);
 
   if (
     drawToyIcon(ctx, src, x, y, size, {
       t: m.realElapsed,
       phase,
-      mode: onGang ? "walk" : "idle",
-      facing: f.patrolDir < 0 ? -1 : 1,
-      hop: onGang ? 0.85 : 0,
+      mode: anim.mode === "idle" && (f.state === "gang" || f.state === "moving")
+        ? "walk"
+        : anim.mode,
+      facing,
+      hop: anim.hop || (f.state === "gang" || f.state === "moving" ? 0.85 : 0),
+      strike: anim.strike,
+      actionProg: anim.actionProg,
     })
   ) {
+    if (anim.prop === "fist" || anim.mode === "fight") {
+      drawToyProp(
+        ctx,
+        "fist",
+        x,
+        y,
+        size,
+        facing,
+        m.realElapsed + phase,
+        Math.max(anim.propI, f.armSwing),
+      );
+    }
     const bw = size * 0.7;
     ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fillRect(x - bw / 2, y + size * 0.12, bw, 3);
