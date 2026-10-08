@@ -12,23 +12,23 @@
     "state": "grey",
     "label": "KAUFEN",
     "state_de": "disabled",
-    "use": "Cooldown / zu teuer",
+    "use": "CD / zu teuer",
     "file": "btn-kaufen-grey.png"
   },
   {
     "action": "senden",
-    "state": "green",
+    "state": "blue",
     "label": "SENDEN",
     "state_de": "aktiv",
     "use": "Ultras/Hooligans in den Gang",
-    "file": "btn-senden-green.png"
+    "file": "btn-senden-blue.png"
   },
   {
     "action": "senden",
     "state": "grey",
     "label": "SENDEN",
     "state_de": "disabled",
-    "use": "Cooldown / nicht bereit",
+    "use": "CD / nicht bereit",
     "file": "btn-senden-grey.png"
   },
   {

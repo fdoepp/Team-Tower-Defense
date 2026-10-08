@@ -31,7 +31,7 @@ Stil: Holzrahmen wie Stände (Bloons/Toy), **breite Bar 320×96** für Handy-Tou
 | Datei | Einsatz |
 |---|---|
 | `btn-kaufen-green.png` / `btn-kaufen-grey.png` | Linke Rail + Quick-Buy |
-| `btn-senden-green.png` / `btn-senden-grey.png` | Senden Ultra/Hooligan |
+| `btn-senden-blue.png` / `btn-senden-grey.png` | Senden Ultra/Hooligan |
 | `btn-bauen-amber.png` / `btn-bauen-grey.png` | Rechte Bau-Rail (statt Kaufen-Reuse) |
 | `btn-upgrade-purple.png` / `btn-upgrade-grey.png` | Upgrade an Stand |
 
