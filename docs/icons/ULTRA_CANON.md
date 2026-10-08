@@ -35,6 +35,7 @@ Kein separates Ultra-Navy oder Ultra-Burgundy.
 
 - Chibi / Bloons-Comic: großer Kopf, kurze Beine, dicke Outlines
 - **Ganzfigurig**, 256×256 PNG RGBA freigestellt, gleiche Figurgröße über alle Level
+- **Kein Anschnitt:** Hood, Rauch, Megafon und Füße vollständig und rund im Frame (mind. ~20 px Innenabstand)
 - Hoodie mit **Kapuze oben**, Nummer = Level auf der **linken Brust**
 - **Pyro-Stab ab Level 1** immer
 
