@@ -74,6 +74,16 @@ export const UI_ICONS = {
   currencyBier: "icons/ui/currency-bier.png",
   currencyFanartikel: "icons/ui/currency-fanartikel.png",
   currencySicherheit: "icons/ui/currency-sicherheit.png",
+  /** Float-FX logos (currency agent canon) */
+  fxGainGold: "icons/ui/fx-gain-gold.png",
+  fxSpendGold: "icons/ui/fx-spend-gold.png",
+  fxGainBier: "icons/ui/fx-gain-bier.png",
+  fxSpendBier: "icons/ui/fx-spend-bier.png",
+  fxGainFanartikel: "icons/ui/fx-gain-fanartikel.png",
+  fxSpendFanartikel: "icons/ui/fx-spend-fanartikel.png",
+  fxGainSicherheit: "icons/ui/fx-gain-sicherheit.png",
+  fxSpendSicherheit: "icons/ui/fx-spend-sicherheit.png",
+  fxGainMomentum: "icons/ui/fx-gain-momentum.png",
   btnKaufenGrey: "icons/ui/btn-kaufen-grey.png",
   btnKaufenGreen: "icons/ui/btn-kaufen-green.png",
   btnSendenGrey: "icons/ui/btn-senden-grey.png",
@@ -87,10 +97,10 @@ export const UI_ICONS = {
   pennantVfb: "icons/ui/pennant-vfb.png",
   menuRail: "icons/ui/menu-rail-brown.png",
   menuRailTile: "icons/ui/menu-rail-brown-tile.png",
-  /** HUD_TOP_CANON — Broadcast Bubble (freigestellt) */
-  scoreboard: "icons/ui/scoreboard-top.png",
-  scoreboardOrbHeim: "icons/ui/scoreboard-top-orb-heim.png",
-  scoreboardOrbGast: "icons/ui/scoreboard-top-orb-gast.png",
+  /** HUD chrome ohne gebackene Zahlen — Live-Overlays füllen Score/Uhr/Momentum */
+  scoreboard: "icons/ui/scoreboard-top-blank.png",
+  scoreboardOrbHeim: "icons/ui/scoreboard-top-orb-heim-blank.png",
+  scoreboardOrbGast: "icons/ui/scoreboard-top-orb-gast-blank.png",
 } as const;
 
 /** Native pixel size of scoreboard-top.png — never squash/stretch away from this AR. */
@@ -121,6 +131,19 @@ export function currencyIconPath(
   if (currency === "merch") return UI_ICONS.currencyFanartikel;
   if (currency === "security") return UI_ICONS.currencySicherheit;
   return UI_ICONS.currencyGold;
+}
+
+/** Float-FX logo for currency gain/spend (Sheet D canon). */
+export function fxCurrencyIconPath(
+  currency: "beer" | "merch" | "security" | "gold",
+  spend: boolean,
+): string {
+  if (currency === "beer") return spend ? UI_ICONS.fxSpendBier : UI_ICONS.fxGainBier;
+  if (currency === "merch")
+    return spend ? UI_ICONS.fxSpendFanartikel : UI_ICONS.fxGainFanartikel;
+  if (currency === "security")
+    return spend ? UI_ICONS.fxSpendSicherheit : UI_ICONS.fxGainSicherheit;
+  return spend ? UI_ICONS.fxSpendGold : UI_ICONS.fxGainGold;
 }
 
 /**
@@ -401,6 +424,8 @@ export type ToyAnim = {
   strike?: number;
   /** 0..1 progress within action (drink/throw/shop) for pose blending */
   actionProg?: number;
+  /** Planted props (buildings): no idle bob / sway / squash */
+  still?: boolean;
 };
 
 /**
@@ -426,6 +451,17 @@ export function drawToyIcon(
     (mode === "walk" || mode === "exit" ? 1 : mode === "fight" ? 0.7 : 0);
   const strike = anim.strike ?? 0;
   const ap = Math.max(0, Math.min(1, anim.actionProg ?? strike));
+  if (anim.still) {
+    const imgW = img.naturalWidth || img.width;
+    const imgH = img.naturalHeight || img.height;
+    const ar = imgW / Math.max(1, imgH);
+    let dw = size;
+    let dh = size;
+    if (ar >= 1) dh = size / ar;
+    else dw = size * ar;
+    ctx.drawImage(img, x - dw / 2, y - dh, dw, dh);
+    return true;
+  }
 
   // Walk cadence ~2 steps/sec; exit slightly faster
   const stepHz = mode === "exit" ? 11 : mode === "walk" ? 10.2 : 9.5;

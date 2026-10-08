@@ -4,7 +4,7 @@ Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fu�
 
 ## Spielen (Handy-Link)
 
-**Live:** https://ivory-midwest-missile-join.trycloudflare.com  
+**Live:** https://nil-ambassador-location-saskatchewan.trycloudflare.com  
 
 ### Vollbild (wichtig)
 
