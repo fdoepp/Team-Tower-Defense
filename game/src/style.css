@@ -794,10 +794,10 @@ select {
   --sb-orb-cy: 13.5%;
   /* Etwas kleiner als volle Grünfläche → Holzring + Orb-Glanz bleiben vom PNG */
   --sb-orb-w: 7.6%;
-  --sb-score-l: 33.0%;
-  --sb-score-t: 19.0%;
-  --sb-score-w: 34.0%;
-  --sb-score-h: 34.5%;
+  --sb-score-l: 33.24%;
+  --sb-score-t: 17.52%;
+  --sb-score-w: 33.62%;
+  --sb-score-h: 36.61%;
   position: relative;
   flex: 0 0 auto;
   width: min(48%, calc(36vh * var(--sb-nat-w) / var(--sb-nat-h)), 560px);
@@ -830,6 +830,7 @@ select {
 .match-shell.matchday .scoreboard-live {
   position: absolute;
   inset: 0;
+  z-index: 2;
   pointer-events: none;
 }
 
