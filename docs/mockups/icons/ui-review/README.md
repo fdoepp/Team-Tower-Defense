@@ -31,6 +31,6 @@ Alle liegen als 256×256 RGBA in `docs/mockups/icons/ui/` und `game/public/icons
 ## Bekannte Optimierungshebel
 
 1. **Buttons:** Inhalt ~172×139 in 256² → viel Transparenz; für Bloons-UI oft besser als breite Bar (~3:1) statt Quadrat.
-2. **Wimpel:** KSC/VfB leicht unterschiedliche Content-Breite — Paar auf gemeinsame Box trimmen.
+2. **Wimpel:** bisherige metallischen Logo-Wimpel verworfen → neue Stand-Optik-Vorschläge (nur Rot) unter [`pennant-vorschlaege-rot/`](pennant-vorschlaege-rot/).
 3. **Slot:** von 1024²-Quelle skaliert; Zaun-/Kantenqualität bei Upscale prüfen.
 4. Parallel: Personen-Icons (Farben/Stufen) laufen in einem separaten Agent und sind hier bewusst ausgeklammert.
