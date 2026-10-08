@@ -11,11 +11,17 @@ export function teamColor(team: TeamId | "neutral" | null | undefined): TeamColo
   return "grey";
 }
 
-/** Soft-bound stand icon — always from `game/public/icons/stands/`. */
+/**
+ * Soft-bound stand icon — iso canon for UI and pitch.
+ * `icons/stands/{kind}-{color}-{lv}.png`
+ * Optional blockId/index are ignored (kept for call-site compat).
+ */
 export function standIconPath(
   kind: BuildingKind,
   color: TeamColor,
   level: number,
+  _blockId?: number,
+  _index?: number,
 ): string {
   const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
   return `icons/stands/${kind}-${color}-${lv}.png`;
@@ -288,7 +294,9 @@ function allIconPaths(): string[] {
   }
   for (const kind of ["bier", "fanshop", "ordner"] as BuildingKind[]) {
     for (const color of ["blue", "red", "grey"] as TeamColor[]) {
-      for (let lv = 1; lv <= 5; lv++) paths.add(standIconPath(kind, color, lv));
+      for (let lv = 1; lv <= 5; lv++) {
+        paths.add(standIconPath(kind, color, lv));
+      }
     }
   }
   for (const kind of ["normalos", "ultras", "hooligans", "ordner"] as const) {
