@@ -445,24 +445,10 @@ function drawFrontStandards(
   for (const pole of poles) {
     const src = pole.team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
     const baseY = y + gh * 0.88;
-    const poleH = gh * 0.72;
-    // pole
-    ctx.strokeStyle = "#44403c";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(pole.x, baseY);
-    ctx.lineTo(pole.x, baseY - poleH);
-    ctx.stroke();
-    // base disk
-    ctx.fillStyle = "rgba(15,23,42,0.45)";
-    ctx.beginPath();
-    ctx.ellipse(pole.x, baseY + 2, 8, 3.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // flag
-    const fw = Math.min(w * 0.07, h * 0.09);
-    const fh = fw * 1.15;
+    const size = Math.min(w * 0.075, h * 0.1);
     const bob = Math.sin(m.realElapsed * 3.5 + (pole.team === "ksc" ? 0 : 1)) * 2;
-    drawIcon(ctx, src, pole.x - 2, baseY - poleH - fh * 0.15 + bob, fw, fh, 0.02);
+    // Full standarte asset (includes pole) — upright billboard, no duplicate stroke pole.
+    drawPennantUpright(ctx, src, pole.x, baseY + bob, size);
   }
 }
 
@@ -554,6 +540,10 @@ function plotPennantTeam(
   return null;
 }
 
+/**
+ * Standarten as viewer-facing upright billboards (same rule as built stands):
+ * foot on the plot ground, size from VP facade math, no icon warp/yaw.
+ */
 function drawTerritoryPennants(
   ctx: CanvasRenderingContext2D,
   m: Match,
@@ -563,13 +553,49 @@ function drawTerritoryPennants(
   for (const s of m.slots) {
     const team = plotPennantTeam(m, s);
     if (!team) continue;
-    const p = pennantPos(s.blockId, s.index);
     const src = team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
+    const bob = Math.sin(m.realElapsed * 3.2 + s.blockId + s.index) * 1.5;
+    if (FLOOR_GRID_COUPLE) {
+      const pq = scaleQuad(boothQuad(s.blockId, s.index), w, h);
+      const facade = boothFacadeQuad(s.blockId, s.index, w, h, {
+        widthScale: 0.38,
+        heightScale: 1.05,
+        taper: 0.28,
+      });
+      const footX = pq.bl.x * 0.72 + pq.tl.x * 0.28;
+      const footY = pq.bl.y * 0.88 + pq.tl.y * 0.12;
+      const baseW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
+      const facadeH = Math.max(
+        1,
+        (facade.bl.y + facade.br.y) / 2 - (facade.tl.y + facade.tr.y) / 2,
+      );
+      const size = Math.max(26, Math.min(baseW * 0.62, facadeH * 0.72, h * 0.09));
+      drawPennantUpright(ctx, src, footX, footY + bob, size);
+      continue;
+    }
+    const p = pennantPos(s.blockId, s.index);
     const pw = Math.min(w * 0.045, h * 0.055);
     const ph = pw * 1.15;
-    const bob = Math.sin(m.realElapsed * 3.2 + s.blockId + s.index) * 1.5;
     drawIcon(ctx, src, p.x * w - pw * 0.15, p.y * h - ph * 0.35 + bob, pw, ph, 0.02);
   }
+}
+
+/** Foot-anchored upright blit — pole reads screen-vertical in the VP floor. */
+function drawPennantUpright(
+  ctx: CanvasRenderingContext2D,
+  src: string,
+  footX: number,
+  footY: number,
+  size: number,
+): void {
+  ctx.save();
+  ctx.fillStyle = "rgba(15,23,42,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(footX, footY + 2, size * 0.22, size * 0.06, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  // drawIcon rect with bottom-center at foot
+  drawIcon(ctx, src, footX - size * 0.5, footY - size * 0.92, size, size, 0.02);
 }
 
 /** Baustelle — Slot-Icon, Auto-Swap mit Kontrolle; bei Floor-Grid in Zellen-Trapez. */
