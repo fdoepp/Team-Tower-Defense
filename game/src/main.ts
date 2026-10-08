@@ -296,9 +296,9 @@ function renderMatchScreen(): void {
             <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
           </div>
           <!--
-            Freigestelltes Top-HUD (HUD_TOP_CANON / b-final-cutout):
-            nur das Original-PNG skalieren — keine Ersatz-Balken/Uhr-Chrome.
-            Live-Werte: Score + Minute als Text über dem Asset; Orb-X über Cutout-Swap.
+            Freigestelltes Top-HUD = b-final-cutout.png (byte-identisch).
+            Nur dieses PNG anzeigen und proportional skalieren — keine Overlay-Chrome.
+            Live-Werte nur a11y; Orb-Position über freigestellte Cutout-Varianten.
           -->
           <div
             class="scoreboard-slot"
@@ -316,11 +316,8 @@ function renderMatchScreen(): void {
               draggable="false"
             >
             <div class="scoreboard-live">
-              <span class="sb-minute" id="hud-minute">0′</span>
-              <div class="sb-score-mask">
-                <b class="sb-score" id="hud-score">0 : 0</b>
-              </div>
-              <!-- a11y / sync hooks — visuals come from the freigestellte PNG -->
+              <span class="sr-only" id="hud-minute">0′</span>
+              <b class="sr-only" id="hud-score">0 : 0</b>
               <span class="sr-only" id="mom-p-heim">Heim 50%</span>
               <span class="sr-only" id="mom-p-gast">Gast 50%</span>
               <span class="sr-only" id="mom-p-tor">Torchance 28%</span>
@@ -909,16 +906,7 @@ function renderMatchScreen(): void {
       }
       const hudScore = app.querySelector("#hud-score");
       const hudMin = app.querySelector("#hud-minute");
-      if (hudScore) {
-        hudScore.textContent = `${m.scoreKsc} : ${m.scoreVfb}`;
-        hudScore.classList.toggle("goal-pulse", m.scorePulse > 0.15);
-        if (m.scorePulse > 0.15) {
-          const scale = 1 + m.scorePulse * 0.55;
-          (hudScore as HTMLElement).style.transform = `scale(${scale})`;
-        } else {
-          (hudScore as HTMLElement).style.transform = "";
-        }
-      }
+      if (hudScore) hudScore.textContent = `${m.scoreKsc} : ${m.scoreVfb}`;
       if (hudMin) hudMin.textContent = `${Math.floor(m.minute)}′`;
       const ch = m.goalChance();
       const heimPct = Math.max(0.08, Math.min(0.92, ch.pHeim));
