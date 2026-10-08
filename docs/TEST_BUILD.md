@@ -3,22 +3,24 @@
 Branch: `cursor/test-build-dba3`  
 Basis: `cursor/matchday-game-a9b1` (neueste Gameplay-Linie)
 
-## Enthalten (Stand Abgleich mit anderen Agents)
+## Enthalten (Stand Abgleich mit anderen Agents, 2026-10-08)
 
-- **Grafik-Kanon** (Currency A/D Entscheidungen): logo-only Währungen (Bier-Schaum weiß), FX, HP-Bars, Slot/Wimpel von Game, Bauen/Upgrade-Buttons, Stadium + Tribünen
+- **Grafik-Kanon** (`currency-icons-clean-dba3` A/D): logo-only Währungen (Bier-Schaum weiß), FX, HP-Bars, Slot/Wimpel, Bauen/Upgrade, Stadium + Tribünen — Pixel-Hashes identisch
+- **Personen-Heads** (`icon-ui-einzeln-3755`): neueste freigestellte Rail-Heads (60 PNGs)
+- **Unit-/Stand-Bodies**: Matchday/Bauplatz/Unit-Icons-Linie (farbige Fans/Stände)
 - **Personen-Animationen**: laufen / trinken / werfen / kämpfen / jubeln
-- **Matchday-Gameplay**: Floor-Grid-Bauplätze, Tribune-Flush, Gang-Kampf, Ordnerposten
+- **Matchday-Gameplay**: Floor-Grid-Bauplätze, Tribune-Flush, Gang-Kampf, Ordnerposten, Scoreboard-Cutout
 
-Andere Agents geprüft: `bauplatz-gang-main-4235` (Layout-Ports auf main-Linie, ohne vollständigen FX/HP-Kanon), `icon-ui-einzeln-3755` (UI/Scoreboard), `currency-icons-clean-dba3` (Asset-Kanon — Pixel hier identisch).
+Andere Agents geprüft: `bauplatz-gang-main-4235` (Layout auf main, ältere Currency-Pixel), `icon-ui-einzeln-3755` (Heads + Scoreboard/UI), `currency-icons-clean-dba3` (Asset-Kanon), `matchday-icons-a9b1`, `unit-icons-agent-4235`, `team-td-konzept-dba3` (älter, kein Gameplay-Tip).
 
 ## Live
 
-**Play:** https://radical-instructor-briefs-don.trycloudflare.com
+**Play:** _(wird nach Tunnel-Start gesetzt)_
 
 Handy quer / Vollbild empfohlen.
 
 ## Lokal
 
 ```bash
-cd game && npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 4173
+cd game && npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 4176
 ```
