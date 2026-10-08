@@ -1,0 +1,31 @@
+{
+  "id": "hud-top-canon",
+  "status": "approved",
+  "effectiveFrom": "2026-10-08",
+  "name": "Broadcast Bubble",
+  "replaces": [
+    "game/public/icons/ui/scoreboard-momentum.png",
+    "docs/mockups/icons/ui/scoreboard-momentum.png"
+  ],
+  "path": "game/public/icons/ui/scoreboard-top.png",
+  "demos": {
+    "orbHeim": "game/public/icons/ui/scoreboard-top-orb-heim.png",
+    "orbGast": "game/public/icons/ui/scoreboard-top-orb-gast.png"
+  },
+  "mockupDir": "docs/mockups/hud-scoreboard/",
+  "dynamic": {
+    "score": { "overlay": true, "format": "{heim} : {gast}" },
+    "minute": { "overlay": true, "format": "{n}′", "badge": "greenTop" },
+    "momentumBar": {
+      "heimWidth": "pHeim",
+      "gastWidth": "pGast",
+      "labels": ["Heim {pct}%", "Gast {pct}%"]
+    },
+    "torchanceOrb": {
+      "slides": true,
+      "xFrom": "pHeim",
+      "note": "Orb X moves left when Heim momentum high, right when Gast high"
+    }
+  },
+  "forbidden": ["outerMoodChips", "sideStarIcons", "bakedStadiumBackground"]
+}
