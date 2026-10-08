@@ -73,13 +73,14 @@ Sheets: `docs/mockups/icons/stands-colored/sheet-fanshop-{blue\|red\|grey}.png`
 
 **Progression contract (do not regress):**
 
-- Lv1: Holz-Schalständer, wenige Teamfarbe/weiß-Schals, **1** Vendor **neben** dem Ständer — **keine** Fähnchen
+- Lv1: Holz-Schalständer (**braunes** Gerüst, nicht teamfarbig lackiert), wenige Teamfarbe/weiß-Schals, **1** Vendor **neben** dem Ständer — **keine** Fähnchen
 - Lv2: Theke ohne Markise, Trikots + Schal auf der Theke, **1** Vendor dahinter, **ein** kleines Fähnchen am Tisch erlaubt
-- Lv3: gestreifte Markise (Teamfarbe/weiß), Lampions/Lichterkette, mehr Ware, **1** Vendor — **keine** Fähnchen
-- Lv4: Schild **FANSHOP**, 2 Vendor, braune Holzkisten seitlich, gestreifte Markise — **keine** Fähnchen
-- Lv5: Neon-**FANSHOP**, 2 Vendor, max. Ware, braune Holzkisten — **keine** Fähnchen
+- Lv3: gestreifte Markise (Teamfarbe/weiß), Dachbalken/Rahmen in Teamfarbe (blau bzw. passend), Lampions, mehr Ware, **1** Vendor — **keine** Fähnchen
+- Lv4: Schild **FANSHOP** in Teamfarbe, Theke/Basis eher **grau** (nicht voll teamfarbig lackiert), 2 Vendor, braune Holzkisten, gestreifte Markise — **keine** Fähnchen
+- Lv5: Neon-**FANSHOP** in Teamfarbe, 2 Vendor, max. Ware, braune Holzkisten, Basis grau — **keine** Fähnchen
 
-Teamfarbe steckt in Schals / Trikots / Markise / Neon — Holzkisten bleiben braun. Ordner-Stände sind **nicht** durch diese Regel ersetzt.
+**Vendor:** Verkäufer tragen immer ein **Fantrikot in Vereinsfarbe** (blau bzw. rot); grau/neutral bleibt grau.  
+Teamfarbe steckt in Schals / Trikots / Markise / Schild / Neon — Schalständer-Holz und Holzkisten bleiben braun. Ordner-Stände sind **nicht** durch diese Regel ersetzt.
 
 ## Out of scope / do not regress
 
