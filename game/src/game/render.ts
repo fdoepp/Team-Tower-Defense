@@ -53,293 +53,8 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawFloats(ctx, m, w, h);
 }
 
-/** Night stadium bowl + floodlights behind the stands (Matchday Comic) */
-function drawStadiumAtmosphere(
-  ctx: CanvasRenderingContext2D,
-  m: Match,
-  w: number,
-  h: number,
-): void {
-  const skyH = h * (L.blockTop + L.blockBodyH * 0.55);
-  const sky = ctx.createLinearGradient(0, 0, 0, skyH);
-  sky.addColorStop(0, "#04070f");
-  sky.addColorStop(0.3, "#0c1528");
-  sky.addColorStop(0.65, "#15233a");
-  sky.addColorStop(1, "#1f2d44");
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, w, skyH);
-
-  // packed distant bowl — 3 color bands like mockup
-  const rimY = h * 0.02;
-  for (let tier = 0; tier < 4; tier++) {
-    const ty = rimY + tier * h * 0.022;
-    ctx.fillStyle = `rgba(15,23,42,${0.55 + tier * 0.08})`;
-    ctx.beginPath();
-    ctx.ellipse(w * 0.5, ty + h * 0.08, w * (0.78 - tier * 0.03), h * 0.07, 0, Math.PI, 0);
-    ctx.fill();
-    for (let i = 0; i < 120; i++) {
-      const t = i / 120;
-      const x = w * (0.06 + t * 0.88);
-      const y = ty + h * 0.035 + Math.sin(i * 1.7 + tier) * h * 0.01;
-      const side = t < 0.34 ? 0 : t < 0.66 ? 1 : 2;
-      const a = 0.25 + ((i + tier) % 4) * 0.12;
-      ctx.fillStyle =
-        side === 0
-          ? `rgba(59,130,246,${a})`
-          : side === 2
-            ? `rgba(239,68,68,${a})`
-            : `rgba(148,163,184,${a * 0.85})`;
-      ctx.fillRect(x, y, 2.4, 4.2);
-    }
-  }
-
-  // floodlight masts + beams
-  for (const lx of [0.08, 0.28, 0.72, 0.92]) {
-    const x = w * lx;
-    const y = h * 0.01;
-    ctx.fillStyle = "#1e293b";
-    ctx.fillRect(x - 3, y, 6, h * 0.07);
-    ctx.fillStyle = "#f8fafc";
-    ctx.beginPath();
-    ctx.arc(x, y + h * 0.07, 5.5, 0, Math.PI * 2);
-    ctx.fill();
-    const beam = ctx.createRadialGradient(x, y + h * 0.08, 2, x, y + h * 0.28, h * 0.34);
-    beam.addColorStop(0, "rgba(255,250,220,0.5)");
-    beam.addColorStop(0.4, "rgba(255,250,220,0.14)");
-    beam.addColorStop(1, "rgba(255,250,220,0)");
-    ctx.fillStyle = beam;
-    ctx.beginPath();
-    ctx.moveTo(x - 7, y + h * 0.07);
-    ctx.lineTo(x + 7, y + h * 0.07);
-    ctx.lineTo(x + w * 0.14, y + h * 0.38);
-    ctx.lineTo(x - w * 0.14, y + h * 0.38);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  // pyro / flare glow — guest side warm, heim cool
-  {
-    const gx = blockCenterX(GAST_BLOCK) * w;
-    const gy = h * L.blockTop * 0.75;
-    const a = 0.22 + Math.min(0.5, m.moodGaeste * 0.2);
-    const g = ctx.createRadialGradient(gx, gy, 6, gx, gy, w * 0.32);
-    g.addColorStop(0, `rgba(251,146,60,${a})`);
-    g.addColorStop(0.35, `rgba(239,68,68,${a * 0.65})`);
-    g.addColorStop(1, "rgba(239,68,68,0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(gx - w * 0.32, gy - h * 0.14, w * 0.64, h * 0.32);
-    for (let i = 0; i < 7; i++) {
-      const ox = Math.sin(m.realElapsed * 0.85 + i * 1.1) * w * 0.05;
-      ctx.fillStyle = `rgba(248,113,113,${0.06 + a * 0.18})`;
-      ctx.beginPath();
-      ctx.ellipse(
-        gx + ox + (i - 3) * w * 0.028,
-        gy - h * 0.05 - i * h * 0.014,
-        w * 0.055,
-        h * 0.035,
-        0,
-        0,
-        Math.PI * 2,
-      );
-      ctx.fill();
-    }
-  }
-  {
-    const hx = blockCenterX(HEIM_BLOCK) * w;
-    const hy = h * L.blockTop * 0.75;
-    const a = 0.14 + Math.min(0.4, m.moodHeim * 0.16);
-    const g = ctx.createRadialGradient(hx, hy, 6, hx, hy, w * 0.26);
-    g.addColorStop(0, `rgba(96,165,250,${a})`);
-    g.addColorStop(1, "rgba(96,165,250,0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(hx - w * 0.26, hy - h * 0.12, w * 0.52, h * 0.28);
-  }
-
-  // open concourse asphalt
-  const floorY = h * gangY();
-  const floor = ctx.createLinearGradient(0, floorY - h * 0.04, 0, h);
-  floor.addColorStop(0, "#9ca3af");
-  floor.addColorStop(0.15, "#6b7280");
-  floor.addColorStop(0.5, "#78716c");
-  floor.addColorStop(1, "#44403c");
-  ctx.fillStyle = floor;
-  ctx.fillRect(0, floorY - h * 0.04, w, h - floorY + h * 0.04);
-
-  ctx.fillStyle = "rgba(15,23,42,0.06)";
-  for (let i = 0; i < 28; i++) {
-    ctx.fillRect(0, floorY + (i / 28) * (h - floorY), w, 1);
-  }
-  // soft lane arrows on gang
-  ctx.strokeStyle = "rgba(255,255,255,0.1)";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([8, 12]);
-  ctx.beginPath();
-  ctx.moveTo(w * L.blocksLeft, floorY + h * L.gangH * 0.55);
-  ctx.lineTo(w * L.blocksRight, floorY + h * L.gangH * 0.55);
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
-
-function drawBlocks(
-  ctx: CanvasRenderingContext2D,
-  m: Match,
-  w: number,
-  h: number,
-): void {
-  const top = h * L.blockTop;
-  const bh = h * L.blockBodyH;
-  const bw = blockWidthNorm() * w;
-  const labels = ["Heim", "Neutral", "Gäste"];
-
-  for (const b of BLOCK_META) {
-    const cx = blockCenterX(b.id) * w;
-    const left = cx - bw / 2;
-    const owner = m.blockOwner[b.id];
-    // Gradual tint from people in the block (capture pressure)
-    let blue = 0;
-    let red = 0;
-    for (const f of m.fans) {
-      if (f.hp <= 0 || f.isSteward) continue;
-      if (f.blockId !== b.id) continue;
-      if (f.state !== "block" && f.state !== "stand") continue;
-      if (f.team === "ksc") blue++;
-      else if (f.team === "vfb") red++;
-    }
-    const crowd = blue + red;
-    const lean = crowd > 0 ? (blue - red) / crowd : 0; // +heim blue, -gast red
-    const pressure = Math.min(1, crowd / 8) * Math.abs(lean);
-
-    let base =
-      owner === "ksc" ? "#2563eb" : owner === "vfb" ? "#dc2626" : "#64748b";
-    let deep =
-      owner === "ksc" ? "#1e3a8a" : owner === "vfb" ? "#7f1d1d" : "#334155";
-    if (owner === "neutral" && pressure > 0.08) {
-      base = lean > 0 ? lerpHex("#64748b", "#2563eb", pressure) : lerpHex("#64748b", "#dc2626", pressure);
-      deep = lean > 0 ? lerpHex("#334155", "#1e3a8a", pressure) : lerpHex("#334155", "#7f1d1d", pressure);
-    }
-    const glow =
-      owner === "ksc" || (owner === "neutral" && lean > 0.15)
-        ? `rgba(59,130,246,${0.25 + pressure * 0.35})`
-        : owner === "vfb" || (owner === "neutral" && lean < -0.15)
-          ? `rgba(248,113,113,${0.25 + pressure * 0.35})`
-          : "rgba(148,163,184,0.25)";
-
-    // colored glow under platform
-    const g = ctx.createRadialGradient(cx, top + bh * 0.4, 10, cx, top + bh * 0.5, bw * 0.7);
-    g.addColorStop(0, glow);
-    g.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(left - 8, top - 12, bw + 16, bh + 24);
-
-    // raised platform base (isometric lip)
-    ctx.fillStyle = "rgba(0,0,0,0.4)";
-    roundRect(ctx, left + 6, top + 10, bw, bh, 20);
-    ctx.fill();
-
-    const shell = ctx.createLinearGradient(left, top, left, top + bh);
-    shell.addColorStop(0, base);
-    shell.addColorStop(0.35, deep);
-    shell.addColorStop(0.75, "#0f172a");
-    shell.addColorStop(1, "#020617");
-    ctx.fillStyle = shell;
-    roundRect(ctx, left, top, bw, bh, 20);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(255,255,255,0.28)";
-    ctx.lineWidth = 2.5;
-    roundRect(ctx, left + 2, top + 2, bw - 4, bh - 4, 18);
-    ctx.stroke();
-
-    // terrace steps
-    ctx.save();
-    roundRect(ctx, left, top, bw, bh, 20);
-    ctx.clip();
-    for (let row = 0; row < 5; row++) {
-      const ry = top + bh * 0.2 + row * (bh * 0.14);
-      ctx.fillStyle = row % 2 === 0 ? "rgba(255,255,255,0.14)" : "rgba(15,23,42,0.3)";
-      ctx.fillRect(left + 10, ry, bw - 20, bh * 0.11);
-    }
-    const canopy = ctx.createLinearGradient(left, top, left, top + bh * 0.18);
-    canopy.addColorStop(0, "rgba(15,23,42,0.65)");
-    canopy.addColorStop(1, "rgba(15,23,42,0)");
-    ctx.fillStyle = canopy;
-    ctx.fillRect(left, top, bw, bh * 0.18);
-    ctx.restore();
-
-    // label chip
-    const label = labels[b.id] ?? "Block";
-    const chipW = Math.max(54, bw * 0.55);
-    const chipH = Math.max(18, h * 0.026);
-    ctx.fillStyle = "rgba(255,255,255,0.95)";
-    roundRect(ctx, cx - chipW / 2, top + 6, chipW, chipH, 9);
-    ctx.fill();
-    if (owner === "ksc" || owner === "vfb") {
-      drawClubCrest(ctx, cx - chipW * 0.28, top + 6 + chipH / 2, chipH * 0.38, owner);
-    }
-    ctx.fillStyle = "#0f172a";
-    ctx.font = `800 ${Math.floor(chipH * 0.55)}px Outfit, Manrope, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(label, cx + (owner === "ksc" || owner === "vfb" ? 6 : 0), top + 6 + chipH / 2 + 0.5);
-    ctx.textBaseline = "alphabetic";
-
-    // exit tunnel
-    const d = doorPos(b.id);
-    const doorW = bw * L.doorFrac;
-    const corridorTop = d.y * h;
-    const corridorH = Math.max(10, h * gangY() - corridorTop + 6);
-    const dx = d.x * w - doorW / 2;
-    const tunnel = ctx.createLinearGradient(dx, corridorTop, dx, corridorTop + corridorH);
-    tunnel.addColorStop(0, "#111827");
-    tunnel.addColorStop(1, "#020617");
-    ctx.fillStyle = tunnel;
-    roundRect(ctx, dx, corridorTop - 2, doorW, corridorH + 4, 8);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.12)";
-    roundRect(ctx, dx + 3, corridorTop + 2, doorW - 6, Math.min(corridorH * 0.35, h * 0.03), 5);
-    ctx.fill();
-  }
-}
-
-function drawSeats(
-  ctx: CanvasRenderingContext2D,
-  m: Match,
-  w: number,
-  h: number,
-): void {
-  for (const b of BLOCK_META) {
-    for (let i = 0; i < SEATS_PER_BLOCK; i++) {
-      const p = seatPos(b.id, i);
-      const x = p.x * w;
-      const y = p.y * h;
-      const occ = m.seatOccupied(b.id, i);
-      // No buy "+" in blocks — hiring is via Personen-Rail only
-      let cushion = occ ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.14)";
-      if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.18)";
-      else if (occ?.team === "vfb") cushion = "rgba(220,38,38,0.18)";
-
-      ctx.fillStyle = cushion;
-      roundRect(ctx, x - 9, y - 3, 18, 8, 3);
-      ctx.fill();
-
-      // Capture ring on converting neutrals
-      if (occ?.team === "neutral" && Math.abs(occ.captureProg) > 0.08) {
-        const prog = Math.abs(occ.captureProg);
-        ctx.strokeStyle =
-          occ.captureProg > 0
-            ? `rgba(59,130,246,${0.4 + prog * 0.5})`
-            : `rgba(239,68,68,${0.4 + prog * 0.5})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
-        ctx.stroke();
-      }
-    }
-  }
-}
-
 /** Freigestelltes Top-HUD (HUD_TOP_CANON / b-final-cutout), 1041×508.
- * Native aspect only — never squash. No fake bar/score chrome on top.
+ * Native aspect only — centered, Uhrzeit-Orb flush to top rim. No fake chrome.
  */
 function drawScoreboard(
   ctx: CanvasRenderingContext2D,
@@ -353,7 +68,7 @@ function drawScoreboard(
   const boardW = Math.min(w * 0.48, 560, h * 0.36 * AR);
   const boardH = boardW / AR;
   const bx = (w - boardW) / 2;
-  const by = h * 0.008;
+  const by = 2; // Uhrzeit möglichst nah am oberen Rand
   const glow = ctx.createRadialGradient(
     w * 0.5,
     by + boardH * 0.55,
@@ -367,16 +82,16 @@ function drawScoreboard(
   ctx.fillStyle = glow;
   ctx.fillRect(bx - 20, by - 8, boardW + 40, boardH + 24);
 
-  const drew = drawIcon(ctx, UI_ICONS.scoreboard, bx, by, boardW, boardH, 0.02);
+  // pad=0 — kein vertikales Einrücken der Uhrzeit
+  const drew = drawIcon(ctx, UI_ICONS.scoreboard, bx, by, boardW, boardH, 0);
   if (!drew) {
     ctx.fillStyle = "rgba(15,23,42,0.88)";
     roundRect(ctx, bx, by, boardW, boardH * 0.62, 10);
     ctx.fill();
   }
-  // Live values stay in the freigestellte art / DOM elsewhere — do not paint
-  // fake Heim/Gast bars or score chrome over the cutout.
   void m;
 }
+
 
 
 function drawGang(
