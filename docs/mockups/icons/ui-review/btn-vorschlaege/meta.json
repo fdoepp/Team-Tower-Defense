@@ -1,0 +1,66 @@
+[
+  {
+    "action": "kaufen",
+    "state": "green",
+    "label": "KAUFEN",
+    "state_de": "aktiv",
+    "use": "Fan/Ordner kaufen · Anheuern",
+    "file": "btn-kaufen-green.png"
+  },
+  {
+    "action": "kaufen",
+    "state": "grey",
+    "label": "KAUFEN",
+    "state_de": "disabled",
+    "use": "Cooldown / zu teuer",
+    "file": "btn-kaufen-grey.png"
+  },
+  {
+    "action": "senden",
+    "state": "green",
+    "label": "SENDEN",
+    "state_de": "aktiv",
+    "use": "Ultras/Hooligans in den Gang",
+    "file": "btn-senden-green.png"
+  },
+  {
+    "action": "senden",
+    "state": "grey",
+    "label": "SENDEN",
+    "state_de": "disabled",
+    "use": "Cooldown / nicht bereit",
+    "file": "btn-senden-grey.png"
+  },
+  {
+    "action": "bauen",
+    "state": "amber",
+    "label": "BAUEN",
+    "state_de": "aktiv",
+    "use": "Gebäude auf Bauplatz setzen",
+    "file": "btn-bauen-amber.png"
+  },
+  {
+    "action": "bauen",
+    "state": "grey",
+    "label": "BAUEN",
+    "state_de": "disabled",
+    "use": "kein Gold / Front nicht hier",
+    "file": "btn-bauen-grey.png"
+  },
+  {
+    "action": "upgrade",
+    "state": "purple",
+    "label": "UPGRADE",
+    "state_de": "aktiv",
+    "use": "Stand-Level erhöhen",
+    "file": "btn-upgrade-purple.png"
+  },
+  {
+    "action": "upgrade",
+    "state": "grey",
+    "label": "UPGRADE",
+    "state_de": "disabled",
+    "use": "Max-Level / kein Gold",
+    "file": "btn-upgrade-grey.png"
+  }
+]
