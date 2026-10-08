@@ -89,6 +89,12 @@ export type Currencies = {
 };
 
 export const START_GOLD = 75;
+/** Starting Sicherheit; grey mid-post can regen back up to this cap. */
+export const START_SECURITY = 50;
+/** Without own Ordnerposten, Sicherheit cannot exceed this. */
+export const SECURITY_BASE_CAP = 50;
+/** Regen toward SECURITY_BASE_CAP from intact grey neutral Ordnerposten when safe. */
+export const SECURITY_BASE_REGEN = 0.55;
 
 /** Buy costs — each type tied to its currency */
 export const BUY_COST = {
@@ -149,8 +155,11 @@ export const PYRO_FIGHT_HP_MUL = 0.65;
 export const CEMENT_SLOW_MUL = 0.35;
 /** Cement gate: HP lost per second while pressing past cement */
 export const CEMENT_DOT_PER_SEC = 10;
-/** How far past cement edge attackers may creep before hard stop */
-export const CEMENT_BREAKTHROUGH = 0.07;
+/**
+ * How far past cement edge attackers may creep.
+ * 0 = must clear front Ordner/post before advancing (no random walkthrough).
+ */
+export const CEMENT_BREAKTHROUGH = 0;
 
 export const STEWARD_HIRE_GOLD = 22;
 export const STEWARD_CAP = 2;

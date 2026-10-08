@@ -38,7 +38,10 @@ import {
   REGULAR_REAL_SEC,
   STAND_CONVERT_SEC,
   STAND_CONVERT_SEAT_MAJORITY,
+  SECURITY_BASE_CAP,
+  SECURITY_BASE_REGEN,
   START_GOLD,
+  START_SECURITY,
   STEWARD_CAP,
   STEWARD_GOLD_PER_SEC,
   STEWARD_HIRE_GOLD,
@@ -203,7 +206,7 @@ export class Match {
   /** soft AI combat resources (not shared with player wallet) */
   aiMerch = 40;
   aiBeer = 40;
-  aiSecurity = 40;
+  aiSecurity = START_SECURITY;
   /** Penalty: whose kick is next (alternating) */
   pensNext: TeamId = "ksc";
   pensKicksKsc = 0;
@@ -213,7 +216,7 @@ export class Match {
   pensRound = 0;
   pens: { ksc: boolean | null; vfb: boolean | null }[] = [];
   pensTimer = 0;
-  currency: Currencies = { beer: 0, merch: 0, security: 0 };
+  currency: Currencies = { beer: 0, merch: 0, security: START_SECURITY };
   blockOwner: (TeamId | "neutral" | null)[] = [null, null, null, null];
   floats: FloatFx[] = [];
   /** Blocksturm hold timers */
@@ -1215,6 +1218,7 @@ export class Match {
     if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - step * 1.15);
 
     this.tickEconomy(step);
+    this.tickSecurityBaseline(step);
     this.tickStewards(step);
     this.tickFans(step);
     this.tickRecallForDefense(step);
@@ -1278,6 +1282,77 @@ export class Match {
     this.floats = this.floats.filter((f) => f.t > 0);
   }
 
+  /** Intact grey neutral Ordnerposten still standing. */
+  greyMidPostAlive(): boolean {
+    return this.slots.some(
+      (s) =>
+        s.greyNeutral &&
+        s.building === "ordner" &&
+        s.structHp > 0,
+    );
+  }
+
+  /** Player-owned Ordnerposten (not grey) that still have structure HP. */
+  ownOrdnerPostCount(): number {
+    return this.slots.filter(
+      (s) =>
+        s.building === "ordner" &&
+        s.owner === this.playerTeam &&
+        !s.greyNeutral &&
+        s.structHp > 0,
+    ).length;
+  }
+
+  /**
+   * Sicherheit bedroht: Gegner im Heimblock, nahe Heim-Tür/Gang, oder nahe
+   * eigener Buden auf der Gang-Ebene.
+   */
+  playerSecurityThreatened(): boolean {
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.isSteward || f.team !== this.aiTeam) continue;
+      if (f.blockId === HEIM_BLOCK && (f.state === "block" || f.invading)) {
+        return true;
+      }
+      if (f.state === "gang" || f.state === "moving") {
+        const homeGx = blockIdToGangX(HEIM_BLOCK);
+        if (f.gangX <= homeGx + 0.22) return true;
+        for (const s of this.slots) {
+          if (s.owner !== this.playerTeam || !s.building || s.greyNeutral) continue;
+          const p = this.standWorld(s);
+          const dx = f.x - p.x;
+          const dy = f.y - p.y;
+          if (dx * dx + dy * dy < 0.045) return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Base Sicherheit: start 50; grey mid-post regens toward 50 when safe.
+   * Above 50 only via own Ordnerposten while not threatened.
+   */
+  private tickSecurityBaseline(dt: number): void {
+    const threatened = this.playerSecurityThreatened();
+    const ownPosts = this.ownOrdnerPostCount();
+    const greyOk = this.greyMidPostAlive();
+
+    if (!threatened && greyOk && this.currency.security < SECURITY_BASE_CAP) {
+      this.currency.security = Math.min(
+        SECURITY_BASE_CAP,
+        this.currency.security + SECURITY_BASE_REGEN * dt,
+      );
+    }
+
+    // Without own posts, decay excess back to the base cap
+    if (ownPosts <= 0 && this.currency.security > SECURITY_BASE_CAP) {
+      this.currency.security = Math.max(
+        SECURITY_BASE_CAP,
+        this.currency.security - SECURITY_BASE_REGEN * dt,
+      );
+    }
+  }
+
   private tickEconomy(dt: number): void {
     // Passive gold (low); Hooligan bonus only while in own safe block
     const nrm = this.countInBlock(this.playerTeam, HEIM_BLOCK, "normalos");
@@ -1309,7 +1384,10 @@ export class Match {
         if (s.building === "bier") {
           this.gain("beer", PROD_BEER * rate * dt, undefined, "BIER");
         } else if (s.building === "ordner") {
-          this.gain("security", PROD_SECURITY * rate * dt, undefined, "SICHERHEIT");
+          // Own posts only raise Sicherheit above the base floor while territory is safe
+          if (!this.playerSecurityThreatened()) {
+            this.gain("security", PROD_SECURITY * rate * dt, undefined, "SICHERHEIT");
+          }
         } else if (s.building === "fanshop") {
           this.gain("merch", PROD_MERCH * rate * dt, undefined, "FANARTIKEL");
           this.moodHeim = clamp(this.moodHeim + PROD_SHOP_MOOD * rate * dt, 0, 3);
@@ -1684,6 +1762,16 @@ export class Match {
       if (f.hp <= 0 || f.isSteward) continue;
 
       if (f.state === "block") {
+        // Soft idle motion inside the stand (not frozen on a grid cell)
+        if (f.seatIndex != null) {
+          const home = seatPos(f.blockId, f.seatIndex);
+          const ang = this.realElapsed * 0.85 + f.id * 0.37;
+          const rad = 0.014;
+          const tx = home.x + Math.cos(ang) * rad;
+          const ty = home.y + Math.sin(ang * 1.25) * rad * 0.65;
+          f.x += (tx - f.x) * Math.min(1, 2.8 * dt);
+          f.y += (ty - f.y) * Math.min(1, 2.8 * dt);
+        }
         if (f.kind === "ultras" || f.kind === "normalos") {
           f.thirst += FAN_STATS[f.kind].drink * 3.2 * dt;
           const ready = this.realElapsed >= (f.satisfiedUntil || 0);
@@ -2034,16 +2122,15 @@ export class Match {
       }
       this.syncGangFromWorld(f);
     } else if (inHalt && blocker && f.onOffense) {
-      // Keep pressing while fighting — don't idle at the home door
-      const press = f.rangedPyro ? moveSpeed * 1.15 : moveSpeed * 1.6;
-      const targetGap = f.rangedPyro ? RANGED_RANGE * 0.28 : MELEE_RANGE * 0.2;
+      // Stick to the front Ordner / foe — fight until cleared, no walk-past
+      const targetGap = f.rangedPyro ? RANGED_RANGE * 0.35 : MELEE_RANGE * 0.22;
       if (gapToBlocker > targetGap) {
-        f.gangX = clamp(f.gangX + moveDir * press * dt, 0, 1);
+        f.x += moveDir * Math.min(gapToBlocker - targetGap, moveSpeed * 1.4 * dt);
       } else {
-        f.gangX = clamp(f.gangX + moveDir * moveSpeed * 0.35 * dt, 0, 1);
+        f.x += (blocker.x - moveDir * targetGap - f.x) * Math.min(1, 6 * dt);
       }
-      f.x = gangXToWorld(f.gangX);
-      f.y = midY + Math.sin(this.realElapsed * 3 + f.id) * 0.008;
+      f.y += (blocker.y - f.y) * Math.min(1, 8 * dt);
+      this.syncGangFromWorld(f);
       if (f.aggro < 80) f.aggro = 40;
     } else {
       f.gangX = clamp(f.gangX + moveDir * moveSpeed * dt, 0, 1);

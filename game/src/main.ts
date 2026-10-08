@@ -168,14 +168,19 @@ function renderSetup(): void {
       </div>
     </div>`;
   app.querySelector("#back")!.addEventListener("click", () => go("menu"));
-  app.querySelector("#start")!.addEventListener("click", () => {
-    void goFullscreen();
+  // Start requires an active click; do not gate match entry on fullscreen
+  // (FS is optional after kickoff — otherwise playtests look like Anpfiff "failed").
+  app.querySelector("#start")!.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (!isValidMix(state.setup.mix)) return;
     state.match = new Match({
       settings: state.settings,
       playerSetup: state.setup,
       aiSetup: { mix: defaultMix() },
     });
     go("match");
+    void goFullscreen();
   });
   app.querySelectorAll<HTMLButtonElement>("[data-mix]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -203,7 +208,7 @@ function renderMatchScreen(): void {
     <div class="match-shell matchday">
       <aside class="side-rail left-rail" aria-label="Personen">
         <header class="rail-banner">Personen</header>
-        <p class="freie-plaetze">Fans im Block <b id="free-seats">0</b></p>
+        <p class="freie-plaetze">Einheiten gesamt <b id="free-seats">0</b></p>
         <div class="unit-rows">
           <div class="ur-row" data-card-buy="normalos">
             <div class="ur-top">
@@ -713,7 +718,10 @@ function renderMatchScreen(): void {
       plus.classList.toggle("cd", !ok);
     });
     const freeEl = app.querySelector("#free-seats");
-    if (freeEl) freeEl.textContent = String(m.countFreeBuySeats());
+    if (freeEl) {
+      const o = m.countTeamFans(m.playerTeam);
+      freeEl.textContent = String(o.normalos + o.ultras + o.hooligans + o.ordner);
+    }
     if (!seatMenu.classList.contains("hidden")) syncBuyButtons();
     syncPendingBuildUi();
   };

@@ -75,6 +75,11 @@ button {
   width: 100%;
   flex-wrap: nowrap;
   gap: 10px;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  padding-top: 8px;
+  background: linear-gradient(180deg, transparent, #f3f0e7 35%);
 }
 
 .anpfiff-btn {
@@ -82,8 +87,10 @@ button {
   min-width: 44%;
   font-size: 1.05rem;
   position: relative;
-  z-index: 2;
+  z-index: 6;
   touch-action: manipulation;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 @media (orientation: landscape) and (max-height: 500px) {

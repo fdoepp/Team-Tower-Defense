@@ -8,6 +8,8 @@ export const NEUTRAL_BLOCKS = [NEUTRAL_BLOCK] as const;
 export const SEATS_PER_BLOCK = 12;
 export const SEAT_COLS = 3;
 export const SEAT_ROWS = 4;
+/** Soft visual packing — gameplay can exceed; positions wrap into this density. */
+export const VISUAL_CROWD_SOFT_CAP = 20;
 
 /**
  * Vertical pack (~thirds):
@@ -120,8 +122,8 @@ function seatHash(n: number): number {
 }
 
 /**
- * Fan position in a block. Indices 0..11 keep a soft grid; higher indices
- * scatter inside the stand so blocks are not hard-capped at 12 people.
+ * Fan position in a block. Soft visual density: indices wrap into
+ * VISUAL_CROWD_SOFT_CAP slots (full stands OK over time; no hard gameplay cap).
  */
 export function seatPos(blockId: number, seatIndex: number): { x: number; y: number } {
   const cx = blockCenterX(blockId);
@@ -131,24 +133,29 @@ export function seatPos(blockId: number, seatIndex: number): { x: number; y: num
   const left = cx - bw * 0.38;
   const width = bw * 0.76;
 
-  if (seatIndex >= 0 && seatIndex < SEATS_PER_BLOCK) {
-    const col = seatIndex % SEAT_COLS;
-    const row = Math.floor(seatIndex / SEAT_COLS);
+  const idx = Math.max(0, seatIndex | 0);
+  const slot = idx % VISUAL_CROWD_SOFT_CAP;
+  const layer = Math.floor(idx / VISUAL_CROWD_SOFT_CAP);
+  const layerJ = (seatHash(layer * 19 + blockId) - 0.5) * 0.018;
+
+  if (slot < SEATS_PER_BLOCK) {
+    const col = slot % SEAT_COLS;
+    const row = Math.floor(slot / SEAT_COLS);
     const stepX = width / (SEAT_COLS - 1 || 1);
     const stepY = usableH / (SEAT_ROWS - 1 || 1);
-    const jx = (seatHash(seatIndex * 3 + blockId) - 0.5) * stepX * 0.35;
-    const jy = (seatHash(seatIndex * 7 + blockId * 2) - 0.5) * stepY * 0.35;
+    const jx = (seatHash(slot * 3 + blockId) - 0.5) * stepX * 0.4 + layerJ;
+    const jy = (seatHash(slot * 7 + blockId * 2) - 0.5) * stepY * 0.4 + layerJ * 0.6;
     return {
       x: left + col * stepX + jx,
       y: top + row * stepY + jy,
     };
   }
 
-  const u = seatHash(seatIndex * 17 + blockId * 13);
-  const v = seatHash(seatIndex * 29 + blockId * 41);
+  const u = seatHash(slot * 17 + blockId * 13);
+  const v = seatHash(slot * 29 + blockId * 41);
   return {
-    x: left + u * width,
-    y: top + v * usableH,
+    x: left + u * width + layerJ,
+    y: top + v * usableH + layerJ * 0.5,
   };
 }
 
