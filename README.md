@@ -40,7 +40,8 @@ Ab sofort für Implementierungen:
 - **Ordnerposten:** final — immer `game/public/icons/stands/ordner-{blue\|red\|grey}-{1..5}.png` via `ordnerStandPath` in `game/src/assets/stands.ts` (Kanon: `docs/icons/ORDNERPOSTEN_CANON.md`; bei jedem Deployment / Spielaufsetzen nur diese Gebäude)
 - **Gesundheitsbalken:** final — immer `ui/hp-bar-unit-*.png` / `ui/hp-bar-building-*.png` via `game/src/assets/hpBars.ts` (Kanon: `docs/icons/HP_BARS_CANON.md`; bei jedem Deployment nur diese Bars)
 - **Währungs-/Momentum-FX:** final — `ui/fx-gain|spend-{gold,bier,fanartikel,sicherheit}.png` + `ui/fx-gain-momentum.png` via `game/src/assets/currencyFx.ts` (Kanon: `docs/icons/CURRENCY_FX_CANON.md`)
-- **Noch fehlende Freisteller:** Audit `docs/icons/ASSET_GAP_AUDIT.md` (Tribünen/BG auf diesem Branch, ANWERBEN/BAUEN-Buttons, Status-Icons Durst/Interesse/Stimmung/Pyro/Fremdtrinken)
+- **Noch fehlende Freisteller:** Audit `docs/icons/ASSET_GAP_AUDIT.md`
+- **Branch-Differenzen entscheiden:** Gegenüberstellungen + Checkliste `docs/icons/BRANCH_ASSET_DECISIONS.md` · Sheets `docs/mockups/icons/branch-compare/`
 
 Siehe auch `.cursor/rules/stadium-background.mdc` (`alwaysApply`).
 
