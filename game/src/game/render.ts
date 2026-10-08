@@ -552,7 +552,7 @@ function drawBuilding(
     return;
   }
 
-  // Built plot: warp stand into the floor-grid cell (depth perspective).
+  // Built plot: per-slot VP standicon (already perspectived) on near edge.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
   let size = Math.min(bw, bh) * 0.98;
@@ -565,11 +565,11 @@ function drawBuilding(
     grey && !(s.convertBy && convT > 0.35) ? "neutral" : s.owner,
   );
   const lv = Math.max(1, Math.min(5, s.level || 1));
-  const iconSrc = standIconPath(s.building, color, lv);
+  const iconSrc = standIconPath(s.building, color, lv, s.blockId, s.index);
+  const iconSrcIso = standIconPath(s.building, color, lv);
 
   let drew = false;
   if (pq) {
-    // Soft contact under the near edge of the cell.
     const near = {
       x: (pq.bl.x + pq.br.x) / 2,
       y: (pq.bl.y + pq.br.y) / 2,
@@ -577,19 +577,24 @@ function drawBuilding(
     cx = near.x;
     footY = near.y;
     const cellW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
-    size = Math.max(28, cellW * 0.92);
-    ctx.fillStyle = "rgba(15,23,42,0.35)";
-    ctx.beginPath();
-    ctx.ellipse(cx, footY + 2, cellW * 0.28, cellW * 0.07, 0, 0, Math.PI * 2);
-    ctx.fill();
-    drew = drawIconQuad(ctx, iconSrc, pq.tl, pq.tr, pq.br, pq.bl);
+    // Taller than floor cell — baked per-slot prism already carries lean/taper
+    size = Math.max(44, cellW * 1.85);
+    drew = drawIcon(
+      ctx,
+      iconSrc,
+      cx - size * 0.5,
+      footY - size * 0.92,
+      size,
+      size,
+      0.01,
+    );
   }
   if (!drew) {
     ctx.fillStyle = "rgba(15,23,42,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, footY + size * 0.06, size * 0.32, size * 0.08, 0, 0, Math.PI * 2);
     ctx.fill();
-    drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
+    drew = drawToyIcon(ctx, iconSrcIso, cx, footY, size, {
       t: m.realElapsed,
       phase: s.blockId * 1.7 + s.index * 0.9,
       mode: "idle",

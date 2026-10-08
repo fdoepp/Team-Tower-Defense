@@ -11,13 +11,30 @@ export function teamColor(team: TeamId | "neutral" | null | undefined): TeamColo
   return "grey";
 }
 
-/** Soft-bound stand icon — always from `game/public/icons/stands/`. */
+/**
+ * Soft-bound stand icon.
+ * - UI / sidebar: iso canon `icons/stands/{kind}-{color}-{lv}.png`
+ * - Pitch (mit blockId+index): VP-Tiefenperspektive je Bauslot
+ *   `icons/stands/persp/{kind}-{color}-{lv}-b{block}i{index}.png`
+ */
 export function standIconPath(
   kind: BuildingKind,
   color: TeamColor,
   level: number,
+  blockId?: number,
+  index?: number,
 ): string {
   const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
+  if (
+    typeof blockId === "number" &&
+    typeof index === "number" &&
+    blockId >= 0 &&
+    blockId <= 2 &&
+    index >= 0 &&
+    index <= 3
+  ) {
+    return `icons/stands/persp/${kind}-${color}-${lv}-b${blockId | 0}i${index | 0}.png`;
+  }
   return `icons/stands/${kind}-${color}-${lv}.png`;
 }
 
@@ -288,7 +305,14 @@ function allIconPaths(): string[] {
   }
   for (const kind of ["bier", "fanshop", "ordner"] as BuildingKind[]) {
     for (const color of ["blue", "red", "grey"] as TeamColor[]) {
-      for (let lv = 1; lv <= 5; lv++) paths.add(standIconPath(kind, color, lv));
+      for (let lv = 1; lv <= 5; lv++) {
+        paths.add(standIconPath(kind, color, lv));
+        for (let b = 0; b < 3; b++) {
+          for (let i = 0; i < 4; i++) {
+            paths.add(standIconPath(kind, color, lv, b, i));
+          }
+        }
+      }
     }
   }
   for (const kind of ["normalos", "ultras", "hooligans", "ordner"] as const) {
