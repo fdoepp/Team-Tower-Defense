@@ -5,9 +5,10 @@
 Runtime (`FLOOR_GRID_COUPLE` in `floorGrid.ts`):
 
 1. Plot-Zellen liegen auf dem Derby-BG-Bodenraster (Vanishing Point + Spaltenstrahlen + Tiefenlinien).
-2. Quelle ist das **achsenparallele, fahnenlose** Icon `slot-empty-ortho*.png`.
-3. Beim Screen-Draw wird es per `drawIconQuad` in die Zellen-Trapezoid geschnitten.
-4. **Keine Fahne/Wimpel im Slot-Icon** — Teamfarbe nur über den Boden der Form (neutral / blau / rot). Standarten bleiben separate Runtime-Marker auf gebauten Buden.
+2. Zwei Baureihen mit breiterem Gang dazwischen (`FLOOR_ROW_YS`: far-Bau · Kampf-Gang · near-Bau).
+3. Quelle ist das **achsenparallele, fahnenlose** Icon `slot-empty-ortho*.png`.
+4. Beim Screen-Draw wird es per `drawIconQuad` in die Zellen-Trapezoid geschnitten.
+5. **Keine Fahne/Wimpel im Slot-Icon** — Teamfarbe nur über den Boden der Form (neutral / blau / rot). Standarten bleiben separate Runtime-Marker auf gebauten Buden.
 
 | Kontrolle | Warp-Quelle (ortho, ohne Fahne) | Boden |
 |---|---|---|
