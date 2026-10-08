@@ -1,0 +1,20 @@
+[
+  {
+    "id": "a",
+    "title": "Holz-Zaun",
+    "file": "vorschlag-a.png",
+    "desc": "Holzplanken-Zaun um leere Plattform mit + — Bauzaun, aber im Stand-Holzlook."
+  },
+  {
+    "id": "b",
+    "title": "Stand-Gerüst",
+    "file": "vorschlag-b.png",
+    "desc": "Leeres Stand-Skelett (Basis + Pfosten, ohne Markise) mit + — wird später zur Bude."
+  },
+  {
+    "id": "c",
+    "title": "Pfosten-Plot",
+    "file": "vorschlag-c.png",
+    "desc": "Vier Holzpfosten mit Seil/Rail um Stein-/Erdpad mit + — leichter Marker."
+  }
+]
