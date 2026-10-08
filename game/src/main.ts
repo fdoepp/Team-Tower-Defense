@@ -162,9 +162,9 @@ function renderSetup(): void {
         ${row("hooligans", "Hooligans (Nahkampf · Bier)")}
         <p class="tiny">Summe ${mixSum(mix)} / 8 ${isValidMix(mix) ? "✓" : ""}</p>
       </div>
-      <div class="row">
-        <button class="btn secondary grow" id="back">Zurück</button>
-        <button class="btn ksc grow" id="start" ${isValidMix(mix) ? "" : "disabled"}>Anpfiff</button>
+      <div class="row setup-actions">
+        <button class="btn secondary grow" id="back" type="button">Zurück</button>
+        <button class="btn ksc grow anpfiff-btn" id="start" type="button" ${isValidMix(mix) ? "" : "disabled"}>Anpfiff</button>
       </div>
     </div>`;
   app.querySelector("#back")!.addEventListener("click", () => go("menu"));
@@ -304,9 +304,9 @@ function renderMatchScreen(): void {
               <div class="mom-fill gast" id="mom-gast"></div>
               <div class="mom-knob" id="mom-knob"></div>
             </div>
-            <span id="mom-p-heim">Heim 50%</span>
-            <span id="mom-p-tor">Torchance 28%</span>
-            <span id="mom-p-gast">Gast 50%</span>
+            <span id="mom-p-heim">Stimmung Heim 1.0</span>
+            <span id="mom-p-tor">nächstes Tor Heim 50%</span>
+            <span id="mom-p-gast">Stimmung Gast 1.0</span>
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
@@ -927,7 +927,7 @@ function renderMatchScreen(): void {
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
       if (lpH) lpH.textContent = `Stimmung Heim ${m.moodHeim.toFixed(1)}`;
-      if (lpT) lpT.textContent = `Torchance ${Math.round(ch.pTor * 100)}%`;
+      if (lpT) lpT.textContent = `nächstes Tor Heim ${Math.round(ch.pHeim * 100)}%`;
       if (lpG) lpG.textContent = `Stimmung Gast ${m.moodGaeste.toFixed(1)}`;
       const bar = app.querySelector("#momentum-bar");
       if (bar) {

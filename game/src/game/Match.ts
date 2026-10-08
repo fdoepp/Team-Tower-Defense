@@ -1,12 +1,22 @@
 import {
+  AI_SOFT_REGEN,
+  AI_START_GOLD_BONUS,
   BLOCK_META,
   BLOCK_STORM_COUNT,
   BLOCK_STORM_SEC,
   BUILD_COST,
   BUY_COST,
+  CEMENT_BREAKTHROUGH,
+  CEMENT_DOT_PER_SEC,
+  CEMENT_SLOW_MUL,
   ET_REAL_SEC,
   FAN_STATS,
   FEVER_FROM_MIN,
+  GOAL_P_TOR_BASE,
+  GOAL_P_TOR_MAX,
+  GOAL_P_TOR_MIN,
+  GOAL_P_TOR_MOMENTUM,
+  GOAL_ROLL_INTERVAL,
   HIT_CD,
   HIT_DAMAGE,
   HIT_DAMAGE_SCALE,
@@ -34,6 +44,7 @@ import {
   STEWARD_HIRE_GOLD,
   STEWARD_STATS,
   ULTRA_BEER_INTERVAL,
+  ULTRA_VS_POST_MUL,
   UPGRADE_COST,
   UPGRADE_MAX,
   productionRate,
@@ -88,9 +99,16 @@ function uid(): number {
 }
 
 function diffMul(d: AiDifficulty): number {
-  if (d === "easy") return 0.6;
-  if (d === "hard") return 1.15;
+  if (d === "easy") return 0.55;
+  if (d === "hard") return 1.1;
   return 0.85;
+}
+
+/** Easy sends/buys less often; hard a bit more. */
+function aiActionMul(d: AiDifficulty): number {
+  if (d === "easy") return 0.55;
+  if (d === "hard") return 1.15;
+  return 1;
 }
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -180,11 +198,16 @@ export class Match {
   defectAcc = 0;
   buildPulse = 0;
   captureAcc: Record<string, number> = {};
-  aiGold = START_GOLD + 20;
+  aiGold = START_GOLD + AI_START_GOLD_BONUS;
   aiBuildRot = 0;
   /** soft AI combat resources (not shared with player wallet) */
   aiMerch = 40;
   aiBeer = 40;
+  aiSecurity = 40;
+  /** Penalty: whose kick is next (alternating) */
+  pensNext: TeamId = "ksc";
+  pensKicksKsc = 0;
+  pensKicksVfb = 0;
   width = 960;
   height = 440;
   pensRound = 0;
@@ -554,21 +577,36 @@ export class Match {
         (f.invading || f.state === "block"),
     ).length;
     if (this.stormAccPlayer > 0) {
-      return `BLOCKSTURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccPlayer)}s · ${pInv}/3 Ultras`;
+      return `BLOCKSTURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccPlayer)}s · ${pInv}/${BLOCK_STORM_COUNT} Ultras`;
     }
     if (this.stormAccAi > 0) {
-      return `GEGEN-STURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccAi)}s · ${aInv}/3`;
+      return `GEGEN-STURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccAi)}s · ${aInv}/${BLOCK_STORM_COUNT}`;
     }
     if (pInv > 0) return `ANGRIFF im Gästeblock · ${pInv} Ultra${pInv > 1 ? "s" : ""} — Verteidigung!`;
     if (aInv > 0) return `VERTEIDIGUNG · ${aInv} Feind-Ultra${aInv > 1 ? "s" : ""} im Heimblock`;
     return null;
   }
 
-canBuy(kind: FanKind): boolean {
+  canBuy(kind: FanKind): boolean {
     const c = BUY_COST[kind];
     if (kind === "normalos") return this.currency.security >= c.security;
     if (kind === "ultras") return this.currency.merch >= c.merch;
     return this.currency.beer >= c.beer;
+  }
+
+  /** Name the missing currency for buy toasts */
+  private missingBuyToast(kind: FanKind): string {
+    const c = BUY_COST[kind];
+    if (kind === "normalos") {
+      const need = Math.ceil(c.security - this.currency.security);
+      return `Zu wenig Sicherheit (−${Math.max(1, need)})`;
+    }
+    if (kind === "ultras") {
+      const need = Math.ceil(c.merch - this.currency.merch);
+      return `Zu wenig Fanartikel (−${Math.max(1, need)})`;
+    }
+    const need = Math.ceil(c.beer - this.currency.beer);
+    return `Zu wenig Bier (−${Math.max(1, need)})`;
   }
 
   /** Fans currently contributing Jubel (in block seats only — not gang) */
@@ -844,10 +882,12 @@ canBuy(kind: FanKind): boolean {
 
   private ordnerPostDamageFrom(a: FanUnit): number {
     const rangedMul = a.rangedPyro ? RANGED_DAMAGE_SCALE : 1;
+    const ultraMul = a.kind === "ultras" ? ULTRA_VS_POST_MUL : 1;
     return (
       HIT_DAMAGE *
       HIT_DAMAGE_SCALE *
       rangedMul *
+      ultraMul *
       this.attackOf(a) *
       this.neighborBonus(a) *
       1.15
@@ -991,7 +1031,7 @@ canBuy(kind: FanKind): boolean {
       seat = this.freeSeat(blockId);
     }
     if (!this.canBuy(kind)) {
-      this.toast("Zu wenig Ressourcen");
+      this.toast(this.missingBuyToast(kind));
       return false;
     }
     const c = BUY_COST[kind];
@@ -1277,6 +1317,22 @@ canBuy(kind: FanKind): boolean {
         void p;
       } else if (s.owner === this.aiTeam) {
         this.aiGold += 0.12 * rate * dt;
+        // Mirror player production into AI send/buy wallets
+        if (s.building === "bier") {
+          this.aiBeer = Math.min(120, this.aiBeer + PROD_BEER * rate * dt);
+        } else if (s.building === "ordner") {
+          this.aiSecurity = Math.min(
+            120,
+            this.aiSecurity + PROD_SECURITY * rate * dt,
+          );
+        } else if (s.building === "fanshop") {
+          this.aiMerch = Math.min(120, this.aiMerch + PROD_MERCH * rate * dt);
+          this.moodGaeste = clamp(
+            this.moodGaeste + PROD_SHOP_MOOD * rate * dt,
+            0,
+            3,
+          );
+        }
       }
     }
 
@@ -1513,7 +1569,7 @@ canBuy(kind: FanKind): boolean {
     return edge;
   }
 
-  /** Hard wall: enemy cannot pass until Ordner + Post destroyed */
+  /** Soft gate: enemy is slowed / damaged until Ordner + Post destroyed */
   private cementWallAhead(f: FanUnit): number | null {
     if (f.team !== this.playerTeam && f.team !== this.aiTeam) return null;
     const foe = f.team === this.playerTeam ? this.aiTeam : this.playerTeam;
@@ -1521,7 +1577,8 @@ canBuy(kind: FanKind): boolean {
     const dir = f.team === this.playerTeam ? 1 : -1;
     const wall = this.cementEdgeGx(foe);
     const dx = (wall - f.gangX) * dir;
-    if (dx < -0.02) return null;
+    // Already past breakthrough zone — no longer gated by cement alone
+    if (dx < -CEMENT_BREAKTHROUGH) return null;
     return wall;
   }
 
@@ -1946,6 +2003,15 @@ canBuy(kind: FanKind): boolean {
 
     const ordPosts = defendHome ? [] : this.blockingOrdnerPosts(f, goalBlock);
     const cementWall = defendHome ? null : this.cementWallAhead(f);
+    const pressingCement =
+      cementWall != null &&
+      (f.kind === "hooligans" || f.kind === "ultras") &&
+      !defendHome;
+    const cementSlow = pressingCement ? CEMENT_SLOW_MUL : 1;
+    const moveSpeed = speed * cementSlow;
+    if (pressingCement) {
+      f.hp = Math.max(0, f.hp - CEMENT_DOT_PER_SEC * dt);
+    }
     const blocker = this.blockerAhead(f, moveDir);
     const gapToBlocker = blocker ? (blocker.x - f.x) * moveDir : 999;
     // Offense always marches; only halt in true contact range (melee / short pyro hold)
@@ -1960,36 +2026,36 @@ canBuy(kind: FanKind): boolean {
       } else {
         const targetGap = MELEE_RANGE * 0.2;
         if (gapToBlocker > targetGap) {
-          f.x += moveDir * Math.min(gapToBlocker - targetGap, speed * 2.4 * dt);
+          f.x += moveDir * Math.min(gapToBlocker - targetGap, moveSpeed * 2.4 * dt);
         } else {
-          f.x += moveDir * speed * 0.4 * dt;
+          f.x += moveDir * moveSpeed * 0.4 * dt;
         }
         f.y += (blocker.y - f.y) * Math.min(1, 10 * dt);
       }
       this.syncGangFromWorld(f);
     } else if (inHalt && blocker && f.onOffense) {
       // Keep pressing while fighting — don't idle at the home door
-      const press = f.rangedPyro ? speed * 1.15 : speed * 1.6;
+      const press = f.rangedPyro ? moveSpeed * 1.15 : moveSpeed * 1.6;
       const targetGap = f.rangedPyro ? RANGED_RANGE * 0.28 : MELEE_RANGE * 0.2;
       if (gapToBlocker > targetGap) {
         f.gangX = clamp(f.gangX + moveDir * press * dt, 0, 1);
       } else {
-        f.gangX = clamp(f.gangX + moveDir * speed * 0.35 * dt, 0, 1);
+        f.gangX = clamp(f.gangX + moveDir * moveSpeed * 0.35 * dt, 0, 1);
       }
       f.x = gangXToWorld(f.gangX);
       f.y = midY + Math.sin(this.realElapsed * 3 + f.id) * 0.008;
       if (f.aggro < 80) f.aggro = 40;
     } else {
-      f.gangX = clamp(f.gangX + moveDir * speed * dt, 0, 1);
+      f.gangX = clamp(f.gangX + moveDir * moveSpeed * dt, 0, 1);
       f.x = gangXToWorld(f.gangX);
       f.y = midY + Math.sin(this.realElapsed * 3 + f.id) * 0.008;
     }
 
-    // Cement: cannot pass living enemy Ordner / intact Ordnerposten
-    if (cementWall != null && (f.kind === "hooligans" || f.kind === "ultras")) {
-      const stop = cementWall - dir * 0.03;
-      if (dir > 0) f.gangX = Math.min(f.gangX, stop);
-      else f.gangX = Math.max(f.gangX, stop);
+    // Cement: soft damage/slow gate — creep up to breakthrough, not a hard wall
+    if (pressingCement && cementWall != null) {
+      const hardCap = cementWall + dir * CEMENT_BREAKTHROUGH;
+      if (dir > 0) f.gangX = Math.min(f.gangX, hardCap);
+      else f.gangX = Math.max(f.gangX, hardCap);
       f.x = gangXToWorld(f.gangX);
     }
     if (ordPosts.length && (f.kind === "hooligans" || f.kind === "ultras")) {
@@ -2668,7 +2734,7 @@ canBuy(kind: FanKind): boolean {
   private tickMatch(dt: number): void {
     const fever = this.minute >= FEVER_FROM_MIN || this.phase === "et" ? 1.5 : 1;
     this.chanceAcc += dt;
-    if (this.chanceAcc < 16 / fever) return;
+    if (this.chanceAcc < GOAL_ROLL_INTERVAL / fever) return;
     this.chanceAcc = 0;
     const ch = this.goalChance();
     if (Math.random() > ch.pTor) return;
@@ -2678,7 +2744,11 @@ canBuy(kind: FanKind): boolean {
   /** Public HUD: next-goal probability from momentum */
   goalChance(): { pTor: number; pHeim: number; pGast: number; momentum: number } {
     const M = this.momentum;
-    const pTor = clamp(0.28 + 0.35 * Math.abs(M), 0.15, 0.85);
+    const pTor = clamp(
+      GOAL_P_TOR_BASE + GOAL_P_TOR_MOMENTUM * Math.abs(M),
+      GOAL_P_TOR_MIN,
+      GOAL_P_TOR_MAX,
+    );
     const pHeim = clamp(0.5 + 0.5 * M, 0.05, 0.95);
     return { pTor, pHeim, pGast: 1 - pHeim, momentum: M };
   }
@@ -2751,16 +2821,21 @@ canBuy(kind: FanKind): boolean {
 
   private tickAi(dt: number): void {
     this.aiAcc += dt;
-    // Soft regen of AI send resources
-    this.aiMerch = Math.min(120, this.aiMerch + dt * 1.1);
-    this.aiBeer = Math.min(120, this.aiBeer + dt * 1.0);
+    const diff = this.cfg.settings.difficulty;
+    const regen = AI_SOFT_REGEN * (diff === "easy" ? 0.7 : diff === "hard" ? 1.2 : 1);
+    // Soft regen of AI send/buy resources (damped vs old ~1.0/s)
+    this.aiMerch = Math.min(120, this.aiMerch + dt * regen);
+    this.aiBeer = Math.min(120, this.aiBeer + dt * regen);
+    this.aiSecurity = Math.min(120, this.aiSecurity + dt * regen * 0.85);
 
-    const interval = 7 / diffMul(this.cfg.settings.difficulty);
+    const interval = 7 / diffMul(diff);
 
     if (this.aiAcc < interval) return;
     this.aiAcc = 0;
     this.aiTryBuild();
     this.aiTryHireSteward();
+    this.aiTryBuyFans();
+    const act = aiActionMul(diff);
     const hools = this.fans.filter(
       (f) =>
         f.team === this.aiTeam &&
@@ -2780,8 +2855,13 @@ canBuy(kind: FanKind): boolean {
     const onGang = this.fans.filter(
       (f) => f.team === this.aiTeam && f.state === "gang" && f.hp > 0 && !f.isSteward,
     ).length;
-    const want = this.cfg.settings.difficulty === "hard" ? 3 : 2;
-    if (hools.length && onGang < want && this.aiBeer >= HOOLIGAN_ORDER_BEER && Math.random() < 0.45) {
+    const want = diff === "hard" ? 3 : diff === "easy" ? 1 : 2;
+    if (
+      hools.length &&
+      onGang < want &&
+      this.aiBeer >= HOOLIGAN_ORDER_BEER &&
+      Math.random() < 0.45 * act
+    ) {
       this.aiBeer -= HOOLIGAN_ORDER_BEER;
       hools[0].rangedPyro = false;
       this.sendToGang(hools[0]);
@@ -2789,7 +2869,7 @@ canBuy(kind: FanKind): boolean {
       ultras.length &&
       onGang < want &&
       this.aiMerch >= PYRO_FIGHT_MERCH &&
-      Math.random() < 0.3
+      Math.random() < 0.3 * act
     ) {
       this.aiMerch -= PYRO_FIGHT_MERCH;
       const u = ultras[0];
@@ -2798,6 +2878,32 @@ canBuy(kind: FanKind): boolean {
       u.hp = Math.min(u.hp, u.maxHp);
       this.sendToGang(u);
     }
+  }
+
+  /** Mirror player fan buys into Gästebox with AI wallets */
+  private aiTryBuyFans(): void {
+    const diff = this.cfg.settings.difficulty;
+    const act = aiActionMul(diff);
+    if (Math.random() > 0.55 * act) return;
+    const own = this.countTeamFans(this.aiTeam);
+    const target =
+      diff === "easy" ? 10 : diff === "hard" ? 16 : 13;
+    if (own.normalos + own.ultras + own.hooligans >= target) return;
+
+    const seat = this.freeSeat(GAST_BLOCK);
+    const options: FanKind[] = [];
+    if (this.aiSecurity >= BUY_COST.normalos.security) options.push("normalos");
+    if (this.aiMerch >= BUY_COST.ultras.merch) options.push("ultras");
+    if (this.aiBeer >= BUY_COST.hooligans.beer) options.push("hooligans");
+    if (!options.length) return;
+    // Prefer the type the AI is short on
+    options.sort((a, b) => own[a] - own[b]);
+    const kind = options[0];
+    const c = BUY_COST[kind];
+    if (kind === "normalos") this.aiSecurity -= c.security;
+    else if (kind === "ultras") this.aiMerch -= c.merch;
+    else this.aiBeer -= c.beer;
+    this.fans.push(this.makeFan(kind, this.aiTeam, GAST_BLOCK, seat));
   }
 
   /** AI: spend gold to hire Ordner at own posts (same rules as player) */
@@ -2868,44 +2974,63 @@ canBuy(kind: FanKind): boolean {
 
   private tickPens(dt: number): void {
     this.pensTimer += dt;
-    if (this.pensTimer < 1.8) return;
+    if (this.pensTimer < 1.6) return;
     this.pensTimer = 0;
-    if (this.pensRound >= 5 && this.pens.filter((p) => p.ksc !== null).length >= 5) {
-      // already resolving
-    }
-    const kscGoal = Math.random() < 0.72 + this.momentum * 0.1;
-    const vfbGoal = Math.random() < 0.72 - this.momentum * 0.1;
-    this.pens.push({ ksc: kscGoal, vfb: vfbGoal });
-    if (kscGoal) this.scoreGoal("ksc");
-    if (vfbGoal) this.scoreGoal("vfb");
-    this.pensRound++;
-    this.toast(
-      `Elfmeter ${this.pensRound}: ${kscGoal ? "✓" : "✗"} – ${vfbGoal ? "✓" : "✗"}`,
-    );
-    if (this.pensRound >= 5) {
-      if (this.scoreKsc !== this.scoreVfb) this.endByScore();
-      else {
-        // sudden death already baked into continuing — cap at 8
-        if (this.pensRound >= 8) this.endByScore();
+
+    const shooter = this.pensNext;
+    const momBias = shooter === "ksc" ? this.momentum : -this.momentum;
+    const scored = Math.random() < 0.72 + momBias * 0.1;
+    if (scored) this.scoreGoal(shooter);
+    if (shooter === "ksc") this.pensKicksKsc++;
+    else this.pensKicksVfb++;
+
+    // Keep paired record for UI: complete a pair when both have kicked once this round
+    const pairIdx = Math.min(this.pensKicksKsc, this.pensKicksVfb) - 1;
+    if (pairIdx >= 0) {
+      while (this.pens.length <= pairIdx) {
+        this.pens.push({ ksc: null, vfb: null });
       }
     }
+    const open = this.pens.find((p) => p[shooter] === null);
+    if (open) open[shooter] = scored;
+    else this.pens.push(shooter === "ksc" ? { ksc: scored, vfb: null } : { ksc: null, vfb: scored });
+
+    this.pensRound = this.pensKicksKsc + this.pensKicksVfb;
+    this.toast(
+      `Elfmeter ${teamLabel(shooter)}: ${scored ? "Tor!" : "gehalten"} · ${this.scoreKsc}:${this.scoreVfb}`,
+    );
+
+    this.pensNext = shooter === "ksc" ? "vfb" : "ksc";
+
+    // Decide only when both sides have taken the same number of kicks
+    if (this.pensKicksKsc !== this.pensKicksVfb) return;
+    if (this.pensKicksKsc < 5) return;
+    // After 5 each (or sudden-death pairs): first lead wins — never coin-flip
+    if (this.scoreKsc !== this.scoreVfb) this.endByScore();
   }
 
   private endByScore(): void {
     if (this.scoreKsc === this.scoreVfb) {
-      this.finish(
-        Math.random() < 0.5 ? "ksc" : "vfb",
-        "pens",
-        "Entscheidung nach Elfmeter",
-      );
+      // Never coin-flip: stay in pens / toast and wait for next kick
+      if (this.phase === "pens") {
+        this.toast("Sudden Death — weiter!");
+        return;
+      }
+      this.phase = "pens";
+      this.pensTimer = 0;
+      this.pensNext = "ksc";
+      this.toast("Elfmeter!");
       return;
     }
     const winner = this.scoreKsc > this.scoreVfb ? "ksc" : "vfb";
-    const reason = this.phase === "et" ? "et" : "score";
+    const reason =
+      this.phase === "pens" ? "pens" : this.phase === "et" ? "et" : "score";
     this.finish(
       winner,
       reason,
-      `Endstand ${this.scoreKsc}:${this.scoreVfb}`,
+      this.phase === "pens"
+        ? `Entscheidung nach Elfmeter ${this.scoreKsc}:${this.scoreVfb}`
+        : `Endstand ${this.scoreKsc}:${this.scoreVfb}`,
     );
   }
 

@@ -92,7 +92,7 @@ export const START_GOLD = 75;
 
 /** Buy costs — each type tied to its currency */
 export const BUY_COST = {
-  normalos: { beer: 0, merch: 0, security: 12, gold: 0 },
+  normalos: { beer: 0, merch: 0, security: 10, gold: 0 },
   ultras: { beer: 0, merch: 14, security: 0, gold: 0 },
   hooligans: { beer: 14, merch: 0, security: 0, gold: 0 },
 } as const;
@@ -125,9 +125,9 @@ export const ET_REAL_SEC = 70;
 export const FEVER_FROM_MIN = 80;
 
 /** Hooligan → Gang (Nahkampf) — beer cost, no CD */
-export const HOOLIGAN_ORDER_BEER = 6;
+export const HOOLIGAN_ORDER_BEER = 8;
 /** Ultra → Gang as ranged Pyro-Kampf — merch cost, no CD */
-export const PYRO_FIGHT_MERCH = 6;
+export const PYRO_FIGHT_MERCH = 8;
 
 export const HIT_DAMAGE = 22;
 export const HIT_CD = 0.55;
@@ -136,19 +136,27 @@ export const MELEE_RANGE = 0.14;
 /** Fernkämpfer (Bengalo) ≈ 5× Nahkampf */
 export const RANGED_RANGE = MELEE_RANGE * 5;
 
-export const ORDNER_POST_HP = 360;
+export const ORDNER_POST_HP = 280;
 export const ORDNER_POST_HP_PER_LEVEL = 90;
 export const HIT_DAMAGE_SCALE = 0.7;
 /** Pyro ranged damage scale (vs melee) */
 export const RANGED_DAMAGE_SCALE = 0.85;
+/** Extra damage Ultras deal to Ordnerposten (ranged + melee) */
+export const ULTRA_VS_POST_MUL = 1.35;
 /** HP multiplier when Ultra enters Pyro-Kampf */
-export const PYRO_FIGHT_HP_MUL = 0.45;
+export const PYRO_FIGHT_HP_MUL = 0.65;
+/** Cement gate: move speed while pressing the wall */
+export const CEMENT_SLOW_MUL = 0.35;
+/** Cement gate: HP lost per second while pressing past cement */
+export const CEMENT_DOT_PER_SEC = 10;
+/** How far past cement edge attackers may creep before hard stop */
+export const CEMENT_BREAKTHROUGH = 0.07;
 
 export const STEWARD_HIRE_GOLD = 22;
 export const STEWARD_CAP = 2;
 export const NEUTRAL_STEWARD_RESPAWN = 32;
-export const BLOCK_STORM_COUNT = 3;
-export const BLOCK_STORM_SEC = 5;
+export const BLOCK_STORM_COUNT = 4;
+export const BLOCK_STORM_SEC = 7;
 export const STAND_CONVERT_SEC = 11;
 export const STAND_CONVERT_SEAT_MAJORITY = true;
 export const STEWARD_GOLD_PER_SEC = 0.55;
@@ -156,10 +164,23 @@ export const ULTRA_BEER_INTERVAL = 24;
 export const NORMALO_BEER_INTERVAL = 28;
 export const HOOLIGAN_BEER_INTERVAL = 20;
 
-export const PROD_BEER = 0.2;
+export const PROD_BEER = 0.28;
 export const PROD_SECURITY = 0.3;
 export const PROD_MERCH = 0.34;
 export const PROD_SHOP_MOOD = 0.018;
+
+/** Seconds between pitch goal rolls (before fever) */
+export const GOAL_ROLL_INTERVAL = 22;
+/** Base p(goal) on a roll; scales with |momentum| */
+export const GOAL_P_TOR_BASE = 0.14;
+export const GOAL_P_TOR_MOMENTUM = 0.35;
+export const GOAL_P_TOR_MIN = 0.08;
+export const GOAL_P_TOR_MAX = 0.7;
+
+/** AI start gold bonus over START_GOLD */
+export const AI_START_GOLD_BONUS = 5;
+/** Soft AI beer/merch regen per second */
+export const AI_SOFT_REGEN = 0.4;
 
 export const FAN_STATS: Record<
   FanKind,
@@ -195,7 +216,7 @@ export const FAN_STATS: Record<
     label: "Ultra",
   },
   hooligans: {
-    maxHp: 300,
+    maxHp: 240,
     attack: 1.35,
     defense: 1.05,
     fight: 1.45,

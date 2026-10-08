@@ -71,6 +71,41 @@ button {
   justify-content: center;
 }
 
+.setup-actions {
+  width: 100%;
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+.anpfiff-btn {
+  min-height: 52px;
+  min-width: 44%;
+  font-size: 1.05rem;
+  position: relative;
+  z-index: 2;
+  touch-action: manipulation;
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .screen.menu {
+    padding: 8px 12px;
+    gap: 8px;
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+  .screen.menu .brand {
+    font-size: 1.35rem;
+  }
+  .screen.menu .card {
+    padding: 10px 12px;
+  }
+  .setup-actions,
+  .anpfiff-btn,
+  .screen.menu #start {
+    min-height: 48px;
+  }
+}
+
 .brand {
   font-family: var(--display);
   font-size: clamp(2rem, 6vw, 2.8rem);

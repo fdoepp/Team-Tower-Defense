@@ -388,15 +388,13 @@ function drawScoreboard(
   const min = Math.floor(m.minute ?? 0);
   ctx.fillText(`${min}′`, w * 0.5 + boardW * 0.38, by + boardH * 0.12);
 
-  // Momentum / Torchance strip under the board
+  // Momentum strip: who scores next (single % pair — no conflicting Torchance %)
   const barY = by + boardH * 0.78;
   const barH = Math.max(14, boardH * 0.16);
   const barX = bx + boardW * 0.08;
   const barW = boardW * 0.84;
   const ch = m.goalChance();
   const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
-  const gastPct = Math.max(0.05, Math.min(0.95, ch.pGast));
-  const torchance = Math.round(ch.pTor * 100);
   roundRect(ctx, barX, barY, barW, barH, 6);
   ctx.fillStyle = "rgba(15,23,42,0.75)";
   ctx.fill();
@@ -412,10 +410,11 @@ function drawScoreboard(
   ctx.textAlign = "left";
   ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, barX + 6, barY + barH / 2 + 0.5);
   ctx.textAlign = "right";
-  ctx.fillText(`Gast ${Math.round(gastPct * 100)}%`, barX + barW - 6, barY + barH / 2 + 0.5);
+  ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, barX + barW - 6, barY + barH / 2 + 0.5);
   ctx.textAlign = "center";
-  ctx.fillStyle = "#fde68a";
-  ctx.fillText(`Torchance ${torchance}%`, w * 0.5, barY + barH / 2 + 0.5);
+  ctx.fillStyle = "#e2e8f0";
+  ctx.font = `700 ${Math.max(8, Math.floor(barH * 0.42))}px Outfit, Manrope, sans-serif`;
+  ctx.fillText("nächstes Tor", w * 0.5, barY + barH / 2 + 0.5);
   ctx.restore();
 }
 
