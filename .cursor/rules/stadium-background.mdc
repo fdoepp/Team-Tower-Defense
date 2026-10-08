@@ -37,7 +37,7 @@ Do **not** redraw ad-hoc coin/mug/scarf/shield glyphs in canvas when these asset
 
 ## Currency & Momentum floating FX (binding, finalized)
 
-**Status: freigegeben / final.** Whenever a currency is **gained or spent**, and whenever a **Fan-Block produces Momentum**, always use these freigestellte floating FX — do not invent alternate popups unless the user explicitly asks for a redesign.
+**Status: freigegeben / final.** Whenever a **person or building** triggers a currency **gain or spend**, and whenever a **Fan-Block produces Momentum**, always spawn these freigestellte floating FX (`game/public/icons/ui/fx-*.png`) — do not invent alternate popups unless the user explicitly asks for a redesign.
 
 | Event | Pfad |
 |---|---|

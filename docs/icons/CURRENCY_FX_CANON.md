@@ -3,7 +3,7 @@
 **Status:** freigegeben / final für alle neuen Spielversionen und Deployments  
 **Stand:** 2026-10-08  
 
-Wenn eine Währung **dazukommt** oder **verbraucht** wird, immer diese freigestellten Floating-FX zeigen (Logo + grünes `+` / rotes `−`).  
+Wenn eine **Person oder ein Gebäude** eine Währung **dazukommen** oder **verbrauchen** lässt, immer diese freigestellten Floating-FX zeigen (Logo + grünes `+` / rotes `−`).  
 Fan-Blöcke, die Momentum erzeugen: immer `fx-gain-momentum` aufsteigend über dem Block.
 
 Runtime: `game/src/assets/currencyFx.ts`  

@@ -1,6 +1,7 @@
 /**
  * Binding floating FX for currency / momentum gains and spends.
- * Style: freigestellte logo + green "+" or red "−" pill (see Kauf-Feedback mock).
+ * Spawn these freigestellte PNGs whenever a person or building triggers
+ * a resource change (logo + green "+" / red "−" pill).
  *
  * `.cursor/rules/stadium-background.mdc` · `docs/icons/CURRENCY_FX_CANON.md`
  */
