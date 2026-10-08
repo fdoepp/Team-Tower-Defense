@@ -1546,7 +1546,6 @@ canBuy(kind: FanKind): boolean {
     this.tickCombat(step);
     this.tickPyroShots(step);
     this.tickNeutralCapture(step);
-    this.tickFamilyFlight(step);
     this.tickJubelMomentum(step);
     this.tickBlockStorm(step);
     this.tickMatch(step);
@@ -3210,40 +3209,6 @@ canBuy(kind: FanKind): boolean {
       this.fans.push(this.makeFan(kind, "neutral", blockId, seat));
     }
     void dt;
-  }
-
-  /** Block unsafe → hooligansList relocate then leave */
-  private tickFamilyFlight(dt: number): void {
-    void dt;
-    for (const blockId of [HEIM_BLOCK, GAST_BLOCK]) {
-      const owner = blockId === HEIM_BLOCK ? this.playerTeam : this.aiTeam;
-      const unsafe = this.enemyUltraInBlock(blockId, owner);
-      if (!unsafe) continue;
-      // Normalos leave when enemy Ultra storms the block
-      const normals = this.fans.filter(
-        (f) =>
-          f.hp > 0 &&
-          f.team === owner &&
-          f.kind === "normalos" &&
-          f.blockId === blockId &&
-          f.state === "block",
-      );
-      for (const n of normals) {
-        const safeHome = owner === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
-        const alt = this.freeSeat(safeHome);
-        if (alt != null && alt !== n.seatIndex && !this.enemyUltraInBlock(safeHome, owner)) {
-          n.seatIndex = alt;
-          const p = seatPos(safeHome, alt);
-          n.x = p.x;
-          n.y = p.y;
-          this.toast("Normalo wechselt Platz");
-        } else if (unsafe) {
-          n.hp = 0;
-          this.toast("Normalo wandert ab!");
-          this.floatAt(n.x, n.y, "Abwanderung", false);
-        }
-      }
-    }
   }
 
   /**
