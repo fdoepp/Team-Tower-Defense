@@ -1,0 +1,213 @@
+[
+  {
+    "file": "btn-kaufen-grey.png",
+    "category": "Button",
+    "label": "Kaufen grau (disabled)",
+    "canvas": "256×256",
+    "mode": "RGBA",
+    "content_bbox": [
+      42,
+      58,
+      214,
+      197
+    ],
+    "content_size": "172×139",
+    "padding_px": {
+      "top": 58,
+      "left": 42,
+      "right": 42,
+      "bottom": 59
+    },
+    "opaque_fill_pct": 35.3,
+    "touches_edge": {
+      "top": false,
+      "bottom": false,
+      "left": false,
+      "right": false
+    },
+    "solo": "solo/btn-kaufen-grey-solo.png",
+    "notes": [
+      "Button eher quadratisch im Crop — für UI oft lieber breite Bar (≈3:1)"
+    ]
+  },
+  {
+    "file": "btn-kaufen-green.png",
+    "category": "Button",
+    "label": "Kaufen grün (aktiv)",
+    "canvas": "256×256",
+    "mode": "RGBA",
+    "content_bbox": [
+      42,
+      58,
+      214,
+      197
+    ],
+    "content_size": "172×139",
+    "padding_px": {
+      "top": 58,
+      "left": 42,
+      "right": 42,
+      "bottom": 59
+    },
+    "opaque_fill_pct": 35.3,
+    "touches_edge": {
+      "top": false,
+      "bottom": false,
+      "left": false,
+      "right": false
+    },
+    "solo": "solo/btn-kaufen-green-solo.png",
+    "notes": [
+      "Button eher quadratisch im Crop — für UI oft lieber breite Bar (≈3:1)"
+    ]
+  },
+  {
+    "file": "btn-senden-grey.png",
+    "category": "Button",
+    "label": "Senden grau (disabled)",
+    "canvas": "256×256",
+    "mode": "RGBA",
+    "content_bbox": [
+      42,
+      58,
+      214,
+      198
+    ],
+    "content_size": "172×140",
+    "padding_px": {
+      "top": 58,
+      "left": 42,
+      "right": 42,
+      "bottom": 58
+    },
+    "opaque_fill_pct": 35.4,
+    "touches_edge": {
+      "top": false,
+      "bottom": false,
+      "left": false,
+      "right": false
+    },
+    "solo": "solo/btn-senden-grey-solo.png",
+    "notes": [
+      "Button eher quadratisch im Crop — für UI oft lieber breite Bar (≈3:1)"
+    ]
+  },
+  {
+    "file": "btn-senden-green.png",
+    "category": "Button",
+    "label": "Senden grün (aktiv)",
+    "canvas": "256×256",
+    "mode": "RGBA",
+    "content_bbox": [
+      42,
+      58,
+      214,
+      197
+    ],
+    "content_size": "172×139",
+    "padding_px": {
+      "top": 58,
+      "left": 42,
+      "right": 42,
+      "bottom": 59
+    },
+    "opaque_fill_pct": 35.2,
+    "touches_edge": {
+      "top": false,
+      "bottom": false,
+      "left": false,
+      "right": false
+    },
+    "solo": "solo/btn-senden-green-solo.png",
+    "notes": [
+      "Button eher quadratisch im Crop — für UI oft lieber breite Bar (≈3:1)"
+    ]
+  },
+  {
+    "file": "pennant-ksc.png",
+    "category": "Wimpel",
+    "label": "Heim / KSC (blau)",
+    "canvas": "256×256",
+    "mode": "RGBA",
+    "content_bbox": [
+      34,
+      30,
+      221,
+      226
+    ],
+    "content_size": "187×196",
+    "padding_px": {
+      "top": 30,
+      "left": 34,
+      "right": 35,
+      "bottom": 30
+    },
+    "opaque_fill_pct": 26.9,
+    "touches_edge": {
+      "top": false,
+      "bottom": false,
+      "left": false,
+      "right": false
+    },
+    "solo": "solo/pennant-ksc-solo.png",
+    "notes": []
+  },
+  {
+    "file": "pennant-vfb.png",
+    "category": "Wimpel",
+    "label": "Gäste / VfB (rot)",
+    "canvas": "256×256",
+    "mode": "RGBA",
+    "content_bbox": [
+      35,
+      30,
+      220,
+      226
+    ],
+    "content_size": "185×196",
+    "padding_px": {
+      "top": 30,
+      "left": 35,
+      "right": 36,
+      "bottom": 30
+    },
+    "opaque_fill_pct": 27.2,
+    "touches_edge": {
+      "top": false,
+      "bottom": false,
+      "left": false,
+      "right": false
+    },
+    "solo": "solo/pennant-vfb-solo.png",
+    "notes": []
+  },
+  {
+    "file": "slot-empty.png",
+    "category": "Gebäudeleerplatz",
+    "label": "Leerer Bauplatz (+ Bauzaun)",
+    "canvas": "256×256",
+    "mode": "RGBA",
+    "content_bbox": [
+      30,
+      43,
+      226,
+      212
+    ],
+    "content_size": "196×169",
+    "padding_px": {
+      "top": 43,
+      "left": 30,
+      "right": 30,
+      "bottom": 44
+    },
+    "opaque_fill_pct": 26.7,
+    "touches_edge": {
+      "top": false,
+      "bottom": false,
+      "left": false,
+      "right": false
+    },
+    "solo": "solo/slot-empty-solo.png",
+    "notes": []
+  }
+]

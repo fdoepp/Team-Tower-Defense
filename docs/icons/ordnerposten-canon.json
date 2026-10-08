@@ -1,0 +1,53 @@
+{
+  "id": "ordnerposten-canon",
+  "status": "final",
+  "updated": "2026-10-08",
+  "description": "Binding Ordnerposten building assets for every game setup and deployment",
+  "pathPattern": "game/public/icons/stands/ordner-{color}-{level}.png",
+  "fallbackPattern": "game/public/icons/stands/ordner-{level}.png",
+  "runtimeHelper": "game/src/assets/stands.ts#ordnerStandPath",
+  "rule": ".cursor/rules/stadium-background.mdc",
+  "colors": ["grey", "blue", "red"],
+  "levels": [1, 2, 3, 4, 5],
+  "teamColorMap": {
+    "home": "blue",
+    "away": "red",
+    "neutral": "grey"
+  },
+  "placement": {
+    "1": "seated_on_chair",
+    "2": "behind_desk",
+    "3": "centered_in_doorway",
+    "4": "centered_in_doorway",
+    "5": "centered_in_doorway"
+  },
+  "unitCanon": "docs/icons/ORDNER_CANON.md",
+  "files": [
+    "game/public/icons/stands/ordner-grey-1.png",
+    "game/public/icons/stands/ordner-grey-2.png",
+    "game/public/icons/stands/ordner-grey-3.png",
+    "game/public/icons/stands/ordner-grey-4.png",
+    "game/public/icons/stands/ordner-grey-5.png",
+    "game/public/icons/stands/ordner-blue-1.png",
+    "game/public/icons/stands/ordner-blue-2.png",
+    "game/public/icons/stands/ordner-blue-3.png",
+    "game/public/icons/stands/ordner-blue-4.png",
+    "game/public/icons/stands/ordner-blue-5.png",
+    "game/public/icons/stands/ordner-red-1.png",
+    "game/public/icons/stands/ordner-red-2.png",
+    "game/public/icons/stands/ordner-red-3.png",
+    "game/public/icons/stands/ordner-red-4.png",
+    "game/public/icons/stands/ordner-red-5.png",
+    "game/public/icons/stands/ordner-1.png",
+    "game/public/icons/stands/ordner-2.png",
+    "game/public/icons/stands/ordner-3.png",
+    "game/public/icons/stands/ordner-4.png",
+    "game/public/icons/stands/ordner-5.png"
+  ],
+  "doNotUse": [
+    "ordner-*-proposal.png",
+    "older fenced-booth Ordnerposten",
+    "composites with underscaled or side-offset Ordner units",
+    "procedural/canvas booth drawings while these PNGs exist"
+  ]
+}

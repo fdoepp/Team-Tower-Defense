@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UI-Icons einzeln — Optimierungs-Review</title>
+  <style>
+    :root {
+      --bg: #1a1c20;
+      --panel: #242830;
+      --text: #f2f4f7;
+      --muted: #9aa3b2;
+      --accent: #7ec8ff;
+      --warn: #f0b429;
+      --line: #343a46;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #2a3344 0%, transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, #2c2430 0%, transparent 55%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    header {
+      padding: 2rem 1.25rem 1rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    header h1 {
+      margin: 0 0 0.4rem;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      letter-spacing: -0.02em;
+    }
+    header p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 52rem;
+    }
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+    nav a {
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      padding: 0.35rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+    nav a:hover { background: rgba(126,200,255,0.12); }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.25rem 3rem;
+      display: grid;
+      gap: 1.5rem;
+    }
+    section.asset {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      scroll-margin-top: 1rem;
+    }
+    .asset-head {
+      padding: 1rem 1.1rem 0.75rem;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .asset-head h2 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+    .badge {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .stage {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    @media (max-width: 800px) {
+      .stage { grid-template-columns: 1fr; }
+    }
+    .panel {
+      padding: 1rem;
+      border-right: 1px solid var(--line);
+    }
+    @media (max-width: 800px) {
+      .panel { border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+    .panel:last-child { border-right: 0; border-bottom: 0; }
+    .panel h3 {
+      margin: 0 0 0.6rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .frame {
+      background-image:
+        linear-gradient(45deg, #c8c8c8 25%, transparent 25%),
+        linear-gradient(-45deg, #c8c8c8 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #c8c8c8 75%),
+        linear-gradient(-45deg, transparent 75%, #c8c8c8 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+      background-color: #eee;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      min-height: 280px;
+      padding: 1rem;
+    }
+    .frame img {
+      max-width: 100%;
+      height: auto;
+      image-rendering: auto;
+    }
+    .frame.pixel img {
+      image-rendering: pixelated;
+      width: min(256px, 100%);
+    }
+    ul.notes {
+      margin: 0.75rem 0 0;
+      padding-left: 1.1rem;
+      color: var(--warn);
+      font-size: 0.92rem;
+    }
+    ul.notes:empty { display: none; }
+    footer {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.25rem 2.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    code { color: #d7e3ff; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>UI-Icons einzeln — Optimierungs-Review</h1>
+    <p>
+      Buttons, Wimpel und Gebäudeleerplatz aus den freigeschnittenen Assets
+      (<code>docs/mockups/icons/ui/</code> bzw. <code>game/public/icons/ui/</code>),
+      jeweils groß und einzeln — Checkerboard = Transparenz, rote Box = Content-Bounding-Box.
+    </p>
+    <nav id="toc"></nav>
+  </header>
+  <main id="gallery"></main>
+  <footer>
+    Quelle: Branch <code>cursor/matchday-icons-a9b1</code>.
+    Metadaten: <code>review-meta.json</code>.
+    Parallel: Personen-Icons werden in einem anderen Agent bearbeitet.
+  </footer>
+  <script>
+    const assets = [
+      {
+        id: "btn-kaufen-grey",
+        file: "btn-kaufen-grey.png",
+        category: "Button",
+        label: "Kaufen grau (disabled)",
+        canvas: "256×256",
+        content: "172×139",
+        fill: "35.3%",
+        padding: "58/42/42/59",
+        notes: ["Inhalt eher kompakt im 256er Canvas — bei object-fit:contain wirkt der Button klein; ggf. breite Bar (~320×96) statt Quadrat."],
+        solo: "solo/btn-kaufen-grey-solo.png",
+        tight: "solo/btn-kaufen-grey-tight.png",
+        src: "../ui/btn-kaufen-grey.png"
+      },
+      {
+        id: "btn-kaufen-green",
+        file: "btn-kaufen-green.png",
+        category: "Button",
+        label: "Kaufen grün (aktiv)",
+        canvas: "256×256",
+        content: "172×139",
+        fill: "35.3%",
+        padding: "58/42/42/59",
+        notes: ["Gleiche Geometrie wie grau — Farbvariante prüfen (Kontrast Text/Fläche)."],
+        solo: "solo/btn-kaufen-green-solo.png",
+        tight: "solo/btn-kaufen-green-tight.png",
+        src: "../ui/btn-kaufen-green.png"
+      },
+      {
+        id: "btn-senden-grey",
+        file: "btn-senden-grey.png",
+        category: "Button",
+        label: "Senden grau (disabled)",
+        canvas: "256×256",
+        content: "172×140",
+        fill: "35.4%",
+        padding: "58/42/42/58",
+        notes: ["Label „SENDEN“ vs. älteres Sheet „SEND“ — Einheitlichkeit der Sprache prüfen."],
+        solo: "solo/btn-senden-grey-solo.png",
+        tight: "solo/btn-senden-grey-tight.png",
+        src: "../ui/btn-senden-grey.png"
+      },
+      {
+        id: "btn-senden-green",
+        file: "btn-senden-green.png",
+        category: "Button",
+        label: "Senden grün (aktiv)",
+        canvas: "256×256",
+        content: "172×139",
+        fill: "35.2%",
+        padding: "58/42/42/59",
+        notes: ["Aktive Variante — Hover/Pressed fehlen noch als separate Assets."],
+        solo: "solo/btn-senden-green-solo.png",
+        tight: "solo/btn-senden-green-tight.png",
+        src: "../ui/btn-senden-green.png"
+      },
+      {
+        id: "pennant-ksc",
+        file: "pennant-ksc.png",
+        category: "Standarte",
+        label: "Heim / KSC — Holz + blau-weiße Fahne (kanonisch)",
+        canvas: "256×256",
+        content: "—",
+        fill: "~26%",
+        padding: "—",
+        notes: ["Festgelegt (Vorschlag A). Deploy/neues Spiel: UI_ICONS.pennantKsc → icons/ui/pennant-ksc.png."],
+        solo: "solo/pennant-ksc-solo.png",
+        tight: "solo/pennant-ksc-tight.png",
+        src: "../ui/pennant-ksc.png"
+      },
+      {
+        id: "pennant-vfb",
+        file: "pennant-vfb.png",
+        category: "Standarte",
+        label: "Gäste / VfB — Holz + rot-weiße Fahne (kanonisch)",
+        canvas: "256×256",
+        content: "—",
+        fill: "~26%",
+        padding: "—",
+        notes: ["Festgelegt (Vorschlag A). Deploy/neues Spiel: UI_ICONS.pennantVfb → icons/ui/pennant-vfb.png."],
+        solo: "solo/pennant-vfb-solo.png",
+        tight: "solo/pennant-vfb-tight.png",
+        src: "../ui/pennant-vfb.png"
+      },
+      {
+        id: "slot-empty",
+        file: "slot-empty.png",
+        category: "Gebäudeleerplatz",
+        label: "Leerer Bauplatz (+ Bauzaun)",
+        canvas: "256×256",
+        content: "196×169",
+        fill: "26.7%",
+        padding: "43/30/30/44",
+        notes: ["Isometrie + „+“ gut lesbar; Quelle ui-slot-empty war 1024² — Kanten/Zaun-Detail bei Upscale prüfen."],
+        solo: "solo/slot-empty-solo.png",
+        tight: "solo/slot-empty-tight.png",
+        src: "../ui/slot-empty.png"
+      }
+    ];
+
+    const toc = document.getElementById("toc");
+    const gallery = document.getElementById("gallery");
+
+    for (const a of assets) {
+      const link = document.createElement("a");
+      link.href = `#${a.id}`;
+      link.textContent = a.file.replace(".png", "");
+      toc.appendChild(link);
+
+      const sec = document.createElement("section");
+      sec.className = "asset";
+      sec.id = a.id;
+      sec.innerHTML = `
+        <div class="asset-head">
+          <div>
+            <span class="badge">${a.category}</span>
+            <h2>${a.label}</h2>
+          </div>
+          <div class="meta">
+            <code>${a.file}</code> · Canvas ${a.canvas} · Content ${a.content} · Fill ${a.fill}<br/>
+            Padding T/L/R/B: ${a.padding} px
+          </div>
+        </div>
+        <div class="stage">
+          <div class="panel">
+            <h3>1× Canvas (256) + Bounding-Box</h3>
+            <div class="frame"><img src="${a.solo}" alt="${a.file} solo" /></div>
+          </div>
+          <div class="panel">
+            <h3>Tight Crop (nur Inhalt)</h3>
+            <div class="frame"><img src="${a.tight}" alt="${a.file} tight" /></div>
+            <ul class="notes">${a.notes.map(n => `<li>${n}</li>`).join("")}</ul>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Original-PNG (1:1 Pixel)</h3>
+          <div class="frame pixel"><img src="${a.src}" alt="${a.file} original" width="256" height="256" /></div>
+        </div>
+      `;
+      gallery.appendChild(sec);
+    }
+  </script>
+</body>
+</html>

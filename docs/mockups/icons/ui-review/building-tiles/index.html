@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gebäude-Kacheln — Freigabe</title>
+  <style>
+    :root { --bg:#1a1c20; --panel:#242830; --text:#f2f4f7; --muted:#9aa3b2; --line:#343a46; }
+    body { margin:0; font-family:"Segoe UI","Helvetica Neue",sans-serif; background:var(--bg); color:var(--text); }
+    header, main { max-width:1200px; margin:0 auto; padding:1.25rem; }
+    h1 { margin:0 0 .4rem; }
+    p { color:var(--muted); }
+    .sheet { width:100%; border-radius:12px; border:1px solid var(--line); margin:1rem 0 1.5rem; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:.75rem; }
+    .grid a { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:.4rem; text-decoration:none; color:var(--muted); font-size:.75rem; }
+    .grid img { width:100%; height:auto; border-radius:8px; display:block; margin-bottom:.35rem; }
+    a.nav { color:#7ec8ff; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Gebäude-Kacheln — Freigabe</h1>
+    <p>30 Kacheln: 6 Neubau + 24 Upgrade (blau/rot). Muster: Objekt · Name · Gold · Button.
+      <a class="nav" href="../btn-vorschlaege/ACTION_CARD.md">Action-Card-Regel</a></p>
+  </header>
+  <main>
+    <h2>Neubau (Lv1)</h2>
+    <img class="sheet" src="preview-build-all.jpg" alt="Alle Baukacheln" />
+    <h2>Upgrades · blau</h2>
+    <img class="sheet" src="preview-upgrade-blue.jpg" alt="Upgrades blau" />
+    <h2>Upgrades · rot</h2>
+    <img class="sheet" src="preview-upgrade-red.jpg" alt="Upgrades rot" />
+    <h2>Einzeldateien</h2>
+    <div class="grid" id="g"></div>
+  </main>
+  <script type="module">
+    const res = await fetch('manifest.json');
+    const m = await res.json();
+    const root = document.getElementById('g');
+    for (const t of [...m.build, ...m.upgrade]) {
+      const a = document.createElement('a');
+      a.href = t.file;
+      const solo = 'solo/' + t.file.split('/').pop().replace('.png','-solo.jpg');
+      a.innerHTML = `<img src="${solo}" alt=""><div>${t.file.split('/').pop()}</div>`;
+      root.appendChild(a);
+    }
+  </script>
+</body>
+</html>

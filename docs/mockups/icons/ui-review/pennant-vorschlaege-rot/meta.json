@@ -1,0 +1,20 @@
+[
+  {
+    "id": "a",
+    "title": "Einzel-Fahne",
+    "file": "vorschlag-a-red.png",
+    "desc": "Ein holziger Pfosten mit einer einfachen rot-weißen Streifenfahne — nur Farbe, kein Logo."
+  },
+  {
+    "id": "b",
+    "title": "Dreier-Linie",
+    "file": "vorschlag-b-red.png",
+    "desc": "Drei kleine Holzpfosten mit Mini-Wimpel nebeneinander — markiert klar die Front/Grenze."
+  },
+  {
+    "id": "c",
+    "title": "Mini-Rahmen",
+    "file": "vorschlag-c-red.png",
+    "desc": "Zwei Pfosten + Querbalken mit rot-weißem Bunting — wie ein Mini-Stand ohne Bude."
+  }
+]

@@ -1,0 +1,71 @@
+{
+  "id": "ordner-canon",
+  "status": "approved",
+  "effectiveFrom": "2026-10-08",
+  "replaces": [
+    "earlier matchday ordner cutouts without this armament ladder",
+    "ordner proposals A/B under unit-icons-agent/docs/ordner-progression/proposals"
+  ],
+  "basedOn": "existing blue Ordner art language",
+  "style": {
+    "family": "bloons-ordner-comic",
+    "fullBody": true,
+    "sizePx": 256,
+    "format": "image/png",
+    "transparent": true,
+    "noEdgeCrop": true,
+    "warnwesteAlways": true
+  },
+  "colors": ["grey", "blue", "red"],
+  "levels": [1, 2, 3, 4, 5],
+  "pathPattern": "game/public/icons/units/ordner-{color}-{level}.png",
+  "agentMirrorPattern": "unit-icons-agent/assets/units/ordner-{color}-{level}.png",
+  "headgear": {
+    "1": { "type": "baseballCap", "number": 1 },
+    "2": { "type": "baseballCap", "number": 2 },
+    "3": { "type": "helmet", "number": 3, "visor": false },
+    "4": { "type": "helmet", "number": 4, "visor": false },
+    "5": { "type": "helmet", "number": 5, "visor": true }
+  },
+  "levelsSpec": {
+    "1": {
+      "weapon": "radio",
+      "gear": ["warnweste", "cap"],
+      "forbidden": ["baton", "pistol", "machineGun", "shield", "helmet"]
+    },
+    "2": {
+      "weapon": "baton",
+      "gear": ["warnweste", "cap", "optionalGloves"],
+      "forbidden": ["pistol", "machineGun", "shield", "helmet"]
+    },
+    "3": {
+      "weapon": "baton",
+      "gear": ["warnweste", "helmet", "gloves", "kneePads", "elbowPads"]
+    },
+    "4": {
+      "weapon": "pistol",
+      "gear": ["warnweste", "helmet", "shield", "padsAtLeastLv3"]
+    },
+    "5": {
+      "weapon": "machineGun",
+      "gear": ["warnweste", "helmetWithVisor", "shield", "fullProtection"]
+    }
+  },
+  "files": [
+    "game/public/icons/units/ordner-grey-1.png",
+    "game/public/icons/units/ordner-grey-2.png",
+    "game/public/icons/units/ordner-grey-3.png",
+    "game/public/icons/units/ordner-grey-4.png",
+    "game/public/icons/units/ordner-grey-5.png",
+    "game/public/icons/units/ordner-blue-1.png",
+    "game/public/icons/units/ordner-blue-2.png",
+    "game/public/icons/units/ordner-blue-3.png",
+    "game/public/icons/units/ordner-blue-4.png",
+    "game/public/icons/units/ordner-blue-5.png",
+    "game/public/icons/units/ordner-red-1.png",
+    "game/public/icons/units/ordner-red-2.png",
+    "game/public/icons/units/ordner-red-3.png",
+    "game/public/icons/units/ordner-red-4.png",
+    "game/public/icons/units/ordner-red-5.png"
+  ]
+}
