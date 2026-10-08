@@ -824,18 +824,18 @@ select {
   pointer-events: none;
 }
 
-/* Nur Score-Ziffern abdecken — Crests, Holzrahmen, Balken, Orb = Original-PNG */
+/* Score-Ziffern abdecken — Farben/Position aus Original-PNG gemessen */
 .match-shell.matchday .sb-score-mask {
   position: absolute;
-  left: 33%;
-  top: 32%;
-  width: 34%;
-  height: 22%;
+  left: 36%;
+  top: 27%;
+  width: 28%;
+  height: 26%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f4e7d0;
-  border-radius: 12% / 22%;
+  background: #f9dbb7;
+  border-radius: 14% / 24%;
 }
 
 .match-shell.matchday .sb-score {
@@ -843,7 +843,7 @@ select {
   font-family: var(--display);
   font-weight: 900;
   font-size: clamp(0.95rem, 4.2cqw, 1.85rem);
-  color: #1e293b;
+  color: #00142f;
   line-height: 1;
   letter-spacing: -0.02em;
   transform-origin: center;
@@ -853,13 +853,13 @@ select {
   color: #b45309;
 }
 
-/* Minute-Ziffern auf dem Original-Badge (Holzring + Grün bleiben im PNG) */
+/* Minute-Ziffern im Original-Grünbadge (Holzring bleibt sichtbar) */
 .match-shell.matchday .sb-minute {
   position: absolute;
   left: 50%;
-  top: 5.5%;
+  top: 9.5%;
   transform: translateX(-50%);
-  width: 7.2%;
+  width: 6.8%;
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -868,7 +868,7 @@ select {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: #21c45c;
+  background: #42a61f;
   color: #fff;
   font-family: var(--display);
   font-weight: 800;
