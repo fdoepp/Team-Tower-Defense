@@ -70,6 +70,7 @@ import {
   plotGangX,
   seatPos,
   slotIndicesForBlock,
+  syncTribuneLayout,
 } from "./layout";
 
 export type MatchConfig = {
@@ -1297,6 +1298,7 @@ canBuy(kind: FanKind): boolean {
   }
 
   update(dt: number): void {
+    syncTribuneLayout(this.width, this.height);
     if (this.result || this.speed === 0) {
       this.tickFloats(dt);
       this.tickToasts(dt);
@@ -2874,7 +2876,7 @@ canBuy(kind: FanKind): boolean {
         : ["#b91c1c", "#f87171", "#f3f0e7", "#fecaca"];
     for (let i = 0; i < 48; i++) {
       this.confetti.push({
-        x: cx + (Math.random() - 0.5) * blockWidthNorm() * 0.85,
+        x: cx + (Math.random() - 0.5) * blockWidthNorm(blockId) * 0.85,
         y: top + 0.02 + Math.random() * 0.04,
         vx: (Math.random() - 0.5) * 0.18,
         vy: 0.04 + Math.random() * 0.12,

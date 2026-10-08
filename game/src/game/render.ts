@@ -12,7 +12,8 @@ import {
   SEATS_PER_BLOCK,
   FLOOR_GRID_COUPLE,
   blockCenterX,
-  blockWidthNorm,
+  blocksLeftNorm,
+  blocksRightNorm,
   boothQuad,
   boothRect,
   doorPos,
@@ -20,6 +21,8 @@ import {
   gangY,
   pennantPos,
   seatPos,
+  syncTribuneLayout,
+  tribuneRect,
 } from "./layout";
 import {
   SCENE_ASSETS,
@@ -44,6 +47,7 @@ export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } 
 export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   const w = m.width;
   const h = m.height;
+  syncTribuneLayout(w, h);
   // Skip when shell is display:none / zero-sized — arcTo crashes on tiny/negative rects
   if (w < 32 || h < 32) return;
   ctx.clearRect(0, 0, w, h);
@@ -139,15 +143,15 @@ function drawStadiumAtmosphere(
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 12]);
   ctx.beginPath();
-  ctx.moveTo(w * L.blocksLeft, floorY + h * gangHeight() * 0.55);
-  ctx.lineTo(w * L.blocksRight, floorY + h * gangHeight() * 0.55);
+  ctx.moveTo(w * blocksLeftNorm(), floorY + h * gangHeight() * 0.55);
+  ctx.lineTo(w * blocksRightNorm(), floorY + h * gangHeight() * 0.55);
   ctx.stroke();
   ctx.setLineDash([]);
 }
 
 /**
  * Freigestellte Tribünen (tribune-block-blue/grey/red.png) auf dem Derby-BG.
- * Uniform Contain in der Block-Box — niemals stauchen/strecken.
+ * Flush strip: grey centered, blue/red abutting; uniform scale — never distort.
  */
 function drawBlocks(
   ctx: CanvasRenderingContext2D,
@@ -155,14 +159,16 @@ function drawBlocks(
   w: number,
   h: number,
 ): void {
-  const top = h * L.blockTop;
-  const bh = h * L.blockBodyH;
-  const bw = blockWidthNorm() * w;
+  syncTribuneLayout(w, h);
   const labels = ["Heim", "Neutral", "Gäste"];
 
   for (const b of BLOCK_META) {
-    const cx = blockCenterX(b.id) * w;
-    const left = cx - bw / 2;
+    const tr = tribuneRect(b.id);
+    const left = tr.x * w;
+    const top = tr.y * h;
+    const bw = tr.w * w;
+    const bh = tr.h * h;
+    const cx = left + bw / 2;
     const owner = m.blockOwner[b.id];
 
     let blue = 0;
@@ -197,9 +203,9 @@ function drawBlocks(
     ctx.fill();
 
     const tribSrc = tribuneIconPath(b.id);
-    const drew = drawIcon(ctx, tribSrc, left - bw * 0.02, top - bh * 0.04, bw * 1.04, bh * 1.08, 0.02);
+    // Exact pack rect, pad=0 — aspect already baked into tribuneLayout.
+    const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
     if (!drew) {
-      // Fallback only if PNG missing
       ctx.fillStyle =
         b.id === 0 ? "#2563eb" : b.id === 2 ? "#dc2626" : "#64748b";
       roundRect(ctx, left, top, bw, bh, 18);
@@ -285,8 +291,8 @@ function drawGang(
 ): void {
   const y = h * gangY();
   const gh = h * gangHeight();
-  const left = w * L.blocksLeft;
-  const span = w * (L.blocksRight - L.blocksLeft);
+  const left = w * blocksLeftNorm();
+  const span = w * (blocksRightNorm() - blocksLeftNorm());
   const px = left + span * m.linePlayer;
   const ax = left + span * m.lineAi;
 
@@ -324,8 +330,8 @@ function drawFrontStandards(
 ): void {
   const y = h * gangY();
   const gh = h * gangHeight();
-  const left = w * L.blocksLeft;
-  const span = w * (L.blocksRight - L.blocksLeft);
+  const left = w * blocksLeftNorm();
+  const span = w * (blocksRightNorm() - blocksLeftNorm());
   const poles: { x: number; team: "ksc" | "vfb" }[] = [
     { x: left + span * m.linePlayer, team: m.playerTeam },
     { x: left + span * m.lineAi, team: m.aiTeam },
