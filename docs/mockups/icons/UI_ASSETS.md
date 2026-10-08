@@ -28,7 +28,7 @@ Schema: `{bier\|fanshop\|ordner}-{blue\|red\|grey}-{1..5}.png`
 
 **Bierstand Defaults (verbindlich):** `bier-{blue\|red\|grey}-{1..5}.png` sind die freigegebenen freigestellten Assets (Tracht-Vendor, braune Fässer mit grauen Reifen um den Stand, Gläser auf der Theke; Lv3+ Markise/Lichter/Brezel; Lv4–5 Neon **BIER** + 2. Vendor). Bei jeder neuen Spiel-/Match-Umsetzung diese Dateien nutzen — nicht neu generieren. Canonical-Kopien: `docs/mockups/icons/stands-colored/`.
 
-**Fanshop Defaults (verbindlich):** `fanshop-{blue\|red\|grey}-{1..5}.png` — immer mit Vendor; Lv1 Schalständer, Lv2 Theke (+ ein Fähnchen), Lv3+ gestreifte Markise/Lichter, Lv4–5 **FANSHOP**-Schild + braune Holzkisten; Fähnchen nur auf Lv2. Nicht neu generieren.
+**Fanshop Defaults (verbindlich / final):** `fanshop-{blue\|red\|grey}-{1..5}.png` — immer mit Vendor (blau/rot im Vereinstrikot); Lv1 Schalständer (braunes Gerüst), Lv2 Theke (+ ein Fähnchen), Lv3+ gestreifte Markise/Lichter, Lv4–5 **FANSHOP**-Schild in Teamfarbe + braune Holzkisten; Fähnchen nur auf Lv2. Bei **jeder** weiteren Spielcode-Änderung diese Dateien nutzen — nicht neu generieren.
 
 ## 10 Figuren farbig (`units/`)
 

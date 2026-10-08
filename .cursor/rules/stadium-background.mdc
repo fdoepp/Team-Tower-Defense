@@ -1,11 +1,13 @@
 ---
-description: Stadium visual baseline for LaneLink match rendering
+description: Stadium visual baseline for LaneLink — binding for every game-code change
 alwaysApply: true
 ---
 
 # LaneLink stadium visuals (binding)
 
-For all **future** match / gameplay implementations and visual work:
+**Hard rule for every further modification of game / match code** (`game/**`, `drawMatch`, HUD, building placement, upgrade previews, new features): always load and render the approved freigestellte building icons below for **all three colors** (blue / red / grey). Do **not** draw placeholder booths, regenerate stand art, or invent alternate Fanshop/Bierstand graphics unless the user explicitly requests a redesign.
+
+Applies to: match / gameplay implementations, visual work, and **any** subsequent code change that touches buildings or stand rendering.
 
 ## Background
 
@@ -33,9 +35,11 @@ Always use these **logo-only** freigestellte icons for match currencies (no bake
 
 Do **not** redraw ad-hoc coin/mug/scarf/shield glyphs in canvas when these assets are available.
 
-## Bierstand buildings (default — binding)
+## Bierstand buildings (default — binding, finalized)
 
-For **every** future match / building render, upgrade preview, and new game creation work, always use these freigestellte Bierstand icons — do **not** invent new booth art or regenerate from scratch unless the user explicitly asks for a redesign:
+**Status: freigegeben / final.** These are the only Bierstand assets to use in code.
+
+For **every** future match / building render, upgrade preview, new game creation, and **every later game-code change**, always use these freigestellte Bierstand icons for **blau, rot und grau** — do **not** invent new booth art or regenerate from scratch unless the user explicitly asks for a redesign:
 
 | Farbe | Pfade (Lv1–5) |
 |---|---|
@@ -57,9 +61,11 @@ Sheets: `docs/mockups/icons/stands-colored/sheet-bier-{blue\|red\|grey}.png`
 
 Teamfarbe steckt in Theke / Markise / Neon — Fässer bleiben braun mit grauen Reifen.
 
-## Fanshop buildings (default — binding)
+## Fanshop buildings (default — binding, finalized)
 
-For **every** future match / building render, upgrade preview, and new game creation work, always use these freigestellte Fanshop icons — do **not** invent new shop art or regenerate from scratch unless the user explicitly asks for a redesign:
+**Status: freigegeben / final.** These are the only Fanshop assets to use in code.
+
+For **every** future match / building render, upgrade preview, new game creation, and **every later game-code change**, always use these freigestellte Fanshop icons for **blau, rot und grau** — do **not** invent new shop art or regenerate from scratch unless the user explicitly asks for a redesign:
 
 | Farbe | Pfade (Lv1–5) |
 |---|---|
@@ -87,4 +93,4 @@ Teamfarbe steckt in Schals / Trikots / Markise / Schild / Neon — Schalständer
 - Older assets (`stadium-floodlight-bg.jpg`, `stadium-floodlight-empty-bg.jpg`) are archives only — not the default match BG.
 - Do not put text on crowd flags in new BG art.
 - Do not replace the approved Bierstand or Fanshop defaults above with older sheet art or new generations without an explicit redesign ask.
-- This rule is the visual contract; wiring it into `drawMatch` can wait until an explicit implementation task.
+- When implementing or modifying stand rendering in code, **wire these finalized PNG paths** — never fall back to procedural/canvas booth drawings while these files exist.
