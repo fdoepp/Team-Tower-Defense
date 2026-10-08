@@ -189,3 +189,53 @@ export function scaleQuad(
     bl: { x: q.bl.x * w, y: q.bl.y * h },
   };
 }
+
+export type ScreenQuad = ReturnType<typeof scaleQuad>;
+
+/**
+ * Viewer-facing stand billboard for a Bau-slot.
+ * Front always faces the camera (no yaw toward the stadium).
+ * Per-slot perspective is a *soft* VP taper + lateral lean so iso art
+ * stays recognizable while far/side slots still read depth.
+ */
+export function boothFacadeQuad(
+  blockId: number,
+  index: number,
+  canvasW: number,
+  canvasH: number,
+  opts?: { widthScale?: number; heightScale?: number; taper?: number },
+): ScreenQuad {
+  const pq = scaleQuad(boothQuad(blockId, index), canvasW, canvasH);
+  const widthScale = opts?.widthScale ?? 0.9;
+  const heightScale = opts?.heightScale ?? 1.28;
+  /** 0 = upright rect, 1 = full VP taper/lean. */
+  const taperAmt = opts?.taper ?? 0.32;
+
+  const footX = (pq.bl.x + pq.br.x) / 2;
+  const footY = (pq.bl.y + pq.br.y) / 2;
+  const nearW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
+  const baseHalf = Math.max(14, (nearW * widthScale) / 2);
+  const height = Math.max(36, nearW * heightScale);
+
+  const vp = { x: FLOOR_VP.x * canvasW, y: FLOOR_VP.y * canvasH };
+  const topY = footY - height;
+  const dyFoot = footY - vp.y;
+  const rawDepth =
+    Math.abs(dyFoot) < 1e-4 ? 1 : Math.max(0.5, (topY - vp.y) / dyFoot);
+  const depthScale = 1 - (1 - rawDepth) * taperAmt;
+
+  const rawTopCx =
+    Math.abs(dyFoot) < 1e-4
+      ? footX
+      : vp.x + ((topY - vp.y) / dyFoot) * (footX - vp.x);
+  // Soft lateral lean toward VP (keeps front mostly to the viewer).
+  const topCx = footX + (rawTopCx - footX) * taperAmt;
+  const topHalf = baseHalf * depthScale;
+
+  return {
+    tl: { x: topCx - topHalf, y: topY },
+    tr: { x: topCx + topHalf, y: topY },
+    br: { x: footX + baseHalf, y: footY },
+    bl: { x: footX - baseHalf, y: footY },
+  };
+}
