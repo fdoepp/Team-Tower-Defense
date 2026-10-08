@@ -17,7 +17,7 @@ Schema: `stands/{bier|fanshop|ordner}-{grey|blue|red}-{1..5}.png` → **45** Ico
 | --- | --- | --- |
 | Bierbude | Wirtschaft Bier | `bier-{grey\|blue\|red}-{1..5}.png` |
 | Fanshop | Wirtschaft Fanartikel | `fanshop-{grey\|blue\|red}-{1..5}.png` |
-| Ordnerbude | Wirtschaft Sicherheit | `ordner-{grey\|blue\|red}-{1..5}.png` |
+| Ordnerposten | Sicherheit (Kanon: Stuhl→Pult→Büro) | `ordner-{grey\|blue\|red}-{1..5}.png` — siehe [`ORDNERPOSTEN_CANON.md`](./ORDNERPOSTEN_CANON.md) |
 
 Farben: **grey** neutral · **blue** Heim · **red** Gast
 
