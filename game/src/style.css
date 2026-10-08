@@ -794,10 +794,10 @@ select {
   --sb-orb-cy: 13.5%;
   /* Etwas kleiner als volle Grünfläche → Holzring + Orb-Glanz bleiben vom PNG */
   --sb-orb-w: 7.6%;
-  --sb-score-l: 33.06%;
-  --sb-score-t: 20.05%;
-  --sb-score-w: 33.68%;
-  --sb-score-h: 37.5%;
+  --sb-score-l: 33.14%;
+  --sb-score-t: 19.3%;
+  --sb-score-w: 33.81%;
+  --sb-score-h: 33.1%;
   position: relative;
   flex: 0 0 auto;
   width: min(48%, calc(36vh * var(--sb-nat-w) / var(--sb-nat-h)), 560px);
