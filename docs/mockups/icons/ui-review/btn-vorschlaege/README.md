@@ -38,3 +38,8 @@ Stil: Holzrahmen wie Stände (Bloons/Toy), **breite Bar 320×96** für Handy-Tou
 Noch **nicht** als Deploy gelockt — nach Freigabe → `game/public/icons/ui/` + `UI_ICONS`.
 
 Previews: `preview-btn-vorschlaege.jpg`, `preview-alt-vs-neu.jpg`
+
+## Objekt + Preis + Button
+
+Siehe [`ACTION_CARD.md`](ACTION_CARD.md) — einheitliche Action-Card.
+Preview: `preview-action-card.jpg`.
