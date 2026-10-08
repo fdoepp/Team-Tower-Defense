@@ -82,6 +82,8 @@ export type BuildSlot = {
   /** Ordnerposten structural HP — must be destroyed before pushing past */
   structHp: number;
   structMaxHp: number;
+  /** Contested-time accumulator for neutral mid post auto-level */
+  autoLevelAcc: number;
 };
 
 export type Currencies = {
@@ -91,11 +93,11 @@ export type Currencies = {
 };
 
 export const START_GOLD = 90;
-/** Starting Sicherheit; grey mid-post can regen back up to this cap. */
+/** Starting Sicherheit; intact neutral mid Ordnerposten can regen back up to this cap. */
 export const START_SECURITY = 50;
 /** Without own Ordnerposten, Sicherheit cannot exceed this. */
 export const SECURITY_BASE_CAP = 50;
-/** Regen toward SECURITY_BASE_CAP from intact grey neutral Ordnerposten when safe. */
+/** Regen toward SECURITY_BASE_CAP from intact neutral mid Ordnerposten when safe. */
 export const SECURITY_BASE_REGEN = 0.55;
 
 /** Buy costs — each type tied to its currency (early costs aligned) */
@@ -207,6 +209,17 @@ export const BANNER_POST_STANDOFF = 0.035;
 export const STEWARD_HIRE_GOLD = 22;
 export const STEWARD_CAP = 2;
 export const NEUTRAL_STEWARD_RESPAWN = 32;
+/**
+ * Neutral mid Ordnerposts auto-level while the gang zone is still contested.
+ * Soft cap keeps late mid crackable for the trailing side.
+ */
+export const NEUTRAL_POST_AUTO_LEVEL_CAP = 3;
+/** Real seconds of contested time between auto-levels */
+export const NEUTRAL_POST_AUTO_LEVEL_SEC = 60;
+/** Heim-facing (blue/left) starting Ordnerpost index in the neutral block */
+export const NEUTRAL_POST_HEIM_INDEX = 0;
+/** Gast-facing (red/right) starting Ordnerpost index in the neutral block */
+export const NEUTRAL_POST_GAST_INDEX = 3;
 export const BLOCK_STORM_COUNT = 4;
 export const BLOCK_STORM_SEC = 7;
 export const STAND_CONVERT_SEC = 11;

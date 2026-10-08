@@ -27,6 +27,10 @@ import {
   HIT_DAMAGE_SCALE,
   HOOLIGAN_ORDER_BEER,
   MELEE_RANGE,
+  NEUTRAL_POST_AUTO_LEVEL_CAP,
+  NEUTRAL_POST_AUTO_LEVEL_SEC,
+  NEUTRAL_POST_GAST_INDEX,
+  NEUTRAL_POST_HEIM_INDEX,
   NEUTRAL_STEWARD_RESPAWN,
   ORDNER_POST_HP,
   ORDNER_POST_HP_PER_LEVEL,
@@ -261,40 +265,34 @@ export class Match {
           prodFlash: 0,
           structHp: 0,
           structMaxHp: 0,
+          autoLevelAcc: 0,
         });
       }
     }
 
-    // Neutralzone: grauer Bier-Claim + Ordnerposten mit 2 Ordnern
-    this.placeBuilding(NEUTRAL_BLOCK, 0, "bier", true, "neutral");
-    const s0 = this.slots.find((x) => x.blockId === NEUTRAL_BLOCK && x.index === 0);
-    if (s0) {
-      s0.greyNeutral = true;
-      s0.beer = 25;
-    }
-    this.placeBuilding(NEUTRAL_BLOCK, 1, "ordner", true, "neutral");
-    const bufferPost = this.slots.find(
-      (x) => x.blockId === NEUTRAL_BLOCK && x.index === 1,
-    );
-    if (bufferPost) {
-      bufferPost.greyNeutral = false;
-      bufferPost.owner = "neutral";
-      bufferPost.level = 1;
-      bufferPost.stewardCd = NEUTRAL_STEWARD_RESPAWN;
-      const post = this.stewardPostPos(bufferPost);
-      for (let i = 0; i < 2; i++) {
-        const st = this.makeSteward("neutral", bufferPost);
-        st.state = "gang";
-        st.path = [];
-        st.pathI = 0;
-        this.setAfter(st, "");
-        const spread = (i - 0.5) * 0.04;
-        st.x = post.x + spread;
-        st.y = post.y;
-        st.gangX = blockIdToGangX(NEUTRAL_BLOCK) + spread * 0.5;
-        st.patrolDir = i === 0 ? 1 : -1;
-        this.fans.push(st);
-      }
+    // Neutralzone: Ordnerposten außen (Heim/Gast), Mitte leer zum Claimen
+    for (const index of [NEUTRAL_POST_HEIM_INDEX, NEUTRAL_POST_GAST_INDEX]) {
+      this.placeBuilding(NEUTRAL_BLOCK, index, "ordner", true, "neutral");
+      const post = this.slots.find(
+        (x) => x.blockId === NEUTRAL_BLOCK && x.index === index,
+      );
+      if (!post) continue;
+      post.greyNeutral = false;
+      post.owner = "neutral";
+      post.level = 1;
+      post.stewardCd = NEUTRAL_STEWARD_RESPAWN;
+      post.autoLevelAcc = 0;
+      const sp = this.stewardPostPos(post);
+      const st = this.makeSteward("neutral", post);
+      st.state = "gang";
+      st.path = [];
+      st.pathI = 0;
+      this.setAfter(st, "");
+      st.x = sp.x;
+      st.y = sp.y;
+      st.gangX = this.postGangX(post);
+      st.patrolDir = index === NEUTRAL_POST_HEIM_INDEX ? 1 : -1;
+      this.fans.push(st);
     }
 
     const homeKinds = expandMix(cfg.playerSetup.mix);
@@ -375,7 +373,7 @@ export class Match {
 
   private makeSteward(team: TeamId | "neutral", stand: BuildSlot): FanUnit {
     const sp = this.stewardPostPos(stand);
-    const gx = blockIdToGangX(stand.blockId);
+    const gx = this.postGangX(stand);
     const level = 1;
     const hp = this.stewardMaxHp(level);
     // Spawn already on gang — tickFans skips stewards, so a "moving" path
@@ -468,6 +466,7 @@ export class Match {
     s.convertAcc = 0;
     s.convertBy = null;
     s.prodFlash = 0;
+    s.autoLevelAcc = 0;
     if (kind === "bier") s.beer = 40;
     if (kind === "ordner") this.initOrdnerPostHp(s);
   }
@@ -483,6 +482,11 @@ export class Match {
     return { x: c.x, y: gangMidY() };
   }
 
+  /** Gang-X of an Ordnerpost plot (left/right mid posts differ). */
+  private postGangX(s: BuildSlot): number {
+    return plotGangX(s.blockId, s.index);
+  }
+
   private isHostileOrdnerPost(s: BuildSlot, team: TeamId): boolean {
     if (s.building !== "ordner" || s.structHp <= 0) return false;
     if (s.owner === team) return false;
@@ -496,7 +500,7 @@ export class Match {
     const out: BuildSlot[] = [];
     for (const s of this.slots) {
       if (!this.isHostileOrdnerPost(s, f.team as TeamId)) continue;
-      const gx = blockIdToGangX(s.blockId);
+      const gx = this.postGangX(s);
       const between =
         dir > 0
           ? gx >= f.gangX - 0.03 && gx <= goalGx + 0.02
@@ -504,8 +508,8 @@ export class Match {
       if (between) out.push(s);
     }
     out.sort((a, b) => {
-      const ga = blockIdToGangX(a.blockId);
-      const gb = blockIdToGangX(b.blockId);
+      const ga = this.postGangX(a);
+      const gb = this.postGangX(b);
       return dir > 0 ? ga - gb : gb - ga;
     });
     return out;
@@ -517,7 +521,7 @@ export class Match {
     let bestDx = 99;
     for (const s of this.slots) {
       if (!this.isHostileOrdnerPost(s, f.team as TeamId)) continue;
-      const gx = blockIdToGangX(s.blockId);
+      const gx = this.postGangX(s);
       const dx = (gx - f.gangX) * dir;
       if (dx < -0.02 || dx > bestDx) continue;
       bestDx = dx;
@@ -535,6 +539,7 @@ export class Match {
     s.structHp = 0;
     s.structMaxHp = 0;
     s.stewardCd = 0;
+    s.autoLevelAcc = 0;
     this.floatAtSlot(s, "Posten zerstört", false);
   }
 
@@ -1348,6 +1353,7 @@ export class Match {
     this.tickEconomy(step);
     this.tickSecurityBaseline(step);
     this.tickStewards(step);
+    this.tickNeutralPostAutoLevel(step);
     this.tickFans(step);
     this.tickRecallForDefense(step);
     this.tickAutoDefend(step);
@@ -1410,12 +1416,13 @@ export class Match {
     this.floats = this.floats.filter((f) => f.t > 0);
   }
 
-  /** Intact grey neutral Ordnerposten still standing. */
+  /** Intact neutral mid Ordnerposten still standing (Sicherheit baseline). */
   greyMidPostAlive(): boolean {
     return this.slots.some(
       (s) =>
-        s.greyNeutral &&
+        s.blockId === NEUTRAL_BLOCK &&
         s.building === "ordner" &&
+        s.owner === "neutral" &&
         s.structHp > 0,
     );
   }
@@ -1457,7 +1464,7 @@ export class Match {
   }
 
   /**
-   * Base Sicherheit: start 50; grey mid-post regens toward 50 when safe.
+   * Base Sicherheit: start 50; intact neutral mid posts regen toward 50 when safe.
    * Above 50 only via own Ordnerposten while not threatened.
    */
   private tickSecurityBaseline(dt: number): void {
@@ -1634,6 +1641,39 @@ export class Match {
     return this.linePlayer < mid + 0.04 && this.lineAi > mid - 0.04;
   }
 
+  /**
+   * Neutral mid Ordnerposts slowly level while still contested (cap soft).
+   * Freezes once a side has pushed the zone clear — no late concrete wall.
+   */
+  private tickNeutralPostAutoLevel(dt: number): void {
+    if (!this.isContestedGangZone(NEUTRAL_BLOCK)) return;
+    for (const s of this.slots) {
+      if (
+        s.blockId !== NEUTRAL_BLOCK ||
+        s.building !== "ordner" ||
+        s.owner !== "neutral" ||
+        s.structHp <= 0
+      ) {
+        continue;
+      }
+      if (s.level >= NEUTRAL_POST_AUTO_LEVEL_CAP) continue;
+      s.autoLevelAcc += dt;
+      if (s.autoLevelAcc < NEUTRAL_POST_AUTO_LEVEL_SEC) continue;
+      s.autoLevelAcc = 0;
+      s.level++;
+      const prev = s.structHp;
+      this.initOrdnerPostHp(s);
+      if (prev > 0) {
+        s.structHp = Math.min(
+          s.structMaxHp,
+          prev + ORDNER_POST_HP_PER_LEVEL * 0.5,
+        );
+      }
+      this.floatAtSlot(s, `Lv${s.level}`, true);
+      this.toast(`Neutraler Ordnerpost → Lv${s.level}`);
+    }
+  }
+
   private tickStewards(dt: number): void {
     // Neutral posts: slow respawn ONLY while still in contested (grey) territory
     for (const s of this.slots) {
@@ -1714,8 +1754,9 @@ export class Match {
 
   private stewardPostGangX(f: FanUnit): number {
     if (!f.homeStandKey) return f.gangX;
-    const [b] = f.homeStandKey.split(":").map(Number);
-    return blockIdToGangX(b);
+    const [b, i] = f.homeStandKey.split(":").map(Number);
+    const stand = this.slots.find((s) => s.blockId === b && s.index === i);
+    return stand ? this.postGangX(stand) : blockIdToGangX(b);
   }
 
   /** Always patrol in a tight bubble around the home Ordnerposten */
@@ -1751,7 +1792,7 @@ export class Match {
     for (const s of this.slots) {
       if (s.building !== "ordner" || s.structHp <= 0) continue;
       if (s.owner !== team) continue;
-      const gx = blockIdToGangX(s.blockId);
+      const gx = this.postGangX(s);
       edge = dir > 0 ? Math.max(edge, gx) : Math.min(edge, gx);
     }
     return edge;
@@ -1766,7 +1807,7 @@ export class Match {
     let wall: number | null = null;
     for (const s of this.slots) {
       if (!this.isHostileOrdnerPost(s, team)) continue;
-      const gx = blockIdToGangX(s.blockId);
+      const gx = this.postGangX(s);
       if (wall == null) wall = gx;
       else wall = dir > 0 ? Math.min(wall, gx) : Math.max(wall, gx);
     }
@@ -2158,7 +2199,7 @@ export class Match {
           f.x = p.x;
           f.y = p.y;
           f.blockId = stand.blockId;
-          f.gangX = blockIdToGangX(stand.blockId);
+          f.gangX = this.postGangX(stand);
         }
       }
     } else if (after === "stand" || after === "shop") {
