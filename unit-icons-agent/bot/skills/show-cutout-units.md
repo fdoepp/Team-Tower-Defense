@@ -15,6 +15,18 @@ Alle abgelegten Personen-Icons zeigen, die als freigeschnittene RGBA-PNGs in **G
 
 Farben: `grey` (Grau), `blue` (Blau), `red` (Rot). Erwartung: **4 × 3 × 5 = 60** Dateien.
 
+## Fan-Progression (Gimmicks)
+
+Stufen müssen additiv unterscheidbar sein:
+
+1. normales Outfit + kleines Fähnchen  
+2. + Schal  
+3. + Mütze  
+4. + Trikot  
+5. + große Fahne  
+
+Siehe `docs/fan-progression/README.md`.
+
 ## Ablauf
 
 1. `list_cutout_unit_icons` — Inventar aus `assets/units/` (+ ggf. `game/public/icons/units/`).
