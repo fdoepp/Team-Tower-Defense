@@ -1,0 +1,58 @@
+[
+  {
+    "file": "unit-normalos-blue.png",
+    "kind": "normalos",
+    "color": "blue",
+    "layout": "head-left",
+    "costInButton": true
+  },
+  {
+    "file": "unit-ultras-blue.png",
+    "kind": "ultras",
+    "color": "blue",
+    "layout": "head-left",
+    "costInButton": true
+  },
+  {
+    "file": "unit-hooligans-blue.png",
+    "kind": "hooligans",
+    "color": "blue",
+    "layout": "head-left",
+    "costInButton": true
+  },
+  {
+    "file": "unit-ordner-blue.png",
+    "kind": "ordner",
+    "color": "blue",
+    "layout": "head-left",
+    "costInButton": true
+  },
+  {
+    "file": "unit-normalos-red.png",
+    "kind": "normalos",
+    "color": "red",
+    "layout": "head-left",
+    "costInButton": true
+  },
+  {
+    "file": "unit-ultras-red.png",
+    "kind": "ultras",
+    "color": "red",
+    "layout": "head-left",
+    "costInButton": true
+  },
+  {
+    "file": "unit-hooligans-red.png",
+    "kind": "hooligans",
+    "color": "red",
+    "layout": "head-left",
+    "costInButton": true
+  },
+  {
+    "file": "unit-ordner-red.png",
+    "kind": "ordner",
+    "color": "red",
+    "layout": "head-left",
+    "costInButton": true
+  }
+]

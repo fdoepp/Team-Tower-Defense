@@ -1,0 +1,33 @@
+{
+  "variants": [
+    {
+      "file": "slot-empty-iso-blue.png",
+      "orient": "iso",
+      "color": "blue",
+      "team": "ksc",
+      "path": "ui/slot-empty-iso-blue.png"
+    },
+    {
+      "file": "slot-empty-iso-red.png",
+      "orient": "iso",
+      "color": "red",
+      "team": "vfb",
+      "path": "ui/slot-empty-iso-red.png"
+    },
+    {
+      "file": "slot-empty-parallel-blue.png",
+      "orient": "parallel",
+      "color": "blue",
+      "team": "ksc",
+      "path": "ui/slot-empty-parallel-blue.png"
+    },
+    {
+      "file": "slot-empty-parallel-red.png",
+      "orient": "parallel",
+      "color": "red",
+      "team": "vfb",
+      "path": "ui/slot-empty-parallel-red.png"
+    }
+  ],
+  "usage": "Own buildable plot: show slot-empty-{orient}-{blue|red}. Neutral/empty without ownership can stay slot-empty-{orient}."
+}

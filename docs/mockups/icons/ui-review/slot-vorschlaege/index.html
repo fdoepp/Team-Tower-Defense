@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bauplatz-Vorschläge</title>
+  <style>
+    :root { --bg:#1a1c20; --panel:#242830; --text:#f2f4f7; --muted:#9aa3b2; --line:#343a46; --accent:#c9a46a; }
+    body { margin:0; font-family:"Segoe UI","Helvetica Neue",sans-serif; background:radial-gradient(900px 500px at 10% 0%,#3a3228,transparent 55%),var(--bg); color:var(--text); }
+    header, main, footer { max-width:1100px; margin:0 auto; padding:1.5rem 1.25rem; }
+    h1 { margin:0 0 .4rem; font-size:clamp(1.5rem,3vw,2.1rem); }
+    p { color:var(--muted); max-width:48rem; }
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+    @media (max-width:900px){ .grid{ grid-template-columns:1fr; } }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+    .card h2 { margin:0; padding:1rem 1rem .25rem; font-size:1.1rem; }
+    .card .tag { padding:0 1rem; color:var(--accent); font-size:.75rem; letter-spacing:.06em; text-transform:uppercase; }
+    .card p { padding:0 1rem 1rem; margin:0; font-size:.92rem; }
+    .frame {
+      margin:0 1rem 1rem; border-radius:8px; min-height:280px; display:grid; place-items:center;
+      background-color:#eee;
+      background-image:linear-gradient(45deg,#c8c8c8 25%,transparent 25%),linear-gradient(-45deg,#c8c8c8 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#c8c8c8 75%),linear-gradient(-45deg,transparent 75%,#c8c8c8 75%);
+      background-size:24px 24px; background-position:0 0,0 12px,12px -12px,-12px 0;
+    }
+    .frame img { max-width:92%; height:auto; }
+    .compare { margin-top:1.5rem; }
+    .compare img { width:100%; border-radius:12px; border:1px solid var(--line); margin-bottom:1rem; }
+    a { color:#7ec8ff; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Leerer Bauplatz — 3 Vorschläge</h1>
+    <p>
+      Im gleichen Holz-/Toy-Look und derselben Isometrie wie die Stände.
+      Gelber Bauzaun ist der Alt-Stand. Zurück zur <a href="../index.html">UI-Einzel-Review</a>.
+    </p>
+  </header>
+  <main>
+    <div class="grid">
+      <article class="card">
+        <div class="tag">Vorschlag A</div>
+        <h2>Holz-Zaun</h2>
+        <p>Holzplanken-Zaun um leere Plattform mit + — Bauzaun, aber Stand-Holzlook.</p>
+        <div class="frame"><img src="solo/vorschlag-a-solo.png" alt="Vorschlag A" /></div>
+      </article>
+      <article class="card">
+        <div class="tag">Vorschlag B</div>
+        <h2>Stand-Gerüst</h2>
+        <p>Leeres Stand-Skelett (Basis + Eckpfosten, ohne Markise) mit +.</p>
+        <div class="frame"><img src="solo/vorschlag-b-solo.png" alt="Vorschlag B" /></div>
+      </article>
+      <article class="card">
+        <div class="tag">Vorschlag C</div>
+        <h2>Pfosten-Plot</h2>
+        <p>Vier Holzpfosten mit Seil um Stein-/Erdpad mit + — leichter Marker.</p>
+        <div class="frame"><img src="solo/vorschlag-c-solo.png" alt="Vorschlag C" /></div>
+      </article>
+    </div>
+    <section class="compare">
+      <h2>Alt vs. Neu</h2>
+      <img src="preview-alt-vs-neu.jpg" alt="Vergleich alt gegen drei neue Vorschläge" />
+      <h2>Neben Referenz-Stand</h2>
+      <img src="preview-vs-stand.jpg" alt="Vorschläge neben Bierstand" />
+    </section>
+  </main>
+  <footer>
+    Dateien: <code>vorschlag-a.png</code> · <code>vorschlag-b.png</code> · <code>vorschlag-c.png</code>
+  </footer>
+</body>
+</html>
