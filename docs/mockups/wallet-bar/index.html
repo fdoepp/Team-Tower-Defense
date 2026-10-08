@@ -169,7 +169,18 @@
         border: 1px solid rgba(255, 255, 255, 0.65);
         box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
       }
-      .a-chip img { width: 28px; height: 28px; object-fit: contain; }
+      /* Weiße Platte unter freigestellten Icons: verhindert, dass Grün durch
+         semi-transparenten Schaum „schwarz“ wirkt. Icons ≥36px. */
+      .a-chip .ico-plate {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #fff;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+      }
+      .a-chip img { width: 36px; height: 36px; object-fit: contain; display: block; }
       .a-chip b {
         font-family: var(--display);
         font-size: 1.05rem;
@@ -317,10 +328,13 @@
   <body>
     <h1>Wallet-Bar — 3 Vorschläge</h1>
     <p class="lede">
-      Kanon-Icons (Stand 2026-10-08, Branch
-      <code>cursor/currency-icons-clean-dba3</code>): Gold-Münze mit Krone, Bierglas,
-      Fanartikel-Schal, Sicherheitsschild. HUD zeigt nur Logo + Live-Zahl
-      (laut <code>CURRENCY_FX_CANON.md</code>).
+      <b>Kanon</b> laut Absprache mit Icon-Agents: Branch
+      <code>currency-icons-clean-dba3</code> →
+      <code>game/public/icons/ui/currency-*.png</code>
+      (Gold-Krone, Bierglas, Fan-Schal, Sicherheitsschild). HUD = Logo + Live-Zahl.
+      AI-Renders mit schwarzem Schaum waren falsch und sind entfernt. Bei kleiner
+      als ~36px wirkt der Kanon-Schaum grau — deshalb Chip-Icons hier @40px.
+      Branch-Vergleich siehe PNGs im Ordner.
     </p>
 
     <div class="canon" aria-label="Kanon-Icons">
@@ -344,10 +358,10 @@
         </p>
         <div class="stage" data-shot="a">
           <div class="a-bar">
-            <span class="a-chip gold"><img src="./currency-gold.png" alt="" /><b>84</b></span>
-            <span class="a-chip bier"><img src="./currency-bier.png" alt="" /><b>12</b></span>
-            <span class="a-chip merch"><img src="./currency-fanartikel.png" alt="" /><b>6</b></span>
-            <span class="a-chip sec"><img src="./currency-sicherheit.png" alt="" /><b>18</b></span>
+             alt="" /><b>84</b></span>
+            <span class="a-chip bier"><span class="ico-plate"><img src="./currency-bier.png" alt="" /></span><b>12</b></span>
+            <span class="a-chip merch"><span class="ico-plate"><img src="./currency-fanartikel.png" alt="" /></span><b>6</b></span>
+            <span class="a-chip sec"><span class="ico-plate"><img src="./currency-sicherheit.png" alt="" /></span><b>18</b></span>
           </div>
           <div class="score-fake">0 : 0 &nbsp;·&nbsp; 39′</div>
         </div>
