@@ -83,11 +83,15 @@ export const UI_ICONS = {
   pennantVfb: "icons/ui/pennant-vfb.png",
   menuRail: "icons/ui/menu-rail-brown.png",
   menuRailTile: "icons/ui/menu-rail-brown-tile.png",
-  /** HUD_TOP_CANON — Broadcast Bubble */
+  /** HUD_TOP_CANON — Broadcast Bubble (freigestellt) */
   scoreboard: "icons/ui/scoreboard-top.png",
   scoreboardOrbHeim: "icons/ui/scoreboard-top-orb-heim.png",
   scoreboardOrbGast: "icons/ui/scoreboard-top-orb-gast.png",
 } as const;
+
+/** Native pixel size of scoreboard-top.png — never squash/stretch away from this AR. */
+export const SCOREBOARD_NATIVE = { w: 1041, h: 508 } as const;
+export const SCOREBOARD_AR = SCOREBOARD_NATIVE.w / SCOREBOARD_NATIVE.h;
 
 /**
  * Stadium scene (Konzept-Agent / stadium-background.mdc).
@@ -196,6 +200,19 @@ export function getIcon(src: string): HTMLImageElement | null {
   return null;
 }
 
+/** Uniform fit of a native size into a max box — never squash. */
+export function fitUniform(
+  natW: number,
+  natH: number,
+  maxW: number,
+  maxH: number,
+): { w: number; h: number; scale: number } {
+  const nw = Math.max(1, natW);
+  const nh = Math.max(1, natH);
+  const scale = Math.min(maxW / nw, maxH / nh);
+  return { w: nw * scale, h: nh * scale, scale };
+}
+
 /**
  * Draw a freigestelltes icon centered in a rect, preserving aspect ratio.
  * Never squash/stretch — only uniform scale (Contain).
@@ -215,13 +232,34 @@ export function drawIcon(
   const py = h * pad;
   const aw = Math.max(1, w - px * 2);
   const ah = Math.max(1, h - py * 2);
-  const scale = Math.min(aw / img.naturalWidth, ah / img.naturalHeight);
-  const dw = img.naturalWidth * scale;
-  const dh = img.naturalHeight * scale;
+  const { w: dw, h: dh } = fitUniform(img.naturalWidth, img.naturalHeight, aw, ah);
   const dx = x + (w - dw) / 2;
   const dy = y + (h - dh) / 2;
   ctx.drawImage(img, dx, dy, dw, dh);
   return true;
+}
+
+/**
+ * Draw image at exact native aspect into a max box (top-centered).
+ * Returns the drawn rect, or null if not loaded.
+ */
+export function drawUniformInBox(
+  ctx: CanvasRenderingContext2D,
+  src: string,
+  boxX: number,
+  boxY: number,
+  maxW: number,
+  maxH: number,
+): { x: number; y: number; w: number; h: number } | null {
+  const img = getIcon(src);
+  if (!img) return null;
+  const natW = img.naturalWidth || SCOREBOARD_NATIVE.w;
+  const natH = img.naturalHeight || SCOREBOARD_NATIVE.h;
+  const { w: dw, h: dh } = fitUniform(natW, natH, maxW, maxH);
+  const dx = boxX + (maxW - dw) / 2;
+  const dy = boxY;
+  ctx.drawImage(img, dx, dy, dw, dh);
+  return { x: dx, y: dy, w: dw, h: dh };
 }
 
 /**

@@ -11,6 +11,7 @@ import {
 } from "./game/fullscreen";
 import { drawMatch, hitSeat, hitSlot } from "./game/render";
 import {
+  SCOREBOARD_NATIVE,
   UI_ICONS,
   preloadIcons,
   standIconPath,
@@ -294,20 +295,37 @@ function renderMatchScreen(): void {
             <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
             <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
           </div>
-          <!-- Scoreboard + Momentum live on canvas (stadion top third) -->
-          <div class="pitch-score sr-only" aria-label="Spielstand">
-            <b id="hud-score">0:0</b>
-            <span id="hud-minute">0′</span>
-          </div>
-          <div class="pitch-momentum sr-only" aria-label="Momentum">
-            <div class="momentum-bar" id="momentum-bar">
-              <div class="mom-fill heim" id="mom-heim"></div>
-              <div class="mom-fill gast" id="mom-gast"></div>
-              <div class="mom-knob" id="mom-knob"></div>
+          <!-- Freigestelltes Top-HUD: native ${SCOREBOARD_NATIVE.w}×${SCOREBOARD_NATIVE.h}, CSS aspect-lock -->
+          <div
+            class="scoreboard-slot"
+            id="scoreboard-slot"
+            aria-label="Spielstand"
+            style="aspect-ratio: ${SCOREBOARD_NATIVE.w} / ${SCOREBOARD_NATIVE.h}"
+          >
+            <img
+              class="scoreboard-art"
+              src="${UI_ICONS.scoreboard}"
+              width="${SCOREBOARD_NATIVE.w}"
+              height="${SCOREBOARD_NATIVE.h}"
+              alt=""
+              draggable="false"
+            >
+            <div class="scoreboard-live">
+              <span class="sb-minute" id="hud-minute">0′</span>
+              <div class="sb-score-mask">
+                <b class="sb-score" id="hud-score">0 : 0</b>
+              </div>
+              <div class="sb-bar" id="momentum-bar">
+                <div class="sb-bar-heim" id="mom-heim"></div>
+                <div class="sb-bar-gast" id="mom-gast"></div>
+                <span class="sb-p-heim" id="mom-p-heim">Heim 50%</span>
+                <span class="sb-p-gast" id="mom-p-gast">Gast 50%</span>
+                <div class="sb-orb" id="mom-knob">
+                  <small>Torchance</small>
+                  <b id="mom-p-tor">28%</b>
+                </div>
+              </div>
             </div>
-            <span id="mom-p-heim">Heim 50%</span>
-            <span id="mom-p-tor">Torchance 28%</span>
-            <span id="mom-p-gast">Gast 50%</span>
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
@@ -889,7 +907,7 @@ function renderMatchScreen(): void {
       const hudScore = app.querySelector("#hud-score");
       const hudMin = app.querySelector("#hud-minute");
       if (hudScore) {
-        hudScore.textContent = `${m.scoreKsc}:${m.scoreVfb}`;
+        hudScore.textContent = `${m.scoreKsc} : ${m.scoreVfb}`;
         hudScore.classList.toggle("goal-pulse", m.scorePulse > 0.15);
         if (m.scorePulse > 0.15) {
           const scale = 1 + m.scorePulse * 0.55;
@@ -898,43 +916,38 @@ function renderMatchScreen(): void {
           (hudScore as HTMLElement).style.transform = "";
         }
       }
-      const crestK = app.querySelector(".hud-crest.ksc");
-      const crestV = app.querySelector(".hud-crest.vfb");
-      if (crestK) {
-        crestK.classList.toggle(
-          "goal-flash",
-          m.scorePulse > 0.2 && m.lastGoalTeam === "ksc",
-        );
-      }
-      if (crestV) {
-        crestV.classList.toggle(
-          "goal-flash",
-          m.scorePulse > 0.2 && m.lastGoalTeam === "vfb",
-        );
-      }
       if (hudMin) hudMin.textContent = `${Math.floor(m.minute)}′`;
       const ch = m.goalChance();
       const momHeim = app.querySelector<HTMLElement>("#mom-heim");
       const momGast = app.querySelector<HTMLElement>("#mom-gast");
       const momKnob = app.querySelector<HTMLElement>("#mom-knob");
-      const pH = Math.round(ch.pHeim * 100);
+      const heimPct = Math.max(0.08, Math.min(0.92, ch.pHeim));
+      const pH = Math.round(heimPct * 100);
       const pG = 100 - pH;
       if (momHeim) momHeim.style.width = `${pH}%`;
       if (momGast) momGast.style.width = `${pG}%`;
+      // Orb X: left when Heim strong, right when Gast strong (uniform in % of bar)
       if (momKnob) {
-        momKnob.style.left = `${((ch.momentum + 1) / 2) * 100}%`;
+        const orbPct = (1 - heimPct) * 100;
+        momKnob.style.left = `${orbPct}%`;
         momKnob.style.transform =
-          m.moodKick > 0.08 ? `scale(${1 + m.moodKick * 0.85})` : "";
+          m.moodKick > 0.08
+            ? `translate(-50%, -50%) scale(${1 + m.moodKick * 0.85})`
+            : "translate(-50%, -50%)";
       }
       const lpH = app.querySelector("#mom-p-heim");
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
       if (lpH) lpH.textContent = `Heim ${pH}%`;
-      if (lpT) lpT.textContent = `Torchance ${Math.round(ch.pTor * 100)}%`;
+      if (lpT) lpT.textContent = `${Math.round(ch.pTor * 100)}%`;
       if (lpG) lpG.textContent = `Gast ${pG}%`;
       const bar = app.querySelector("#momentum-bar");
       if (bar) {
         bar.classList.toggle("kick", m.moodKick > 0.08);
+      }
+      const slot = app.querySelector<HTMLElement>("#scoreboard-slot");
+      if (slot) {
+        slot.classList.toggle("goal-pulse", m.scorePulse > 0.15);
       }
       const banner = app.querySelector("#combat-banner");
       if (banner) {

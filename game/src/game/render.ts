@@ -44,7 +44,7 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   ctx.clearRect(0, 0, w, h);
 
   drawStadiumAtmosphere(ctx, m, w, h);
-  drawScoreboard(ctx, m, w, h);
+  // Scoreboard chrome lives in DOM (.scoreboard-slot) — aspect-locked, no canvas squash
   drawBlocks(ctx, m, w, h);
   drawSeats(ctx, m, w, h);
   drawGang(ctx, m, w, h);
@@ -270,111 +270,6 @@ function drawSeats(
       }
     }
   }
-}
-
-/**
- * Top-HUD Broadcast Bubble — HUD_TOP_CANON
- * Asset: scoreboard-top.png; live score / minute / momentum / Torchance-Orb.
- */
-function drawScoreboard(
-  ctx: CanvasRenderingContext2D,
-  m: Match,
-  w: number,
-  h: number,
-): void {
-  // Native scoreboard AR 1041×508 — scale uniformly, never squash
-  const SCORE_AR = 508 / 1041;
-  const boardW = Math.min(w * 0.46, h * 0.42 / SCORE_AR);
-  const boardH = boardW * SCORE_AR;
-  const bx = (w - boardW) / 2;
-  const by = h * 0.008;
-
-  const drew = drawIcon(ctx, UI_ICONS.scoreboard, bx, by, boardW, boardH, 0);
-  if (!drew) {
-    ctx.fillStyle = "rgba(245,235,210,0.95)";
-    roundRect(ctx, bx, by, boardW, boardH * 0.72, 14);
-    ctx.fill();
-  }
-
-  const ch = m.goalChance();
-  const heimPct = Math.max(0.08, Math.min(0.92, ch.pHeim));
-  const gastPct = Math.max(0.08, Math.min(0.92, ch.pGast));
-  const torchance = Math.round(ch.pTor * 100);
-  const min = Math.floor(m.minute ?? 0);
-
-  // Cover baked score digits with cream face, redraw live score
-  const faceX = bx + boardW * 0.28;
-  const faceY = by + boardH * 0.28;
-  const faceW = boardW * 0.44;
-  const faceH = boardH * 0.32;
-  ctx.fillStyle = "#f5ecd8";
-  roundRect(ctx, faceX, faceY, faceW, faceH, 8);
-  ctx.fill();
-  ctx.save();
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "#1e293b";
-  ctx.font = `900 ${Math.max(18, Math.floor(faceH * 0.78))}px Outfit, Manrope, sans-serif`;
-  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w * 0.5, faceY + faceH * 0.52);
-
-  // Minute badge (green pill on top rim)
-  const badgeR = Math.max(10, boardH * 0.09);
-  const badgeCx = w * 0.5;
-  const badgeCy = by + boardH * 0.1;
-  ctx.beginPath();
-  ctx.arc(badgeCx, badgeCy, badgeR, 0, Math.PI * 2);
-  ctx.fillStyle = "#22c55e";
-  ctx.fill();
-  ctx.strokeStyle = "#166534";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.fillStyle = "#fff";
-  ctx.font = `800 ${Math.max(10, Math.floor(badgeR * 0.95))}px Outfit, Manrope, sans-serif`;
-  ctx.fillText(`${min}′`, badgeCx, badgeCy + 0.5);
-
-  // Momentum bar + sliding Torchance orb
-  const barY = by + boardH * 0.72;
-  const barH = Math.max(16, boardH * 0.18);
-  const barX = bx + boardW * 0.08;
-  const barW = boardW * 0.84;
-  roundRect(ctx, barX, barY, barW, barH, barH / 2);
-  ctx.fillStyle = "#1e293b";
-  ctx.fill();
-  const split = barX + barW * heimPct;
-  ctx.fillStyle = "#2563eb";
-  roundRect(ctx, barX, barY, Math.max(8, split - barX), barH, barH / 2);
-  ctx.fill();
-  ctx.fillStyle = "#dc2626";
-  roundRect(ctx, split, barY, Math.max(8, barX + barW - split), barH, barH / 2);
-  ctx.fill();
-  ctx.fillStyle = "#fff";
-  ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.48))}px Outfit, Manrope, sans-serif`;
-  ctx.textAlign = "left";
-  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, barX + 10, barY + barH / 2 + 0.5);
-  ctx.textAlign = "right";
-  ctx.fillText(`Gast ${Math.round(gastPct * 100)}%`, barX + barW - 10, barY + barH / 2 + 0.5);
-
-  // Orb X: left when Heim strong, right when Gast strong
-  const orbX = barX + barW * (1 - heimPct);
-  const orbR = Math.max(11, barH * 0.72);
-  const orbGrad = ctx.createRadialGradient(orbX - orbR * 0.25, barY + barH / 2 - orbR * 0.25, 2, orbX, barY + barH / 2, orbR);
-  orbGrad.addColorStop(0, "#fde68a");
-  orbGrad.addColorStop(0.45, "#f59e0b");
-  orbGrad.addColorStop(1, "#b45309");
-  ctx.beginPath();
-  ctx.arc(orbX, barY + barH / 2, orbR, 0, Math.PI * 2);
-  ctx.fillStyle = orbGrad;
-  ctx.fill();
-  ctx.strokeStyle = "#78350f";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.fillStyle = "#1c1917";
-  ctx.font = `800 ${Math.max(7, Math.floor(orbR * 0.42))}px Outfit, Manrope, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.fillText("Torchance", orbX, barY + barH / 2 - orbR * 0.12);
-  ctx.font = `900 ${Math.max(9, Math.floor(orbR * 0.55))}px Outfit, Manrope, sans-serif`;
-  ctx.fillText(`${torchance}%`, orbX, barY + barH / 2 + orbR * 0.32);
-  ctx.restore();
 }
 
 function drawGang(
