@@ -887,16 +887,18 @@ function renderMatchScreen(): void {
         "ordner",
       ];
       for (const kind of kinds) {
-        const lv = m.minUnitLevel(kind);
+        const lvMin = m.minUnitLevel(kind);
+        const lvMax = m.maxUnitLevel(kind);
         const img = app.querySelector<HTMLImageElement>(
           `[data-unit-icon="${kind}"]`,
         );
         if (img) {
-          const next = unitIconPath(kind, tcNow, lv);
+          // Icon follows strongest unit so upgrades are visually obvious
+          const next = unitIconPath(kind, tcNow, Math.max(1, lvMax || 1));
           if (img.getAttribute("src") !== next) img.src = next;
         }
         const lvEl = app.querySelector(`[data-unit-lv="${kind}"]`);
-        if (lvEl) lvEl.textContent = `Lv${lv}`;
+        if (lvEl) lvEl.textContent = m.unitLevelLabel(kind);
         const upBtn = app.querySelector<HTMLButtonElement>(
           `[data-unit-up="${kind}"]`,
         );
@@ -906,10 +908,11 @@ function renderMatchScreen(): void {
           upBtn.disabled = !ok;
           upBtn.classList.toggle("ready", ok);
           upBtn.classList.toggle("cd", !ok);
+          upBtn.textContent = cost != null ? `▲${cost}` : "▲";
           upBtn.title =
             cost == null
               ? "Max. Stufe"
-              : `Upgrade → Lv${lv + 1} · ${cost}€`;
+              : `Schwächste Einheit → Lv${lvMin + 1} · ${cost}€`;
         }
       }
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
