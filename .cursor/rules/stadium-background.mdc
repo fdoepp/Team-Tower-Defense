@@ -22,6 +22,17 @@ For all **future** match / gameplay implementations and visual work:
 - Units, buildings, gang, and combat stay **game-rendered** on/around these blocks — do not bake fans into the tribune PNGs.
 - Optional sheet (all three): `game/public/assets/tribune-blocks-sheet.png`
 
+## Currency HUD symbols
+
+Always use these **logo-only** freigestellte icons for match currencies (no baked-in numbers or labels — counts come from live HUD text):
+
+- Gold → `docs/mockups/icons/ui/currency-gold.png`
+- Bier → `docs/mockups/icons/ui/currency-bier.png`
+- Fanartikel → `docs/mockups/icons/ui/currency-fanartikel.png`
+- Sicherheit → `docs/mockups/icons/ui/currency-sicherheit.png`
+
+Do **not** redraw ad-hoc coin/mug/scarf/shield glyphs in canvas when these assets are available.
+
 ## Out of scope / do not regress
 
 - Older assets (`stadium-floodlight-bg.jpg`, `stadium-floodlight-empty-bg.jpg`) are archives only — not the default match BG.

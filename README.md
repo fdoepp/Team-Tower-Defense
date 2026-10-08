@@ -34,6 +34,7 @@ Ab sofort für Implementierungen:
 
 - **Hintergrund:** `game/public/assets/stadium-floodlight-derby-bg.jpg` (volle Ränge, Flutlicht, blanke Anzeigetafel oben)
 - **Tribünen darauf:** `tribune-block-blue.png` / `tribune-block-grey.png` / `tribune-block-red.png` in der richtigen Skalierung einbetten (ohne Figuren im Asset — Units rendert das Spiel)
+- **Währungen:** Logo-only Icons `docs/mockups/icons/ui/currency-{gold,bier,fanartikel,sicherheit}.png` (Anzahl nur im HUD-Text)
 
 Siehe auch `.cursor/rules/stadium-background.mdc`.
 
