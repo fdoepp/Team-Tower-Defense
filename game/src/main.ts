@@ -179,6 +179,8 @@ function renderSetup(): void {
       playerSetup: state.setup,
       aiSetup: { mix: defaultMix() },
     });
+    // QA / playtest hook (read-only introspection)
+    (window as unknown as { __match?: Match }).__match = state.match;
     go("match");
     void goFullscreen();
   });
