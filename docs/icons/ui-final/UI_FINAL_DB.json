@@ -3350,9 +3350,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:57:00.621381+00:00"
+        "checkedAt": "2026-10-08T22:57:40.761462+00:00"
       },
-      "notes": "Neu in gleicher Form wie btnBauenGrey (Holzrahmen).",
+      "notes": "Neu in gleicher Form wie btnBauenGrey (Holzrahmen); Textgröße angepasst.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.544979+00:00"
