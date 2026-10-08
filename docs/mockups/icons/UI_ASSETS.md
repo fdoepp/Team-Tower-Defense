@@ -12,7 +12,9 @@ Alle Pfade relativ zu `game/public/icons/`.
 | 2 | `ui/currency-gold.png` … `currency-sicherheit.png` | Nur Logo (Gold/Bier/Fanartikel/Sicherheit) — Anzahl kommt aus dem HUD |
 | 3 | `ui/scoreboard-momentum.png` | Anzeigetafel (Logos, Stand, Minute) + Momentum |
 | 4 | `ui/btn-kaufen-grey.png` / `btn-kaufen-green.png` | Kaufen (grau/grün) |
-| 5 | `ui/btn-senden-grey.png` / `btn-senden-green.png` | Senden (grau/grün) |
+| 5 | `ui/btn-senden-grey.png` / `btn-senden-green.png` / `btn-senden-blue.png` | Senden (grau/grün/blau) |
+| 5b | `ui/btn-bauen-amber.png` / `btn-bauen-grey.png` | Bauen (Game-Kanon) |
+| 5c | `ui/btn-upgrade-purple.png` / `btn-upgrade-grey.png` | Upgrade (Game-Kanon) |
 | 6 | `ui/menu-rail-brown.png` (+ `-tile`) | Durchgehende Bloons-braune Menüleiste |
 | 7 | `ui/pennant-ksc.png` / `pennant-vfb.png` | Fanwimpel-Ständer |
 | 8 | `ui/hp-bar-unit.png` / `ui/hp-bar-building.png` | **Default** Gesundheitsbalken (verbindlich) — Person kompakt / Gebäude + Sicherheitsschild; Zustände `-{full,high,mid,low,empty}` |

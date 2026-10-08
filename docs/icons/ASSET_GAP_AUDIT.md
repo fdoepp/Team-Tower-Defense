@@ -2,7 +2,7 @@
 
 Stand: Audit gegen `MATCHDAY_UI_SUMMARY`, `UI_ASSETS`, `GAME_DESIGN` (Konzept), Mockup `matchday-gesamt-final.jpg`, Runtime auf `matchday-game`, und den freigegebenen Kanons (Stände / Units / HP / FX).  
 **Branch-Abgleich** (erneut): relevante Branches ziehen **nicht** denselben Grafik-Satz heran — siehe Abschnitt unten.  
-**Gegenüberstellungen + Entscheidungs-Checkliste:** `docs/icons/BRANCH_ASSET_DECISIONS.md` · Sheets in `docs/mockups/icons/branch-compare/`.
+**Gegenüberstellungen:** `docs/mockups/icons/branch-compare/` · **Entscheidungen LOCKED:** `docs/icons/BRANCH_ASSET_DECISIONS.md` · Pack: `BRANCH_SYNC_CANON.json`.
 
 Ziel: Welche **freigestellten Einzel-Assets** fehlen noch, damit Match-UI und Systeme ohne Ad-hoc-Canvas-Zeichnung klar lesbar umsetzbar sind.
 
