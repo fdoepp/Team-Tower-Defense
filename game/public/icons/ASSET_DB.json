@@ -152,5 +152,12 @@
     "sourceDir": "game/public/icons/",
     "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss locked Standarten + Bauplatz-Perspektiv-Varianten (slot-empty-persp*) aus diesem Register preloaded verwenden. Runtime tauscht Bauplatz-Icons automatisch bei Team-/Grau-Kontrolle.",
     "slotDefault": "perspective-floor"
+  },
+  "uiFinal": {
+    "sourceOfTruth": "docs/icons/ui-final/UI_FINAL_DB.json",
+    "runtimeDir": "game/public/icons/ui-final/",
+    "rule": "Final freigegebene UI-Elemente: alle Branches laden freigegebenes UI aus UI_FINAL_DB (released). Ablage nur nach manueller Freigabe + Validierung (freigestellt, preserveAspect).",
+    "approve": "node scripts/ui-final/approve.mjs <id> --by <name>",
+    "sync": "node scripts/ui-final/sync.mjs"
   }
 }

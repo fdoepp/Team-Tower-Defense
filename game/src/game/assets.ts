@@ -1,6 +1,12 @@
 import type { BuildingKind, FanKind, TeamId } from "./types";
+import { uiFinalIconPath } from "./uiFinal";
 
 export type TeamColor = "blue" | "red" | "grey";
+
+/** Prefer Final-UI DB when released; else legacy icons/ui/. */
+function uiPath(id: string, legacy: string): string {
+  return uiFinalIconPath(id) ?? legacy;
+}
 
 const cache = new Map<string, HTMLImageElement>();
 let preloadPromise: Promise<void> | null = null;
@@ -52,30 +58,39 @@ export function tribuneIconPath(blockId: number): string {
   return SCENE_ASSETS.tribuneGrey;
 }
 
+/**
+ * UI icons — released keys from UI_FINAL_DB (`icons/ui-final/…`).
+ * Draw only with uniform scale (drawIcon / fitUniform) — never distort.
+ */
 export const UI_ICONS = {
-  slotEmpty: "icons/ui/slot-empty.png",
-  slotEmptyParallel: "icons/ui/slot-empty-parallel.png",
-  slotEmptyIso: "icons/ui/slot-empty-iso.png",
-  slotEmptyParallelBlue: "icons/ui/slot-empty-parallel-blue.png",
-  slotEmptyParallelRed: "icons/ui/slot-empty-parallel-red.png",
-  slotEmptyIsoBlue: "icons/ui/slot-empty-iso-blue.png",
-  slotEmptyIsoRed: "icons/ui/slot-empty-iso-red.png",
-  /** Axis-aligned, flagless source — ground tinted by team; warped into floor-grid quads. */
-  slotEmptyOrtho: "icons/ui/slot-empty-ortho.png",
-  slotEmptyOrthoBlue: "icons/ui/slot-empty-ortho-blue.png",
-  slotEmptyOrthoRed: "icons/ui/slot-empty-ortho-red.png",
-  currencyGold: "icons/ui/currency-gold.png",
-  currencyBier: "icons/ui/currency-bier.png",
-  currencyFanartikel: "icons/ui/currency-fanartikel.png",
-  currencySicherheit: "icons/ui/currency-sicherheit.png",
-  btnKaufenGrey: "icons/ui/btn-kaufen-grey.png",
-  btnKaufenGreen: "icons/ui/btn-kaufen-green.png",
-  btnSendenGrey: "icons/ui/btn-senden-grey.png",
-  btnSendenGreen: "icons/ui/btn-senden-green.png",
-  pennantKsc: "icons/ui/pennant-ksc.png",
-  pennantVfb: "icons/ui/pennant-vfb.png",
-  menuRail: "icons/ui/menu-rail-brown.png",
-  scoreboard: "icons/ui/scoreboard-momentum.png",
+  slotEmpty: uiPath("slotEmpty", "icons/ui/slot-empty.png"),
+  slotEmptyParallel: uiPath("slotEmptyParallel", "icons/ui/slot-empty-parallel.png"),
+  slotEmptyIso: uiPath("slotEmptyIso", "icons/ui/slot-empty-iso.png"),
+  slotEmptyParallelBlue: uiPath(
+    "slotEmptyParallelBlue",
+    "icons/ui/slot-empty-parallel-blue.png",
+  ),
+  slotEmptyParallelRed: uiPath(
+    "slotEmptyParallelRed",
+    "icons/ui/slot-empty-parallel-red.png",
+  ),
+  slotEmptyIsoBlue: uiPath("slotEmptyIsoBlue", "icons/ui/slot-empty-iso-blue.png"),
+  slotEmptyIsoRed: uiPath("slotEmptyIsoRed", "icons/ui/slot-empty-iso-red.png"),
+  slotEmptyOrtho: uiPath("slotEmptyOrtho", "icons/ui/slot-empty-ortho.png"),
+  slotEmptyOrthoBlue: uiPath("slotEmptyOrthoBlue", "icons/ui/slot-empty-ortho-blue.png"),
+  slotEmptyOrthoRed: uiPath("slotEmptyOrthoRed", "icons/ui/slot-empty-ortho-red.png"),
+  currencyGold: uiPath("currencyGold", "icons/ui/currency-gold.png"),
+  currencyBier: uiPath("currencyBier", "icons/ui/currency-bier.png"),
+  currencyFanartikel: uiPath("currencyFanartikel", "icons/ui/currency-fanartikel.png"),
+  currencySicherheit: uiPath("currencySicherheit", "icons/ui/currency-sicherheit.png"),
+  btnKaufenGrey: uiPath("btnKaufenGrey", "icons/ui/btn-kaufen-grey.png"),
+  btnKaufenGreen: uiPath("btnKaufenGreen", "icons/ui/btn-kaufen-green.png"),
+  btnSendenGrey: uiPath("btnSendenGrey", "icons/ui/btn-senden-grey.png"),
+  btnSendenGreen: uiPath("btnSendenGreen", "icons/ui/btn-senden-green.png"),
+  pennantKsc: uiPath("pennantKsc", "icons/ui/pennant-ksc.png"),
+  pennantVfb: uiPath("pennantVfb", "icons/ui/pennant-vfb.png"),
+  menuRail: uiPath("menuRail", "icons/ui/menu-rail-brown.png"),
+  scoreboard: uiPath("scoreboard", "icons/ui/scoreboard-momentum.png"),
 } as const;
 
 /**

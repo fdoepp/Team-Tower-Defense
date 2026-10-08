@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173",
     "build": "tsc && vite build",
-    "preview": "vite preview --host 0.0.0.0 --port 5173"
+    "preview": "vite preview --host 0.0.0.0 --port 5173",
+    "ui-final:check": "node ../scripts/ui-final/check.mjs",
+    "ui-final:sync": "node ../scripts/ui-final/sync.mjs"
   },
   "devDependencies": {
     "typescript": "~5.9.3",
