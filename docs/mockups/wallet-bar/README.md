@@ -36,7 +36,13 @@ Vergleich:
 
 **Empfehlung für Runtime A:** Kanon-PNGs (`currency-icons-clean-dba3`), Icon **≥ 36–40px**, **weiße runde Icon-Platte** unter jedem freigestellten Logo.
 
-## Vorschlag A — Frosted Chips (gewählt)
+## Vorschlag A — Frosted Chips (gewählt → Runtime)
+
+**Runtime:** `.wallet-bar` in `game/src/style.css` / `main.ts`  
+- schmal (dünner Ring, wenig Padding)  
+- Soft-Bind `data-wallet-cur` → `UI_ICONS.currency*`  
+- ein `--wb-scale` von `#game-wrap` (100cqw/900px), Icons `aspect-ratio: 1`  
+- weiße Icon-Platten gegen transparenten Schaum  
 
 <img alt="A fixed real icons" src="./vorschlag-a-stage-fixed.png" />
 

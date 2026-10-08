@@ -282,11 +282,23 @@ function renderMatchScreen(): void {
       </aside>
       <div id="game-wrap">
         <div class="top-hud" id="pitch-hud">
-          <div class="wallet-row" aria-label="Ressourcen">
-            <span class="wi gold chip"><img src="${UI_ICONS.currencyGold}" alt=""><b id="gold">0</b></span>
-            <span class="wi bier chip"><img src="${UI_ICONS.currencyBier}" alt=""><b id="cur-beer">0</b></span>
-            <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
-            <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
+          <div class="wallet-row wallet-bar" aria-label="Ressourcen">
+            <span class="wb-chip gold">
+              <span class="wb-plate"><img data-wallet-cur="gold" src="/${UI_ICONS.currencyGold.replace(/^\//, "")}" alt=""></span>
+              <b id="gold">0</b>
+            </span>
+            <span class="wb-chip bier">
+              <span class="wb-plate"><img data-wallet-cur="bier" src="/${UI_ICONS.currencyBier.replace(/^\//, "")}" alt=""></span>
+              <b id="cur-beer">0</b>
+            </span>
+            <span class="wb-chip merch">
+              <span class="wb-plate"><img data-wallet-cur="fanartikel" src="/${UI_ICONS.currencyFanartikel.replace(/^\//, "")}" alt=""></span>
+              <b id="cur-merch">0</b>
+            </span>
+            <span class="wb-chip sec">
+              <span class="wb-plate"><img data-wallet-cur="sicherheit" src="/${UI_ICONS.currencySicherheit.replace(/^\//, "")}" alt=""></span>
+              <b id="cur-sec">0</b>
+            </span>
           </div>
           <!-- Scoreboard + Momentum live on canvas (stadion top third) -->
           <div class="pitch-score sr-only" aria-label="Spielstand">
@@ -587,6 +599,24 @@ function renderMatchScreen(): void {
       const src = unitHeadIconPath("ordner", tc, m.unitLevelOf(m.playerTeam, "ordner"));
       hireIcon.src = src.startsWith("/") ? src : `/${src}`;
     }
+  };
+
+  /** Soft-bound Wallet: immer aktuelle currency-*.png aus UI_ICONS. */
+  const syncWalletIcons = () => {
+    const asSrc = (p: string) => (p.startsWith("/") ? p : `/${p}`);
+    const map: Record<string, string> = {
+      gold: UI_ICONS.currencyGold,
+      bier: UI_ICONS.currencyBier,
+      fanartikel: UI_ICONS.currencyFanartikel,
+      sicherheit: UI_ICONS.currencySicherheit,
+    };
+    app.querySelectorAll<HTMLImageElement>("[data-wallet-cur]").forEach((img) => {
+      const key = img.dataset.walletCur ?? "";
+      const path = map[key];
+      if (!path) return;
+      const next = asSrc(path);
+      if (img.getAttribute("src") !== next) img.src = next;
+    });
   };
 
   /** Soft-bound Neubau: Stand-/Währungs-Icons + Prod/min + Live-Gold. */
@@ -1014,6 +1044,7 @@ function renderMatchScreen(): void {
       setFb("#fb-n", own.normalos);
       setFb("#fb-h", own.hooligans);
       setFb("#fb-o", own.ordner);
+      syncWalletIcons();
       syncUnitActionCards();
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
       if (hireBtn) {
