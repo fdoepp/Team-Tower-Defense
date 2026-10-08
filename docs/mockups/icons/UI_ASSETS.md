@@ -37,3 +37,12 @@ Schema: `{fan\|ultra\|hooligan\|ordner}-{blue\|red\|grey}-{1..5}.png`
 - `docs/mockups/icons/ui/preview-ui.jpg`
 - `docs/mockups/icons/stands-colored/preview-lv3.jpg`
 - `docs/mockups/icons/units-colored/preview-lv3.jpg`
+
+## Einzel-Review (Buttons / Wimpel / Leerplatz)
+
+Für Optimierung einzeln dargestellt unter `docs/mockups/icons/ui-review/`:
+
+- `index.html` — interaktive Galerie (Canvas + Tight-Crop + 1:1)
+- `preview-ui-grid.jpg` / `preview-ui-einzeln.jpg`
+- `solo/*-solo.png` / `solo/*-tight.png`
+- `review-meta.json` — Content-Box, Padding, Fill-Anteil
