@@ -1,15 +1,14 @@
-# Upgrade-Kacheln — Alternativvorschlag (v3)
+# Upgrade-Kacheln — Alternativvorschlag (v5)
 
-1. **Titel oben** = Gebäudename  
-2. Icons **LvN → LvN+1**  
-3. **Stat-Vergleich** mit klarer Einheit **/min** (grau aktuell / grün `+Δ`)  
-4. **Gold-Chip separat** + sauberer **UPGRADE**-Button (Holz-Bar unverändert)
+1. **Titel** = Gebäudename  
+2. Icons **vorher → nachher** (keine Lv-Labels, kein Streifen-Hintergrund)  
+3. Stats **/min** (grau aktuell / grün `+Δ`)  
+4. Kosten als Münze + Text **direkt auf dem Holz** (kein weißer Chip)  
+5. Flacher **UPGRADE**-Button ohne grauen Unterschatten  
 
-Kosten sitzen **nicht** im Button (v2 zurückgerollt).
+## Einheiten
 
-## Einheiten (`PROD_* × productionRate × 60`)
-
-| Gebäude | Einheit | Beispiel Lv1 → Lv2 |
+| Gebäude | Einheit | Lv1 → Lv2 |
 |---|---|---|
 | Bierstand | Bier/min | 14 → +6 |
 | Fanshop | Fanart./min (+Stimmung) | 24 → +11 |
