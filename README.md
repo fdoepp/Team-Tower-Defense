@@ -47,3 +47,8 @@ Dauerhaftes Hosting: Branch `gh-pages` ist vorbereitet. In GitHub â†’ Settings â
 - Echter 2P-Koop / Versus-Online
 - Sushi-Band-UI (Versus)
 - Supplier-Rolle getrennt spielbar
+
+## UI Final DB
+
+Freigegebene UI-Elemente: [`docs/icons/ui-final/README.md`](docs/icons/ui-final/README.md). Ablage nur nach manueller Freigabe.
+

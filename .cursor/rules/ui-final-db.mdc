@@ -1,0 +1,30 @@
+---
+description: Final freigegebene UI-Elemente — einzige Quelle für Runtime-UI
+globs:
+  - game/src/game/assets.ts
+  - game/src/game/uiFinal.ts
+  - game/public/icons/ui-final/**
+  - docs/icons/ui-final/**
+  - scripts/ui-final/**
+alwaysApply: true
+---
+
+# UI Final DB (verbindlich)
+
+## Quelle
+- Freigegebenes UI kommt **nur** aus `game/public/icons/ui-final/` laut `docs/icons/ui-final/UI_FINAL_DB.json` (`released`).
+- Alle Branches und Agents bedienen sich dort — keine parallelen „finalen“ Kopien in Feature-Branches anlegen.
+
+## Freigabe-Gate
+- **Niemals** ein Icon nach `released` schreiben ohne explizite Nutzer-Freigabe.
+- Ablage nur über `node scripts/ui-final/approve.mjs <id> --by <name>`.
+- Kandidaten liegen in `docs/icons/ui-final/pending/` mit Status `pendingApproval`.
+
+## Anforderungen jedes Icons
+1. **Freigestellt** — PNG RGBA, transparenter Hintergrund (Validierung in `scripts/ui-final/validate.py`). Ausnahme nur dokumentierte Rails (`menu-rail-*`).
+2. **Keine Verzerrung** — natives Aspect Ratio speichern; Zeichnen ausschließlich mit uniformer Skalierung (`drawIcon`, `drawUniformInBox`, `fitUniform`). Nie `drawImage` mit abweichendem Ziel-AR ohne Contain.
+
+## Runtime
+- Pfade über `uiFinalIconPath` / `UI_FINAL_PATHS` in `game/src/game/uiFinal.ts`.
+- Solange ein Key noch nicht `released` ist: Legacy-Pfad unter `icons/ui/` nur als Übergang — neue Arbeit muss auf Freigabe zielen.
+- Nach `approve` immer `node scripts/ui-final/sync.mjs` ausführen.
