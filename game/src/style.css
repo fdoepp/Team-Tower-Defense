@@ -782,13 +782,21 @@ select {
 }
 
 /*
- * Freigestelltes Top-HUD — scoreboard-top.png (= b-final-cutout), 1041×508.
- * Nur Original-Kunst skalieren (object-fit:contain + aspect-ratio).
- * Keine Ersatz-Balken / kein Ersatz-Uhr-Chrome.
+ * Freigestelltes Top-HUD — scoreboard-top.png (= b-final-cutout.png), 1041×508.
+ * Original-Kunst unverändert; object-fit:contain + native aspect-ratio.
+ * Live nur Score + Minute als Text — keine Ersatz-Balken / kein Fake-Holz.
  */
 .match-shell.matchday .scoreboard-slot {
   --sb-nat-w: 1041;
   --sb-nat-h: 508;
+  /* Gemessen am Original-Cutout (1041×508): Orb-Zentrum + Score-Ink */
+  --sb-orb-cx: 49.75%;
+  --sb-orb-cy: 13.5%;
+  --sb-orb-w: 9.9%;
+  --sb-score-l: 35.1%;
+  --sb-score-t: 22.1%;
+  --sb-score-w: 29.7%;
+  --sb-score-h: 31.5%;
   position: relative;
   flex: 0 0 auto;
   width: min(48%, calc(36vh * var(--sb-nat-w) / var(--sb-nat-h)), 560px);
@@ -824,28 +832,28 @@ select {
   pointer-events: none;
 }
 
-/* Score-Ziffern abdecken — Farben/Position aus Original-PNG gemessen */
+/* Cream über eingebranntes 3:2 — gleiche Fläche/Farbe wie Original-Panel */
 .match-shell.matchday .sb-score-mask {
   position: absolute;
-  left: 36%;
-  top: 27%;
-  width: 28%;
-  height: 26%;
+  left: var(--sb-score-l);
+  top: var(--sb-score-t);
+  width: var(--sb-score-w);
+  height: var(--sb-score-h);
   display: flex;
   align-items: center;
   justify-content: center;
   background: #f9dbb7;
-  border-radius: 14% / 24%;
+  border-radius: 10px;
 }
 
 .match-shell.matchday .sb-score {
   margin: 0;
   font-family: var(--display);
   font-weight: 900;
-  font-size: clamp(0.95rem, 4.2cqw, 1.85rem);
-  color: #00142f;
+  font-size: clamp(1.05rem, 5.2cqw, 2.15rem);
+  color: #00162b;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   transform-origin: center;
 }
 
@@ -853,13 +861,16 @@ select {
   color: #b45309;
 }
 
-/* Minute-Ziffern im Original-Grünbadge (Holzring bleibt sichtbar) */
+/*
+ * Minute: nur die grüne Orb-Fläche abdecken (Holzring = Original-PNG).
+ * Größe/Position am freigestellten Cutout gemessen — kein kleinerer Fake-Knopf.
+ */
 .match-shell.matchday .sb-minute {
   position: absolute;
-  left: 50%;
-  top: 9.5%;
-  transform: translateX(-50%);
-  width: 6.8%;
+  left: var(--sb-orb-cx);
+  top: var(--sb-orb-cy);
+  transform: translate(-50%, -50%);
+  width: var(--sb-orb-w);
   aspect-ratio: 1;
   display: flex;
   align-items: center;
@@ -868,12 +879,19 @@ select {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: #42a61f;
+  background: radial-gradient(
+    circle at 38% 30%,
+    #7ed957 0%,
+    #52b828 40%,
+    #3a9a18 70%,
+    #2d7f12 100%
+  );
   color: #fff;
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(0.48rem, 2.1cqw, 0.85rem);
+  font-size: clamp(0.52rem, 2.35cqw, 0.95rem);
   line-height: 1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
   box-shadow: none;
 }
 
