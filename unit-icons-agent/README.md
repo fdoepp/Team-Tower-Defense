@@ -11,7 +11,7 @@ Zieht die abgelegten Unit-Cutouts und zeigt alle Varianten in **Grau / Blau / Ro
 | Fans | [`FAN_CANON.md`](../docs/icons/FAN_CANON.md) | `../game/public/icons/units/fan-*.png` |
 | Ordner | [`ORDNER_CANON.md`](../docs/icons/ORDNER_CANON.md) | `../game/public/icons/units/ordner-*.png` |
 | Hooligans | [`HOOLIGAN_CANON.md`](../docs/icons/HOOLIGAN_CANON.md) | `../game/public/icons/units/hooligan-*.png` |
-| Ultras | [`ULTRA_CANON.md`](../docs/icons/ULTRA_CANON.md) | `../game/public/icons/units/ultra-*.png` |
+| Ultras (fertig) | [`ULTRA_CANON.md`](../docs/icons/ULTRA_CANON.md) | `../game/public/icons/units/ultra-*.png` — Teamblau/Rot wie Fans |
 
 Spiegel für den Agent: `assets/units/`.
 

@@ -38,7 +38,7 @@ export default defineTool({
           "Fans: Kanon docs/icons/FAN_CANON.md — game/public/icons/units/fan-*.png",
           "Ordner: Kanon docs/icons/ORDNER_CANON.md — game/public/icons/units/ordner-*.png",
           "Hooligans: Kanon docs/icons/HOOLIGAN_CANON.md — game/public/icons/units/hooligan-*.png",
-          "Ultras: Kanon docs/icons/ULTRA_CANON.md — game/public/icons/units/ultra-*.png",
+          "Ultras (fertig/locked): docs/icons/ULTRA_CANON.md — game/public/icons/units/ultra-*.png — team blue (31,76,160) / red (151,27,32)",
         ],
       },
       rootsScanned: roots,

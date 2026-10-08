@@ -1,11 +1,14 @@
 # Ultra-Progression
 
-> **Kanon freigegeben:**  
-> [`docs/icons/ULTRA_CANON.md`](../../../docs/icons/ULTRA_CANON.md)
+> **Kanon fertig / locked:**  
+> [`docs/icons/ULTRA_CANON.md`](../../../docs/icons/ULTRA_CANON.md) · [`ultra-canon.json`](../../../docs/icons/ultra-canon.json)
 
-**Für neue Spielversionen / Deployments** immer `game/public/icons/units/ultra-*.png` verwenden.
+**Für jede neue Spielversion / jedes Deployment** ausschließlich  
+`game/public/icons/units/ultra-{grey|blue|red}-{1..5}.png` laden.  
+Teamfarben: Blau `(31,76,160)`, Rot `(151,27,32)` — identisch zu Fan/Gebäude.
 
-Finale Ablage: [`final/`](./final/) · Übersicht: [`final/all-colors.png`](./final/all-colors.png).
+Finale Ablage: [`final/`](./final/) · Übersicht: [`final/all-colors.png`](./final/all-colors.png).  
+Agent-Spiegel: `unit-icons-agent/assets/units/ultra-*.png`.
 
 ## Freigegebene Leiter
 

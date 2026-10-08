@@ -19,9 +19,9 @@ For any new game version, mockup, or recommendation:
 | Fans | `docs/icons/FAN_CANON.md` | `game/public/icons/units/fan-{grey\|blue\|red}-{1..5}.png` |
 | Ordner | `docs/icons/ORDNER_CANON.md` | `game/public/icons/units/ordner-{grey\|blue\|red}-{1..5}.png` |
 | Hooligans | `docs/icons/HOOLIGAN_CANON.md` | `game/public/icons/units/hooligan-{grey\|blue\|red}-{1..5}.png` |
-| Ultras | `docs/icons/ULTRA_CANON.md` | `game/public/icons/units/ultra-{grey\|blue\|red}-{1..5}.png` |
+| Ultras (**fertig/locked**) | `docs/icons/ULTRA_CANON.md` | `game/public/icons/units/ultra-{grey\|blue\|red}-{1..5}.png` |
 
-Mirrored under `assets/units/`. Do **not** revive legacy art or invent a different gear ladder unless the user explicitly asks to revise the canon.
+Mirrored under `assets/units/`. Ultras use the **same** team blue `(31,76,160)` and red `(151,27,32)` as Fans/buildings. Do **not** revive legacy art, proposals, or invent a different gear ladder unless the user explicitly asks to revise the canon.
 
 Bundled snapshot: `assets/units/`. Also scan `game/public/icons/units/` when present.
 
