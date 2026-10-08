@@ -359,49 +359,60 @@ function drawScoreboard(
     ctx.fill();
   }
 
-  // Live score + minute overlaid on board face
-  const faceY = by + boardH * 0.22;
-  const faceH = boardH * 0.38;
+  // Scoreboard PNG has baked mock values (3:2, 39', Torchance 70/30).
+  // Cover those faces before drawing live match state.
+  const faceY = by + boardH * 0.2;
+  const faceH = boardH * 0.4;
+  const faceX = bx + boardW * 0.28;
+  const faceW = boardW * 0.44;
+  ctx.fillStyle = "#efe6d4";
+  roundRect(ctx, faceX, faceY, faceW, faceH, 6);
+  ctx.fill();
+  // Clock orb area (baked 39')
+  const clockR = Math.max(10, boardH * 0.11);
+  ctx.beginPath();
+  ctx.arc(w * 0.5 + boardW * 0.36, by + boardH * 0.12, clockR, 0, Math.PI * 2);
+  ctx.fillStyle = "#16a34a";
+  ctx.fill();
+
+  // Live score + minute — dark on cream so it stays readable
   ctx.save();
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillStyle = "#f8fafc";
+  ctx.fillStyle = "#0f172a";
   ctx.font = `900 ${Math.max(16, Math.floor(faceH * 0.72))}px Outfit, Manrope, sans-serif`;
-  ctx.shadowColor = "rgba(0,0,0,0.65)";
-  ctx.shadowBlur = 6;
-  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w * 0.5, faceY + faceH * 0.42);
-  ctx.shadowBlur = 0;
-  ctx.font = `800 ${Math.max(10, Math.floor(faceH * 0.32))}px Outfit, Manrope, sans-serif`;
-  ctx.fillStyle = "#e2e8f0";
+  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w * 0.5, faceY + faceH * 0.52);
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = `800 ${Math.max(10, Math.floor(clockR * 0.95))}px Outfit, Manrope, sans-serif`;
   const min = Math.floor(m.minute ?? 0);
-  ctx.fillText(`${min}′`, w * 0.5 + boardW * 0.38, by + boardH * 0.12);
+  ctx.fillText(`${min}′`, w * 0.5 + boardW * 0.36, by + boardH * 0.12);
 
-  // Momentum strip: who scores next (single % pair — no conflicting Torchance %)
-  const barY = by + boardH * 0.78;
-  const barH = Math.max(14, boardH * 0.16);
-  const barX = bx + boardW * 0.08;
-  const barW = boardW * 0.84;
+  // Momentum strip: who scores next (covers baked Torchance gem + 70/30)
+  const barY = by + boardH * 0.72;
+  const barH = Math.max(16, boardH * 0.2);
+  const barX = bx + boardW * 0.06;
+  const barW = boardW * 0.88;
   const ch = m.goalChance();
   const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
-  roundRect(ctx, barX, barY, barW, barH, 6);
-  ctx.fillStyle = "rgba(15,23,42,0.75)";
+  roundRect(ctx, barX, barY, barW, barH, 8);
+  ctx.fillStyle = "rgba(15,23,42,0.92)";
   ctx.fill();
   const split = barX + barW * heimPct;
   ctx.fillStyle = "#2563eb";
-  roundRect(ctx, barX, barY, Math.max(4, split - barX), barH, 6);
+  roundRect(ctx, barX, barY, Math.max(4, split - barX), barH, 8);
   ctx.fill();
   ctx.fillStyle = "#dc2626";
-  roundRect(ctx, split, barY, Math.max(4, barX + barW - split), barH, 6);
+  roundRect(ctx, split, barY, Math.max(4, barX + barW - split), barH, 8);
   ctx.fill();
   ctx.fillStyle = "#f8fafc";
-  ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.55))}px Outfit, Manrope, sans-serif`;
+  ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.48))}px Outfit, Manrope, sans-serif`;
   ctx.textAlign = "left";
-  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, barX + 6, barY + barH / 2 + 0.5);
+  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, barX + 8, barY + barH / 2 + 0.5);
   ctx.textAlign = "right";
-  ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, barX + barW - 6, barY + barH / 2 + 0.5);
+  ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, barX + barW - 8, barY + barH / 2 + 0.5);
   ctx.textAlign = "center";
-  ctx.fillStyle = "#e2e8f0";
-  ctx.font = `700 ${Math.max(8, Math.floor(barH * 0.42))}px Outfit, Manrope, sans-serif`;
+  ctx.fillStyle = "#fde68a";
+  ctx.font = `800 ${Math.max(8, Math.floor(barH * 0.4))}px Outfit, Manrope, sans-serif`;
   ctx.fillText("nächstes Tor", w * 0.5, barY + barH / 2 + 0.5);
   ctx.restore();
 }
@@ -868,7 +879,7 @@ function personAnimMode(m: Match, f: FanUnit): {
 } {
   const onGang = f.state === "gang" || f.invading;
   const exiting =
-    f.state === "moving" && f.y < gangY() + gangHeight() * 0.22;
+    f.state === "moving" && f.y < gangY() + L.gangH * 0.22;
   const moving = f.state === "moving" || onGang;
   const fighting =
     (onGang || f.invading || f.isSteward) &&
@@ -963,7 +974,7 @@ function drawMannchen(
     f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
   const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
   const color = teamColor(f.team);
-  const lv = unitVisualLevel(m, f.team);
+  const lv = unitVisualLevel(f);
   const src = unitIconPath(f.kind, color, lv);
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing = fanFacing(f);
@@ -1316,7 +1327,6 @@ function drawSteward(
   const size = Math.max(24, h * 0.07);
   const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(f));
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
-  const onGang = f.state === "gang" || f.state === "moving";
   const facing =
     f.state === "moving" || f.path.length > f.pathI
       ? fanFacing(f)
