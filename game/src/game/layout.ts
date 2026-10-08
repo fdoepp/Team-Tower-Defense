@@ -113,19 +113,42 @@ export function doorPos(blockId: number): { x: number; y: number } {
   };
 }
 
+/** Pseudo-random in [0,1) from seat index (stable per seat). */
+function seatHash(n: number): number {
+  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/**
+ * Fan position in a block. Indices 0..11 keep a soft grid; higher indices
+ * scatter inside the stand so blocks are not hard-capped at 12 people.
+ */
 export function seatPos(blockId: number, seatIndex: number): { x: number; y: number } {
-  const col = seatIndex % SEAT_COLS;
-  const row = Math.floor(seatIndex / SEAT_COLS);
   const cx = blockCenterX(blockId);
   const bw = blockWidthNorm();
-  const top = blockTopY(blockId) + L.blockBodyH * 0.2;
-  const usableH = L.blockBodyH * 0.68;
-  const left = cx - bw * 0.36;
-  const stepX = (bw * 0.72) / (SEAT_COLS - 1 || 1);
-  const stepY = usableH / (SEAT_ROWS - 1 || 1);
+  const top = blockTopY(blockId) + L.blockBodyH * 0.18;
+  const usableH = L.blockBodyH * 0.72;
+  const left = cx - bw * 0.38;
+  const width = bw * 0.76;
+
+  if (seatIndex >= 0 && seatIndex < SEATS_PER_BLOCK) {
+    const col = seatIndex % SEAT_COLS;
+    const row = Math.floor(seatIndex / SEAT_COLS);
+    const stepX = width / (SEAT_COLS - 1 || 1);
+    const stepY = usableH / (SEAT_ROWS - 1 || 1);
+    const jx = (seatHash(seatIndex * 3 + blockId) - 0.5) * stepX * 0.35;
+    const jy = (seatHash(seatIndex * 7 + blockId * 2) - 0.5) * stepY * 0.35;
+    return {
+      x: left + col * stepX + jx,
+      y: top + row * stepY + jy,
+    };
+  }
+
+  const u = seatHash(seatIndex * 17 + blockId * 13);
+  const v = seatHash(seatIndex * 29 + blockId * 41);
   return {
-    x: left + col * stepX,
-    y: top + row * stepY,
+    x: left + u * width,
+    y: top + v * usableH,
   };
 }
 

@@ -124,11 +124,6 @@ export const REGULAR_REAL_SEC = 390;
 export const ET_REAL_SEC = 70;
 export const FEVER_FROM_MIN = 80;
 
-export const MOOD_CD = {
-  gesang: 10,
-  pyro: 14,
-} as const;
-
 /** Hooligan → Gang (Nahkampf) — beer cost, no CD */
 export const HOOLIGAN_ORDER_BEER = 6;
 /** Ultra → Gang as ranged Pyro-Kampf — merch cost, no CD */
@@ -165,8 +160,6 @@ export const PROD_BEER = 0.2;
 export const PROD_SECURITY = 0.3;
 export const PROD_MERCH = 0.34;
 export const PROD_SHOP_MOOD = 0.018;
-
-export type MoodAction = "gesang" | "pyro";
 
 export const FAN_STATS: Record<
   FanKind,

@@ -13,7 +13,6 @@ import {
   HOOLIGAN_BEER_INTERVAL,
   HOOLIGAN_ORDER_BEER,
   MELEE_RANGE,
-  MOOD_CD,
   NEUTRAL_STEWARD_RESPAWN,
   NORMALO_BEER_INTERVAL,
   ORDNER_POST_HP,
@@ -45,7 +44,6 @@ import {
   type FanKind,
   type FanUnit,
   type MatchPhase,
-  type MoodAction,
   type SetupConfig,
   type SoloSettings,
   type SpeedMode,
@@ -57,7 +55,6 @@ import {
   GAST_BLOCK,
   HEIM_BLOCK,
   NEUTRAL_BLOCK,
-  SEATS_PER_BLOCK,
   blockCenterX,
   blockIdToGangX,
   blockTopY,
@@ -163,11 +160,6 @@ export class Match {
   momentum = 0;
   moodHeim = 1;
   moodGaeste = 1;
-  /** short jubel multipliers from gesang/pyro */
-  jubelMulHeim = { ultras: 1, normalos: 1, hooligans: 1 };
-  jubelMulGast = { ultras: 1, normalos: 1, hooligans: 1 };
-  /** UI: brief momentum pulse after Gesang/Pyro (0..1) */
-  moodKick = 0;
   /** UI: scoreboard punch after goal (0..1) */
   scorePulse = 0;
   /** last team that scored — for crest flash */
@@ -178,9 +170,7 @@ export class Match {
   speed: SpeedMode = 0;
   toasts: { text: string; t: number }[] = [];
   result: MatchResult | null = null;
-  cd = { gesang: 0, pyro: 0, hooliganOrder: 0, pyroFight: 0 };
-  /** AI mood cooldowns (independent of player) */
-  aiCd = { gesang: 8, pyro: 10 };
+  cd = { hooliganOrder: 0, pyroFight: 0 };
   selectedSlot: { blockId: number; index: number } | null = null;
   selectedSeat: { blockId: number; seatIndex: number } | null = null;
   seatMenu: { blockId: number; seatIndex: number } | null = null;
@@ -192,10 +182,9 @@ export class Match {
   captureAcc: Record<string, number> = {};
   aiGold = START_GOLD + 20;
   aiBuildRot = 0;
-  /** soft AI mood resources (not shared with player wallet) */
+  /** soft AI combat resources (not shared with player wallet) */
   aiMerch = 40;
   aiBeer = 40;
-  aiSecurity = 40;
   width = 960;
   height = 440;
   pensRound = 0;
@@ -296,9 +285,9 @@ export class Match {
     blockId: number,
     seatIndex: number,
   ): FanUnit {
-    const seat = Math.min(seatIndex, SEATS_PER_BLOCK - 1);
+    const seat = Math.max(0, seatIndex | 0);
     const p = seatPos(blockId, seat);
-        const beerIv =
+    const beerIv =
       kind === "hooligans"
         ? HOOLIGAN_BEER_INTERVAL
         : kind === "ultras"
@@ -656,26 +645,24 @@ canBuy(kind: FanKind): boolean {
     );
   }
 
-  freeSeat(blockId: number): number | null {
-    for (let i = 0; i < SEATS_PER_BLOCK; i++) {
-      if (!this.seatOccupied(blockId, i)) return i;
-    }
-    return null;
+  /** Next free seat index in a block (unbounded — blocks are not capped). */
+  freeSeat(blockId: number): number {
+    let i = 0;
+    while (this.seatOccupied(blockId, i)) i++;
+    return i;
   }
 
-  /** Freie Sitze in Blöcken, in denen der Spieler kaufen darf */
+  /** Fans in controllable blocks (HUD). No capacity limit. */
   countFreeBuySeats(): number {
     let n = 0;
     for (let blockId = 0; blockId < BLOCK_COUNT; blockId++) {
       if (blockId === GAST_BLOCK || !this.canBuyInBlock(blockId)) continue;
-      for (let i = 0; i < SEATS_PER_BLOCK; i++) {
-        if (!this.seatOccupied(blockId, i)) n++;
-      }
+      n += this.blockFanCount(blockId);
     }
     return n;
   }
 
-  /** Erster freier Platz: Heim → eroberte Neutrals */
+  /** Heim → eroberte Neutrals; always a slot (no hard seat cap). */
   buySlotForPlayer(): { blockId: number; seatIndex: number } | null {
     const order: number[] = [HEIM_BLOCK];
     for (let b = 0; b < BLOCK_COUNT; b++) {
@@ -683,8 +670,7 @@ canBuy(kind: FanKind): boolean {
     }
     for (const blockId of order) {
       if (!this.canBuyInBlock(blockId)) continue;
-      const seatIndex = this.freeSeat(blockId);
-      if (seatIndex != null) return { blockId, seatIndex };
+      return { blockId, seatIndex: this.freeSeat(blockId) };
     }
     return null;
   }
@@ -693,11 +679,11 @@ canBuy(kind: FanKind): boolean {
     return this.canBuy(kind) && this.buySlotForPlayer() != null;
   }
 
-  /** HUD [+] — kauft auf nächsten freien Platz */
+  /** HUD [+] — buy into next controlled block */
   tryBuyFanQuick(kind: FanKind): boolean {
     const slot = this.buySlotForPlayer();
     if (!slot) {
-      this.toast("Kein freier Platz");
+      this.toast("Kein kontrollierter Block");
       return false;
     }
     return this.tryBuyFan(kind, slot.blockId, slot.seatIndex);
@@ -707,126 +693,6 @@ canBuy(kind: FanKind): boolean {
     return this.fans.filter(
       (f) => f.hp > 0 && !f.isSteward && f.blockId === blockId && f.seatIndex != null,
     ).length;
-  }
-
-  moodActionReady(act: MoodAction): boolean {
-    if (this.cd[act] > 0) return false;
-    const kind: FanKind = act === "gesang" ? "normalos" : "ultras";
-    if (this.countInBlock(this.playerTeam, HEIM_BLOCK, kind) <= 0) return false;
-    const cost = this.moodCost(act);
-    if (act === "gesang") return this.currency.security >= cost;
-    return this.currency.merch >= cost;
-  }
-
-  private moodCost(act: MoodAction): number {
-    const kind: FanKind = act === "gesang" ? "normalos" : "ultras";
-    const n = Math.max(1, this.countInBlock(this.playerTeam, HEIM_BLOCK, kind));
-    if (act === "gesang") return Math.round(4 + n * 1.1); // Sicherheit
-    return Math.round(5 + n * 1.3); // Fanartikel
-  }
-
-  tryMoodAction(act: MoodAction): boolean {
-    if (this.cd[act] > 0) {
-      this.toast(`${act}: Abklingzeit`);
-      return false;
-    }
-    const kind: FanKind = act === "gesang" ? "normalos" : "ultras";
-    const n = this.countInBlock(this.playerTeam, HEIM_BLOCK, kind);
-    if (n <= 0) {
-      this.toast(`Keine ${FAN_STATS[kind].label}s im Block`);
-      return false;
-    }
-    const cost = this.moodCost(act);
-    const door = doorPos(HEIM_BLOCK);
-    if (act === "gesang") {
-      if (!this.spend("security", cost, door, "SICHERHEIT")) {
-        this.toast(`Gesang braucht ${cost} Sicherheit`);
-        return false;
-      }
-      this.moodHeim = clamp(this.moodHeim + 0.38 * n, 0, 3);
-      this.jubelMulHeim.normalos = 1.7;
-      this.jubelMulHeim.hooligans = 1.15;
-      const before = this.momentum;
-      this.momentum = clamp(this.momentum + 0.095 * n, -1, 1);
-      this.moodKick = Math.min(1, 0.7 + Math.abs(this.momentum - before));
-      this.triggerCheer("gesang", this.playerTeam, HEIM_BLOCK);
-      this.toast(`Gesang ×${n}`);
-    } else {
-      if (!this.spend("merch", cost, door, "FANARTIKEL")) {
-        this.toast(`Pyro braucht ${cost} Fanartikel`);
-        return false;
-      }
-      this.moodHeim = clamp(this.moodHeim + 0.32 * n, 0, 3);
-      this.moodGaeste = clamp(this.moodGaeste - 0.1 * n, 0, 3);
-      this.jubelMulHeim.ultras = 1.45;
-      const before = this.momentum;
-      this.momentum = clamp(this.momentum + 0.07 * n, -1, 1);
-      this.moodKick = Math.min(1, 0.8 + Math.abs(this.momentum - before));
-      this.triggerCheer("pyro", this.playerTeam, HEIM_BLOCK);
-      this.toast(`Pyro ×${n}`);
-    }
-    this.cd[act] = MOOD_CD[act];
-    return true;
-  }
-
-  /** Wave flags / raise pyro + spawn particles on matching fans */
-  private triggerCheer(
-    act: MoodAction,
-    team: TeamId,
-    blockId: number,
-  ): void {
-    const kinds: FanKind[] =
-      act === "gesang" ? ["normalos"] : ["ultras"];
-    const color = team === "ksc" ? "#3b82f6" : "#ef4444";
-    for (const f of this.fans) {
-      if (f.hp <= 0 || f.team !== team || f.isSteward) continue;
-      if (f.blockId !== blockId && f.state !== "block") continue;
-      if (!kinds.includes(f.kind)) continue;
-      f.cheerT = Math.max(f.cheerT, act === "gesang" ? 3.2 : 3.6);
-      f.armSwing = 1;
-      for (let i = 0; i < (act === "gesang" ? 3 : 5); i++) {
-        if (act === "gesang") {
-          this.moodFx.push({
-            kind: "note",
-            x: f.x + (Math.random() - 0.5) * 0.04,
-            y: f.y - 0.02,
-            vx: (Math.random() - 0.5) * 0.04,
-            vy: -0.06 - Math.random() * 0.05,
-            color: Math.random() < 0.5 ? color : "#f3f0e7",
-            t: 0,
-            life: 1.1 + Math.random() * 0.5,
-            size: 0.012 + Math.random() * 0.008,
-          });
-        } else {
-          for (let i = 0; i < 8; i++) {
-            this.moodFx.push({
-              kind: "smoke",
-              x: f.x + (Math.random() - 0.5) * 0.06,
-              y: f.y - 0.04,
-              vx: (Math.random() - 0.5) * 0.07,
-              vy: -0.06 - Math.random() * 0.05,
-              color: i % 2 ? color : "#64748b",
-              t: 0,
-              life: 2.2 + Math.random() * 1.2,
-              size: 0.028 + Math.random() * 0.035,
-            });
-          }
-          if (Math.random() < 0.55) {
-            this.moodFx.push({
-              kind: "flare",
-              x: f.x + (Math.random() - 0.5) * 0.04,
-              y: f.y - 0.05,
-              vx: (Math.random() - 0.5) * 0.06,
-              vy: -0.14 - Math.random() * 0.1,
-              color: "#fb923c",
-              t: 0,
-              life: 1.6 + Math.random() * 0.8,
-              size: 0.014,
-            });
-          }
-        }
-      }
-    }
   }
 
   private spawnPyroShot(
@@ -1119,20 +985,17 @@ canBuy(kind: FanKind): boolean {
       this.toast("Block noch nicht unter Kontrolle");
       return false;
     }
-    if (this.blockFanCount(blockId) >= SEATS_PER_BLOCK) {
-      this.toast("Block voll (12)");
-      return false;
-    }
-    if (this.seatOccupied(blockId, seatIndex)) {
-      this.toast("Platz belegt");
-      return false;
+    // Blocks are uncapped; if a specific seat is taken, pick the next free index.
+    let seat = seatIndex;
+    if (this.seatOccupied(blockId, seat)) {
+      seat = this.freeSeat(blockId);
     }
     if (!this.canBuy(kind)) {
       this.toast("Zu wenig Ressourcen");
       return false;
     }
     const c = BUY_COST[kind];
-    const p = seatPos(blockId, seatIndex);
+    const p = seatPos(blockId, seat);
     if (c.beer > 0) this.spend("beer", c.beer, p, "BIER");
     if (c.merch > 0) this.spend("merch", c.merch, p, "FANARTIKEL");
     if (c.security > 0) this.spend("security", c.security, p, "SICHERHEIT");
@@ -1140,7 +1003,7 @@ canBuy(kind: FanKind): boolean {
       this.gold -= c.gold;
       this.floatAt(p.x, p.y, `−${c.gold}€`, false);
     }
-    this.fans.push(this.makeFan(kind, this.playerTeam, blockId, seatIndex));
+    this.fans.push(this.makeFan(kind, this.playerTeam, blockId, seat));
     this.seatMenu = null;
     this.floatAt(p.x, p.y + 0.02, `+${FAN_STATS[kind].label}`, true);
     this.toast(`${FAN_STATS[kind].label} gekauft`);
@@ -1309,12 +1172,6 @@ canBuy(kind: FanKind): boolean {
     for (const k of Object.keys(this.cd) as (keyof typeof this.cd)[]) {
       if (this.cd[k] > 0) this.cd[k] = Math.max(0, this.cd[k] - step);
     }
-    // decay jubel multipliers
-    for (const t of ["ultras", "normalos", "hooligans"] as FanKind[]) {
-      this.jubelMulHeim[t] = Math.max(1, this.jubelMulHeim[t] - step * 0.08);
-      this.jubelMulGast[t] = Math.max(1, this.jubelMulGast[t] - step * 0.08);
-    }
-    if (this.moodKick > 0) this.moodKick = Math.max(0, this.moodKick - step * 0.9);
     if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - step * 1.15);
 
     this.tickEconomy(step);
@@ -2680,7 +2537,6 @@ canBuy(kind: FanKind): boolean {
       const target = 9; // ¾ of 12
       if (seated >= target) continue;
       const seat = this.freeSeat(blockId);
-      if (seat == null) continue;
       // Only refill as neutral — converted seats stay team-colored
       const kind: FanKind =
         seated % 3 === 0 ? "normalos" : seated % 3 === 1 ? "hooligans" : "ultras";
@@ -2708,7 +2564,7 @@ canBuy(kind: FanKind): boolean {
       for (const n of normals) {
         const safeHome = owner === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
         const alt = this.freeSeat(safeHome);
-        if (alt != null && alt !== n.seatIndex && !this.enemyUltraInBlock(safeHome, owner)) {
+        if (alt !== n.seatIndex && !this.enemyUltraInBlock(safeHome, owner)) {
           n.seatIndex = alt;
           const p = seatPos(safeHome, alt);
           n.x = p.x;
@@ -2724,41 +2580,49 @@ canBuy(kind: FanKind): boolean {
   }
 
   /**
-   * Momentum from people-count pressure per block (team color),
-   * not from Gesang/Pyro actions.
+   * Stimmung from crowd jubel (additive targets) + mild decay.
+   * Momentum follows moodHeim − moodGaeste only (no direct seat pressure).
    */
   private tickJubelMomentum(dt: number): void {
-    let pressure = 0;
-    let blueTotal = 0;
-    let redTotal = 0;
-    for (let b = 0; b < BLOCK_COUNT; b++) {
-      let blue = 0;
-      let red = 0;
-      for (const f of this.fans) {
-        if (f.hp <= 0 || f.isSteward) continue;
-        if (f.blockId !== b) continue;
-        if (f.state !== "block" && f.state !== "stand") continue;
-        if (f.team === "ksc") blue++;
-        else if (f.team === "vfb") red++;
-      }
-      blueTotal += blue;
-      redTotal += red;
-      const total = blue + red;
-      if (total <= 0) continue;
-      // Block pressure: share of blue vs red, weighted by crowd size
-      pressure += ((blue - red) / total) * (0.55 + Math.min(8, total) * 0.08);
+    let jubelHeim = 0;
+    let jubelGast = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.isSteward) continue;
+      if (f.state !== "block" && f.state !== "stand") continue;
+      const j = FAN_STATS[f.kind].jubel;
+      if (f.team === this.playerTeam) jubelHeim += j;
+      else if (f.team === this.aiTeam) jubelGast += j;
     }
-    // +momentum = KSC advantage; flip if player is VfB for HUD "Heim"
-    const signed = this.playerTeam === "ksc" ? pressure : -pressure;
-    const k = 0.055;
-    const lambda = 0.065;
+    const targetHeim = clamp(0.35 + jubelHeim * 0.045, 0, 3);
+    const targetGast = clamp(0.35 + jubelGast * 0.045, 0, 3);
+    // Approach targets; shop/goal bumps elsewhere remain until pulled back
+    const approach = 1 - Math.exp(-0.45 * dt);
+    this.moodHeim = clamp(
+      this.moodHeim + (targetHeim - this.moodHeim) * approach,
+      0,
+      3,
+    );
+    this.moodGaeste = clamp(
+      this.moodGaeste + (targetGast - this.moodGaeste) * approach,
+      0,
+      3,
+    );
+    // Slow drift toward 1.0 so temporary spikes fade
+    this.moodHeim = clamp(this.moodHeim + (1 - this.moodHeim) * (0.02 * dt), 0, 3);
+    this.moodGaeste = clamp(
+      this.moodGaeste + (1 - this.moodGaeste) * (0.02 * dt),
+      0,
+      3,
+    );
+
+    const signed = clamp((this.moodHeim - this.moodGaeste) / 2.2, -1, 1);
+    const k = 0.07;
+    const lambda = 0.06;
     this.momentum = clamp(
       this.momentum + (k * signed - lambda * this.momentum) * dt,
       -1,
       1,
     );
-    this.moodHeim = clamp(0.35 + blueTotal * 0.08, 0, 3);
-    this.moodGaeste = clamp(0.35 + redTotal * 0.08, 0, 3);
   }
 
   private tickBlockStorm(dt: number): void {
@@ -2887,16 +2751,11 @@ canBuy(kind: FanKind): boolean {
 
   private tickAi(dt: number): void {
     this.aiAcc += dt;
-    for (const k of Object.keys(this.aiCd) as (keyof typeof this.aiCd)[]) {
-      if (this.aiCd[k] > 0) this.aiCd[k] = Math.max(0, this.aiCd[k] - dt);
-    }
-    // Soft regen of AI mood resources
+    // Soft regen of AI send resources
     this.aiMerch = Math.min(120, this.aiMerch + dt * 1.1);
     this.aiBeer = Math.min(120, this.aiBeer + dt * 1.0);
-    this.aiSecurity = Math.min(120, this.aiSecurity + dt * 1.05);
 
     const interval = 7 / diffMul(this.cfg.settings.difficulty);
-    // Gesang/Pyro actions removed — momentum comes from block people-count only
 
     if (this.aiAcc < interval) return;
     this.aiAcc = 0;
