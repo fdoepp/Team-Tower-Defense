@@ -1,17 +1,15 @@
 # Hooligan-Progression (Arbeit)
 
-**Stilbasis:** alte Chibi-Hooligans (`refs/user-old-hooligans-lv3.jpg`) — nicht die neueren schlankeren Assets.
+**Stilbasis:** alte Chibi-Hooligans (`refs/user-old-hooligans-lv3.jpg`).
 
-**Thema:** Vermummung / nicht erkannt werden (Hoodie, Mundschutz, Sonnenbrille…).
+## Vorschlag B (aktuell) — Vermummung + Waffen
 
-## Vorschlag A (grau)
+| Level | Vermummung | Hände / Waffe |
+| --- | --- | --- |
+| 1 | eher offen | **Boxhaltung** (Fäuste) |
+| 2 | Beanie + Mundschutz | **Schlagringe** |
+| 3 | wie Vorlage | **Baseballschläger** |
+| 4 | + Sonnenbrille | **Stemmeisen** |
+| 5 | max Vermummung | schwerer (Kette/Rohr o.ä.) |
 
-| Level | Vermummung |
-| --- | --- |
-| 1 | Hoodie, Gesicht eher offen |
-| 2 | Beanie + Mund-/Nasenschutz |
-| 3 | wie alte Vorlage (Beanie + Gaiter) |
-| 4 | + Sonnenbrille |
-| 5 | max: Hood up + Brille + Gaiter |
-
-Ganzfigurig, grau zuerst. Vorschläge: `proposals/`.
+Ganzfigurig, grau zuerst. A = erster Wurf · **B = Hand-/Waffen-Feedback**.
