@@ -266,24 +266,30 @@ export function drawIcon(
   return true;
 }
 
+export type ToyAnimMode =
+  | "idle"
+  | "walk"
+  | "cheer"
+  | "fight"
+  | "exit"
+  | "drink"
+  | "throw"
+  | "shop";
+
 export type ToyAnim = {
-  /** seconds */
   t: number;
-  /** per-unit phase offset */
   phase?: number;
-  /** idle | walk | cheer | fight | exit */
-  mode?: "idle" | "walk" | "cheer" | "fight" | "exit";
-  /** face left (-1) or right (1) */
+  mode?: ToyAnimMode;
   facing?: number;
-  /** 0..1 hop intensity */
   hop?: number;
-  /** 0..1 punch / hit flash */
   strike?: number;
+  /** 0..1 progress within action (drink/throw/shop) for pose blending */
+  actionProg?: number;
 };
 
 /**
  * Fake-3D toy billboard from a freigestelltes Lv1–5 PNG:
- * ground shadow, bob/squash, sway, walk hop, exit lean, fight strike.
+ * ground shadow, bob/squash, sway, walk hop, exit lean, fight/drink/throw.
  */
 export function drawToyIcon(
   ctx: CanvasRenderingContext2D,
@@ -303,57 +309,116 @@ export function drawToyIcon(
     anim.hop ??
     (mode === "walk" || mode === "exit" ? 1 : mode === "fight" ? 0.7 : 0);
   const strike = anim.strike ?? 0;
+  const ap = Math.max(0, Math.min(1, anim.actionProg ?? strike));
 
-  const step = Math.sin(t * (mode === "exit" ? 11 : 9.5) + ph);
+  // Walk cadence ~2 steps/sec; exit slightly faster
+  const stepHz = mode === "exit" ? 11 : mode === "walk" ? 10.2 : 9.5;
+  const step = Math.sin(t * stepHz + ph);
+  const stepAbs = Math.abs(step);
+
   const idleBob = Math.sin(t * 5.4 + ph) * size * 0.045;
-  // Stronger stand-jubel bob so the Kurve visibly hops/cheers
-  const cheerBob = Math.sin(t * 11.2 + ph) * size * (0.12 + hop * 0.04);
-  const walkBob = Math.abs(step) * size * 0.16 * hop;
-  const fightBob = Math.sin(t * 14 + ph) * size * 0.05 + strike * size * -0.08;
+  const cheerBob = Math.sin(t * 10.5 + ph) * size * 0.12;
+  // Planted foot: lift on step peak, settle on zero-crossing
+  const walkBob = (stepAbs * 0.18 + Math.max(0, step) * 0.04) * size * hop;
+  const fightBob = Math.sin(t * 14 + ph) * size * 0.05 + strike * size * -0.1;
+  // Drink: lean into mug, small sip bob
+  const drinkBob = -size * 0.04 * ap + Math.sin(t * 7 + ph) * size * 0.02;
+  // Throw: wind-up (back) then release (forward) based on actionProg
+  const throwBob =
+    ap < 0.45
+      ? size * 0.02 * (ap / 0.45)
+      : -size * 0.1 * ((ap - 0.45) / 0.55);
+  const shopBob = Math.sin(t * 6 + ph) * size * 0.035;
+
   const bob =
     mode === "cheer"
       ? cheerBob
       : mode === "fight"
         ? fightBob
-        : mode === "walk" || mode === "exit"
-          ? -walkBob
-          : idleBob;
+        : mode === "drink"
+          ? drinkBob
+          : mode === "throw"
+            ? throwBob
+            : mode === "shop"
+              ? shopBob
+              : mode === "walk" || mode === "exit"
+                ? -walkBob
+                : idleBob;
 
   const squashY =
     mode === "walk" || mode === "exit"
-      ? 1 - Math.abs(step) * 0.1 * hop
+      ? 1 - stepAbs * 0.12 * hop
       : mode === "fight"
-        ? 1 - strike * 0.12 + Math.sin(t * 14 + ph) * 0.03
+        ? 1 - strike * 0.14 + Math.sin(t * 14 + ph) * 0.03
         : mode === "cheer"
-          ? 1 + Math.sin(t * 10.5 + ph) * 0.06
-          : 1 + Math.sin(t * 5.4 + ph) * 0.025;
+          ? 1 + Math.sin(t * 10.5 + ph) * 0.07
+          : mode === "drink"
+            ? 1 - 0.06 * ap
+            : mode === "throw"
+              ? 1 - (ap < 0.45 ? 0.04 : 0.1 * ((ap - 0.45) / 0.55))
+              : mode === "shop"
+                ? 1 + Math.sin(t * 6 + ph) * 0.03
+                : 1 + Math.sin(t * 5.4 + ph) * 0.025;
   const squashX = 2 - squashY;
+
   const sway =
     mode === "cheer"
-      ? Math.sin(t * 6.2 + ph) * 0.14
+      ? Math.sin(t * 6.2 + ph) * 0.16
       : mode === "fight"
-        ? Math.sin(t * 16 + ph) * 0.18 + strike * 0.25 * facing
-        : mode === "exit"
-          ? 0.18 * facing + step * 0.06
-          : mode === "walk"
-            ? step * 0.1 * hop
-            : Math.sin(t * 2.3 + ph) * 0.04;
+        ? Math.sin(t * 16 + ph) * 0.2 + strike * 0.28 * facing
+        : mode === "drink"
+          ? -0.12 * ap * facing + Math.sin(t * 5 + ph) * 0.03
+          : mode === "throw"
+            ? (ap < 0.45 ? -0.22 * (ap / 0.45) : 0.32 * ((ap - 0.45) / 0.55)) *
+              facing
+            : mode === "shop"
+              ? Math.sin(t * 4.5 + ph) * 0.08
+              : mode === "exit"
+                ? 0.18 * facing + step * 0.06
+                : mode === "walk"
+                  ? step * 0.12 * hop
+                  : Math.sin(t * 2.3 + ph) * 0.04;
+
   const shear =
     mode === "walk" || mode === "exit"
-      ? step * 0.16 * hop * facing
+      ? step * 0.2 * hop * facing
       : mode === "fight"
-        ? strike * 0.28 * facing
-        : 0;
-  const lean =
-    mode === "exit" ? 0.22 * facing : mode === "fight" ? strike * 0.12 * facing : 0;
+        ? strike * 0.32 * facing
+        : mode === "drink"
+          ? 0.08 * ap * facing
+          : mode === "throw"
+            ? (ap < 0.45 ? -0.15 : 0.35) * facing * Math.min(1, ap * 1.4)
+            : mode === "shop"
+              ? Math.sin(t * 5 + ph) * 0.06 * facing
+              : 0;
 
-  // soft ground shadow (fake contact) — stretches with hop
+  const lean =
+    mode === "exit"
+      ? 0.22 * facing
+      : mode === "fight"
+        ? strike * 0.14 * facing
+        : mode === "drink"
+          ? 0.1 * ap * facing
+          : mode === "throw"
+            ? (ap < 0.45 ? -0.12 : 0.18) * facing
+            : mode === "walk"
+              ? step * 0.04 * hop * facing
+              : 0;
+
   const shW = size * (0.4 + Math.abs(bob) * 0.004) * squashX;
   const shH = size * (0.11 - Math.min(0.04, Math.abs(bob) * 0.002));
   ctx.save();
   ctx.fillStyle = "rgba(15,23,42,0.34)";
   ctx.beginPath();
-  ctx.ellipse(x + lean * size * 0.15, y + size * 0.1, shW, Math.max(3, shH), 0, 0, Math.PI * 2);
+  ctx.ellipse(
+    x + lean * size * 0.15,
+    y + size * 0.1,
+    shW,
+    Math.max(3, shH),
+    0,
+    0,
+    Math.PI * 2,
+  );
   ctx.fill();
   ctx.restore();
 
@@ -363,17 +428,117 @@ export function drawToyIcon(
   ctx.translate(x + lean * size * 0.2, y + bob);
   ctx.transform(facing, 0, shear, 1, 0, 0);
   ctx.rotate(sway);
-  // slight perspective foreshorten (toy tilt)
-  const persp = mode === "exit" ? 0.92 : 0.96;
+  const persp = mode === "exit" ? 0.92 : mode === "throw" ? 0.94 : 0.96;
   ctx.transform(1, 0, 0, persp, 0, 0);
   ctx.drawImage(img, -dw / 2, -dh * 0.92, dw, dh);
 
-  // rim light for “toy plastic” pop
-  if (mode === "cheer" || mode === "fight" || strike > 0.2) {
+  if (
+    mode === "cheer" ||
+    mode === "fight" ||
+    mode === "throw" ||
+    strike > 0.2
+  ) {
     ctx.globalCompositeOperation = "lighter";
-    ctx.globalAlpha = mode === "cheer" ? 0.14 : 0.1 + strike * 0.15;
+    ctx.globalAlpha =
+      mode === "cheer"
+        ? 0.14
+        : mode === "throw"
+          ? 0.12 + ap * 0.18
+          : 0.1 + strike * 0.15;
     ctx.drawImage(img, -dw / 2, -dh * 0.92, dw, dh);
   }
   ctx.restore();
   return true;
+}
+
+export type ToyPropKind = "beer" | "pyro" | "fist" | "scarf" | "bag";
+
+/** Small action prop overlay next to a toy unit (drink / throw / fight). */
+export function drawToyProp(
+  ctx: CanvasRenderingContext2D,
+  kind: ToyPropKind,
+  x: number,
+  y: number,
+  size: number,
+  facing: number,
+  t: number,
+  intensity = 1,
+): void {
+  const i = Math.max(0, Math.min(1, intensity));
+  if (i < 0.05) return;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.globalAlpha = 0.55 + 0.45 * i;
+  if (kind === "beer") {
+    const bx = facing * size * 0.38;
+    const by = -size * (0.42 + 0.08 * Math.sin(t * 7));
+    const mw = size * 0.16;
+    const mh = size * 0.22;
+    ctx.fillStyle = "#f59e0b";
+    ctx.strokeStyle = "#92400e";
+    ctx.lineWidth = Math.max(1, size * 0.03);
+    ctx.beginPath();
+    ctx.moveTo(bx - mw / 2, by - mh / 2 + 2);
+    ctx.lineTo(bx + mw / 2, by - mh / 2 + 2);
+    ctx.lineTo(bx + mw / 2 - 1, by + mh / 2);
+    ctx.lineTo(bx - mw / 2 + 1, by + mh / 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#fff7ed";
+    ctx.fillRect(bx - mw / 2 + 1, by - mh / 2, mw - 2, size * 0.05);
+  } else if (kind === "pyro") {
+    const px = facing * size * (0.45 + 0.08 * i);
+    const py = -size * (0.55 - 0.12 * i);
+    const g = ctx.createRadialGradient(px, py, 1, px, py, size * 0.16);
+    g.addColorStop(0, "#fff7ed");
+    g.addColorStop(0.45, "#fb923c");
+    g.addColorStop(1, "rgba(239,68,68,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(px, py, size * 0.16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "#f97316";
+    ctx.lineWidth = Math.max(2, size * 0.04);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(facing * size * 0.22, -size * 0.2);
+    ctx.lineTo(px, py);
+    ctx.stroke();
+  } else if (kind === "fist") {
+    const fx = facing * size * (0.5 + 0.2 * i);
+    const fy = -size * 0.25;
+    ctx.fillStyle = "#fde68a";
+    ctx.beginPath();
+    ctx.arc(fx, fy, size * (0.08 + 0.04 * i), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = `rgba(251,191,36,${0.35 + 0.4 * i})`;
+    ctx.lineWidth = Math.max(2, size * 0.05);
+    ctx.beginPath();
+    ctx.arc(fx, fy, size * (0.14 + 0.06 * i), 0, Math.PI * 2);
+    ctx.stroke();
+  } else if (kind === "scarf") {
+    const sx = facing * size * 0.05;
+    ctx.strokeStyle = "#3b82f6";
+    ctx.lineWidth = Math.max(2, size * 0.05);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(sx - size * 0.12, -size * 0.55);
+    ctx.quadraticCurveTo(
+      sx,
+      -size * (0.75 + 0.05 * Math.sin(t * 8)),
+      sx + size * 0.12,
+      -size * 0.55,
+    );
+    ctx.stroke();
+  } else if (kind === "bag") {
+    const bx = facing * size * 0.4;
+    const by = -size * 0.15;
+    ctx.fillStyle = "#a78bfa";
+    ctx.fillRect(bx - size * 0.1, by - size * 0.08, size * 0.2, size * 0.18);
+    ctx.strokeStyle = "#5b21b6";
+    ctx.lineWidth = Math.max(1, size * 0.025);
+    ctx.strokeRect(bx - size * 0.1, by - size * 0.08, size * 0.2, size * 0.18);
+  }
+  ctx.restore();
 }
