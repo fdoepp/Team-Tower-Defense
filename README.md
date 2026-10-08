@@ -13,5 +13,6 @@ Für **neue Spielversionen** gelten ausschließlich die freigegebenen Ganzkörpe
 | Hooligans | [`docs/icons/HOOLIGAN_CANON.md`](docs/icons/HOOLIGAN_CANON.md) | `game/public/icons/units/hooligan-{grey\|blue\|red}-{1..5}.png` |
 | Top-HUD | [`docs/icons/HUD_TOP_CANON.md`](docs/icons/HUD_TOP_CANON.md) | `game/public/icons/ui/scoreboard-top.png` |
 | Ultras (fertig) | [`docs/icons/ULTRA_CANON.md`](docs/icons/ULTRA_CANON.md) | `game/public/icons/units/ultra-{grey\|blue\|red}-{1..5}.png` |
+| UI Final (freigegeben) | [`docs/icons/ui-final/README.md`](docs/icons/ui-final/README.md) | `game/public/icons/ui-final/` — nur nach manueller Freigabe |
 
-Ältere Grafiken derselben Typen nicht mehr verwenden.
+Ältere Grafiken derselben Typen nicht mehr verwenden. Freigestelltes Final-UI kommt ausschließlich aus der UI Final DB (`released`); Kandidaten liegen in `pending/` bis zur Freigabe.
