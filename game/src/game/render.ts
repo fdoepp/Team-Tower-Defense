@@ -302,37 +302,20 @@ function drawBlocks(
 
 function drawSeats(
   ctx: CanvasRenderingContext2D,
-  m: Match,
+  _m: Match,
   w: number,
   h: number,
 ): void {
+  // Decorative terrace marks only — fans wander freely, so no fixed
+  // team-colored "occupied seat" cushions glued to the grid.
   for (const b of BLOCK_META) {
     for (let i = 0; i < SEATS_PER_BLOCK; i++) {
       const p = seatPos(b.id, i);
       const x = p.x * w;
       const y = p.y * h;
-      const occ = m.seatOccupied(b.id, i);
-      // No buy "+" in blocks — hiring is via Personen-Rail only
-      let cushion = occ ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.14)";
-      if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.18)";
-      else if (occ?.team === "vfb") cushion = "rgba(220,38,38,0.18)";
-
-      ctx.fillStyle = cushion;
-      roundRect(ctx, x - 9, y - 3, 18, 8, 3);
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      roundRect(ctx, x - 8, y - 2, 16, 6, 3);
       ctx.fill();
-
-      // Capture ring on converting neutrals
-      if (occ?.team === "neutral" && Math.abs(occ.captureProg) > 0.08) {
-        const prog = Math.abs(occ.captureProg);
-        ctx.strokeStyle =
-          occ.captureProg > 0
-            ? `rgba(59,130,246,${0.4 + prog * 0.5})`
-            : `rgba(239,68,68,${0.4 + prog * 0.5})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
-        ctx.stroke();
-      }
     }
   }
 }
