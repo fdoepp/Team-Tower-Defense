@@ -20,7 +20,7 @@ Zielrichtung: **Matchday Comic** (Stadion-Flair) + Toy-/Chibi-Figuren, Spielsyst
 Pfad Spiel: `game/public/icons/` · Übersicht: `docs/mockups/icons/preview-all.jpg`
 
 ### Stände
-- **Bierstand** `stands/bier-1`…`5` — Lv4 Neon korrekt **BIER**
+- **Bierstand** `stands/bier-{blue\|red\|grey}-1`…`5` (Defaults freigegeben) — Lv4 Neon korrekt **BIER**; Fallback `bier-1`…`5` = grau
 - **Fanshop** `stands/fanshop-1`…`5`
 - **Ordnerposten** `stands/ordner-1`…`5`
 

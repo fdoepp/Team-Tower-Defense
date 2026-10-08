@@ -6,7 +6,8 @@ Einzel-Icons (256×256 PNG) für den Matchday-Comic-/Toy-Look.
 
 | Datei | Bedeutung |
 |---|---|
-| `bier-1.png` … `bier-5.png` | Bierstand Upgrade 1–5 |
+| `bier-1.png` … `bier-5.png` | Bierstand Upgrade 1–5 (Fallback = grau) |
+| `bier-{blue\|red\|grey}-1.png` … `5.png` | **Default** farbige Bierstände (verbindlich, siehe `.cursor/rules/stadium-background.mdc`) |
 | `fanshop-1.png` … `fanshop-5.png` | Fanshop / Merch Upgrade 1–5 |
 | `ordner-1.png` … `ordner-5.png` | Ordnerposten Upgrade 1–5 |
 

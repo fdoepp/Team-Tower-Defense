@@ -26,6 +26,8 @@ Schema: `{bier\|fanshop\|ordner}-{blue\|red\|grey}-{1..5}.png`
 
 → **45** Icons (3 Typen × 3 Farben × 5 Level)
 
+**Bierstand Defaults (verbindlich):** `bier-{blue\|red\|grey}-{1..5}.png` sind die freigegebenen freigestellten Assets (Tracht-Vendor, braune Fässer mit grauen Reifen um den Stand, Gläser auf der Theke; Lv3+ Markise/Lichter/Brezel; Lv4–5 Neon **BIER** + 2. Vendor). Bei jeder neuen Spiel-/Match-Umsetzung diese Dateien nutzen — nicht neu generieren. Canonical-Kopien: `docs/mockups/icons/stands-colored/`.
+
 ## 10 Figuren farbig (`units/`)
 
 Schema: `{fan\|ultra\|hooligan\|ordner}-{blue\|red\|grey}-{1..5}.png`
