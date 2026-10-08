@@ -3,6 +3,7 @@
 import {
   boothQuad,
   FLOOR_GRID_COUPLE,
+  quadCenter,
   quadPennantPos,
   quadToRect,
 } from "./floorGrid";
@@ -175,6 +176,9 @@ export function boothRect(
 }
 
 export function boothCenter(blockId: number, index: number): { x: number; y: number } {
+  if (FLOOR_GRID_COUPLE) {
+    return quadCenter(boothQuad(blockId, index));
+  }
   const r = boothRect(blockId, index);
   return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
 }
@@ -192,4 +196,4 @@ export function pennantPos(blockId: number, index: number): { x: number; y: numb
   return { x: r.x + r.w * 0.08, y: r.y + r.h * 0.05 };
 }
 
-export { boothQuad, FLOOR_GRID_COUPLE } from "./floorGrid";
+export { boothQuad, FLOOR_GRID_COUPLE, quadCenter } from "./floorGrid";

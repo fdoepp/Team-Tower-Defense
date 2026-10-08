@@ -429,7 +429,7 @@ function slotControlForPlot(m: Match, s: BuildSlot): SlotControl {
 
 /**
  * Separate Standarten nur auf gebauten Buden.
- * Leere Plots tragen die Fahne bereits im Slot-Icon (Auto-Swap).
+ * Leere Plots: fahnenloses Slot-Icon mit Bodenton (kein Wimpel im Warp).
  */
 function plotPennantTeam(
   m: Match,
@@ -537,32 +537,47 @@ function drawBuilding(
   const ai = s.owner === m.aiTeam;
   const r = Math.min(10, Math.min(bw, bh) * 0.12);
   const convT = Math.min(1, s.convertAcc / STAND_CONVERT_SEC);
-  const cx = x + bw / 2;
 
   if (!s.building) {
     drawBaustelle(ctx, x, y, bw, bh, sel, m, s);
     return;
   }
 
-  // plot pad under building
-  ctx.fillStyle = "rgba(15,23,42,0.25)";
-  roundRect(ctx, x + 4, y + bh * 0.55, bw - 8, bh * 0.38, r);
-  ctx.fill();
+  // Built plot: Leerfläche is gone. Anchor the stand on the floor-grid cell center.
+  let cx = x + bw / 2;
+  let footY = y + bh * 0.78;
+  let size = Math.min(bw, bh) * 0.98;
+  let pq: ReturnType<typeof scaleQuad> | null = null;
+  if (FLOOR_GRID_COUPLE) {
+    pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+    const mid = {
+      x: (pq.tl.x + pq.tr.x + pq.br.x + pq.bl.x) / 4,
+      y: (pq.tl.y + pq.tr.y + pq.br.y + pq.bl.y) / 4,
+    };
+    const near = {
+      x: (pq.bl.x + pq.br.x) / 2,
+      y: (pq.bl.y + pq.br.y) / 2,
+    };
+    // Slightly bias foot toward the near edge so the stand sits in the cell.
+    cx = mid.x * 0.55 + near.x * 0.45;
+    footY = mid.y * 0.4 + near.y * 0.6;
+    const cellW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
+    size = Math.max(28, cellW * 0.95);
+  }
 
   const color = teamColor(
     grey && !(s.convertBy && convT > 0.35) ? "neutral" : s.owner,
   );
   const lv = Math.max(1, Math.min(5, s.level || 1));
   const iconSrc = standIconPath(s.building, color, lv);
-  // soft contact shadow
+
+  // Soft ground contact on the plot (no empty Bauplatz under a built stand).
   ctx.fillStyle = "rgba(15,23,42,0.35)";
   ctx.beginPath();
-  ctx.ellipse(cx, y + bh * 0.88, bw * 0.32, bh * 0.08, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, footY + size * 0.06, size * 0.32, size * 0.08, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Toy-3D bob on stands (same language as units)
-  const size = Math.min(bw, bh) * 0.98;
-  const drew = drawToyIcon(ctx, iconSrc, cx, y + bh * 0.78, size, {
+  const drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
     t: m.realElapsed,
     phase: s.blockId * 1.7 + s.index * 0.9,
     mode: s.prodFlash > 0.2 ? "cheer" : "idle",
@@ -582,8 +597,18 @@ function drawBuilding(
     ctx.strokeStyle =
       s.building === "bier" ? "#fbbf24" : s.building === "ordner" ? "#60a5fa" : "#c084fc";
     ctx.lineWidth = 3 + flash * 4;
-    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
-    ctx.stroke();
+    if (pq) {
+      ctx.beginPath();
+      ctx.moveTo(pq.tl.x, pq.tl.y);
+      ctx.lineTo(pq.tr.x, pq.tr.y);
+      ctx.lineTo(pq.br.x, pq.br.y);
+      ctx.lineTo(pq.bl.x, pq.bl.y);
+      ctx.closePath();
+      ctx.stroke();
+    } else {
+      roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -592,56 +617,74 @@ function drawBuilding(
     const left = Math.max(0, STAND_CONVERT_SEC - s.convertAcc);
     const col = s.convertBy === "ksc" ? "#3b82f6" : "#ef4444";
     const rr = Math.min(bw, bh) * 0.16;
+    const ringY = footY - size * 0.55;
     ctx.save();
     ctx.strokeStyle = "rgba(0,0,0,0.45)";
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.arc(cx, y + bh * 0.14, rr, 0, Math.PI * 2);
+    ctx.arc(cx, ringY, rr, 0, Math.PI * 2);
     ctx.stroke();
     ctx.strokeStyle = col;
     ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.arc(cx, y + bh * 0.14, rr, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
+    ctx.arc(cx, ringY, rr, -Math.PI / 2, -Math.PI / 2 + pct * Math.PI * 2);
     ctx.stroke();
     ctx.fillStyle = "#fff";
     ctx.font = `700 ${Math.max(9, Math.floor(rr * 0.7))}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(`${Math.ceil(left)}`, cx, y + bh * 0.14 + 1);
+    ctx.fillText(`${Math.ceil(left)}`, cx, ringY + 1);
     ctx.textBaseline = "alphabetic";
     ctx.restore();
   }
 
   if (s.building === "ordner" && s.structMaxHp > 0) {
     const pct = Math.max(0, Math.min(1, s.structHp / s.structMaxHp));
-    const barW = bw - 10;
+    const barW = size * 0.7;
+    const barX = cx - barW / 2;
+    const barY = footY + size * 0.08;
     ctx.fillStyle = "rgba(15,23,42,0.55)";
-    ctx.fillRect(x + 5, y + bh - 8, barW, 4);
+    ctx.fillRect(barX, barY, barW, 4);
     ctx.fillStyle = pct > 0.45 ? "#22c55e" : pct > 0.2 ? "#f59e0b" : "#ef4444";
-    ctx.fillRect(x + 5, y + bh - 8, barW * pct, 4);
+    ctx.fillRect(barX, barY, barW * pct, 4);
   }
 
-  // level pips
+  // level pips above the stand
   if (!grey || (s.convertBy && convT > 0.5)) {
-    const pipW = Math.min(7, (bw - 12) / 5 - 1);
+    const pipW = Math.min(7, size / 5 - 1);
+    const pipX0 = cx - (5 * (pipW + 2) - 2) / 2;
+    const pipY = footY - size * 0.95;
     for (let i = 0; i < 5; i++) {
       ctx.fillStyle = i < lv ? "#fde68a" : "rgba(0,0,0,0.45)";
-      ctx.fillRect(x + 5 + i * (pipW + 2), y + 3, pipW, 4);
+      ctx.fillRect(pipX0 + i * (pipW + 2), pipY, pipW, 4);
     }
   }
 
   if (sel) {
     ctx.strokeStyle = "#22c55e";
     ctx.lineWidth = 3;
-    roundRect(ctx, x + 1, y + 1, bw - 2, bh - 2, r);
-    ctx.stroke();
+    if (pq) {
+      ctx.beginPath();
+      ctx.moveTo(pq.tl.x, pq.tl.y);
+      ctx.lineTo(pq.tr.x, pq.tr.y);
+      ctx.lineTo(pq.br.x, pq.br.y);
+      ctx.lineTo(pq.bl.x, pq.bl.y);
+      ctx.closePath();
+      ctx.stroke();
+    } else {
+      roundRect(ctx, x + 1, y + 1, bw - 2, bh - 2, r);
+      ctx.stroke();
+    }
   }
 
   if (s.building === "bier" && !grey) {
+    const barW = size * 0.7;
+    const barX = cx - barW / 2;
+    const barY = footY + size * 0.1;
     ctx.fillStyle = "rgba(0,0,0,0.45)";
-    ctx.fillRect(x + 6, y + bh - 10, bw - 12, 4);
+    ctx.fillRect(barX, barY, barW, 4);
     ctx.fillStyle = "#fde68a";
-    ctx.fillRect(x + 6, y + bh - 10, (bw - 12) * (s.beer / s.capacity), 4);
+    ctx.fillRect(barX, barY, barW * (s.beer / s.capacity), 4);
   }
 }
 
