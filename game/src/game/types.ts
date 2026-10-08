@@ -64,6 +64,11 @@ export type FanUnit = {
   level: number;
   _after?: string;
   _homeSeat?: number | null;
+  /** Free block wander target (not a fixed seat cell) */
+  _wanderTx?: number;
+  _wanderTy?: number;
+  /** Seconds until next wander retarget */
+  _wanderCd?: number;
 };
 
 export type BuildSlot = {
@@ -376,6 +381,15 @@ export const STEWARD_STATS = {
   chaseRadius: 0.2,
   healPerSec: 10,
 };
+
+/** Fans stroll inside their stand — not glued to a seat cell */
+export const BLOCK_WANDER_SPEED = 0.048;
+export const BLOCK_WANDER_RETARGET_MIN = 2.2;
+export const BLOCK_WANDER_RETARGET_MAX = 5.5;
+export const BLOCK_WANDER_ARRIVE = 0.014;
+/** Soft push-apart so crowded stands don't fully stack */
+export const BLOCK_SEPARATION_RADIUS = 0.022;
+export const BLOCK_SEPARATION_PUSH = 0.035;
 
 export const BLOCK_META = [
   { id: 0, side: "heim" as const, label: "HEIM", fill: "#1f6feb", stripe: "#f3f0e7" },

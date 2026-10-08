@@ -121,17 +121,41 @@ function seatHash(n: number): number {
   return x - Math.floor(x);
 }
 
-/**
- * Fan position in a block. Soft visual density: indices wrap into
- * VISUAL_CROWD_SOFT_CAP slots (full stands OK over time; no hard gameplay cap).
- */
-export function seatPos(blockId: number, seatIndex: number): { x: number; y: number } {
+/** Usable crowd rectangle inside a stand block (fans may wander freely here). */
+export function blockCrowdRect(blockId: number): {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+} {
   const cx = blockCenterX(blockId);
   const bw = blockWidthNorm();
-  const top = blockTopY(blockId) + L.blockBodyH * 0.18;
-  const usableH = L.blockBodyH * 0.72;
-  const left = cx - bw * 0.38;
-  const width = bw * 0.76;
+  return {
+    left: cx - bw * 0.38,
+    top: blockTopY(blockId) + L.blockBodyH * 0.18,
+    width: bw * 0.76,
+    height: L.blockBodyH * 0.72,
+  };
+}
+
+/** Random point inside a block's crowd area (for free stand wandering). */
+export function randomCrowdPos(blockId: number): { x: number; y: number } {
+  const r = blockCrowdRect(blockId);
+  const pad = 0.012;
+  return {
+    x: r.left + pad + Math.random() * Math.max(0.01, r.width - pad * 2),
+    y: r.top + pad + Math.random() * Math.max(0.01, r.height - pad * 2),
+  };
+}
+
+/**
+ * Fan spawn / home-anchor position in a block.
+ * Gameplay has no hard seat cap; indices wrap for density.
+ * Living fans then wander freely inside {@link blockCrowdRect}.
+ */
+export function seatPos(blockId: number, seatIndex: number): { x: number; y: number } {
+  const r = blockCrowdRect(blockId);
+  const { left, top, width, height: usableH } = r;
 
   const idx = Math.max(0, seatIndex | 0);
   const slot = idx % VISUAL_CROWD_SOFT_CAP;
