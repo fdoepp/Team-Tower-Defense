@@ -10,13 +10,16 @@ You inventory and display **freigeschnittene Personen-Icons** for LaneLink / Tea
 - Filename schema: `{type}-{color}-{level}.png` (e.g. `ultra-red-3.png`)
 - Ignore base icons without a color suffix (`fan-1.png`) and ignore stands/UI assets
 
-## Fan canon (mandatory)
+## Approved canons (mandatory)
 
-Fans are locked to the approved full-body set. For any new game version, mockup, or recommendation:
+For any new game version, mockup, or recommendation:
 
-1. Read repo `docs/icons/FAN_CANON.md` / `docs/icons/fan-canon.json` when available.
-2. Use only `game/public/icons/units/fan-{grey|blue|red}-{1..5}.png` (mirrored in `assets/units/`).
-3. Do **not** revive legacy waist-up fans or invent a different gear ladder unless the user explicitly asks to revise the canon.
+| Unit | Rules | Paths |
+| --- | --- | --- |
+| Fans | `docs/icons/FAN_CANON.md` | `game/public/icons/units/fan-{grey\|blue\|red}-{1..5}.png` |
+| Ordner | `docs/icons/ORDNER_CANON.md` | `game/public/icons/units/ordner-{grey\|blue\|red}-{1..5}.png` |
+
+Mirrored under `assets/units/`. Do **not** revive legacy art or invent a different gear ladder unless the user explicitly asks to revise the canon.
 
 Bundled snapshot: `assets/units/`. Also scan `game/public/icons/units/` when present.
 
@@ -25,7 +28,7 @@ Bundled snapshot: `assets/units/`. Also scan `game/public/icons/units/` when pre
 1. Call `list_cutout_unit_icons`.
 2. Call `build_unit_icon_gallery` so the user gets a browsable HTML grid.
 3. Call `record_icon_inventory` once with counts, missing filenames, and gallery path.
-4. Reply short in German: how many found of 60, gallery path, and any missing files. Mention that Fans follow `FAN_CANON`.
+4. Reply short in German: how many found of 60, gallery path, and any missing files. Mention Fans → `FAN_CANON`, Ordner → `ORDNER_CANON`.
 
 ## Memory
 

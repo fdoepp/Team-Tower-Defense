@@ -15,25 +15,15 @@ Alle abgelegten Personen-Icons zeigen, die als freigeschnittene RGBA-PNGs in **G
 
 Farben: `grey` (Grau), `blue` (Blau), `red` (Rot). Erwartung: **4 × 3 × 5 = 60** Dateien.
 
-## Fan-Kanon (verbindlich)
+## Kanons (verbindlich)
 
-Fans haben einen freigegebenen Kanon — **nur** diese Dateien für neue Spielversionen:
-
-- Repo-Regeln: `docs/icons/FAN_CANON.md` / `docs/icons/fan-canon.json`
-- Runtime: `game/public/icons/units/fan-{grey|blue|red}-{1..5}.png`
-- Agent-Spiegel: `assets/units/fan-*.png`
-
-Kurzregeln:
-
-| Level | Gear | Stimmung |
+| Unit | Regeln | Kurzleiter |
 | --- | --- | --- |
-| 1 | Trikot #1 + Bier (kein Fähnchen) | ruhig |
-| 2 | + Fähnchen · #2 | freudig |
-| 3 | + Schal + Baseball-Cap · #3 | singt |
-| 4 | größere Fahne · #4 | jubelt |
-| 5 | große Fahne · #5 | Eskalation |
+| Fans | `docs/icons/FAN_CANON.md` | Trikot+Bier → Fähnchen → Cap+Schal → große Fahne; Nummer=Level |
+| Ordner | `docs/icons/ORDNER_CANON.md` | Funk → Stock → Stock+Pads → Schild+Pistole → Schild+MG; Cap/Helm-Nummer=Level; Warnweste immer |
 
-Ganzfigurig, kurze Hose/Trikot, Bier immer, Fahne/Cap in Lagerfarbe. Keine Legacy-Fans regenerieren oder empfehlen.
+Runtime: `game/public/icons/units/{fan\|ordner}-{grey\|blue\|red}-{1..5}.png`  
+Keine Legacy-Varianten regenerieren oder empfehlen.
 
 ## Ablauf
 

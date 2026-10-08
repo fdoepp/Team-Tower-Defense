@@ -2,12 +2,13 @@
 
 LaneLink — Stadion-Tower-Defense.
 
-## Fan-Icons (verbindlich)
+## Icon-Kanons (verbindlich)
 
-Für **neue Spielversionen** gelten ausschließlich die freigegebenen Ganzkörper-Fans:
+Für **neue Spielversionen** gelten ausschließlich die freigegebenen Ganzkörper-Icons:
 
-- Regeln: [`docs/icons/FAN_CANON.md`](docs/icons/FAN_CANON.md)
-- Machine-readable: [`docs/icons/fan-canon.json`](docs/icons/fan-canon.json)
-- Assets: `game/public/icons/units/fan-{grey|blue|red}-{1..5}.png`
+| Unit | Regeln | Assets |
+| --- | --- | --- |
+| Fans | [`docs/icons/FAN_CANON.md`](docs/icons/FAN_CANON.md) | `game/public/icons/units/fan-{grey\|blue\|red}-{1..5}.png` |
+| Ordner | [`docs/icons/ORDNER_CANON.md`](docs/icons/ORDNER_CANON.md) | `game/public/icons/units/ordner-{grey\|blue\|red}-{1..5}.png` |
 
-Ältere Fan-Grafiken nicht mehr verwenden.
+Ältere Grafiken derselben Typen nicht mehr verwenden.

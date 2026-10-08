@@ -1,9 +1,8 @@
 # Unit icons
 
-## Fans (kanonisch)
+## Kanons (verbindlich für neue Spielversionen)
 
-Nur diese Dateien für Fans in neuen Spielversionen:
-
-`fan-{grey|blue|red}-{1..5}.png`
-
-Regeln: [`docs/icons/FAN_CANON.md`](../../../../docs/icons/FAN_CANON.md)
+| Typ | Dateien | Regeln |
+| --- | --- | --- |
+| Fans | `fan-{grey\|blue\|red}-{1..5}.png` | [`docs/icons/FAN_CANON.md`](../../../../docs/icons/FAN_CANON.md) |
+| Ordner | `ordner-{grey\|blue\|red}-{1..5}.png` | [`docs/icons/ORDNER_CANON.md`](../../../../docs/icons/ORDNER_CANON.md) |

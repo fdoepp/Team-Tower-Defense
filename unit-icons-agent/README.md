@@ -4,20 +4,22 @@ BDK-Agent für **freigeschnittene Personen-Icons** (LaneLink / Team-Tower-Defens
 
 Zieht die abgelegten Unit-Cutouts und zeigt alle Varianten in **Grau / Blau / Rot** für die Stufen **1–5**.
 
-## Fan-Kanon
+## Icon-Kanons
 
-Fans sind freigegeben — Regeln im Repo-Root:
+| Unit | Regeln | Assets |
+| --- | --- | --- |
+| Fans | [`FAN_CANON.md`](../docs/icons/FAN_CANON.md) | `../game/public/icons/units/fan-*.png` |
+| Ordner | [`ORDNER_CANON.md`](../docs/icons/ORDNER_CANON.md) | `../game/public/icons/units/ordner-*.png` |
 
-- [`docs/icons/FAN_CANON.md`](../docs/icons/FAN_CANON.md)
-- Assets: `../game/public/icons/units/fan-*.png` (Spiegel: `assets/units/fan-*.png`)
+Spiegel für den Agent: `assets/units/`.
 
 ## Icon-Quelle
 
 | Quelle | Rolle |
 | --- | --- |
-| `../game/public/icons/units/` | **Runtime / Kanon** für Fans |
+| `../game/public/icons/units/` | **Runtime / Kanon** (Fans + Ordner) |
 | `assets/units/` | Bundled Spiegel für den Agent |
-| `../docs/icons/FAN_CANON.md` | Verbindliche Fan-Regeln |
+| `../docs/icons/*_CANON.md` | Verbindliche Regeln |
 
 Schema: `{fan\|ultra\|hooligan\|ordner}-{grey\|blue\|red}-{1..5}.png` → **60** Icons.
 

@@ -1,11 +1,12 @@
 # Icons — LaneLink / Team-Tower-Defense
 
-## Fan-Kanon (verbindlich)
+## Verbindliche Kanons
 
-Ab sofort gelten für **Fans** nur noch die freigegebenen Ganzkörper-Icons:
+| Unit | Regeln | Assets |
+| --- | --- | --- |
+| **Fans** | [`FAN_CANON.md`](./FAN_CANON.md) · [`fan-canon.json`](./fan-canon.json) | `game/public/icons/units/fan-*.png` |
+| **Ordner** | [`ORDNER_CANON.md`](./ORDNER_CANON.md) · [`ordner-canon.json`](./ordner-canon.json) | `game/public/icons/units/ordner-*.png` |
 
-→ **[`FAN_CANON.md`](./FAN_CANON.md)** · [`fan-canon.json`](./fan-canon.json)
+Übersichten: [`fans-all-colors.png`](./fans-all-colors.png) · [`ordners-all-colors.png`](./ordners-all-colors.png)
 
-Runtime-Pfad: `game/public/icons/units/fan-{grey|blue|red}-{1..5}.png`
-
-Andere Unit-Typen (Ultra, Hooligan, Ordner) und Stände haben eigene Manifeste; dieses Verzeichnis regelt den Fan-Kanon für neue Spielversionen.
+Für **neue Spielversionen** nur diese freigegebenen Dateien verwenden. Ultras/Hooligans/Stände haben eigene Manifeste.

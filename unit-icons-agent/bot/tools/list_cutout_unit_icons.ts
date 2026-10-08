@@ -35,7 +35,8 @@ export default defineTool({
         notes: [
           "Nur freigeschnittene Farbvarianten (grey/blue/red × Lv1–5).",
           "Basis-Icons ohne Farb-Suffix (z.B. fan-1.png) werden ignoriert.",
-          "Fans: verbindlicher Kanon docs/icons/FAN_CANON.md — nur game/public/icons/units/fan-*.png für neue Spielversionen.",
+          "Fans: Kanon docs/icons/FAN_CANON.md — game/public/icons/units/fan-*.png",
+          "Ordner: Kanon docs/icons/ORDNER_CANON.md — game/public/icons/units/ordner-*.png",
         ],
       },
       rootsScanned: roots,
