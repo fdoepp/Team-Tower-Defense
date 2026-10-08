@@ -87,6 +87,8 @@ export function isIos(): boolean {
 /** True when browser chrome would make the match unusable */
 export function needsFullscreenGate(): boolean {
   if (isFullscreen()) return false;
+  // Wide desktop / playtest landscape: never block the match behind a gate
+  if (window.innerWidth >= 900 && window.innerHeight >= 480) return false;
   const ua = navigator.userAgent;
   const mobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua) || isIos();
   const short = Math.min(window.innerWidth, window.innerHeight) < 500;

@@ -71,6 +71,48 @@ button {
   justify-content: center;
 }
 
+.setup-actions {
+  width: 100%;
+  flex-wrap: nowrap;
+  gap: 10px;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  padding-top: 8px;
+  background: linear-gradient(180deg, transparent, #f3f0e7 35%);
+}
+
+.anpfiff-btn {
+  min-height: 52px;
+  min-width: 44%;
+  font-size: 1.05rem;
+  position: relative;
+  z-index: 6;
+  touch-action: manipulation;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .screen.menu {
+    padding: 8px 12px;
+    gap: 8px;
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+  .screen.menu .brand {
+    font-size: 1.35rem;
+  }
+  .screen.menu .card {
+    padding: 10px 12px;
+  }
+  .setup-actions,
+  .anpfiff-btn,
+  .screen.menu #start {
+    min-height: 48px;
+  }
+}
+
 .brand {
   font-family: var(--display);
   font-size: clamp(2rem, 6vw, 2.8rem);
@@ -1022,6 +1064,41 @@ select {
   color: var(--ink);
   min-width: 3.4rem;
   letter-spacing: -0.01em;
+}
+
+.ur-lv {
+  font-size: 0.45rem;
+  font-weight: 700;
+  color: #a16207;
+  margin-left: 2px;
+}
+
+.ar-lv-btn {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid #a16207;
+  background: linear-gradient(180deg, #fef3c7, #fde68a);
+  color: #92400e;
+  font-weight: 800;
+  font-size: 0.7rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.ar-lv-btn:disabled,
+.ar-lv-btn.cd {
+  opacity: 0.45;
+  cursor: default;
+  filter: grayscale(0.4);
+}
+.ar-lv-btn.ready:not(:disabled) {
+  box-shadow: 0 0 0 1px rgba(217, 119, 6, 0.35);
+}
+.match-shell.matchday .ur-actions-triple {
+  display: flex;
+  gap: 2px;
+  align-items: center;
 }
 
 .ur-count {

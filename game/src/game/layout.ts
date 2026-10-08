@@ -8,6 +8,8 @@ export const NEUTRAL_BLOCKS = [NEUTRAL_BLOCK] as const;
 export const SEATS_PER_BLOCK = 12;
 export const SEAT_COLS = 3;
 export const SEAT_ROWS = 4;
+/** Soft visual packing — gameplay can exceed; positions wrap into this density. */
+export const VISUAL_CROWD_SOFT_CAP = 20;
 
 /**
  * Vertical pack (~thirds):
@@ -48,11 +50,11 @@ export const PLOT_SCATTER: readonly { x: number; y: number; w: number; h: number
   { x: 0.16, y: 0.69, w: 0.095, h: 0.09 },
   { x: 0.05, y: 0.79, w: 0.1, h: 0.095 },
   { x: 0.17, y: 0.875, w: 0.095, h: 0.09 },
-  // Neutral — center
-  { x: 0.37, y: 0.66, w: 0.1, h: 0.095 },
-  { x: 0.50, y: 0.70, w: 0.095, h: 0.09 },
-  { x: 0.38, y: 0.80, w: 0.1, h: 0.095 },
-  { x: 0.51, y: 0.88, w: 0.095, h: 0.09 },
+  // Neutral CANONICAL: Heim Ordner | empty | empty | Gast Ordner
+  { x: 0.33, y: 0.70, w: 0.1, h: 0.095 },
+  { x: 0.43, y: 0.78, w: 0.095, h: 0.09 },
+  { x: 0.52, y: 0.78, w: 0.095, h: 0.09 },
+  { x: 0.62, y: 0.70, w: 0.1, h: 0.095 },
   // Gäste — right
   { x: 0.71, y: 0.655, w: 0.1, h: 0.095 },
   { x: 0.84, y: 0.69, w: 0.095, h: 0.09 },
@@ -119,36 +121,95 @@ function seatHash(n: number): number {
   return x - Math.floor(x);
 }
 
-/**
- * Fan position in a block. Indices 0..11 keep a soft grid; higher indices
- * scatter inside the stand so blocks are not hard-capped at 12 people.
- */
-export function seatPos(blockId: number, seatIndex: number): { x: number; y: number } {
+/** Usable crowd rectangle inside a stand block (fans may wander freely here). */
+export function blockCrowdRect(blockId: number): {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+} {
   const cx = blockCenterX(blockId);
   const bw = blockWidthNorm();
-  const top = blockTopY(blockId) + L.blockBodyH * 0.18;
-  const usableH = L.blockBodyH * 0.72;
-  const left = cx - bw * 0.38;
-  const width = bw * 0.76;
+  return {
+    left: cx - bw * 0.38,
+    top: blockTopY(blockId) + L.blockBodyH * 0.18,
+    width: bw * 0.76,
+    height: L.blockBodyH * 0.72,
+  };
+}
 
-  if (seatIndex >= 0 && seatIndex < SEATS_PER_BLOCK) {
-    const col = seatIndex % SEAT_COLS;
-    const row = Math.floor(seatIndex / SEAT_COLS);
+/** Random point inside a block's crowd area (for free stand wandering). */
+export function randomCrowdPos(blockId: number): { x: number; y: number } {
+  const r = blockCrowdRect(blockId);
+  const pad = 0.012;
+  return {
+    x: r.left + pad + Math.random() * Math.max(0.01, r.width - pad * 2),
+    y: r.top + pad + Math.random() * Math.max(0.01, r.height - pad * 2),
+  };
+}
+
+/**
+ * Stable roughly-spread home slot inside a block (jittered grid).
+ * Fans idle near this point and bob/cheer — not stacked on one cell.
+ */
+export function crowdHomePos(
+  blockId: number,
+  index: number,
+): { x: number; y: number } {
+  const r = blockCrowdRect(blockId);
+  const cols = 4;
+  const rows = 3;
+  const cells = cols * rows;
+  const idx = Math.max(0, index | 0);
+  const slot = idx % cells;
+  const layer = Math.floor(idx / cells);
+  const col = slot % cols;
+  const row = Math.floor(slot / cols);
+  const padX = r.width * 0.08;
+  const padY = r.height * 0.1;
+  const cellW = (r.width - padX * 2) / cols;
+  const cellH = (r.height - padY * 2) / rows;
+  const jx = (seatHash(slot * 11 + blockId * 3 + layer) - 0.5) * cellW * 0.55;
+  const jy = (seatHash(slot * 19 + blockId * 7 + layer * 5) - 0.5) * cellH * 0.55;
+  const layerJ = (seatHash(layer * 29 + blockId) - 0.5) * 0.012;
+  return {
+    x: r.left + padX + (col + 0.5) * cellW + jx + layerJ,
+    y: r.top + padY + (row + 0.5) * cellH + jy + layerJ * 0.6,
+  };
+}
+
+/**
+ * Fan spawn / home-anchor position in a block.
+ * Gameplay has no hard seat cap; indices wrap for density.
+ * Living fans then wander freely inside {@link blockCrowdRect}.
+ */
+export function seatPos(blockId: number, seatIndex: number): { x: number; y: number } {
+  const r = blockCrowdRect(blockId);
+  const { left, top, width, height: usableH } = r;
+
+  const idx = Math.max(0, seatIndex | 0);
+  const slot = idx % VISUAL_CROWD_SOFT_CAP;
+  const layer = Math.floor(idx / VISUAL_CROWD_SOFT_CAP);
+  const layerJ = (seatHash(layer * 19 + blockId) - 0.5) * 0.018;
+
+  if (slot < SEATS_PER_BLOCK) {
+    const col = slot % SEAT_COLS;
+    const row = Math.floor(slot / SEAT_COLS);
     const stepX = width / (SEAT_COLS - 1 || 1);
     const stepY = usableH / (SEAT_ROWS - 1 || 1);
-    const jx = (seatHash(seatIndex * 3 + blockId) - 0.5) * stepX * 0.35;
-    const jy = (seatHash(seatIndex * 7 + blockId * 2) - 0.5) * stepY * 0.35;
+    const jx = (seatHash(slot * 3 + blockId) - 0.5) * stepX * 0.4 + layerJ;
+    const jy = (seatHash(slot * 7 + blockId * 2) - 0.5) * stepY * 0.4 + layerJ * 0.6;
     return {
       x: left + col * stepX + jx,
       y: top + row * stepY + jy,
     };
   }
 
-  const u = seatHash(seatIndex * 17 + blockId * 13);
-  const v = seatHash(seatIndex * 29 + blockId * 41);
+  const u = seatHash(slot * 17 + blockId * 13);
+  const v = seatHash(slot * 29 + blockId * 41);
   return {
-    x: left + u * width,
-    y: top + v * usableH,
+    x: left + u * width + layerJ,
+    y: top + v * usableH + layerJ * 0.5,
   };
 }
 
