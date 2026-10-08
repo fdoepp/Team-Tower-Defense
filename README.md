@@ -4,7 +4,7 @@ Kurzes **2D-Handy-Minigame** (~5 Min ≈ 90′): Fans auf den Rängen (TD) + Fu�
 
 ## Spielen (Handy-Link)
 
-**Live:** https://menus-burton-valium-progressive.trycloudflare.com  
+**Live:** https://terrorists-processor-arising-waiting.trycloudflare.com  
 
 ### Vollbild (wichtig)
 

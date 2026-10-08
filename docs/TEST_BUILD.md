@@ -15,7 +15,7 @@ Basis: `cursor/matchday-game-a9b1` + Fixes aus Agent-Abgleich
 
 ## Live
 
-**Play:** https://menus-burton-valium-progressive.trycloudflare.com
+**Play:** https://terrorists-processor-arising-waiting.trycloudflare.com
 
 Handy quer / Vollbild empfohlen. Hard-Refresh bei Cache.
 
