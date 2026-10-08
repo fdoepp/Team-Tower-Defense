@@ -1,10 +1,12 @@
-# Upgrade-Kacheln — Alternativvorschlag (v5)
+# Upgrade-Kacheln — Alternativvorschlag (v6)
 
 1. **Titel** = Gebäudename  
-2. Icons **vorher → nachher** (keine Lv-Labels, kein Streifen-Hintergrund)  
-3. Stats **/min** (grau aktuell / grün `+Δ`)  
-4. Kosten als Münze + Text **direkt auf dem Holz** (kein weißer Chip)  
-5. Flacher **UPGRADE**-Button ohne grauen Unterschatten  
+2. Icons vorher → nachher (keine Lv-Labels, kein Streifen-Hintergrund)  
+3. Stats **/min** (grau / grün `+Δ`)  
+4. Kosten direkt auf Holz  
+5. **Flacher lila UPGRADE-Button** — kein brauner Rand/Strich, kein Unterschatten  
+
+Icons: aktuelle freigegebene **Bierstand-** und **Fanshop**-Assets (aus `currency-icons-clean`).
 
 ## Einheiten
 

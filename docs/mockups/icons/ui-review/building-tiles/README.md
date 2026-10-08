@@ -34,3 +34,7 @@ Teamfarbe = Stand-Icons (`blue` Heim / `red` Gäste).
 - Manifest: `manifest.json`
 
 Noch **nicht** in Runtime verdrahtet — zur Freigabe vorgelegt.
+
+## Alternativvorschlag Upgrade
+
+Unter [`upgrade-alt/`](upgrade-alt/): Titel = Gebäudename, Stat-Vergleich (grau aktuell / grün `+Δ`), dann nur Kosten + Button.
