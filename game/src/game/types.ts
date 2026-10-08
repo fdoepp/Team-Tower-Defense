@@ -56,6 +56,12 @@ export type FanUnit = {
   homeBlockId: number;
   patrolDir: number;
   cheerT: number;
+  /** Seconds left in Bier-trinken pose at stand */
+  drinkT: number;
+  /** Seconds left in Fanshop browse/buy pose */
+  shopT: number;
+  /** Seconds left in pyro throw wind-up / release */
+  throwT: number;
   /** Ultra sent via Pyro-Kampf — ranged smoker, low HP */
   rangedPyro: boolean;
   /** Sent via Angriff / Pyro Wurf — keep pushing, don't auto-return to seat */
@@ -403,3 +409,7 @@ export const BLOCK_META = [
   { id: 1, side: "neutral" as const, label: "NEUTRAL", fill: "#9ca3af", stripe: "#e5e7eb" },
   { id: 2, side: "gaeste" as const, label: "GÄSTE", fill: "#dc2626", stripe: "#f3f0e7" },
 ];
+
+export const ANIM_DRINK_SEC = 0.9;
+export const ANIM_SHOP_SEC = 0.75;
+export const ANIM_THROW_SEC = 0.42;
