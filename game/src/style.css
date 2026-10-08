@@ -182,17 +182,18 @@ select {
   height: 100%;
 }
 
-/* Matchday Comic — fixed % rails, Bloons touch buttons */
+/* Matchday Comic — fixed % rails, Bloons touch buttons
+   Rails ≈ 22% screen; buttons ≈ 36–42% of each person card height. */
 .match-shell.matchday {
-  --rail-w: 20%;
-  --rail-btn-h: clamp(40px, 8.5vh, 52px);
-  --rail-icon: clamp(44px, 7.5vh, 58px);
+  --rail-w: 22%;
+  --rail-btn-h: clamp(42px, 10vh, 54px);
+  --rail-icon: clamp(40px, 7vh, 52px);
   flex: 1;
   min-height: 0;
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: var(--rail-w) 1fr;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
   grid-template-rows: 1fr;
   gap: 0;
   position: relative;
@@ -202,8 +203,8 @@ select {
 }
 
 .match-shell.matchday.build-open {
-  --rail-w: 19%;
-  grid-template-columns: var(--rail-w) 1fr var(--rail-w);
+  --rail-w: 21%;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--rail-w);
 }
 
 .match-shell.matchday .side-rail {
@@ -339,11 +340,12 @@ select {
   width: 100%;
 }
 
-/* Bloons card: whole card = Kaufen; big full-width buttons (~40% of card) */
+/* Bloons card: whole card = Kaufen; fat bar buttons (~40% of card) */
 .match-shell.matchday .ur-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 3px;
   flex: 1 1 0;
   min-height: 0;
   min-width: 0;
@@ -353,7 +355,8 @@ select {
   background: linear-gradient(180deg, #fffaf0, #f3e2c4);
   border: 2px solid #7a4a22;
   border-radius: 14px;
-  padding: 6px 7px;
+  padding: 5px 6px;
+  overflow: hidden;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.75),
     0 3px 0 rgba(60, 30, 10, 0.35);
@@ -421,19 +424,20 @@ select {
   line-height: 1.15;
 }
 
-/* Stacked full-width Bloons buttons — ~42% of each card height */
+/* Fat Bloons bars: fixed height, fill the touch target (PNG is 360×100) */
 .match-shell.matchday .ur-actions {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1 1 auto;
+  flex-direction: row;
+  gap: 5px;
+  flex: 0 0 auto;
+  height: var(--rail-btn-h);
   min-height: var(--rail-btn-h);
+  max-height: var(--rail-btn-h);
   width: 100%;
 }
 
 .match-shell.matchday .ur-actions-dual {
   flex-direction: row;
-  gap: 5px;
 }
 
 .match-shell.matchday .ar-icon-btn {
@@ -441,8 +445,9 @@ select {
   flex: 1 1 0;
   width: 100%;
   min-width: 0;
-  height: 100%;
+  height: var(--rail-btn-h);
   min-height: var(--rail-btn-h);
+  max-height: var(--rail-btn-h);
   padding: 0;
   border: none;
   background: transparent;
@@ -457,9 +462,11 @@ select {
 }
 
 .match-shell.matchday .ar-icon-btn img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  /* Stretch wide bar art into the touch rect — contain made dual buttons ~17px tall */
+  object-fit: fill;
   object-position: center;
   pointer-events: none;
 }
@@ -562,12 +569,13 @@ select {
 .match-shell.matchday .build-info .build-kaufen,
 .match-shell.matchday .upgrade-buy .build-kaufen {
   display: block;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   width: 100%;
   max-width: 100%;
   height: var(--rail-btn-h);
   min-height: var(--rail-btn-h);
-  object-fit: contain;
+  max-height: var(--rail-btn-h);
+  object-fit: fill;
   object-position: center;
   margin-top: 0;
   filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.28));
@@ -673,12 +681,12 @@ select {
   flex-direction: column;
   align-items: stretch;
   gap: 2px;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  min-height: calc(var(--rail-btn-h) + 28px);
-  padding: 5px 6px 4px;
+  min-height: 0;
+  padding: 6px 7px;
   border: none;
   border-radius: 12px;
   background: linear-gradient(180deg, #ecfdf5, #bbf7d0);
@@ -795,34 +803,27 @@ select {
   font-weight: 700;
 }
 
-/* Phone landscape: keep fixed % rails + fat touch buttons (never shrink to 24px) */
+/* Phone landscape: same % rails, never crush buttons below touch size */
 @media (max-width: 900px) {
   .match-shell.matchday {
-    --rail-w: 21%;
-    --rail-btn-h: clamp(38px, 9.5vh, 50px);
-    --rail-icon: clamp(40px, 7vh, 54px);
-    grid-template-columns: var(--rail-w) 1fr;
+    --rail-w: 23%;
+    --rail-btn-h: clamp(40px, 11vh, 52px);
+    --rail-icon: clamp(36px, 8vh, 48px);
+    grid-template-columns: var(--rail-w) minmax(0, 1fr);
   }
   .match-shell.matchday.build-open {
-    --rail-w: 20%;
-    grid-template-columns: var(--rail-w) 1fr var(--rail-w);
-  }
-  .match-shell.matchday .ar-icon-btn,
-  .match-shell.matchday .ur-actions {
-    min-height: var(--rail-btn-h);
-  }
-  .match-shell.matchday .build-card .build-kaufen,
-  .match-shell.matchday .build-info .build-kaufen,
-  .match-shell.matchday .upgrade-buy .build-kaufen {
-    height: var(--rail-btn-h);
-    min-height: var(--rail-btn-h);
+    --rail-w: 21.5%;
+    grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--rail-w);
   }
 }
 
 @media (orientation: landscape) and (max-height: 420px) {
   .match-shell.matchday {
-    --rail-btn-h: clamp(34px, 11vh, 44px);
-    --rail-icon: clamp(34px, 9vh, 46px);
+    --rail-btn-h: clamp(36px, 12vh, 46px);
+    --rail-icon: clamp(32px, 9vh, 42px);
+  }
+  .match-shell.matchday .fanbase-col.gast {
+    display: none; /* reclaim height for fat buy buttons on short phones */
   }
 }
 
@@ -1658,11 +1659,11 @@ select {
   }
   .match-shell.matchday {
     display: grid !important;
-    grid-template-columns: minmax(148px, 18%) 1fr;
+    grid-template-columns: var(--rail-w) minmax(0, 1fr);
     pointer-events: auto;
   }
   .match-shell.matchday.build-open {
-    grid-template-columns: minmax(148px, 18%) 1fr minmax(160px, 20%);
+    grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--rail-w);
   }
 }
 
