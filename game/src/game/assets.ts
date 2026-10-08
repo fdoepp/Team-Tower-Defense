@@ -164,7 +164,8 @@ export function drawToyIcon(
 
   const step = Math.sin(t * (mode === "exit" ? 11 : 9.5) + ph);
   const idleBob = Math.sin(t * 5.4 + ph) * size * 0.045;
-  const cheerBob = Math.sin(t * 10.5 + ph) * size * 0.1;
+  // Stronger stand-jubel bob so the Kurve visibly hops/cheers
+  const cheerBob = Math.sin(t * 11.2 + ph) * size * (0.12 + hop * 0.04);
   const walkBob = Math.abs(step) * size * 0.16 * hop;
   const fightBob = Math.sin(t * 14 + ph) * size * 0.05 + strike * size * -0.08;
   const bob =

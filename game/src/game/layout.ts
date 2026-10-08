@@ -149,6 +149,36 @@ export function randomCrowdPos(blockId: number): { x: number; y: number } {
 }
 
 /**
+ * Stable roughly-spread home slot inside a block (jittered grid).
+ * Fans idle near this point and bob/cheer — not stacked on one cell.
+ */
+export function crowdHomePos(
+  blockId: number,
+  index: number,
+): { x: number; y: number } {
+  const r = blockCrowdRect(blockId);
+  const cols = 4;
+  const rows = 3;
+  const cells = cols * rows;
+  const idx = Math.max(0, index | 0);
+  const slot = idx % cells;
+  const layer = Math.floor(idx / cells);
+  const col = slot % cols;
+  const row = Math.floor(slot / cols);
+  const padX = r.width * 0.08;
+  const padY = r.height * 0.1;
+  const cellW = (r.width - padX * 2) / cols;
+  const cellH = (r.height - padY * 2) / rows;
+  const jx = (seatHash(slot * 11 + blockId * 3 + layer) - 0.5) * cellW * 0.55;
+  const jy = (seatHash(slot * 19 + blockId * 7 + layer * 5) - 0.5) * cellH * 0.55;
+  const layerJ = (seatHash(layer * 29 + blockId) - 0.5) * 0.012;
+  return {
+    x: r.left + padX + (col + 0.5) * cellW + jx + layerJ,
+    y: r.top + padY + (row + 0.5) * cellH + jy + layerJ * 0.6,
+  };
+}
+
+/**
  * Fan spawn / home-anchor position in a block.
  * Gameplay has no hard seat cap; indices wrap for density.
  * Living fans then wander freely inside {@link blockCrowdRect}.

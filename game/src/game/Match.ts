@@ -2,6 +2,8 @@ import {
   AI_SOFT_REGEN,
   AI_START_GOLD_BONUS,
   BLOCK_META,
+  BLOCK_HOME_PULL,
+  BLOCK_HOME_RADIUS,
   BLOCK_SEPARATION_PUSH,
   BLOCK_SEPARATION_RADIUS,
   BLOCK_STORM_COUNT,
@@ -95,12 +97,12 @@ import {
   blockWidthNorm,
   blockCrowdRect,
   boothCenter,
+  crowdHomePos,
   doorPos,
   gangLanePos,
   gangMidY,
   gangXToWorld,
   plotGangX,
-  randomCrowdPos,
   seatPos,
   slotIndicesForBlock,
   worldXToGangX,
@@ -339,8 +341,8 @@ export class Match {
     seatIndex: number,
   ): FanUnit {
     const seat = Math.max(0, seatIndex | 0);
-    // seatIndex = reservation only; spawn anywhere in the crowd area
-    const p = randomCrowdPos(blockId);
+    // Roughly spread home slot; then micro-drift + cheer bob in place
+    const p = crowdHomePos(blockId, seat);
     const level = 1;
     const beerIv = visitInterval(kind, "beer", level);
     const shopIv = visitInterval(kind, "shop", level);
@@ -2003,21 +2005,28 @@ export class Match {
     this.tickBlockSeparation(dt);
   }
 
-  /** Pick a new free-roam target inside the stand crowd rectangle. */
+  /** Micro-target near this fan's spread-out home slot (celebration idle). */
   private retargetBlockWander(f: FanUnit): void {
-    const p = randomCrowdPos(f.blockId);
-    f._wanderTx = p.x;
-    f._wanderTy = p.y;
+    const home = crowdHomePos(f.blockId, f.seatIndex ?? 0);
+    const ang = Math.random() * Math.PI * 2;
+    const rad = Math.random() * BLOCK_HOME_RADIUS;
+    f._wanderTx = home.x + Math.cos(ang) * rad;
+    f._wanderTy = home.y + Math.sin(ang) * rad * 0.75;
     f._wanderCd =
       BLOCK_WANDER_RETARGET_MIN +
       Math.random() * (BLOCK_WANDER_RETARGET_MAX - BLOCK_WANDER_RETARGET_MIN);
   }
 
   /**
-   * Fans move freely inside their block — seatIndex is only a home/reservation
-   * anchor for buy/return, not a fixed standing cell.
+   * Stand idle: stay roughly spread (home slots), tiny drift, cheer bob.
+   * seatIndex is buy/return id + home slot — not a click target.
    */
   private tickBlockWander(f: FanUnit, dt: number): void {
+    const home = crowdHomePos(f.blockId, f.seatIndex ?? 0);
+    // Soft spring keeps the crowd roughly distributed
+    f.x += (home.x - f.x) * Math.min(1, BLOCK_HOME_PULL * dt);
+    f.y += (home.y - f.y) * Math.min(1, BLOCK_HOME_PULL * dt);
+
     if (f._wanderTx == null || f._wanderTy == null || (f._wanderCd ?? 0) <= 0) {
       this.retargetBlockWander(f);
     } else {
@@ -2030,13 +2039,14 @@ export class Match {
     const dist = Math.hypot(dx, dy);
     if (dist <= BLOCK_WANDER_ARRIVE || (f._wanderCd ?? 0) <= 0) {
       this.retargetBlockWander(f);
-      return;
+    } else {
+      const step = Math.min(dist, BLOCK_WANDER_SPEED * dt);
+      f.x += (dx / dist) * step;
+      f.y += (dy / dist) * step;
     }
-    const step = Math.min(dist, BLOCK_WANDER_SPEED * dt);
-    f.x += (dx / dist) * step;
-    f.y += (dy / dist) * step;
-    f.armSwing += dt * 6;
-    // Keep inside crowd rect even if block bounds drift
+    // Pulse arms so cheer/fight poses stay lively while bobbing
+    f.armSwing = 0.35 + 0.25 * Math.sin(this.realElapsed * 7.2 + f.id * 0.9);
+
     const r = blockCrowdRect(f.blockId);
     const pad = 0.008;
     f.x = clamp(f.x, r.left + pad, r.left + r.width - pad);
@@ -2297,8 +2307,8 @@ export class Match {
       f.blockId = home;
       const seat = f.seatIndex ?? f._homeSeat ?? this.freeSeat(home);
       f.seatIndex = seat;
-      // Re-enter stand at a free crowd spot, then keep wandering
-      const p = randomCrowdPos(home);
+      // Re-enter at spread home slot, then micro-drift + cheer
+      const p = crowdHomePos(home, seat);
       f.x = p.x;
       f.y = p.y;
       f._wanderCd = 0;

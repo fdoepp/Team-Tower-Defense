@@ -382,14 +382,21 @@ export const STEWARD_STATS = {
   healPerSec: 10,
 };
 
-/** Fans stroll inside their stand — not glued to a seat cell */
-export const BLOCK_WANDER_SPEED = 0.062;
-export const BLOCK_WANDER_RETARGET_MIN = 1.6;
-export const BLOCK_WANDER_RETARGET_MAX = 4.2;
-export const BLOCK_WANDER_ARRIVE = 0.014;
+/**
+ * Block crowd: roughly spread home slots + tiny drift, while they
+ * bob/cheer in place (not a marching clump).
+ */
+export const BLOCK_WANDER_SPEED = 0.022;
+export const BLOCK_WANDER_RETARGET_MIN = 2.8;
+export const BLOCK_WANDER_RETARGET_MAX = 5.5;
+export const BLOCK_WANDER_ARRIVE = 0.01;
+/** Max offset from each fan's home slot while idling */
+export const BLOCK_HOME_RADIUS = 0.028;
+/** Soft spring back toward home so the stand stays spread out */
+export const BLOCK_HOME_PULL = 1.1;
 /** Soft push-apart so crowded stands don't fully stack */
-export const BLOCK_SEPARATION_RADIUS = 0.022;
-export const BLOCK_SEPARATION_PUSH = 0.035;
+export const BLOCK_SEPARATION_RADIUS = 0.036;
+export const BLOCK_SEPARATION_PUSH = 0.055;
 
 export const BLOCK_META = [
   { id: 0, side: "heim" as const, label: "HEIM", fill: "#1f6feb", stripe: "#f3f0e7" },

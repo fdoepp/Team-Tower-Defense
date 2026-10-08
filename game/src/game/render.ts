@@ -866,15 +866,19 @@ function drawMannchen(
     return;
   }
   const onGang = f.state === "gang" || f.invading;
+  const inStand = f.state === "block";
   const exiting =
     f.state === "moving" && f.y < gangY() + L.gangH * 0.22;
   const moving = f.state === "moving" || onGang;
   const fighting =
     (onGang || f.invading) && (f.armSwing > 0.15 || f.attackCd > 0.05);
+  // Stand crowd always looks like they're celebrating (bob + sway)
   const cheering =
-    !moving &&
-    (f.cheerT > 0 ||
-      (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) > 0.7);
+    inStand ||
+    (!moving &&
+      (f.cheerT > 0 ||
+        (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) >
+          0.7));
   const sizeMul =
     f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
   const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
@@ -915,8 +919,8 @@ function drawMannchen(
     phase,
     mode,
     facing,
-    hop: moving ? 1 : 0,
-    strike: Math.max(f.armSwing, fighting ? 0.35 : 0),
+    hop: moving ? 1 : inStand ? 0.7 : 0,
+    strike: Math.max(f.armSwing, fighting ? 0.35 : inStand ? 0.2 : 0),
   });
   if (!drew) {
     const s = size / 2.85;
