@@ -10,10 +10,13 @@ import {
   HEIM_BLOCK,
   L,
   SEATS_PER_BLOCK,
+  FLOOR_GRID_COUPLE,
   blockCenterX,
   blockWidthNorm,
+  boothQuad,
   boothRect,
   doorPos,
+  gangHeight,
   gangY,
   pennantPos,
   seatPos,
@@ -21,11 +24,15 @@ import {
 import {
   UI_ICONS,
   drawIcon,
+  drawIconQuad,
   drawToyIcon,
+  slotEmptyIconPath,
   standIconPath,
   teamColor,
   unitIconPath,
+  type SlotControl,
 } from "./assets";
+import { scaleQuad } from "./floorGrid";
 
 export { SEATS_PER_BLOCK } from "./layout";
 export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
@@ -173,8 +180,8 @@ function drawStadiumAtmosphere(
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 12]);
   ctx.beginPath();
-  ctx.moveTo(w * L.blocksLeft, floorY + h * L.gangH * 0.55);
-  ctx.lineTo(w * L.blocksRight, floorY + h * L.gangH * 0.55);
+  ctx.moveTo(w * L.blocksLeft, floorY + h * gangHeight() * 0.55);
+  ctx.lineTo(w * L.blocksRight, floorY + h * gangHeight() * 0.55);
   ctx.stroke();
   ctx.setLineDash([]);
 }
@@ -408,7 +415,7 @@ function drawGang(
   h: number,
 ): void {
   const y = h * gangY();
-  const gh = h * L.gangH;
+  const gh = h * gangHeight();
   const left = w * L.blocksLeft;
   const span = w * (L.blocksRight - L.blocksLeft);
   const px = left + span * m.linePlayer;
@@ -447,7 +454,7 @@ function drawFrontStandards(
   h: number,
 ): void {
   const y = h * gangY();
-  const gh = h * L.gangH;
+  const gh = h * gangHeight();
   const left = w * L.blocksLeft;
   const span = w * (L.blocksRight - L.blocksLeft);
   const poles: { x: number; team: "ksc" | "vfb" }[] = [
@@ -528,20 +535,41 @@ function drawSlots(
   }
 }
 
+function slotControlForPlot(m: Match, s: BuildSlot): SlotControl {
+  if (s.greyNeutral || s.owner === "neutral") return "grey";
+  if (s.owner === "ksc") return "blue";
+  if (s.owner === "vfb") return "red";
+
+  const bo = m.blockOwner[s.blockId];
+  if (bo === "ksc" || bo === "vfb") {
+    if (bo === m.playerTeam && m.inPlayerTerritory(s.blockId, s.index)) {
+      return bo === "ksc" ? "blue" : "red";
+    }
+    if (bo === m.aiTeam && m.inAiTerritory(s.blockId, s.index)) {
+      return bo === "ksc" ? "blue" : "red";
+    }
+  }
+  if (m.inPlayerTerritory(s.blockId, s.index)) {
+    return m.playerTeam === "ksc" ? "blue" : "red";
+  }
+  if (m.inAiTerritory(s.blockId, s.index)) {
+    return m.aiTeam === "ksc" ? "blue" : "red";
+  }
+  return "grey";
+}
+
 /**
- * Fahne an Plot = baubar/besetzt von diesem Team.
- * So ist klar, welche Bauplätze gerade in welcher Hand sind.
+ * Separate Standarten nur auf gebauten Buden.
+ * Leere Plots: fahnenloses Slot-Icon mit Bodenton (kein Wimpel im Warp).
  */
 function plotPennantTeam(
   m: Match,
   s: BuildSlot,
 ): "ksc" | "vfb" | null {
+  void m;
   if (s.building && !s.greyNeutral && (s.owner === "ksc" || s.owner === "vfb")) {
     return s.owner;
   }
-  // Empty / claimable: show who may build here right now
-  if (m.inPlayerTerritory(s.blockId, s.index)) return m.playerTeam;
-  if (m.inAiTerritory(s.blockId, s.index)) return m.aiTeam;
   return null;
 }
 
@@ -563,7 +591,7 @@ function drawTerritoryPennants(
   }
 }
 
-/** Toy-3D Baustelle — tinted by who can currently build here */
+/** Baustelle — Slot-Icon, Auto-Swap mit Kontrolle; bei Floor-Grid in Zellen-Trapez. */
 function drawBaustelle(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -571,9 +599,42 @@ function drawBaustelle(
   bw: number,
   bh: number,
   sel: boolean,
-  claim: "ksc" | "vfb" | null,
+  m: Match,
+  s: BuildSlot,
 ): void {
-  const drew = drawIcon(ctx, UI_ICONS.slotEmpty, x, y, bw, bh, 0.02);
+  const control = slotControlForPlot(m, s);
+  const src = slotEmptyIconPath(control, undefined, FLOOR_GRID_COUPLE);
+  let drew = false;
+  if (FLOOR_GRID_COUPLE) {
+    const q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+    drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
+    if (sel) {
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(q.tl.x, q.tl.y);
+      ctx.lineTo(q.tr.x, q.tr.y);
+      ctx.lineTo(q.br.x, q.br.y);
+      ctx.lineTo(q.bl.x, q.bl.y);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(34,197,94,0.35)";
+      ctx.lineWidth = 6;
+      ctx.stroke();
+    }
+  } else {
+    drew = drawIcon(ctx, src, x, y, bw, bh, 0.02);
+    if (sel) {
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 3.5;
+      roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 10);
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(34,197,94,0.35)";
+      ctx.lineWidth = 6;
+      roundRect(ctx, x - 1, y - 1, bw + 2, bh + 2, 12);
+      ctx.stroke();
+    }
+  }
   if (!drew) {
     const r = Math.min(10, Math.min(bw, bh) * 0.12);
     ctx.fillStyle = "#4b5563";
@@ -583,28 +644,12 @@ function drawBaustelle(
     ctx.lineWidth = 3;
     roundRect(ctx, x + 6, y + 6, bw - 12, bh - 12, r - 2);
     ctx.stroke();
-  }
-  // Territory wash on empty plots
-  if (claim) {
-    ctx.fillStyle =
-      claim === "ksc" ? "rgba(37,99,235,0.28)" : "rgba(220,38,38,0.28)";
-    roundRect(ctx, x + 6, y + 6, bw - 12, bh - 12, 8);
-    ctx.fill();
-    ctx.strokeStyle =
-      claim === "ksc" ? "rgba(59,130,246,0.85)" : "rgba(248,113,113,0.85)";
-    ctx.lineWidth = 2.5;
-    roundRect(ctx, x + 3, y + 3, bw - 6, bh - 6, 9);
-    ctx.stroke();
-  }
-  if (sel) {
-    ctx.strokeStyle = "#22c55e";
-    ctx.lineWidth = 3.5;
-    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 10);
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(34,197,94,0.35)";
-    ctx.lineWidth = 6;
-    roundRect(ctx, x - 1, y - 1, bw + 2, bh + 2, 12);
-    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.font = `800 ${Math.max(16, Math.floor(bh * 0.28))}px Outfit, Manrope, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("+", x + bw / 2, y + bh / 2);
+    ctx.textBaseline = "alphabetic";
   }
 }
 
@@ -623,33 +668,46 @@ function drawBuilding(
   const ai = s.owner === m.aiTeam;
   const r = Math.min(10, Math.min(bw, bh) * 0.12);
   const convT = Math.min(1, s.convertAcc / STAND_CONVERT_SEC);
-  const cx = x + bw / 2;
 
   if (!s.building) {
-    const claim = plotPennantTeam(m, s);
-    drawBaustelle(ctx, x, y, bw, bh, sel, claim);
+    drawBaustelle(ctx, x, y, bw, bh, sel, m, s);
     return;
   }
 
-  // plot pad under building
-  ctx.fillStyle = "rgba(15,23,42,0.25)";
-  roundRect(ctx, x + 4, y + bh * 0.55, bw - 8, bh * 0.38, r);
-  ctx.fill();
+  // Built plot: Leerfläche is gone. Anchor the stand on the floor-grid cell center.
+  let cx = x + bw / 2;
+  let footY = y + bh * 0.78;
+  let size = Math.min(bw, bh) * 0.98;
+  let pq: ReturnType<typeof scaleQuad> | null = null;
+  if (FLOOR_GRID_COUPLE) {
+    pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+    const mid = {
+      x: (pq.tl.x + pq.tr.x + pq.br.x + pq.bl.x) / 4,
+      y: (pq.tl.y + pq.tr.y + pq.br.y + pq.bl.y) / 4,
+    };
+    const near = {
+      x: (pq.bl.x + pq.br.x) / 2,
+      y: (pq.bl.y + pq.br.y) / 2,
+    };
+    cx = mid.x * 0.55 + near.x * 0.45;
+    footY = mid.y * 0.4 + near.y * 0.6;
+    const cellW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
+    size = Math.max(28, cellW * 0.95);
+  }
 
   const color = teamColor(
     grey && !(s.convertBy && convT > 0.35) ? "neutral" : s.owner,
   );
   const lv = Math.max(1, Math.min(5, s.level || 1));
   const iconSrc = standIconPath(s.building, color, lv);
-  // soft contact shadow
+
+  // Soft ground contact on the plot (no empty Bauplatz under a built stand).
   ctx.fillStyle = "rgba(15,23,42,0.35)";
   ctx.beginPath();
-  ctx.ellipse(cx, y + bh * 0.88, bw * 0.32, bh * 0.08, 0, 0, Math.PI * 2);
+  ctx.ellipse(cx, footY + size * 0.06, size * 0.32, size * 0.08, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Toy-3D bob on stands (same language as units)
-  const size = Math.min(bw, bh) * 0.98;
-  const drew = drawToyIcon(ctx, iconSrc, cx, y + bh * 0.78, size, {
+  const drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
     t: m.realElapsed,
     phase: s.blockId * 1.7 + s.index * 0.9,
     mode: s.prodFlash > 0.2 ? "cheer" : "idle",
@@ -669,8 +727,18 @@ function drawBuilding(
     ctx.strokeStyle =
       s.building === "bier" ? "#fbbf24" : s.building === "ordner" ? "#60a5fa" : "#c084fc";
     ctx.lineWidth = 3 + flash * 4;
-    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
-    ctx.stroke();
+    if (pq) {
+      ctx.beginPath();
+      ctx.moveTo(pq.tl.x, pq.tl.y);
+      ctx.lineTo(pq.tr.x, pq.tr.y);
+      ctx.lineTo(pq.br.x, pq.br.y);
+      ctx.lineTo(pq.bl.x, pq.bl.y);
+      ctx.closePath();
+      ctx.stroke();
+    } else {
+      roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -868,7 +936,7 @@ function drawMannchen(
   const onGang = f.state === "gang" || f.invading;
   const inStand = f.state === "block";
   const exiting =
-    f.state === "moving" && f.y < gangY() + L.gangH * 0.22;
+    f.state === "moving" && f.y < gangY() + gangHeight() * 0.22;
   const moving = f.state === "moving" || onGang;
   const fighting =
     (onGang || f.invading) && (f.armSwing > 0.15 || f.attackCd > 0.05);

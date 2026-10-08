@@ -35,8 +35,23 @@ export function unitIconPath(
   return `icons/units/${map[kind]}-${color}-${lv}.png`;
 }
 
+export type SlotControl = "blue" | "red" | "grey";
+export type SlotEmptyOrientation = "parallel" | "iso";
+/** Preview orientation when FLOOR_GRID_COUPLE is off. */
+export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "parallel";
+
 export const UI_ICONS = {
   slotEmpty: "icons/ui/slot-empty.png",
+  slotEmptyParallel: "icons/ui/slot-empty-parallel.png",
+  slotEmptyIso: "icons/ui/slot-empty-iso.png",
+  slotEmptyParallelBlue: "icons/ui/slot-empty-parallel-blue.png",
+  slotEmptyParallelRed: "icons/ui/slot-empty-parallel-red.png",
+  slotEmptyIsoBlue: "icons/ui/slot-empty-iso-blue.png",
+  slotEmptyIsoRed: "icons/ui/slot-empty-iso-red.png",
+  /** Axis-aligned, flagless source — ground tinted by team; warped into floor-grid quads. */
+  slotEmptyOrtho: "icons/ui/slot-empty-ortho.png",
+  slotEmptyOrthoBlue: "icons/ui/slot-empty-ortho-blue.png",
+  slotEmptyOrthoRed: "icons/ui/slot-empty-ortho-red.png",
   currencyGold: "icons/ui/currency-gold.png",
   currencyBier: "icons/ui/currency-bier.png",
   currencyFanartikel: "icons/ui/currency-fanartikel.png",
@@ -50,6 +65,37 @@ export const UI_ICONS = {
   menuRail: "icons/ui/menu-rail-brown.png",
   scoreboard: "icons/ui/scoreboard-momentum.png",
 } as const;
+
+/**
+ * Leerer Bauplatz je Kontrolle.
+ * When `orthoSource` is true (floor-grid couple), return axis-aligned flagless
+ * source PNGs (team color via ground tint) — warped into the cell.
+ */
+export function slotEmptyIconPath(
+  control: SlotControl | TeamId | "neutral" | null | undefined,
+  orientation: SlotEmptyOrientation = SLOT_EMPTY_ORIENTATION,
+  orthoSource = false,
+): string {
+  const c: SlotControl =
+    control === "ksc" || control === "blue"
+      ? "blue"
+      : control === "vfb" || control === "red"
+        ? "red"
+        : "grey";
+  if (orthoSource) {
+    if (c === "blue") return UI_ICONS.slotEmptyOrthoBlue;
+    if (c === "red") return UI_ICONS.slotEmptyOrthoRed;
+    return UI_ICONS.slotEmptyOrtho;
+  }
+  if (orientation === "iso") {
+    if (c === "blue") return UI_ICONS.slotEmptyIsoBlue;
+    if (c === "red") return UI_ICONS.slotEmptyIsoRed;
+    return UI_ICONS.slotEmptyIso;
+  }
+  if (c === "blue") return UI_ICONS.slotEmptyParallelBlue;
+  if (c === "red") return UI_ICONS.slotEmptyParallelRed;
+  return UI_ICONS.slotEmptyParallel;
+}
 
 function loadOne(src: string): Promise<HTMLImageElement> {
   const hit = cache.get(src);
@@ -83,6 +129,14 @@ function allIconPaths(): string[] {
       for (let lv = 1; lv <= 5; lv++) paths.add(unitIconPath(kind, color, lv));
     }
   }
+  for (const orient of ["parallel", "iso"] as SlotEmptyOrientation[]) {
+    for (const c of ["grey", "blue", "red"] as SlotControl[]) {
+      paths.add(slotEmptyIconPath(c, orient));
+    }
+  }
+  for (const c of ["grey", "blue", "red"] as SlotControl[]) {
+    paths.add(slotEmptyIconPath(c, undefined, true));
+  }
   return [...paths];
 }
 
@@ -97,6 +151,79 @@ export function getIcon(src: string): HTMLImageElement | null {
   if (img && img.complete && img.naturalWidth > 0) return img;
   if (!cache.has(src)) void loadOne(src);
   return null;
+}
+
+type Pt = { x: number; y: number };
+
+/**
+ * Draw a freigestelltes icon into a convex screen quad (TL,TR,BR,BL)
+ * via two affine triangles — used to cut Bauplatz into the floor grid.
+ */
+export function drawIconQuad(
+  ctx: CanvasRenderingContext2D,
+  src: string,
+  tl: Pt,
+  tr: Pt,
+  br: Pt,
+  bl: Pt,
+): boolean {
+  const img = getIcon(src);
+  if (!img) return false;
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  if (iw < 2 || ih < 2) return false;
+  drawTexturedTriangle(ctx, img, tl, tr, bl, { x: 0, y: 0 }, { x: iw, y: 0 }, { x: 0, y: ih });
+  drawTexturedTriangle(ctx, img, tr, br, bl, { x: iw, y: 0 }, { x: iw, y: ih }, { x: 0, y: ih });
+  return true;
+}
+
+/** Affine-map image triangle abc → screen triangle ABC. */
+function drawTexturedTriangle(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  a: Pt,
+  b: Pt,
+  c: Pt,
+  ia: Pt,
+  ib: Pt,
+  ic: Pt,
+): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.lineTo(c.x, c.y);
+  ctx.closePath();
+  ctx.clip();
+
+  const denom =
+    ia.x * (ib.y - ic.y) + ib.x * (ic.y - ia.y) + ic.x * (ia.y - ib.y);
+  if (Math.abs(denom) < 1e-6) {
+    ctx.restore();
+    return;
+  }
+  const m11 =
+    (a.x * (ib.y - ic.y) + b.x * (ic.y - ia.y) + c.x * (ia.y - ib.y)) / denom;
+  const m12 =
+    (a.x * (ic.x - ib.x) + b.x * (ia.x - ic.x) + c.x * (ib.x - ia.x)) / denom;
+  const m13 =
+    (a.x * (ib.x * ic.y - ic.x * ib.y) +
+      b.x * (ic.x * ia.y - ia.x * ic.y) +
+      c.x * (ia.x * ib.y - ib.x * ia.y)) /
+    denom;
+  const m21 =
+    (a.y * (ib.y - ic.y) + b.y * (ic.y - ia.y) + c.y * (ia.y - ib.y)) / denom;
+  const m22 =
+    (a.y * (ic.x - ib.x) + b.y * (ia.x - ic.x) + c.y * (ib.x - ia.x)) / denom;
+  const m23 =
+    (a.y * (ib.x * ic.y - ic.x * ib.y) +
+      b.y * (ic.x * ia.y - ia.x * ic.y) +
+      c.y * (ia.x * ib.y - ib.x * ia.y)) /
+    denom;
+
+  ctx.transform(m11, m21, m12, m22, m13, m23);
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
 }
 
 /** Draw a freigestelltes icon centered in a rect, preserving aspect ratio. */

@@ -1,16 +1,22 @@
 # Bauplatz-Icons (kanonisch)
 
-Deploy-Default: **Stadionboden-Perspektive** — vorn breiter, hinten schmaler, passend zu
-`game/public/assets/stadium-floodlight-derby-bg.jpg`.
+## Live-Kopplung an das Bodenraster (Deploy-Default)
 
-| Kontrolle | Datei |
-|---|---|
-| Grau / Neutral | `slot-empty.png` (= `slot-empty-persp.png` = `slot-empty-parallel.png`) |
-| KSC / blau | `slot-empty-persp-blue.png` (= `slot-empty-parallel-blue.png`) |
-| VfB / rot | `slot-empty-persp-red.png` (= `slot-empty-parallel-red.png`) |
+Runtime (`FLOOR_GRID_COUPLE` in `floorGrid.ts`):
 
-Benannte Perspektiv-Dateien: `slot-empty-persp*.png`  
-Ortho-Archiv (altes „gerade“ Parallel): `slot-empty-ortho*.png`  
-Iso-Raute (Alternate): `slot-empty-iso*.png`
+1. Plot-Zellen liegen auf dem Derby-BG-Bodenraster (Vanishing Point + Spaltenstrahlen + Tiefenlinien).
+2. Zwei Baureihen mit breiterem Gang dazwischen (`FLOOR_ROW_YS`: far-Bau · Kampf-Gang · near-Bau).
+3. Quelle ist das **achsenparallele, fahnenlose** Icon `slot-empty-ortho*.png`.
+4. Beim Screen-Draw wird es per `drawIconQuad` in die Zellen-Trapezoid geschnitten.
+5. **Keine Fahne/Wimpel im Slot-Icon** — Teamfarbe nur über den Boden der Form (neutral / blau / rot). Standarten bleiben separate Runtime-Marker auf gebauten Buden.
 
-Runtime (`slotEmptyIconPath`, Default-Orientierung `parallel`) lädt damit automatisch die Perspektiv-Variante.
+| Kontrolle | Warp-Quelle (ortho, ohne Fahne) | Boden |
+|---|---|---|
+| Grau / Neutral | `slot-empty-ortho.png` | erdbraun |
+| KSC / blau | `slot-empty-ortho-blue.png` | blau getönt |
+| VfB / rot | `slot-empty-ortho-red.png` | rot getönt |
+
+Statische Perspektiv-PNGs (`slot-empty-persp*` / `slot-empty-parallel*`) sind dieselben fahnenlosen Varianten als Preview/Fallback.
+Iso-Raute: `slot-empty-iso*.png`.
+
+Siehe `game/src/game/floorGrid.ts` · `drawBaustelle` in `render.ts`.

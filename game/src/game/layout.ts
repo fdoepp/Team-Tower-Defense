@@ -1,5 +1,14 @@
 /** Matchday Comic — ~⅓ scoreboard / ⅓ blocks / ⅓ gang */
 
+import {
+  boothQuad,
+  FLOOR_GRID_COUPLE,
+  floorGangBand,
+  quadCenter,
+  quadPennantPos,
+  quadToRect,
+} from "./floorGrid";
+
 export const BLOCK_COUNT = 3;
 export const HEIM_BLOCK = 0;
 export const NEUTRAL_BLOCK = 1;
@@ -41,7 +50,7 @@ export const BUILDABLE_INDICES_NEUTRAL = BUILDABLE_INDICES;
 export const ULTRA_PAD_INDEX = 0;
 
 /**
- * 12 Baustellen packed into the bottom gang third.
+ * Legacy AABB scatter (fallback if FLOOR_GRID_COUPLE is off).
  * flat 0–3 Heim (left), 4–7 Neutral (center), 8–11 Gäste (right).
  */
 export const PLOT_SCATTER: readonly { x: number; y: number; w: number; h: number }[] = [
@@ -101,11 +110,24 @@ export function blockBodyBottom(blockId: number): number {
 }
 
 export function gangY(): number {
+  if (FLOOR_GRID_COUPLE) {
+    // Fight corridor starts at the near edge of the far Bau row.
+    return floorGangBand().y0;
+  }
   return L.blockTop + L.blockBodyH + L.gangPadTop;
 }
 
 export function gangMidY(): number {
+  if (FLOOR_GRID_COUPLE) {
+    return floorGangBand().mid;
+  }
   return gangY() + L.gangH * 0.42;
+}
+
+/** Normalized gang band height (floor-grid corridor when coupled). */
+export function gangHeight(): number {
+  if (FLOOR_GRID_COUPLE) return floorGangBand().h;
+  return L.gangH;
 }
 
 export function doorPos(blockId: number): { x: number; y: number } {
@@ -243,12 +265,18 @@ export function boothRect(
   blockId: number,
   index: number,
 ): { x: number; y: number; w: number; h: number } {
+  if (FLOOR_GRID_COUPLE) {
+    return quadToRect(boothQuad(blockId, index));
+  }
   const flat = Math.max(0, Math.min(PLOT_SCATTER.length - 1, slotFlatIndex(blockId, index)));
   const p = PLOT_SCATTER[flat]!;
   return { x: p.x, y: p.y, w: p.w, h: p.h };
 }
 
 export function boothCenter(blockId: number, index: number): { x: number; y: number } {
+  if (FLOOR_GRID_COUPLE) {
+    return quadCenter(boothQuad(blockId, index));
+  }
   const r = boothRect(blockId, index);
   return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
 }
@@ -259,6 +287,11 @@ export function plotGangX(blockId: number, index: number): number {
 }
 
 export function pennantPos(blockId: number, index: number): { x: number; y: number } {
+  if (FLOOR_GRID_COUPLE) {
+    return quadPennantPos(boothQuad(blockId, index));
+  }
   const r = boothRect(blockId, index);
   return { x: r.x + r.w * 0.08, y: r.y + r.h * 0.05 };
 }
+
+export { boothQuad, FLOOR_GRID_COUPLE, floorGangBand, quadCenter } from "./floorGrid";
