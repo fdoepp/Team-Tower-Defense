@@ -153,9 +153,9 @@ export const ET_REAL_SEC = 70;
 export const FEVER_FROM_MIN = 80;
 
 /** Hooligan → Gang (Nahkampf) — beer cost, no CD */
-export const HOOLIGAN_ORDER_BEER = 8;
+export const HOOLIGAN_ORDER_BEER = 6;
 /** Ultra → Gang as ranged Pyro-Kampf — merch cost, no CD */
-export const PYRO_FIGHT_MERCH = 8;
+export const PYRO_FIGHT_MERCH = 6;
 
 export const HIT_DAMAGE = 22;
 export const HIT_CD = 0.55;
@@ -262,9 +262,10 @@ export function visitGoldPayout(
   return Math.max(1, Math.round(base * unitLevelMul(level)));
 }
 
-export const PROD_BEER = 0.28;
+/** Slightly higher so midgame SENDEN stays reachable after buys */
+export const PROD_BEER = 0.34;
 export const PROD_SECURITY = 0.3;
-export const PROD_MERCH = 0.34;
+export const PROD_MERCH = 0.4;
 
 /**
  * Block power → Momentum (people only, own home block).
@@ -293,7 +294,7 @@ export const GOAL_P_TOR_MAX = 0.55;
 /** AI start gold bonus over START_GOLD */
 export const AI_START_GOLD_BONUS = 5;
 /** Soft AI beer/merch regen per second */
-export const AI_SOFT_REGEN = 0.4;
+export const AI_SOFT_REGEN = 0.48;
 
 export const FAN_STATS: Record<
   FanKind,

@@ -3168,16 +3168,27 @@ export class Match {
     this.moodFx = this.moodFx.filter((p) => p.t < p.life);
   }
 
+  /** True when player block-power / momentum clearly ahead — AI should fight back */
+  private aiTrailingCrowd(): boolean {
+    const p = this.blockPower(this.playerTeam);
+    const a = this.blockPower(this.aiTeam);
+    return this.momentum > 0.18 || p > a + 1.2;
+  }
+
   private tickAi(dt: number): void {
     this.aiAcc += dt;
     const diff = this.cfg.settings.difficulty;
-    const regen = AI_SOFT_REGEN * (diff === "easy" ? 0.7 : diff === "hard" ? 1.2 : 1);
-    // Soft regen of AI send/buy resources (damped vs old ~1.0/s)
+    const trailing = this.aiTrailingCrowd();
+    const regen =
+      AI_SOFT_REGEN *
+      (diff === "easy" ? 0.7 : diff === "hard" ? 1.25 : 1) *
+      (trailing ? 1.25 : 1);
+    // Soft regen of AI send/buy resources
     this.aiMerch = Math.min(120, this.aiMerch + dt * regen);
     this.aiBeer = Math.min(120, this.aiBeer + dt * regen);
     this.aiSecurity = Math.min(120, this.aiSecurity + dt * regen * 0.85);
 
-    const interval = 7 / diffMul(diff);
+    const interval = (trailing ? 5.2 : 7) / diffMul(diff);
 
     if (this.aiAcc < interval) return;
     this.aiAcc = 0;
@@ -3185,7 +3196,7 @@ export class Match {
     this.aiTryHireSteward();
     this.aiTryBuyFans();
     this.aiTryUpgradeUnits();
-    const act = aiActionMul(diff);
+    const act = aiActionMul(diff) * (trailing ? 1.35 : 1);
     const hools = this.fans.filter(
       (f) =>
         f.team === this.aiTeam &&
@@ -3205,12 +3216,13 @@ export class Match {
     const onGang = this.fans.filter(
       (f) => f.team === this.aiTeam && f.state === "gang" && f.hp > 0 && !f.isSteward,
     ).length;
-    const want = diff === "hard" ? 3 : diff === "easy" ? 1 : 2;
+    let want = diff === "hard" ? 3 : diff === "easy" ? 1 : 2;
+    if (trailing) want += 1;
     if (
       hools.length &&
       onGang < want &&
       this.aiBeer >= HOOLIGAN_ORDER_BEER &&
-      Math.random() < 0.45 * act
+      Math.random() < (trailing ? 0.62 : 0.45) * act
     ) {
       this.aiBeer -= HOOLIGAN_ORDER_BEER;
       hools[0].rangedPyro = false;
@@ -3219,7 +3231,7 @@ export class Match {
       ultras.length &&
       onGang < want &&
       this.aiMerch >= PYRO_FIGHT_MERCH &&
-      Math.random() < 0.3 * act
+      Math.random() < (trailing ? 0.5 : 0.35) * act
     ) {
       this.aiMerch -= PYRO_FIGHT_MERCH;
       const u = ultras[0];
@@ -3231,13 +3243,12 @@ export class Match {
 
   private aiTryUpgradeUnits(): void {
     if (this.aiGold < 22) return;
-    if (Math.random() > 0.4) return;
-    const kinds: (FanKind | "ordner")[] = [
-      "hooligans",
-      "ultras",
-      "normalos",
-      "ordner",
-    ];
+    const trailing = this.aiTrailingCrowd();
+    if (Math.random() > (trailing ? 0.55 : 0.4)) return;
+    // When behind on Kurve, prioritize combat upgrades over Fans
+    const kinds: (FanKind | "ordner")[] = trailing
+      ? ["hooligans", "ultras", "ordner", "normalos"]
+      : ["hooligans", "ultras", "normalos", "ordner"];
     for (const kind of kinds) {
       const u = this.lowestLevelUnit(kind, this.aiTeam);
       if (!u) continue;
@@ -3254,20 +3265,30 @@ export class Match {
   private aiTryBuyFans(): void {
     const diff = this.cfg.settings.difficulty;
     const act = aiActionMul(diff);
-    if (Math.random() > 0.55 * act) return;
+    const trailing = this.aiTrailingCrowd();
+    if (Math.random() > (trailing ? 0.7 : 0.55) * act) return;
     const own = this.countTeamFans(this.aiTeam);
     const target =
       diff === "easy" ? 10 : diff === "hard" ? 16 : 13;
     if (own.normalos + own.ultras + own.hooligans >= target) return;
 
     const seat = this.freeSeat(GAST_BLOCK);
+    if (seat == null) return;
     const options: FanKind[] = [];
     if (this.aiSecurity >= BUY_COST.normalos.security) options.push("normalos");
     if (this.aiMerch >= BUY_COST.ultras.merch) options.push("ultras");
     if (this.aiBeer >= BUY_COST.hooligans.beer) options.push("hooligans");
     if (!options.length) return;
-    // Prefer the type the AI is short on
-    options.sort((a, b) => own[a] - own[b]);
+    // Prefer short counts; when trailing, bias hard toward Ultras/Hools
+    options.sort((a, b) => {
+      if (trailing) {
+        const rank = (k: FanKind) =>
+          k === "hooligans" ? 0 : k === "ultras" ? 1 : 2;
+        const d = rank(a) - rank(b);
+        if (d !== 0) return d;
+      }
+      return own[a] - own[b];
+    });
     const kind = options[0];
     const c = BUY_COST[kind];
     if (kind === "normalos") this.aiSecurity -= c.security;
