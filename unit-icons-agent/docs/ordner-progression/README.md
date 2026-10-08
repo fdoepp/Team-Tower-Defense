@@ -1,18 +1,17 @@
 # Ordner-Progression (Arbeit)
 
-**Basis:** bisherige blaue Ordner (`refs/`) — Stil beibehalten.  
-**Zuerst Grau**, dann Farben ableiten (wie bei Fans).
+**Basis:** bisherige blaue Ordner (`refs/`). **Zuerst Grau.**
 
-## Ziel-Leiter
+## Aktuelle Leiter (Vorschlag B)
 
-| Level | Kopf | Schutz / Bewaffnung |
+| Level | Kopf | Hände / Schutz |
 | --- | --- | --- |
-| 1 | Cap mit **1** | Warnweste, leicht (Clipboard/Hände in Hüfte) |
-| 2 | Cap mit **2** | + Handschuhe, Funkgerät |
-| 3 | Helm mit **3** | Einstieg Schutzhelm (noch ohne Visier) |
-| 4 | Helm mit **4** | + Polizeischild, Polster |
-| 5 | Helm+Visier mit **5** | Vollschutz, großes Schild |
+| 1 | Cap **#1** | Warnweste, **leere Hände** |
+| 2 | Cap **#2** | + Funkgerät (Mikro/Walkie) |
+| 3 | Helm **#3** | robuster: Handschuhe, Knie-/Ellenbogenschützer |
+| 4 | Helm **#4** | + Polizeischild + **Schlagstock** (mind. so robust wie Lv3) |
+| 5 | Helm+Visier **#5** | Vollschutz, Schild + Schlagstock |
 
-Warnweste (gelb) bleibt über allen Leveln. Ganzfigurig, kein Crop.
+Warnweste immer. Ganzfigurig, kein Crop.
 
-Vorschläge: `proposals/`
+Vorschläge: `proposals/` (A = erster Wurf, B = Detail-Feedback).
