@@ -32,5 +32,5 @@ Alle liegen als 256×256 RGBA in `docs/mockups/icons/ui/` und `game/public/icons
 
 1. **Buttons:** Inhalt ~172×139 in 256² → viel Transparenz; für Bloons-UI oft besser als breite Bar (~3:1) statt Quadrat.
 2. **Standarten:** Vorschlag A festgelegt → final blau+rot unter [`pennant-final/`](pennant-final/); Deploy-Pflicht in [`../ASSET_DB.json`](../ASSET_DB.json) und [`../../A2c-RULES.md`](../../A2c-RULES.md).
-3. **Slot:** von 1024²-Quelle skaliert; Zaun-/Kantenqualität bei Upscale prüfen.
+3. **Bauplatz:** gelber Bauzaun verworfen → drei Stand-Stil-Vorschläge unter [`slot-vorschlaege/`](slot-vorschlaege/).
 4. Parallel: Personen-Icons (Farben/Stufen) laufen in einem separaten Agent und sind hier bewusst ausgeklammert.
