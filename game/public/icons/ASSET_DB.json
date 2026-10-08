@@ -2,6 +2,22 @@
   "version": 1,
   "description": "Kanonische Icon-Pfade für Matchday. Deploy und neue Spiele laden ausschließlich diese Dateien unter game/public/icons/.",
   "ui": {
+    "slotEmptyIso": {
+      "path": "ui/slot-empty-iso.png",
+      "role": "bauplatz",
+      "style": "pfosten-seil-vorschlag-c",
+      "orientation": "isometric-diamond",
+      "locked": false,
+      "notes": "Gewähltes Design C, isometrische Raute (wie Stände). Orientierung noch offen vs. parallel."
+    },
+    "slotEmptyParallel": {
+      "path": "ui/slot-empty-parallel.png",
+      "role": "bauplatz",
+      "style": "pfosten-seil-vorschlag-c",
+      "orientation": "axis-aligned",
+      "locked": false,
+      "notes": "Gewähltes Design C, Kanten parallel zum Bildrand. Nach Auswahl → slot-empty.png ersetzen."
+    },
     "pennantKsc": {
       "path": "ui/pennant-ksc.png",
       "team": "ksc",
