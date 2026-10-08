@@ -3084,19 +3084,13 @@ export class Match {
   private startGoalCelebration(team: TeamId): void {
     const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
     const bier = this.nearestBierStand(team, home);
-    if (!bier) {
-      // No stand — still cheer in place, but power stays in the block
-      for (const f of this.fans) {
-        if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
-        if (f.state === "block" && f.blockId === home) f.cheerT = 2.2;
-      }
-      return;
-    }
     let n = 0;
     for (const f of this.fans) {
       if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
       if (f.onOffense) continue;
       if (f.state !== "block" || f.blockId !== home) continue;
+      f.cheerT = 2.8;
+      if (!bier) continue;
       const sp = this.standWorld(bier);
       this.startPath(
         f,
@@ -3104,21 +3098,23 @@ export class Match {
         "stand",
       );
       f.standKey = slotKey(bier.blockId, bier.index);
-      f.cheerT = 2.5;
       n++;
     }
-    // Ensure the Bierrunde can actually buy (gold into till)
-    if (n > 0) {
+    this.floatAt(
+      blockCenterX(home),
+      blockTopY(home) + 0.08,
+      bier && n > 0 ? "Kurve leer — Bierrunde" : "Jubel!",
+      true,
+    );
+    if (bier && n > 0) {
       bier.beer = Math.min(bier.capacity, Math.max(bier.beer, n));
       this.toast("Jubel — Bierrunde!", 4.2);
       const p = this.standWorld(bier);
       this.floatAt(p.x, p.y - 0.06, "Bierrunde!", true);
-      this.floatAt(
-        blockCenterX(home),
-        blockTopY(home) + 0.08,
-        "Kurve leer — Bierrunde",
-        true,
-      );
+    } else if (!bier) {
+      this.toast("Jubel! (noch kein Bierstand)", 3.5);
+    } else {
+      this.toast("Jubel!", 3.0);
     }
   }
 
