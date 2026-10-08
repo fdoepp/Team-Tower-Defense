@@ -2,6 +2,9 @@
 
 ## Freigegeben: B — Broadcast Bubble (final)
 
+**Kanon für alle Deployments:** [`docs/icons/HUD_TOP_CANON.md`](../../icons/HUD_TOP_CANON.md)  
+**Runtime:** `game/public/icons/ui/scoreboard-top.png` (Alias: `scoreboard-momentum.png`)
+
 **Status:** Richtung freigegeben (mit Feedback)  
 **Asset (freigestellt):** [`proposal-b-final.png`](./proposal-b-final.png) · [`b-final-cutout.png`](./b-final-cutout.png)
 
