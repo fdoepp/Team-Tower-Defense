@@ -4,6 +4,7 @@ import {
   boothQuad,
   FLOOR_GRID_COUPLE,
   floorGangBand,
+  floorRowYs,
   quadCenter,
   quadPennantPos,
   quadToRect,
@@ -34,13 +35,124 @@ export const L = {
   gangPadTop: 0.01,
   /** Gang is the bottom ~third — not half the screen */
   gangH: 0.34,
-  blocksLeft: 0.04,
-  blocksRight: 0.96,
-  blockGap: 0.024,
+  /**
+   * Outer inset for the flush tribune strip (normalized).
+   * Outer corners sit just inside the canvas / sidebars.
+   */
+  blocksLeft: 0.01,
+  blocksRight: 0.99,
+  /** Kept for legacy; flush pack uses face-overlap. */
+  blockGap: 0,
   doorFrac: 0.14,
   plotW: 0.1,
   plotH: 0.095,
 };
+
+/**
+ * Native tribune PNG sizes + floor-face transparent pads (px).
+ * Facing pads are overlapped so platform floors meet flush.
+ */
+export const TRIBUNE_NATIVE = [
+  { w: 426, h: 309, faceL: 6, faceR: 48 }, // Heim blue
+  { w: 386, h: 308, faceL: 14, faceR: 14 }, // Neutral grey
+  { w: 426, h: 309, faceL: 48, faceR: 6 }, // Gäste red
+] as const;
+
+export type TribuneRectNorm = { x: number; y: number; w: number; h: number };
+
+type TribunePack = {
+  aspect: number;
+  rects: TribuneRectNorm[];
+  centers: number[];
+  widths: number[];
+  left: number;
+  right: number;
+};
+
+let _pack: TribunePack | null = null;
+
+/**
+ * Recompute flush tribune strip for the current canvas aspect (W/H).
+ * Grey is centered; blue/red abut it; uniform scale per PNG (no distort).
+ */
+export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack {
+  const aspect = canvasW / Math.max(1, canvasH);
+  if (_pack && Math.abs(_pack.aspect - aspect) < 1e-5) return _pack;
+
+  const edge = L.blocksLeft;
+  const avail = Math.max(0.2, 1 - edge * 2);
+  const shelfTop = 0.16;
+  const shelfBottom = FLOOR_GRID_COUPLE
+    ? Math.max(shelfTop + 0.2, floorRowYs()[0]! - 0.025)
+    : L.blockTop + L.blockBodyH;
+  const maxH = Math.max(0.18, shelfBottom - shelfTop);
+
+  const packAt = (hNorm: number) => {
+    const ws = TRIBUNE_NATIVE.map((t) => (t.w / t.h) * (hNorm / aspect));
+    const xs = [0, 0, 0];
+    const contentRight = (i: number, x: number, w: number) =>
+      x + w * (1 - TRIBUNE_NATIVE[i]!.faceR / TRIBUNE_NATIVE[i]!.w);
+    const contentLeft = (i: number, x: number, w: number) =>
+      x + w * (TRIBUNE_NATIVE[i]!.faceL / TRIBUNE_NATIVE[i]!.w);
+
+    xs[0] = 0;
+    const bcr = contentRight(0, xs[0], ws[0]!);
+    xs[1] = bcr - ws[1]! * (TRIBUNE_NATIVE[1]!.faceL / TRIBUNE_NATIVE[1]!.w);
+    const gcr = contentRight(1, xs[1], ws[1]!);
+    xs[2] = gcr - ws[2]! * (TRIBUNE_NATIVE[2]!.faceL / TRIBUNE_NATIVE[2]!.w);
+
+    const leftC = contentLeft(0, xs[0], ws[0]!);
+    const rightC = contentRight(2, xs[2], ws[2]!);
+    return { xs, ws, leftC, rightC, span: rightC - leftC };
+  };
+
+  const unit = packAt(1);
+  const hForWidth = avail / Math.max(1e-6, unit.span);
+  const hNorm = Math.min(maxH, hForWidth);
+  const packed = packAt(hNorm);
+
+  const greyCx = packed.xs[1]! + packed.ws[1]! / 2;
+  let shift = 0.5 - greyCx;
+  if (packed.leftC + shift < edge) shift = edge - packed.leftC;
+  if (packed.rightC + shift > 1 - edge) shift = 1 - edge - packed.rightC;
+
+  const top = shelfBottom - hNorm;
+  const rects: TribuneRectNorm[] = [0, 1, 2].map((i) => ({
+    x: packed.xs[i]! + shift,
+    y: top,
+    w: packed.ws[i]!,
+    h: hNorm,
+  }));
+
+  _pack = {
+    aspect,
+    rects,
+    centers: rects.map((r) => r.x + r.w / 2),
+    widths: rects.map((r) => r.w),
+    left: rects[0]!.x,
+    right: rects[2]!.x + rects[2]!.w,
+  };
+  return _pack;
+}
+
+function ensureTribunePack(): TribunePack {
+  if (_pack) return _pack;
+  return syncTribuneLayout(16, 9);
+}
+
+export function tribuneRect(blockId: number): TribuneRectNorm {
+  const p = ensureTribunePack();
+  const i = Math.max(0, Math.min(2, blockId | 0));
+  return p.rects[i]!;
+}
+
+export function blocksLeftNorm(): number {
+  return ensureTribunePack().left;
+}
+
+export function blocksRightNorm(): number {
+  return ensureTribunePack().right;
+}
 
 /** 4 plots per block → 12 total */
 export const SLOTS_PER_BLOCK = 4;
@@ -71,15 +183,16 @@ export const PLOT_SCATTER: readonly { x: number; y: number; w: number; h: number
   { x: 0.85, y: 0.875, w: 0.095, h: 0.09 },
 ];
 
-export function blockWidthNorm(): number {
-  const span = L.blocksRight - L.blocksLeft;
-  const gaps = BLOCK_COUNT - 1;
-  return (span - gaps * L.blockGap) / BLOCK_COUNT;
+export function blockWidthNorm(blockId = NEUTRAL_BLOCK): number {
+  const p = ensureTribunePack();
+  const i = Math.max(0, Math.min(2, blockId | 0));
+  return p.widths[i]!;
 }
 
 export function blockCenterX(blockId: number): number {
-  const bw = blockWidthNorm();
-  return L.blocksLeft + bw / 2 + blockId * (bw + L.blockGap);
+  const p = ensureTribunePack();
+  const i = Math.max(0, Math.min(2, blockId | 0));
+  return p.centers[i]!;
 }
 
 export function blockIdToGangX(blockId: number): number {
@@ -101,12 +214,13 @@ export function worldXToGangX(worldX: number): number {
   return Math.max(0, Math.min(1, (worldX - left) / (right - left)));
 }
 
-export function blockTopY(_blockId: number): number {
-  return L.blockTop;
+export function blockTopY(blockId: number): number {
+  return tribuneRect(blockId).y;
 }
 
 export function blockBodyBottom(blockId: number): number {
-  return blockTopY(blockId) + L.blockBodyH;
+  const r = tribuneRect(blockId);
+  return r.y + r.h;
 }
 
 export function gangY(): number {
@@ -150,13 +264,12 @@ export function blockCrowdRect(blockId: number): {
   width: number;
   height: number;
 } {
-  const cx = blockCenterX(blockId);
-  const bw = blockWidthNorm();
+  const r = tribuneRect(blockId);
   return {
-    left: cx - bw * 0.38,
-    top: blockTopY(blockId) + L.blockBodyH * 0.18,
-    width: bw * 0.76,
-    height: L.blockBodyH * 0.72,
+    left: r.x + r.w * 0.12,
+    top: r.y + r.h * 0.18,
+    width: r.w * 0.76,
+    height: r.h * 0.72,
   };
 }
 

@@ -10,6 +10,7 @@ import {
   onFullscreenChange,
 } from "./game/fullscreen";
 import { drawMatch, hitSlot } from "./game/render";
+import { syncTribuneLayout } from "./game/layout";
 import {
   UI_ICONS,
   preloadIcons,
@@ -565,6 +566,7 @@ function renderMatchScreen(): void {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     m.width = cssW;
     m.height = cssH;
+    syncTribuneLayout(cssW, cssH);
     layoutHud();
     try {
       drawMatch(ctx, m);

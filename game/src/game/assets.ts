@@ -40,6 +40,18 @@ export type SlotEmptyOrientation = "parallel" | "iso";
 /** Preview orientation when FLOOR_GRID_COUPLE is off. */
 export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "parallel";
 
+export const SCENE_ASSETS = {
+  tribuneBlue: "assets/tribune-block-blue.png",
+  tribuneGrey: "assets/tribune-block-grey.png",
+  tribuneRed: "assets/tribune-block-red.png",
+} as const;
+
+export function tribuneIconPath(blockId: number): string {
+  if (blockId === 0) return SCENE_ASSETS.tribuneBlue;
+  if (blockId === 2) return SCENE_ASSETS.tribuneRed;
+  return SCENE_ASSETS.tribuneGrey;
+}
+
 export const UI_ICONS = {
   slotEmpty: "icons/ui/slot-empty.png",
   slotEmptyParallel: "icons/ui/slot-empty-parallel.png",
@@ -118,7 +130,10 @@ function loadOne(src: string): Promise<HTMLImageElement> {
 
 /** All icon paths used in a match (stands × colors × levels + units + UI). */
 function allIconPaths(): string[] {
-  const paths = new Set<string>(Object.values(UI_ICONS));
+  const paths = new Set<string>([
+    ...Object.values(UI_ICONS),
+    ...Object.values(SCENE_ASSETS),
+  ]);
   for (const kind of ["bier", "fanshop", "ordner"] as BuildingKind[]) {
     for (const color of ["blue", "red", "grey"] as TeamColor[]) {
       for (let lv = 1; lv <= 5; lv++) paths.add(standIconPath(kind, color, lv));

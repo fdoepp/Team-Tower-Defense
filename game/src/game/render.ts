@@ -12,7 +12,8 @@ import {
   SEATS_PER_BLOCK,
   FLOOR_GRID_COUPLE,
   blockCenterX,
-  blockWidthNorm,
+  blocksLeftNorm,
+  blocksRightNorm,
   boothQuad,
   boothRect,
   doorPos,
@@ -20,6 +21,8 @@ import {
   gangY,
   pennantPos,
   seatPos,
+  syncTribuneLayout,
+  tribuneRect,
 } from "./layout";
 import {
   UI_ICONS,
@@ -29,6 +32,7 @@ import {
   slotEmptyIconPath,
   standIconPath,
   teamColor,
+  tribuneIconPath,
   unitIconPath,
   type SlotControl,
 } from "./assets";
@@ -40,6 +44,7 @@ export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } 
 export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   const w = m.width;
   const h = m.height;
+  syncTribuneLayout(w, h);
   // Skip when shell is display:none / zero-sized — arcTo crashes on tiny/negative rects
   if (w < 32 || h < 32) return;
   ctx.clearRect(0, 0, w, h);
@@ -180,28 +185,33 @@ function drawStadiumAtmosphere(
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 12]);
   ctx.beginPath();
-  ctx.moveTo(w * L.blocksLeft, floorY + h * gangHeight() * 0.55);
-  ctx.lineTo(w * L.blocksRight, floorY + h * gangHeight() * 0.55);
+  ctx.moveTo(w * blocksLeftNorm(), floorY + h * gangHeight() * 0.55);
+  ctx.lineTo(w * blocksRightNorm(), floorY + h * gangHeight() * 0.55);
   ctx.stroke();
   ctx.setLineDash([]);
 }
 
+/**
+ * Freigestellte Tribünen — flush strip, grey centered, uniform scale (no distort).
+ */
 function drawBlocks(
   ctx: CanvasRenderingContext2D,
   m: Match,
   w: number,
   h: number,
 ): void {
-  const top = h * L.blockTop;
-  const bh = h * L.blockBodyH;
-  const bw = blockWidthNorm() * w;
+  syncTribuneLayout(w, h);
   const labels = ["Heim", "Neutral", "Gäste"];
 
   for (const b of BLOCK_META) {
-    const cx = blockCenterX(b.id) * w;
-    const left = cx - bw / 2;
+    const tr = tribuneRect(b.id);
+    const left = tr.x * w;
+    const top = tr.y * h;
+    const bw = tr.w * w;
+    const bh = tr.h * h;
+    const cx = left + bw / 2;
     const owner = m.blockOwner[b.id];
-    // Gradual tint from people in the block (capture pressure)
+
     let blue = 0;
     let red = 0;
     for (const f of m.fans) {
@@ -212,97 +222,63 @@ function drawBlocks(
       else if (f.team === "vfb") red++;
     }
     const crowd = blue + red;
-    const lean = crowd > 0 ? (blue - red) / crowd : 0; // +heim blue, -gast red
+    const lean = crowd > 0 ? (blue - red) / crowd : 0;
     const pressure = Math.min(1, crowd / 8) * Math.abs(lean);
-
-    let base =
-      owner === "ksc" ? "#2563eb" : owner === "vfb" ? "#dc2626" : "#64748b";
-    let deep =
-      owner === "ksc" ? "#1e3a8a" : owner === "vfb" ? "#7f1d1d" : "#334155";
-    if (owner === "neutral" && pressure > 0.08) {
-      base = lean > 0 ? lerpHex("#64748b", "#2563eb", pressure) : lerpHex("#64748b", "#dc2626", pressure);
-      deep = lean > 0 ? lerpHex("#334155", "#1e3a8a", pressure) : lerpHex("#334155", "#7f1d1d", pressure);
-    }
     const glow =
       owner === "ksc" || (owner === "neutral" && lean > 0.15)
-        ? `rgba(59,130,246,${0.25 + pressure * 0.35})`
+        ? `rgba(59,130,246,${0.18 + pressure * 0.3})`
         : owner === "vfb" || (owner === "neutral" && lean < -0.15)
-          ? `rgba(248,113,113,${0.25 + pressure * 0.35})`
-          : "rgba(148,163,184,0.25)";
+          ? `rgba(248,113,113,${0.18 + pressure * 0.3})`
+          : "rgba(148,163,184,0.14)";
 
-    // colored glow under platform
-    const g = ctx.createRadialGradient(cx, top + bh * 0.4, 10, cx, top + bh * 0.5, bw * 0.7);
+    const g = ctx.createRadialGradient(cx, top + bh * 0.45, 8, cx, top + bh * 0.5, bw * 0.72);
     g.addColorStop(0, glow);
     g.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = g;
-    ctx.fillRect(left - 8, top - 12, bw + 16, bh + 24);
+    ctx.fillRect(left - 10, top - 8, bw + 20, bh + 20);
 
-    // raised platform base (isometric lip)
-    ctx.fillStyle = "rgba(0,0,0,0.4)";
-    roundRect(ctx, left + 6, top + 10, bw, bh, 20);
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(cx, top + bh * 0.92, bw * 0.42, bh * 0.08, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    const shell = ctx.createLinearGradient(left, top, left, top + bh);
-    shell.addColorStop(0, base);
-    shell.addColorStop(0.35, deep);
-    shell.addColorStop(0.75, "#0f172a");
-    shell.addColorStop(1, "#020617");
-    ctx.fillStyle = shell;
-    roundRect(ctx, left, top, bw, bh, 20);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(255,255,255,0.28)";
-    ctx.lineWidth = 2.5;
-    roundRect(ctx, left + 2, top + 2, bw - 4, bh - 4, 18);
-    ctx.stroke();
-
-    // terrace steps
-    ctx.save();
-    roundRect(ctx, left, top, bw, bh, 20);
-    ctx.clip();
-    for (let row = 0; row < 5; row++) {
-      const ry = top + bh * 0.2 + row * (bh * 0.14);
-      ctx.fillStyle = row % 2 === 0 ? "rgba(255,255,255,0.14)" : "rgba(15,23,42,0.3)";
-      ctx.fillRect(left + 10, ry, bw - 20, bh * 0.11);
+    const tribSrc = tribuneIconPath(b.id);
+    const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
+    if (!drew) {
+      ctx.fillStyle =
+        b.id === 0 ? "#2563eb" : b.id === 2 ? "#dc2626" : "#64748b";
+      roundRect(ctx, left, top, bw, bh, 18);
+      ctx.fill();
     }
-    const canopy = ctx.createLinearGradient(left, top, left, top + bh * 0.18);
-    canopy.addColorStop(0, "rgba(15,23,42,0.65)");
-    canopy.addColorStop(1, "rgba(15,23,42,0)");
-    ctx.fillStyle = canopy;
-    ctx.fillRect(left, top, bw, bh * 0.18);
-    ctx.restore();
 
-    // label chip
     const label = labels[b.id] ?? "Block";
-    const chipW = Math.max(54, bw * 0.55);
-    const chipH = Math.max(18, h * 0.026);
-    ctx.fillStyle = "rgba(255,255,255,0.95)";
-    roundRect(ctx, cx - chipW / 2, top + 6, chipW, chipH, 9);
+    const chipW = Math.max(54, bw * 0.48);
+    const chipH = Math.max(18, h * 0.024);
+    const chipY = top + 4;
+    ctx.fillStyle = "rgba(255,255,255,0.94)";
+    roundRect(ctx, cx - chipW / 2, chipY, chipW, chipH, 9);
     ctx.fill();
     if (owner === "ksc" || owner === "vfb") {
-      drawClubCrest(ctx, cx - chipW * 0.28, top + 6 + chipH / 2, chipH * 0.38, owner);
+      drawClubCrest(ctx, cx - chipW * 0.28, chipY + chipH / 2, chipH * 0.38, owner);
     }
     ctx.fillStyle = "#0f172a";
     ctx.font = `800 ${Math.floor(chipH * 0.55)}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(label, cx + (owner === "ksc" || owner === "vfb" ? 6 : 0), top + 6 + chipH / 2 + 0.5);
+    ctx.fillText(
+      label,
+      cx + (owner === "ksc" || owner === "vfb" ? 6 : 0),
+      chipY + chipH / 2 + 0.5,
+    );
     ctx.textBaseline = "alphabetic";
 
-    // exit tunnel
     const d = doorPos(b.id);
-    const doorW = bw * L.doorFrac;
+    const doorW = bw * L.doorFrac * 0.85;
     const corridorTop = d.y * h;
-    const corridorH = Math.max(10, h * gangY() - corridorTop + 6);
+    const corridorH = Math.max(8, h * gangY() - corridorTop + 4);
     const dx = d.x * w - doorW / 2;
-    const tunnel = ctx.createLinearGradient(dx, corridorTop, dx, corridorTop + corridorH);
-    tunnel.addColorStop(0, "#111827");
-    tunnel.addColorStop(1, "#020617");
-    ctx.fillStyle = tunnel;
-    roundRect(ctx, dx, corridorTop - 2, doorW, corridorH + 4, 8);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.12)";
-    roundRect(ctx, dx + 3, corridorTop + 2, doorW - 6, Math.min(corridorH * 0.35, h * 0.03), 5);
+    ctx.fillStyle = "rgba(2,6,23,0.55)";
+    roundRect(ctx, dx, corridorTop - 2, doorW, corridorH + 4, 6);
     ctx.fill();
   }
 }
@@ -416,8 +392,8 @@ function drawGang(
 ): void {
   const y = h * gangY();
   const gh = h * gangHeight();
-  const left = w * L.blocksLeft;
-  const span = w * (L.blocksRight - L.blocksLeft);
+  const left = w * blocksLeftNorm();
+  const span = w * (blocksRightNorm() - blocksLeftNorm());
   const px = left + span * m.linePlayer;
   const ax = left + span * m.lineAi;
 
@@ -455,8 +431,8 @@ function drawFrontStandards(
 ): void {
   const y = h * gangY();
   const gh = h * gangHeight();
-  const left = w * L.blocksLeft;
-  const span = w * (L.blocksRight - L.blocksLeft);
+  const left = w * blocksLeftNorm();
+  const span = w * (blocksRightNorm() - blocksLeftNorm());
   const poles: { x: number; team: "ksc" | "vfb" }[] = [
     { x: left + span * m.linePlayer, team: m.playerTeam },
     { x: left + span * m.lineAi, team: m.aiTeam },
