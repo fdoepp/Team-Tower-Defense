@@ -16,6 +16,7 @@ import {
   boothQuad,
   boothRect,
   doorPos,
+  gangHeight,
   gangY,
   pennantPos,
   seatPos,
@@ -138,8 +139,8 @@ function drawStadiumAtmosphere(
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 12]);
   ctx.beginPath();
-  ctx.moveTo(w * L.blocksLeft, floorY + h * L.gangH * 0.55);
-  ctx.lineTo(w * L.blocksRight, floorY + h * L.gangH * 0.55);
+  ctx.moveTo(w * L.blocksLeft, floorY + h * gangHeight() * 0.55);
+  ctx.lineTo(w * L.blocksRight, floorY + h * gangHeight() * 0.55);
   ctx.stroke();
   ctx.setLineDash([]);
 }
@@ -283,7 +284,7 @@ function drawGang(
   h: number,
 ): void {
   const y = h * gangY();
-  const gh = h * L.gangH;
+  const gh = h * gangHeight();
   const left = w * L.blocksLeft;
   const span = w * (L.blocksRight - L.blocksLeft);
   const px = left + span * m.linePlayer;
@@ -322,7 +323,7 @@ function drawFrontStandards(
   h: number,
 ): void {
   const y = h * gangY();
-  const gh = h * L.gangH;
+  const gh = h * gangHeight();
   const left = w * L.blocksLeft;
   const span = w * (L.blocksRight - L.blocksLeft);
   const poles: { x: number; team: "ksc" | "vfb" }[] = [
@@ -810,7 +811,7 @@ function drawMannchen(
   }
   const onGang = f.state === "gang" || f.invading;
   const exiting =
-    f.state === "moving" && f.y < gangY() + L.gangH * 0.22;
+    f.state === "moving" && f.y < gangY() + gangHeight() * 0.22;
   const moving = f.state === "moving" || onGang;
   const fighting =
     (onGang || f.invading) && (f.armSwing > 0.15 || f.attackCd > 0.05);

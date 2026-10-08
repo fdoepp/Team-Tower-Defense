@@ -30,10 +30,15 @@ export const FLOOR_COL_XS_NEAR = [
 export const FLOOR_Y_NEAR = 0.985;
 
 /**
- * Row lines far → near (normalized). Equal steps in 1/(y - vp.y).
- * Packed toward the bottom edge so Tribünen + Anzeige above keep room.
+ * Row lines far → near (normalized), 4 lines → 2 Bau rows + Gang:
+ *   [0..1] far Bau row · [1..2] fight Gang · [2..3] near Bau row
+ * Anchors are tuned in inv-depth so the middle band stays wider than a cell
+ * (room for fights) while plots stay packed toward the bottom edge.
  */
-export const FLOOR_ROW_YS = [0.78, 0.875, 0.978] as const;
+export const FLOOR_ROW_YS = [0.705, 0.763, 0.88, 0.978] as const;
+
+/** Bau-row r ∈ {0,1} → starting index into FLOOR_ROW_YS (skips the Gang). */
+const BAU_ROW_LINE = [0, 2] as const;
 
 /** When true, empty plots are drawn warped into floor-grid quads. */
 export const FLOOR_GRID_COUPLE = true;
@@ -46,17 +51,31 @@ function yFromInv(id: number): number {
   return FLOOR_VP.y + 1 / id;
 }
 
-/** Rebuild row ys with equal ground-plane steps between first/last. */
+/**
+ * Rebuild row ys: equal inv-depth steps inside each Bau band, keep the
+ * middle Gang band's relative inv-depth width from FLOOR_ROW_YS.
+ */
 export function floorRowYs(): readonly number[] {
-  const id0 = invDepth(FLOOR_ROW_YS[0]!);
-  const id1 = invDepth(FLOOR_ROW_YS[FLOOR_ROW_YS.length - 1]!);
-  const n = FLOOR_ROW_YS.length;
-  const out: number[] = [];
-  for (let i = 0; i < n; i++) {
-    const id = id0 + ((id1 - id0) * i) / (n - 1);
-    out.push(yFromInv(id));
-  }
-  return out;
+  const raw = FLOOR_ROW_YS;
+  const id = raw.map(invDepth);
+  const cellFar = id[0]! - id[1]!;
+  const gang = id[1]! - id[2]!;
+  const cellNear = id[2]! - id[3]!;
+  // Average the two Bau cell depths so far/near rows feel equal on the ground.
+  const cell = (cellFar + cellNear) / 2;
+  const idNear = id[3]!;
+  const idNearTop = idNear + cell;
+  const idFarBot = idNearTop + gang;
+  const idFarTop = idFarBot + cell;
+  return [yFromInv(idFarTop), yFromInv(idFarBot), yFromInv(idNearTop), yFromInv(idNear)];
+}
+
+/** Fight corridor between the two Bau rows (normalized y). */
+export function floorGangBand(): { y0: number; y1: number; mid: number; h: number } {
+  const rows = floorRowYs();
+  const y0 = rows[1]!;
+  const y1 = rows[2]!;
+  return { y0, y1, mid: (y0 + y1) / 2, h: y1 - y0 };
 }
 
 function xAtDepth(xNear: number, y: number): number {
@@ -66,11 +85,12 @@ function xAtDepth(xNear: number, y: number): number {
   );
 }
 
-/** Cell (c,r) with c∈0..5, r∈0..1 → perspective quad. */
+/** Cell (c,r) with c∈0..5, r∈0..1 → perspective quad (skips Gang line). */
 export function floorCellQuad(c: number, r: number): QuadNorm {
   const rows = floorRowYs();
-  const yTop = rows[r]!;
-  const yBot = rows[r + 1]!;
+  const li = BAU_ROW_LINE[Math.max(0, Math.min(1, r | 0))]!;
+  const yTop = rows[li]!;
+  const yBot = rows[li + 1]!;
   const xlN = FLOOR_COL_XS_NEAR[c]!;
   const xrN = FLOOR_COL_XS_NEAR[c + 1]!;
   return {

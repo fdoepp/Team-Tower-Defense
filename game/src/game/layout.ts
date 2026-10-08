@@ -3,6 +3,7 @@
 import {
   boothQuad,
   FLOOR_GRID_COUPLE,
+  floorGangBand,
   quadCenter,
   quadPennantPos,
   quadToRect,
@@ -107,11 +108,24 @@ export function blockBodyBottom(blockId: number): number {
 }
 
 export function gangY(): number {
+  if (FLOOR_GRID_COUPLE) {
+    // Fight corridor starts at the near edge of the far Bau row.
+    return floorGangBand().y0;
+  }
   return L.blockTop + L.blockBodyH + L.gangPadTop;
 }
 
 export function gangMidY(): number {
+  if (FLOOR_GRID_COUPLE) {
+    return floorGangBand().mid;
+  }
   return gangY() + L.gangH * 0.42;
+}
+
+/** Normalized gang band height (floor-grid corridor when coupled). */
+export function gangHeight(): number {
+  if (FLOOR_GRID_COUPLE) return floorGangBand().h;
+  return L.gangH;
 }
 
 export function doorPos(blockId: number): { x: number; y: number } {
@@ -196,4 +210,4 @@ export function pennantPos(blockId: number, index: number): { x: number; y: numb
   return { x: r.x + r.w * 0.08, y: r.y + r.h * 0.05 };
 }
 
-export { boothQuad, FLOOR_GRID_COUPLE, quadCenter } from "./floorGrid";
+export { boothQuad, FLOOR_GRID_COUPLE, floorGangBand, quadCenter } from "./floorGrid";
