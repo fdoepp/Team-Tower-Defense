@@ -1,26 +1,26 @@
 # Test Build — integrierte spielbare Version
 
 Branch: `cursor/test-build-dba3`  
-Basis: `cursor/matchday-game-a9b1` (neueste Gameplay-Linie)
+Basis: `cursor/matchday-game-a9b1` + Fixes aus Agent-Abgleich
 
-## Enthalten (Stand Abgleich mit anderen Agents, 2026-10-08)
+## Enthalten
 
-- **Grafik-Kanon** (`currency-icons-clean-dba3` A/D): logo-only Währungen (Bier-Schaum weiß), FX, HP-Bars, Slot/Wimpel, Bauen/Upgrade, Stadium + Tribünen — Pixel-Hashes identisch
-- **Personen-Heads** (`icon-ui-einzeln-3755`): neueste freigestellte Rail-Heads (60 PNGs)
-- **Unit-/Stand-Bodies**: Matchday/Bauplatz/Unit-Icons-Linie (farbige Fans/Stände)
-- **Personen-Animationen**: laufen / trinken / werfen / kämpfen / jubeln
-- **Matchday-Gameplay**: Floor-Grid-Bauplätze, Tribune-Flush, Gang-Kampf, Ordnerposten, Scoreboard-Cutout
-
-Andere Agents geprüft: `bauplatz-gang-main-4235` (Layout auf main, ältere Currency-Pixel), `icon-ui-einzeln-3755` (Heads + Scoreboard/UI), `currency-icons-clean-dba3` (Asset-Kanon), `matchday-icons-a9b1`, `unit-icons-agent-4235`, `team-td-konzept-dba3` (älter, kein Gameplay-Tip).
+- **Personen-Sidebar (icon-ui):** Kopf links, Kaufen / Senden / Upgrade rechts daneben
+- **Grafik-Kanon:** Currency A/D, FX/HP, Slot/Wimpel, Stadium + Tribünen, freigestellte Heads
+- **Gebäude:** fest gepflanzt (kein Idle-Bob / keine Bewegungs-Animation)
+- **Gang-Personen:** deutlich größer (Gang-Band + Bewegung)
+- **Tribünen:** tieferer Abschluss (Floor-Grid nach unten, Shelf über Far-Bau)
+- **Neutrale:** keine Capture-Ringe / keine teamfarbenen Sitz-Pads
+- **Matchday-Gameplay:** Floor-Grid, Tribune-Flush, Gang, Animationen, Unit-Upgrades
 
 ## Live
 
-**Play:** https://principle-suggest-stages-rolls.trycloudflare.com
+**Play:** https://menus-burton-valium-progressive.trycloudflare.com
 
-Handy quer / Vollbild empfohlen.
+Handy quer / Vollbild empfohlen. Hard-Refresh bei Cache.
 
 ## Lokal
 
 ```bash
-cd game && npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 4176
+cd game && npm install && npm run build && npm run preview -- --host 0.0.0.0 --port 4177
 ```

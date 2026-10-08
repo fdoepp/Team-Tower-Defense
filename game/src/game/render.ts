@@ -44,7 +44,7 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
-import { scaleQuad } from "./floorGrid";
+import { floorGangBand, scaleQuad } from "./floorGrid";
 
 export { SEATS_PER_BLOCK } from "./layout";
 export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
@@ -264,26 +264,15 @@ function drawSeats(
       const y = p.y * h;
       const occ = m.seatOccupied(b.id, i);
       // No buy "+" in blocks — hiring is via Personen-Rail only
+      // Neutrals: flat grey pad only — never team-colored / capture rings.
       let cushion = occ ? "rgba(0,0,0,0.1)" : "rgba(0,0,0,0.14)";
       if (occ?.team === "ksc") cushion = "rgba(37,99,235,0.18)";
       else if (occ?.team === "vfb") cushion = "rgba(220,38,38,0.18)";
+      else if (occ?.team === "neutral") cushion = "rgba(100,116,139,0.16)";
 
       ctx.fillStyle = cushion;
       roundRect(ctx, x - 9, y - 3, 18, 8, 3);
       ctx.fill();
-
-      // Capture ring on converting neutrals
-      if (occ?.team === "neutral" && Math.abs(occ.captureProg) > 0.08) {
-        const prog = Math.abs(occ.captureProg);
-        ctx.strokeStyle =
-          occ.captureProg > 0
-            ? `rgba(59,130,246,${0.4 + prog * 0.5})`
-            : `rgba(239,68,68,${0.4 + prog * 0.5})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
-        ctx.stroke();
-      }
     }
   }
 }
@@ -589,12 +578,14 @@ function drawBuilding(
   ctx.ellipse(cx, footY + size * 0.06, size * 0.32, size * 0.08, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  // Buildings stay planted — no idle bob / sway (not movable props).
   const drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
     t: m.realElapsed,
     phase: s.blockId * 1.7 + s.index * 0.9,
-    mode: s.prodFlash > 0.2 ? "cheer" : "idle",
+    mode: "idle",
     facing: 1,
     hop: 0,
+    still: true,
   });
   if (!drew) {
     ctx.fillStyle = grey ? "#e2e8f0" : player ? "#eff6ff" : ai ? "#fef2f2" : "#f8fafc";
@@ -788,14 +779,13 @@ function lerpHex(a: string, b: string, t: number): string {
   return `#${((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1)}`;
 }
 
-function unitVisualLevel(m: Match, team: FanUnit["team"]): number {
-  let maxLv = 1;
-  for (const s of m.slots) {
-    if (s.building && s.owner === team && !s.greyNeutral) {
-      maxLv = Math.max(maxLv, s.level || 1);
-    }
-  }
-  return Math.max(1, Math.min(5, maxLv));
+function unitVisualLevel(
+  m: Match,
+  team: FanUnit["team"],
+  kind: FanUnit["kind"] | "ordner" = "normalos",
+): number {
+  if (team === "neutral") return 1;
+  return m.unitLevelOf(team, kind === "ordner" ? "ordner" : kind);
 }
 
 function fanFacing(f: FanUnit): number {
@@ -911,30 +901,21 @@ function drawMannchen(
   const moving = f.state === "moving" || onGang;
   const sizeMul =
     f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
-  const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
+  // Bigger in the fight corridor (and near it) so gang reads vs booth props.
+  const gy = y / Math.max(1, h);
+  const gang = floorGangBand();
+  const nearGang =
+    gy >= gang.y0 - 0.04 && gy <= gang.y1 + 0.05;
+  const size = Math.max(
+    40,
+    h * (onGang || moving || nearGang ? 0.195 : 0.09) * sizeMul,
+  );
   const color = teamColor(f.team);
-  const lv = unitVisualLevel(m, f.team);
+  const lv = unitVisualLevel(m, f.team, f.kind);
   const src = unitIconPath(f.kind, color, lv);
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing = fanFacing(f);
   const anim = personAnimMode(m, f);
-
-  if (Math.abs(f.captureProg) > 0.12 && f.team === "neutral") {
-    ctx.strokeStyle =
-      f.captureProg > 0
-        ? `rgba(59,130,246,${0.35 + Math.abs(f.captureProg) * 0.55})`
-        : `rgba(239,68,68,${0.35 + Math.abs(f.captureProg) * 0.55})`;
-    ctx.lineWidth = Math.max(2, size * 0.04);
-    ctx.beginPath();
-    ctx.arc(
-      x,
-      y - size * 0.35,
-      size * 0.55,
-      -Math.PI / 2,
-      -Math.PI / 2 + Math.abs(f.captureProg) * Math.PI * 2,
-    );
-    ctx.stroke();
-  }
 
   const drew = drawToyIcon(ctx, src, x, y, size, {
     t: m.realElapsed,
@@ -1263,8 +1244,13 @@ function drawSteward(
   const s = 10 * Math.max(1, h * 0.028 / 10);
   const neutral = f.team === "neutral";
   const hpCol = neutral ? "#a8a29e" : "#facc15";
-  const size = Math.max(24, h * 0.07);
-  const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(m, f.team));
+  const onGang = f.state === "gang" || f.state === "moving" || f.invading;
+  const size = Math.max(36, h * (onGang ? 0.16 : 0.08));
+  const src = unitIconPath(
+    "ordner",
+    teamColor(f.team),
+    unitVisualLevel(m, f.team, "ordner"),
+  );
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing =
     f.state === "moving" || f.path.length > f.pathI

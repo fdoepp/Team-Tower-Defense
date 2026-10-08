@@ -35,12 +35,17 @@ import {
   STEWARD_HIRE_GOLD,
   STEWARD_STATS,
   ULTRA_BEER_INTERVAL,
+  UNIT_FULL_LABEL,
+  UNIT_UPGRADE_MAX,
   UPGRADE_COST,
   UPGRADE_MAX,
   ANIM_DRINK_SEC,
   ANIM_SHOP_SEC,
   ANIM_THROW_SEC,
+  defaultUnitLevels,
   productionRate,
+  unitStatMul,
+  unitUpgradeCost,
   type AiDifficulty,
   type BuildSlot,
   type BuildingKind,
@@ -53,6 +58,7 @@ import {
   type SoloSettings,
   type SpeedMode,
   type TeamId,
+  type UnitUiKind,
 } from "./types";
 import { clamp, expandMix, slotKey, teamLabel } from "./util";
 import {
@@ -219,6 +225,11 @@ export class Match {
   /** battle line gangX 0..1 (vorderster Ultra) */
   linePlayer = 0;
   lineAi = 1;
+  /** Central per-type unit levels (player + AI). Visual + stats. */
+  unitLevels: Record<TeamId, Record<UnitUiKind, number>> = {
+    ksc: defaultUnitLevels(),
+    vfb: defaultUnitLevels(),
+  };
 
   constructor(cfg: MatchConfig) {
     this.cfg = cfg;
@@ -299,6 +310,60 @@ export class Match {
     this.speed = 1;
   }
 
+  unitLevelOf(team: TeamId | "neutral", kind: UnitUiKind): number {
+    if (team === "neutral") return 1;
+    const lv = this.unitLevels[team]?.[kind] ?? 1;
+    return Math.max(1, Math.min(UNIT_UPGRADE_MAX, lv));
+  }
+
+  upgradeUnitCost(kind: UnitUiKind): number | null {
+    return unitUpgradeCost(this.unitLevelOf(this.playerTeam, kind));
+  }
+
+  canUpgradeUnit(kind: UnitUiKind): boolean {
+    const cost = this.upgradeUnitCost(kind);
+    return cost != null && this.gold >= cost;
+  }
+
+  tryUpgradeUnit(kind: UnitUiKind): boolean {
+    const cost = this.upgradeUnitCost(kind);
+    if (cost == null) {
+      this.toast("Max. Stufe");
+      return false;
+    }
+    if (this.gold < cost) {
+      this.toast(`${cost}€ nötig`);
+      return false;
+    }
+    this.gold -= cost;
+    const prev = this.unitLevelOf(this.playerTeam, kind);
+    const next = prev + 1;
+    this.unitLevels[this.playerTeam][kind] = next;
+    this.applyUnitLevelBuff(this.playerTeam, kind, prev, next);
+    this.toast(`${UNIT_FULL_LABEL[kind]} → Lv${next}`);
+    return true;
+  }
+
+  /** Scale HP of living units when the central type level rises. */
+  private applyUnitLevelBuff(
+    team: TeamId,
+    kind: UnitUiKind,
+    fromLv: number,
+    toLv: number,
+  ): void {
+    const fromMul = unitStatMul(fromLv);
+    const toMul = unitStatMul(toLv);
+    if (toMul <= fromMul) return;
+    const ratio = toMul / fromMul;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.team !== team) continue;
+      const isOrdner = f.isSteward;
+      if (kind === "ordner" ? !isOrdner : isOrdner || f.kind !== kind) continue;
+      f.maxHp = Math.round(f.maxHp * ratio);
+      f.hp = Math.min(f.maxHp, Math.round(f.hp * ratio));
+    }
+  }
+
   private makeFan(
     kind: FanKind,
     team: TeamId | "neutral",
@@ -313,6 +378,8 @@ export class Match {
         : kind === "ultras"
           ? ULTRA_BEER_INTERVAL
           : NORMALO_BEER_INTERVAL;
+    const mul = unitStatMul(this.unitLevelOf(team, kind));
+    const maxHp = Math.round(FAN_STATS[kind].maxHp * mul);
     return {
       id: uid(),
       kind,
@@ -321,8 +388,8 @@ export class Match {
       state: "block",
       seatIndex: seat,
       standKey: null,
-      hp: FAN_STATS[kind].maxHp,
-      maxHp: FAN_STATS[kind].maxHp,
+      hp: maxHp,
+      maxHp,
       thirst: 25 + Math.random() * 25,
       satisfiedUntil: this.realElapsed + beerIv * (0.4 + Math.random() * 0.4),
       shopUntil: 1e9,
@@ -353,7 +420,11 @@ export class Match {
   private makeSteward(team: TeamId | "neutral", stand: BuildSlot): FanUnit {
     const sp = this.stewardPostPos(stand);
     const gx = blockIdToGangX(stand.blockId);
-    const hp = STEWARD_STATS.maxHpBase + stand.level * STEWARD_STATS.maxHpPerLevel;
+    const typeMul = unitStatMul(this.unitLevelOf(team, "ordner"));
+    const hp = Math.round(
+      (STEWARD_STATS.maxHpBase + stand.level * STEWARD_STATS.maxHpPerLevel) *
+        typeMul,
+    );
     // Spawn already on gang — tickFans skips stewards, so a "moving" path
     // would never finish and they'd never patrol.
     return {
@@ -2360,13 +2431,17 @@ canBuy(kind: FanKind): boolean {
   }
 
   private attackOf(f: FanUnit): number {
-    if (f.isSteward) return STEWARD_STATS.attack;
-    return FAN_STATS[f.kind].attack;
+    const kind: UnitUiKind = f.isSteward ? "ordner" : f.kind;
+    const mul = unitStatMul(this.unitLevelOf(f.team, kind));
+    if (f.isSteward) return STEWARD_STATS.attack * mul;
+    return FAN_STATS[f.kind].attack * mul;
   }
 
   private defenseOf(f: FanUnit): number {
-    if (f.isSteward) return STEWARD_STATS.defense;
-    return FAN_STATS[f.kind].defense;
+    const kind: UnitUiKind = f.isSteward ? "ordner" : f.kind;
+    const mul = unitStatMul(this.unitLevelOf(f.team, kind));
+    if (f.isSteward) return STEWARD_STATS.defense * mul;
+    return FAN_STATS[f.kind].defense * mul;
   }
 
   private enemyUltraInBlock(blockId: number, defenderTeam: TeamId): boolean {

@@ -4,7 +4,6 @@ import {
   boothQuad,
   FLOOR_GRID_COUPLE,
   floorGangBand,
-  floorRowYs,
   quadCenter,
   quadPennantPos,
   quadToRect,
@@ -82,12 +81,12 @@ export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack
   const edge = L.blocksLeft; // symmetric inset; blocksRight mirrored
   const avail = Math.max(0.2, 1 - edge * 2);
 
-  // Vertical shelf: sit above Bauplätze / Gang, below scoreboard.
-  const shelfTop = 0.16;
+  // Vertical shelf: feet just above the far Bau row (floor sits lower → tribunes end lower).
+  const shelfTop = 0.12;
   const shelfBottom = FLOOR_GRID_COUPLE
-    ? Math.max(shelfTop + 0.2, floorRowYs()[0]! - 0.025)
+    ? Math.max(shelfTop + 0.3, floorGangBand().y0 - 0.012)
     : L.blockTop + L.blockBodyH;
-  const maxH = Math.max(0.18, shelfBottom - shelfTop);
+  const maxH = Math.max(0.28, shelfBottom - shelfTop);
 
   /** Pack at height hNorm; returns AABB xs/ws + content span. */
   const packAt = (hNorm: number) => {

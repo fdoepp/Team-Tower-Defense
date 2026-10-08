@@ -401,6 +401,8 @@ export type ToyAnim = {
   strike?: number;
   /** 0..1 progress within action (drink/throw/shop) for pose blending */
   actionProg?: number;
+  /** Planted props (buildings): no idle bob / sway / squash */
+  still?: boolean;
 };
 
 /**
@@ -426,6 +428,17 @@ export function drawToyIcon(
     (mode === "walk" || mode === "exit" ? 1 : mode === "fight" ? 0.7 : 0);
   const strike = anim.strike ?? 0;
   const ap = Math.max(0, Math.min(1, anim.actionProg ?? strike));
+  if (anim.still) {
+    const imgW = img.naturalWidth || img.width;
+    const imgH = img.naturalHeight || img.height;
+    const ar = imgW / Math.max(1, imgH);
+    let dw = size;
+    let dh = size;
+    if (ar >= 1) dh = size / ar;
+    else dw = size * ar;
+    ctx.drawImage(img, x - dw / 2, y - dh, dw, dh);
+    return true;
+  }
 
   // Walk cadence ~2 steps/sec; exit slightly faster
   const stepHz = mode === "exit" ? 11 : mode === "walk" ? 10.2 : 9.5;

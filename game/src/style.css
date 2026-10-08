@@ -335,129 +335,213 @@ select {
 .match-shell.matchday .unit-rows {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: clamp(3px, 1.8cqw, 6px);
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
   width: 100%;
+  container-type: inline-size;
+  container-name: unit-rows;
 }
 
-/* Bloons card: whole card = Kaufen; fat bar buttons (~40% of card) */
-.match-shell.matchday .ur-row {
+/* Personen Action Cards — Kopf links, Buttons rechts (icon-ui freigestellte Rail) */
+.match-shell.matchday .action-card.unit-card {
+  --ur-scale: 1;
+  --ur-inset: clamp(6px, 3.6cqw, 8px);
+  --ur-pad: var(--ur-inset);
+  --ur-title: clamp(0.68rem, 3.7cqw, 0.82rem);
+  --ur-count-size: clamp(0.78rem, 4.2cqw, 0.95rem);
+  --ur-btn-h: clamp(26px, 14.5cqw, 32px);
+  --ur-btn-font: clamp(0.56rem, 3.15cqw, 0.7rem);
+  --ur-btn-gap: clamp(3px, 2.2cqw, 5px);
+  --ur-btn-pad-x: clamp(3px, 2.4cqw, 6px);
+  --ur-btn-radius: clamp(8px, 4.5cqw, 10px);
+  --ur-btn-ico: clamp(11px, 6.2cqw, 15px);
+  --ur-actions-gap: clamp(3px, 1.8cqw, 4px);
+  --ur-card-pad-y: clamp(3px, 1.6cqw, 6px);
+  --head-base: clamp(36px, 26cqw, 62px);
+  --head-step: clamp(1.5px, 1.4cqw, 4px);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 3px;
+  gap: clamp(2px, 1.2cqw, 4px);
+  padding: var(--ur-card-pad-y) var(--ur-inset);
   flex: 1 1 0;
   min-height: 0;
   min-width: 0;
   width: 100%;
-  max-width: 100%;
   box-sizing: border-box;
-  background: linear-gradient(180deg, #fffaf0, #f3e2c4);
-  border: 2px solid #7a4a22;
+  justify-content: flex-start;
+  align-items: stretch;
+  overflow: hidden;
   border-radius: 14px;
-  padding: 5px 6px 6px;
-  overflow: visible;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    0 3px 0 rgba(60, 30, 10, 0.35);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
+  border: 3px solid #5a3420;
+  background: #764a2e;
+  box-shadow: 0 3px 0 rgba(40, 20, 10, 0.45);
+  color: #fff8eb;
+  cursor: default;
 }
 
-.match-shell.matchday .ur-row:active {
-  transform: translateY(1px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    0 1px 0 rgba(60, 30, 10, 0.35);
+.match-shell.matchday .action-card.unit-card .ac-title-row {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: baseline;
+  justify-content: center;
+  min-height: 1.05em;
+  flex: 0 0 auto;
+  margin-bottom: 0;
 }
 
-.match-shell.matchday .ur-top {
-  display: grid;
-  grid-template-columns: var(--rail-icon) 1fr;
-  gap: 5px;
+.match-shell.matchday .action-card.unit-card .ac-title {
+  font-family: var(--display);
+  font-size: var(--ur-title);
+  font-weight: 900;
+  text-align: center;
+  margin: 0;
+  color: #fff8eb;
+}
+
+.match-shell.matchday .action-card.unit-card .ur-count {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-family: var(--display);
+  font-size: var(--ur-count-size, 0.95rem);
+  font-weight: 900;
+  color: #fde68a;
+  line-height: 1;
+}
+
+.match-shell.matchday .action-card.unit-card .ur-body {
+  display: flex;
+  flex-direction: row;
   align-items: center;
+  gap: var(--ur-inset);
+  width: 100%;
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
-  overflow: hidden;
 }
 
-.match-shell.matchday .ur-row .ur-icon,
-.match-shell.matchday .ur-icon {
-  width: var(--rail-icon);
-  height: var(--rail-icon);
-  object-fit: contain;
-  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.28));
-  pointer-events: none;
-}
-
-.match-shell.matchday .ur-meta {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  column-gap: 4px;
-  min-width: 0;
-}
-
-.match-shell.matchday .ur-name {
-  font-family: var(--display);
-  font-weight: 900;
-  font-size: clamp(0.78rem, 1.6vh, 0.95rem);
-  color: #2b1608;
-  line-height: 1.1;
-}
-
-.match-shell.matchday .ur-count {
-  font-family: var(--display);
-  font-size: clamp(1rem, 2.2vh, 1.25rem);
-  font-weight: 900;
-  color: #1d4ed8;
-  line-height: 1;
-  grid-row: 1 / span 2;
-  align-self: center;
-}
-
-.match-shell.matchday .ur-cost {
-  margin: 0;
-  grid-column: 1;
-  font-size: clamp(0.58rem, 1.3vh, 0.7rem);
-  font-weight: 800;
-  color: #7a5530;
-  line-height: 1.15;
-}
-
-/* Fat Bloons bars: fixed height, fill the touch target (PNG is 360×100).
-   Dual = Kaufen | Senden side-by-side so all 4 person cards fit on phone. */
-.match-shell.matchday .ur-actions {
-  display: flex;
-  flex-direction: row;
-  gap: 5px;
+.match-shell.matchday .action-card.unit-card .ur-head {
+  --head-size: var(--head-base);
+  width: min(var(--head-size), 34%);
+  height: min(var(--head-size), 34%);
   flex: 0 0 auto;
-  height: var(--rail-btn-h);
-  min-height: var(--rail-btn-h);
-  max-height: var(--rail-btn-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="2"] {
+  --head-size: calc(var(--head-base) + var(--head-step));
+}
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="3"] {
+  --head-size: calc(var(--head-base) + 2 * var(--head-step));
+}
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="4"] {
+  --head-size: calc(var(--head-base) + 3 * var(--head-step));
+}
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="5"] {
+  --head-size: calc(var(--head-base) + 4 * var(--head-step));
+}
+
+.match-shell.matchday .action-card.unit-card .ur-head .ac-icon {
   width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 
-.match-shell.matchday .ur-actions-dual {
-  flex-direction: row;
-  /* Half-width each → height from half-width AR so bars stay unstretched */
-  --rail-btn-h: clamp(
-    22px,
-    calc(((var(--rail-w) * 1vw - 28px) / 2) / var(--rail-btn-ar)),
-    36px
-  );
-  height: var(--rail-btn-h);
-  min-height: var(--rail-btn-h);
-  max-height: var(--rail-btn-h);
+.match-shell.matchday .action-card.unit-card .ur-actions {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: var(--ur-actions-gap, 4px);
+  margin-top: 0;
+  width: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: auto;
+  max-height: none;
 }
 
-.match-shell.matchday .ur-row {
-  min-height: calc(var(--rail-btn-h) + 36px);
+.match-shell.matchday .action-card.unit-card .ar-cost-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ur-btn-gap);
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--ur-btn-h);
+  height: var(--ur-btn-h);
+  max-height: var(--ur-btn-h);
+  padding: 0 var(--ur-btn-pad-x);
+  border: none;
+  border-radius: var(--ur-btn-radius);
+  cursor: pointer;
+  color: #fff;
+  font-family: var(--display), system-ui, sans-serif;
+  font-weight: 900;
+  font-size: var(--ur-btn-font);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.28);
+  transition: transform 0.08s ease, filter 0.08s ease;
 }
 
+.match-shell.matchday .ar-cost-btn .ar-verb {
+  line-height: 1;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+.match-shell.matchday .action-card.unit-card .ar-cost-btn .ar-cost-ico {
+  width: var(--ur-btn-ico);
+  height: var(--ur-btn-ico);
+  object-fit: contain;
+  pointer-events: none;
+  flex: 0 0 auto;
+}
+
+.match-shell.matchday .ar-cost-btn .ar-cost-amt {
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  min-width: 1.1em;
+  flex: 0 0 auto;
+}
+
+.match-shell.matchday .ar-cost-btn.ar-kaufen {
+  background: linear-gradient(180deg, #5ec45e 0%, #3a9a48 72%, #2f7f3c 100%);
+}
+
+.match-shell.matchday .ar-cost-btn.ar-senden {
+  background: linear-gradient(180deg, #5a92e6 0%, #3a6fc4 72%, #2f5aa3 100%);
+}
+
+.match-shell.matchday .ar-cost-btn.ar-upgrade {
+  background: linear-gradient(180deg, #b07ae8 0%, #8a52c9 72%, #6f3eab 100%);
+}
+
+.match-shell.matchday .ar-cost-btn:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
+}
+
+.match-shell.matchday .ar-cost-btn.cd,
+.match-shell.matchday .ar-cost-btn:disabled {
+  background: linear-gradient(180deg, #9ca3af 0%, #6b7280 72%, #4b5563 100%);
+  cursor: not-allowed;
+  filter: saturate(0.85);
+}
+
+/* legacy image buttons (build rail may still use) */
 .match-shell.matchday .ar-icon-btn {
   display: block;
   flex: 1 1 0;
@@ -484,7 +568,6 @@ select {
   display: block;
   width: 100%;
   height: 100%;
-  /* Preserve button PNG aspect — never squash/stretch */
   object-fit: contain;
   object-position: center;
   pointer-events: none;
