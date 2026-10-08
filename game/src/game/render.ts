@@ -787,7 +787,26 @@ function drawFans(
     return za - zb || a.y - b.y;
   });
   for (const f of sorted) {
-    drawMannchen(ctx, m, f, f.x * w, f.y * h, h);
+    const x = f.x * w;
+    const y = f.y * h;
+    // Capture ring follows the person (not a fixed seat cell)
+    if (
+      f.team === "neutral" &&
+      !f.isSteward &&
+      f.state === "block" &&
+      Math.abs(f.captureProg) > 0.08
+    ) {
+      const prog = Math.abs(f.captureProg);
+      ctx.strokeStyle =
+        f.captureProg > 0
+          ? `rgba(59,130,246,${0.4 + prog * 0.5})`
+          : `rgba(239,68,68,${0.4 + prog * 0.5})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
+      ctx.stroke();
+    }
+    drawMannchen(ctx, m, f, x, y, h);
   }
 }
 
