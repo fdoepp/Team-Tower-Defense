@@ -31,3 +31,8 @@ Pfad Spiel: `game/public/icons/` · Übersicht: `docs/mockups/icons/preview-all.
 - **Ordner** `units/ordner-{blue\|red\|grey}-1`…`5` (Kanon); Fallback `ordner-1`…`5`
 
 **35 Icons** total.
+
+### UI — Gesundheitsbalken (Konzept)
+- Person: `ui/hp-bar-unit-{full\|high\|mid\|low\|empty}.png` (schmale Kapsel über dem Kopf)
+- Gebäude: `ui/hp-bar-building-*.png` (breiter, Sicherheitsschild links, 4 Segmente)
+- Farbe nach HP: Grün → Gelb → Orange → Rot · Preview: `ui/preview-hp-ordner-lv3.jpg`, `ui/preview-hp-hooligan-lv3.jpg`
