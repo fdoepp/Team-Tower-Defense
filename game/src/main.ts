@@ -213,7 +213,7 @@ function renderMatchScreen(): void {
       <aside class="side-rail left-rail" aria-label="Personen">
         <header class="rail-banner">Personen</header>
         <p class="freie-plaetze">Freie Plätze <b id="free-seats">0</b></p>
-        <div class="unit-rows">
+        <div class="unit-rows rail-rows">
           ${(["normalos", "ultras", "hooligans", "ordner"] as UnitUiKind[])
             .map((kind) => {
               const buy = unitBuyCost(kind);
@@ -351,7 +351,7 @@ function renderMatchScreen(): void {
       <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
         <header class="rail-banner" id="build-rail-title">Bauen</header>
         <p class="rail-hint" id="build-hint">Gebäude wählen</p>
-        <div class="build-rows" id="build-place-rows">
+        <div class="build-rows rail-rows" id="build-place-rows">
           ${(["bier", "fanshop", "ordner"] as BuildingKind[])
             .map((kind) => {
               const src = standIconPath(kind, tc, 1);
@@ -388,7 +388,7 @@ function renderMatchScreen(): void {
             })
             .join("")}
         </div>
-        <div class="build-rows hidden" id="build-upgrade-rows">
+        <div class="build-rows rail-rows hidden" id="build-upgrade-rows">
           <div class="action-card build-card upgrade-card" id="upgrade-panel">
             <div class="ac-title-row">
               <h3 class="ac-title" id="upgrade-title">Gebäude</h3>
