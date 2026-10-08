@@ -978,7 +978,6 @@
       },
       "validation": {
         "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/slot-empty-parallel-blue.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -1014,7 +1013,6 @@
       },
       "validation": {
         "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/slot-empty-parallel-red.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -1050,7 +1048,6 @@
       },
       "validation": {
         "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/slot-empty-iso.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -1086,7 +1083,6 @@
       },
       "validation": {
         "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/slot-empty-iso-blue.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -1122,7 +1118,6 @@
       },
       "validation": {
         "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/slot-empty-iso-red.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
