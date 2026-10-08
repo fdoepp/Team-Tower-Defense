@@ -15,7 +15,7 @@ Andere Agents geprüft: `bauplatz-gang-main-4235` (Layout auf main, ältere Curr
 
 ## Live
 
-**Play:** _(wird nach Tunnel-Start gesetzt)_
+**Play:** https://principle-suggest-stages-rolls.trycloudflare.com
 
 Handy quer / Vollbild empfohlen.
 
