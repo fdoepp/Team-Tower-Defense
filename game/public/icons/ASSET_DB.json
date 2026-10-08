@@ -83,9 +83,13 @@
       "UI_ICONS.btnUpgradePurple",
       "slotEmptyIconPath",
       "standIconPath",
-      "SLOT_EMPTY_ORIENTATION"
+      "SLOT_EMPTY_ORIENTATION",
+      "SCENE_ASSETS.stadiumBg",
+      "tribuneIconPath",
+      "unitHeadIconPath",
+      "UI_ICONS.scoreboard"
     ],
-    "render": "drawBaustelle → slotControlForPlot → slotEmptyIconPath; drawTerritoryPennants für gebaute Buden; Action Cards → standIconPath",
+    "render": "drawStadiumAtmosphere → drawImageCover(stadiumBg); drawBlocks → tribuneIconPath + drawIcon; drawScoreboard → scoreboard-top uniform AR; Personen-Rail → unitHeadIconPath; Action Cards → standIconPath / unitIconPath",
     "autoSwap": {
       "teamControl": "Standarte-Farbe ein (blue/red Plot-Icon)",
       "greyControl": "Standarte aus (neutrales Plot-Icon)",
@@ -117,5 +121,31 @@
   "deploy": {
     "sourceDir": "game/public/icons/",
     "rule": "Jeder Build/Deploy und jede neue Match-Erstellung muss locked Standarten + Bauplatz-Varianten aus diesem Register preloaded verwenden. Runtime tauscht Bauplatz-Icons automatisch bei Team-/Grau-Kontrolle. Action Cards laden Stand-/Unit-Icons soft und Balance-Werte live aus types.ts."
+  },
+  "scene": {
+    "stadiumBg": {
+      "path": "../assets/stadium-floodlight-derby-bg.jpg",
+      "role": "match-backdrop",
+      "locked": true,
+      "notes": "Konzept-Agent stadium-floodlight-derby-bg — Cover, never distort"
+    },
+    "tribuneHeim": {
+      "path": "../assets/tribune-block-blue.png",
+      "role": "tribune",
+      "team": "ksc",
+      "locked": true
+    },
+    "tribuneNeutral": {
+      "path": "../assets/tribune-block-grey.png",
+      "role": "tribune",
+      "team": "neutral",
+      "locked": true
+    },
+    "tribuneGaeste": {
+      "path": "../assets/tribune-block-red.png",
+      "role": "tribune",
+      "team": "vfb",
+      "locked": true
+    }
   }
 }

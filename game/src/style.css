@@ -186,7 +186,9 @@ select {
    Rails ≈ 22% screen; buttons ≈ 36–42% of each person card height. */
 .match-shell.matchday {
   --rail-w: 22%;
-  --rail-btn-h: clamp(42px, 10vh, 54px);
+  /* Wide bar PNGs are 320×96 (AR ≈ 3.33) — height from width, never squash */
+  --rail-btn-ar: 3.333;
+  --rail-btn-h: clamp(28px, calc((var(--rail-w) * 1vw - 22px) / var(--rail-btn-ar)), 44px);
   --rail-icon: clamp(40px, 7vh, 52px);
   flex: 1;
   min-height: 0;
@@ -455,6 +457,7 @@ select {
   height: var(--rail-btn-h);
   min-height: var(--rail-btn-h);
   max-height: var(--rail-btn-h);
+  aspect-ratio: 320 / 96;
   padding: 0;
   border: none;
   background: transparent;
@@ -472,8 +475,8 @@ select {
   display: block;
   width: 100%;
   height: 100%;
-  /* Stretch wide bar art into the touch rect — contain made dual buttons ~17px tall */
-  object-fit: fill;
+  /* Preserve button PNG aspect — never squash/stretch */
+  object-fit: contain;
   object-position: center;
   pointer-events: none;
 }
@@ -582,7 +585,7 @@ select {
   height: var(--rail-btn-h);
   min-height: var(--rail-btn-h);
   max-height: var(--rail-btn-h);
-  object-fit: fill;
+  object-fit: contain;
   object-position: center;
   margin-top: 0;
   filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.28));
@@ -823,23 +826,24 @@ select {
   font-weight: 700;
 }
 
-/* Phone landscape: same % rails, never crush buttons below touch size */
+/* Phone landscape: same % rails; button height follows PNG AR (no squash) */
 @media (max-width: 900px) {
   .match-shell.matchday {
     --rail-w: 23%;
-    --rail-btn-h: clamp(40px, 11vh, 52px);
+    --rail-btn-h: clamp(26px, calc((23vw - 22px) / var(--rail-btn-ar)), 42px);
     --rail-icon: clamp(36px, 8vh, 48px);
     grid-template-columns: var(--rail-w) minmax(0, 1fr);
   }
   .match-shell.matchday.build-open {
     --rail-w: 21.5%;
+    --rail-btn-h: clamp(24px, calc((21.5vw - 22px) / var(--rail-btn-ar)), 40px);
     grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--rail-w);
   }
 }
 
 @media (orientation: landscape) and (max-height: 420px) {
   .match-shell.matchday {
-    --rail-btn-h: clamp(38px, 10.5vh, 44px);
+    --rail-btn-h: clamp(22px, calc((var(--rail-w) * 1vw - 20px) / var(--rail-btn-ar)), 36px);
     --rail-icon: clamp(28px, 7vh, 34px);
   }
   .match-shell.matchday .rail-banner {

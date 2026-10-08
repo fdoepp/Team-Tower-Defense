@@ -1,10 +1,21 @@
 {
   "id": "ultra-canon",
-  "status": "approved",
+  "status": "locked",
+  "finished": true,
   "effectiveFrom": "2026-10-08",
+  "sourceOfTruth": "game/public/icons/units/ultra-{color}-{level}.png",
+  "agentDiscovery": [
+    "docs/icons/ULTRA_CANON.md",
+    "docs/icons/ultra-canon.json",
+    "game/public/icons/units/ultra-*.png",
+    "unit-icons-agent/assets/units/ultra-*.png",
+    "unit-icons-agent/bot/instructions.md"
+  ],
+  "deploymentRule": "All game deployments and new branches must load only game/public/icons/units/ultra-{grey|blue|red}-{1..5}.png",
   "replaces": [
     "earlier ultra cutouts without pyro/smoke ladder",
-    "unit-icons-agent/docs/ultra-progression/proposals/a-*",
+    "unit-icons-agent/docs/ultra-progression/proposals/*",
+    "edge-cropped ultra assets before 2026-10-08 uncut regeneration",
     "legacy ultra assets with UP chest lettering as primary art"
   ],
   "style": {

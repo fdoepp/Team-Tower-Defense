@@ -21,20 +21,31 @@ export function standIconPath(
   return `icons/stands/${kind}-${color}-${lv}.png`;
 }
 
+const UNIT_FILE: Record<FanKind | "ordner", string> = {
+  normalos: "fan",
+  ultras: "ultra",
+  hooligans: "hooligan",
+  ordner: "ordner",
+};
+
 /** Soft-bound unit icon — always from `game/public/icons/units/`. */
 export function unitIconPath(
   kind: FanKind | "ordner",
   color: TeamColor,
   level = 1,
 ): string {
-  const map: Record<FanKind | "ordner", string> = {
-    normalos: "fan",
-    ultras: "ultra",
-    hooligans: "hooligan",
-    ordner: "ordner",
-  };
   const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
-  return `icons/units/${map[kind]}-${color}-${lv}.png`;
+  return `icons/units/${UNIT_FILE[kind]}-${color}-${lv}.png`;
+}
+
+/** Soft-bound head crop for Personen-Rail (Icon-Agent heads/). */
+export function unitHeadIconPath(
+  kind: FanKind | "ordner",
+  color: TeamColor,
+  level = 1,
+): string {
+  const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
+  return `icons/units/heads/${UNIT_FILE[kind]}-${color}-${lv}.png`;
 }
 
 /** Deploy-Default: parallel zum Bildrand (iso nur Alternate). */
@@ -77,6 +88,23 @@ export const UI_ICONS = {
   scoreboardOrbHeim: "icons/ui/scoreboard-top-orb-heim.png",
   scoreboardOrbGast: "icons/ui/scoreboard-top-orb-gast.png",
 } as const;
+
+/**
+ * Stadium scene (Konzept-Agent / stadium-background.mdc).
+ * Derby-BG + freigestellte Tribünen — nie verzerren (Cover/Contain).
+ */
+export const SCENE_ASSETS = {
+  stadiumBg: "assets/stadium-floodlight-derby-bg.jpg",
+  tribuneBlue: "assets/tribune-block-blue.png",
+  tribuneGrey: "assets/tribune-block-grey.png",
+  tribuneRed: "assets/tribune-block-red.png",
+} as const;
+
+export function tribuneIconPath(blockId: number): string {
+  if (blockId === 0) return SCENE_ASSETS.tribuneBlue;
+  if (blockId === 2) return SCENE_ASSETS.tribuneRed;
+  return SCENE_ASSETS.tribuneGrey;
+}
 
 export function currencyIconPath(
   currency: "beer" | "merch" | "security" | "gold",
@@ -130,7 +158,10 @@ function loadOne(src: string): Promise<HTMLImageElement> {
 }
 
 function allIconPaths(): string[] {
-  const paths = new Set<string>(Object.values(UI_ICONS));
+  const paths = new Set<string>([
+    ...Object.values(UI_ICONS),
+    ...Object.values(SCENE_ASSETS),
+  ]);
   for (const orient of ["parallel", "iso"] as SlotEmptyOrientation[]) {
     for (const c of ["grey", "blue", "red"] as SlotControl[]) {
       paths.add(slotEmptyIconPath(c, orient));
@@ -143,7 +174,10 @@ function allIconPaths(): string[] {
   }
   for (const kind of ["normalos", "ultras", "hooligans", "ordner"] as const) {
     for (const color of ["blue", "red", "grey"] as TeamColor[]) {
-      for (let lv = 1; lv <= 5; lv++) paths.add(unitIconPath(kind, color, lv));
+      for (let lv = 1; lv <= 5; lv++) {
+        paths.add(unitIconPath(kind, color, lv));
+        paths.add(unitHeadIconPath(kind, color, lv));
+      }
     }
   }
   return [...paths];
@@ -162,7 +196,10 @@ export function getIcon(src: string): HTMLImageElement | null {
   return null;
 }
 
-/** Draw a freigestelltes icon centered in a rect, preserving aspect ratio. */
+/**
+ * Draw a freigestelltes icon centered in a rect, preserving aspect ratio.
+ * Never squash/stretch — only uniform scale (Contain).
+ */
 export function drawIcon(
   ctx: CanvasRenderingContext2D,
   src: string,
@@ -184,6 +221,34 @@ export function drawIcon(
   const dx = x + (w - dw) / 2;
   const dy = y + (h - dh) / 2;
   ctx.drawImage(img, dx, dy, dw, dh);
+  return true;
+}
+
+/**
+ * Cover a rect with an image (uniform scale, crop overflow).
+ * Preserves aspect — never distorts.
+ */
+export function drawImageCover(
+  ctx: CanvasRenderingContext2D,
+  src: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): boolean {
+  const img = getIcon(src);
+  if (!img) return false;
+  const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+  const dw = img.naturalWidth * scale;
+  const dh = img.naturalHeight * scale;
+  const dx = x + (w - dw) / 2;
+  const dy = y + (h - dh) / 2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  ctx.drawImage(img, dx, dy, dw, dh);
+  ctx.restore();
   return true;
 }
 

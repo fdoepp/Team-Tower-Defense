@@ -15,6 +15,7 @@ import {
   preloadIcons,
   standIconPath,
   teamColor,
+  unitHeadIconPath,
   unitIconPath,
 } from "./game/assets";
 import {
@@ -207,7 +208,7 @@ function renderMatchScreen(): void {
         <div class="unit-rows">
           <div class="ur-row" data-card-buy="normalos">
             <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="normalos" src="${unitIconPath("normalos", tc, 1)}" alt="">
+              <img class="ur-icon" data-unit-icon="normalos" src="${unitHeadIconPath("normalos", tc, 1)}" alt="">
               <div class="ur-meta">
                 <span class="ur-name">Fans</span>
                 <b class="ur-count" id="fb-n">0</b>
@@ -223,7 +224,7 @@ function renderMatchScreen(): void {
           </div>
           <div class="ur-row" data-card-buy="ultras">
             <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="ultras" src="${unitIconPath("ultras", tc, 1)}" alt="">
+              <img class="ur-icon" data-unit-icon="ultras" src="${unitHeadIconPath("ultras", tc, 1)}" alt="">
               <div class="ur-meta">
                 <span class="ur-name">Ultras</span>
                 <b class="ur-count" id="fb-u">0</b>
@@ -243,7 +244,7 @@ function renderMatchScreen(): void {
           </div>
           <div class="ur-row" data-card-buy="hooligans">
             <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="hooligans" src="${unitIconPath("hooligans", tc, 1)}" alt="">
+              <img class="ur-icon" data-unit-icon="hooligans" src="${unitHeadIconPath("hooligans", tc, 1)}" alt="">
               <div class="ur-meta">
                 <span class="ur-name">Hooligans</span>
                 <b class="ur-count" id="fb-h">0</b>
@@ -263,7 +264,7 @@ function renderMatchScreen(): void {
           </div>
           <div class="ur-row ur-row-ordner" data-card-buy="ordner">
             <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="ordner" src="${unitIconPath("ordner", tc, 1)}" alt="">
+              <img class="ur-icon" data-unit-icon="ordner" src="${unitHeadIconPath("ordner", tc, 1)}" alt="">
               <div class="ur-meta">
                 <span class="ur-name">Ordner</span>
                 <b class="ur-count" id="fb-o">0</b>
@@ -867,7 +868,8 @@ function renderMatchScreen(): void {
       const tcNow = teamColor(m.playerTeam);
       app.querySelectorAll<HTMLImageElement>("[data-unit-icon]").forEach((img) => {
         const kind = img.dataset.unitIcon as FanKind | "ordner";
-        const next = unitIconPath(kind, tcNow, unitLv);
+        // Personen-Rail: Icon-Agent head crops; full body stays on Bau/Hire cards
+        const next = unitHeadIconPath(kind, tcNow, unitLv);
         if (img.getAttribute("src") !== next) img.src = next;
       });
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");

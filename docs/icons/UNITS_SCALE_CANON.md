@@ -10,9 +10,10 @@ Alle vier Unit-Typen (`fan`, `ordner`, `hooligan`, `ultra`) × Farben (`grey`, `
 
 - Canvas: 256×256 PNG RGBA, freigestellt
 - Füße verankert bei **y ≈ 248**
-- Ziel-Körperhöhe (Kopf-/Hood-Oberkante → Füße): **≈ 200 px**
+- Ziel-Körperhöhe (Kopf-/Hood-Oberkante → Füße): **≈ 200 px** bei Fan/Ordner/Hooligan; Ultras inkl. Rauch/Megafon vollständig im Frame
+- **Kein Clipping:** mindestens **20 px** Innenabstand bei Ultras (sonst ≥ 8 px) zu allen Canvas-Rändern — Hood, Rauch, Megafon, Füße müssen rund und vollständig sein (keine flache Anschnitt-Kante)
 - Geometrie wird am **Grau-Master** gemessen und 1:1 auf Blau/Rot übertragen (Silhouette bleibt identisch)
-- Ultras: gemeinsame Skalierung über alle Level (Rauch/Props dürfen oben anschneiden, die Figur nicht)
+- Ultras: gemeinsame Skalierung über alle Level
 
 ## Quelle der Wahrheit
 
