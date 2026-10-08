@@ -1,53 +1,43 @@
-# HUD-Vorschläge — Spielstand · Uhr · Momentum · Stimmung
+# HUD — Spielstand · Uhr · Momentum · Stimmung
 
-Drei Richtungen für die Top-HUD-Darstellung im Matchday-Comic-Look
-(Nachtstadion, Teamfarben KSC-Blau / VfB-Rot, Bloons-artiger Toy-Chrome).
+## Freigegeben: B — Broadcast Bubble (final)
 
-Übersicht: [`proposals-abc-strip.jpg`](./proposals-abc-strip.jpg)
+**Status:** Richtung freigegeben (mit Feedback)  
+**Asset (freigestellt):** [`proposal-b-final.png`](./proposal-b-final.png) · [`b-final-cutout.png`](./b-final-cutout.png)
 
-## Was dargestellt wird
+### Verhalten
 
-| Element | Inhalt |
+| Element | Darstellung |
 | --- | --- |
-| Spielstand | `KSC 3 : 2 VfB` |
-| Spieluhrzeit | Minute `39'` |
-| Momentumzeiger | Heim-/Gast-Anteil + **Torchance** |
-| Stimmung | Heim / Gast getrennt sichtbar |
+| Spielstand | `KSC 3 : 2 VfB` in Cream-Kapsel mit Holzrahmen |
+| Spieluhrzeit | Grüner Timer-Badge oben: `39'` |
+| Momentum | Blau/Rot-Balken `Heim %` / `Gast %` |
+| **Torchance-Orb** | Goldener Knopf **wandert** auf dem Balken nach links/rechts je nach Momentum-Anteil |
 
-Farben wie im Spiel: `--ksc #2563eb`, `--vfb #dc2626`, Holz/Cream der Command-Rails, Flutlicht-Nacht.
+**Nicht enthalten:** äußere Stimmungs-Chips / Sternchen links und rechts vom Balken (entfernt).  
+Stimmung steckt im Momentum-Balken + Orb-Position — keine zweite Anzeige.
 
-## A — Stadion-Tafel
+### Orb-Positionen (Demo)
 
-[`proposal-a.jpg`](./proposal-a.jpg)
+[`b-orb-positions-strip.png`](./b-orb-positions-strip.png)
 
-- Hängende Stadion-Anzeigetafel (Holzrahmen + Cream-Fläche)
-- Gelbe Minuten-Bubble oben rechts
-- Dual-Stimmung links/rechts (Flammen-Icons)
-- Momentum-Balken darunter mit gelbem **Torchance**-Diamant in der Mitte
+| Datei | Situation |
+| --- | --- |
+| [`b-orb-heim-cutout.png`](./b-orb-heim-cutout.png) | starkes Heim-Momentum → Orb links |
+| [`b-final-cutout.png`](./b-final-cutout.png) | Beispiel ~70∶30 |
+| [`b-orb-gast-cutout.png`](./b-orb-gast-cutout.png) | starkes Gast-Momentum → Orb rechts |
 
-**Passt wenn:** klassische Stadion-Tafel, alles in einem Block unter der Flutlichtzone.
+Hintergrund: **keiner** (RGBA freigestellt) — Stadion kommt separat.
 
-## B — Broadcast Bubble
+## Frühere Richtungsvergleiche
 
-[`proposal-b.jpg`](./proposal-b.jpg)
+| | Datei | Status |
+| --- | --- | --- |
+| A Stadion-Tafel | [`proposal-a.jpg`](./proposal-a.jpg) | verworfen für Runtime |
+| B Broadcast Bubble (mit Stadion-BG) | [`proposal-b.jpg`](./proposal-b.jpg) | Vorstufe |
+| C Mood Wings | [`proposal-c.jpg`](./proposal-c.jpg) | verworfen für Runtime |
+| Übersicht A/B/C | [`proposals-abc-strip.jpg`](./proposals-abc-strip.jpg) | Historie |
 
-- Eine horizontale Cream-Kapsel mit dickem Holzrahmen (wie Command-Rails)
-- Minuten als grüner Ball/Timer oben aufgesetzt
-- Team-Badges als runde Schilde
-- Ein kompakter Momentum-Balken + goldener Torchance-Orb; Stimmung nur als kleine Pyro-Chips an den Enden
+## Runtime-Hinweis
 
-**Passt wenn:** maximal Bloons/Mobile, wenig Höhe, klar lesbar über dem Spielfeld.
-
-## C — Mood Wings
-
-[`proposal-c.jpg`](./proposal-c.jpg)
-
-- Kompaktes dunkles Scoreboard in der Mitte + Minuten-Ticket darunter
-- Links/rechts hohe **Stimmungs-Säulen** (Heim blau / Gast rot) — Flutlicht/Pyro-Feeling
-- Momentum-Leiste spannend zwischen den Flügeln mit Torchance-Chip
-
-**Passt wenn:** Stimmung soll dominant und symmetrisch zu den Fanblöcken wirken.
-
-## Nächste Schritte
-
-Einen Buchstaben wählen (A / B / C) — dann als Runtime-Asset + `drawScoreboard`-Layout umsetzen.
+Als nächstes: Asset in `game/public/icons/ui/` legen und `drawScoreboard` so anpassen, dass der Torchance-Orb horizontal an `pHeim`/`pGast` gebunden wird.
