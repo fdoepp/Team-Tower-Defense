@@ -3332,30 +3332,32 @@
       },
       "validation": {
         "ok": true,
+        "file": "btn-senden-blue.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.6714,
+        "alphaCoverage": 0.55,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          62,
+          72,
           6,
-          257,
+          247,
           89
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:57:40.761462+00:00"
+        "checkedAt": "2026-10-08T22:59:41.401996+00:00"
       },
-      "notes": "Neu in gleicher Form wie btnBauenGrey (Holzrahmen); Textgröße angepasst.",
+      "notes": "Remade in same wood-frame form as btnBauenGrey (107); blue face + SENDEN label; freigegeben with 106/107/113/114.",
       "category": "ui",
       "approvedBy": "fdoepp",
-      "approvedAt": "2026-10-08T22:57:00.544979+00:00"
+      "approvedAt": "2026-10-08T22:57:00.544979+00:00",
+      "remadeAt": "2026-10-08T22:59:41.416122+00:00"
     },
     "btnUpgradeGrey": {
       "id": "btnUpgradeGrey",
