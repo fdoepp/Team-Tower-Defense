@@ -12,7 +12,7 @@ alwaysApply: true
 # UI Final DB (verbindlich)
 
 ## Quelle
-- Freigegebenes UI kommt **nur** aus `game/public/icons/ui-final/` laut `docs/icons/ui-final/UI_FINAL_DB.json` (`released`).
+- Freigegebene Grafiken (UI, Personen, Gebäude, Tribünen) kommen **nur** aus `game/public/icons/ui-final/` laut `docs/icons/ui-final/UI_FINAL_DB.json` (`released`).
 - Alle Branches und Agents bedienen sich dort — keine parallelen „finalen“ Kopien in Feature-Branches anlegen.
 
 ## Freigabe-Gate

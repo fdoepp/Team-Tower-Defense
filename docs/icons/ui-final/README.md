@@ -1,43 +1,32 @@
-# UI Final — freigegebene UI-Elemente
+# UI Final DB
 
-**Einzige Quelle für finales UI.** Alle Branches und Agents laden freigegebene UI-Icons aus dieser Datenbank — nicht aus Arbeitskopien, Reviews oder Agent-Outputs.
+Zentrale Freigabe-Datenbank für **alle** Runtime-Grafiken (Personen, Gebäude, UI, Tribünen).
 
-| | Pfad |
+| | |
 |---|---|
 | Source of Truth | `docs/icons/ui-final/UI_FINAL_DB.json` |
 | Runtime-Spiegel + Dateien | `game/public/icons/ui-final/` |
-| Warteschlange (nicht freigegeben) | `docs/icons/ui-final/pending/` |
+| Warteschlange | `docs/icons/ui-final/pending/` |
+| Nummerierte Liste | [`PENDING_INDEX.md`](./PENDING_INDEX.md) |
 | TS-Resolver | `game/src/game/uiFinal.ts` |
 
-## Pflicht-Anforderungen (vor Freigabe)
+## Regeln
 
-1. **Freigestellt** — PNG mit Alpha, transparenter Hintergrund (kein Karten-/Sheet-BG). Ausnahme nur dokumentierte Chrome-Hintergründe (`menu-rail-*`).
-2. **Proportionen** — natives `width`/`height` in der DB; Runtime zeichnet **nur uniform** (`drawIcon` / `fitUniform` / Contain). Stauchen/Strecken verboten.
-3. **Manuelle Freigabe** — kein Icon kommt nach `released`, bevor du es freigibst.
+1. **Freigabe Pflicht** — Ablage in `released` nur nach manueller Freigabe (`approve --by`).
+2. **Freigestellt** — PNG RGBA-Cutout (Ausnahme: dokumentierte Rails).
+3. **preserveAspect** — Runtime nur mit uniformer Skalierung (`drawIcon`), nie verzerren.
 
-## Workflow
+## Bestand (pending)
+
+Siehe [`PENDING_INDEX.md`](./PENDING_INDEX.md) und `FINAL_ICON_INVENTORY.md`.
+
+Abgestimmt mit: unit-icons-agent, icon-ui-einzeln, matchday-icons, Konzept-Agent.
+
+## Befehle
 
 ```bash
-# 1) Kandidat vorschlagen (kopiert nach pending/ + validiert)
-node scripts/ui-final/propose.mjs path/to/icon.png --id pennantKsc
-
-# 2) Validierung (Freistellung + Metadaten)
-python3 scripts/ui-final/validate.py docs/icons/ui-final/pending/pennant-ksc.png
-
-# 3) Nach deiner Freigabe in die DB ablegen
-node scripts/ui-final/approve.mjs pennantKsc --by fdoepp
-
-# 4) Spiegel + TS-Resolver aktualisieren
+node scripts/ui-final/propose.mjs path/to/icon.png --id camelId --role unit|stand|ui|scene
+node scripts/ui-final/approve.mjs <id> --by <name>
 node scripts/ui-final/sync.mjs
+node scripts/ui-final/check.mjs
 ```
-
-`approve.mjs` verweigert Ablage ohne `--by <name>` und ohne bestandene Validierung.
-
-## Status
-
-| Status | Bedeutung |
-|---|---|
-| `pendingApproval` | In `pending/`, wartet auf dich |
-| `released` | In `game/public/icons/ui-final/`, alle Branches dürfen/müssen es nutzen |
-
-Aktuell: alle bekannten UI-Kandidaten liegen in **pending** — `released` ist absichtlich leer, bis du freigibst.
