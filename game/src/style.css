@@ -443,6 +443,15 @@ select {
 
 .match-shell.matchday .ur-actions-dual {
   flex-direction: row;
+  /* Half-width each → height from half-width AR so bars stay unstretched */
+  --rail-btn-h: clamp(
+    22px,
+    calc(((var(--rail-w) * 1vw - 28px) / 2) / var(--rail-btn-ar)),
+    36px
+  );
+  height: var(--rail-btn-h);
+  min-height: var(--rail-btn-h);
+  max-height: var(--rail-btn-h);
 }
 
 .match-shell.matchday .ur-row {
