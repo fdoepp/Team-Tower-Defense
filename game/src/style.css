@@ -320,48 +320,63 @@ select {
   color: #fff7ed;
 }
 
-.match-shell.matchday .unit-rows {
-  /* Container queries: Button/Kopf/Abstände skalieren proportional mit Rail-Breite */
-  container-type: inline-size;
-  container-name: unit-rows;
+/* Shared Personen + Gebäude rows: ONE scale factor from container size.
+   Reference box 220×480 — width/height shrink keeps all ratios locked. */
+.match-shell.matchday .rail-rows,
+.match-shell.matchday .unit-rows,
+.match-shell.matchday .build-rows {
+  container-type: size;
+  container-name: rail-rows;
+  --rail-scale: clamp(
+    0.68,
+    min(calc(100cqw / 220px), calc(100cqh / 480px)),
+    1.08
+  );
   display: flex;
   flex-direction: column;
-  gap: clamp(3px, 1.8cqw, 6px);
+  gap: calc(5px * var(--rail-scale));
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
 }
 
-/* Unit Action Cards — Kopf links, gleich große Buttons rechts
-   Alle Abstände/Größen über --ur-* ; Relationen bleiben beim Skalieren. */
-.match-shell.matchday .action-card.unit-card {
-  --ur-scale: 1;
-  /* Basis @ ~220px Rail; cqw hält Relationen bei schmalerer Sidebar */
-  --ur-pad: clamp(5px, 3.6cqw, 8px);
-  --ur-edge: clamp(3px, 2.2cqw, 5px); /* + Border ≈ Gap Kopf→Buttons */
-  --ur-title: clamp(0.68rem, 3.7cqw, 0.82rem);
-  --ur-count-size: clamp(0.78rem, 4.2cqw, 0.95rem);
-  --ur-btn-h: clamp(26px, 14.5cqw, 32px);
-  --ur-btn-font: clamp(0.56rem, 3.15cqw, 0.7rem);
-  --ur-btn-gap: clamp(3px, 2.2cqw, 5px);
-  --ur-btn-pad-x: clamp(3px, 2.4cqw, 6px);
-  --ur-btn-radius: clamp(8px, 4.5cqw, 10px);
-  --ur-btn-ico: clamp(11px, 6.2cqw, 15px);
-  --ur-actions-gap: clamp(3px, 1.8cqw, 4px);
-  --ur-card-pad-y: clamp(3px, 1.6cqw, 6px);
-  /* Kopf darf schrumpfen, damit UPGRADE in der Button-Spalte Platz behält */
-  --head-base: clamp(36px, 26cqw, 62px);
-  --head-step: clamp(1.5px, 1.4cqw, 4px);
-  gap: clamp(2px, 1.2cqw, 4px);
-  padding: var(--ur-card-pad-y) var(--ur-pad) var(--ur-card-pad-y);
-  padding-left: var(--ur-edge);
+/* Rail Action Cards (Personen + Gebäude) — gleiche Flächen, skalieren nur über --ur-scale.
+   Keine getrennten clamp()-Min/Max pro Property → keine Relativ-Verzerrung. */
+.match-shell.matchday .action-card.unit-card,
+.match-shell.matchday .action-card.build-card {
+  --ur-scale: var(--rail-scale, 1);
+  /* Design-Basen @ scale=1; alles multipliziert mit --ur-scale */
+  --ur-inset: calc(8px * var(--ur-scale));
+  --ur-pad: var(--ur-inset);
+  --ur-title: calc(0.8rem * var(--ur-scale));
+  --ur-count-size: calc(0.92rem * var(--ur-scale));
+  --ur-btn-h: calc(30px * var(--ur-scale));
+  --ur-btn-font: calc(0.68rem * var(--ur-scale));
+  --ur-btn-gap: calc(4px * var(--ur-scale));
+  --ur-btn-pad-x: calc(5px * var(--ur-scale));
+  --ur-btn-radius: calc(10px * var(--ur-scale));
+  --ur-btn-ico: calc(14px * var(--ur-scale));
+  --ur-actions-gap: calc(4px * var(--ur-scale));
+  --ur-card-pad-y: calc(5px * var(--ur-scale));
+  --ur-card-gap: calc(3px * var(--ur-scale));
+  --ur-benefit-font: calc(0.68rem * var(--ur-scale));
+  --ur-benefit-ico: calc(14px * var(--ur-scale));
+  --ur-stat-font: calc(0.72rem * var(--ur-scale));
+  --ur-arrow-size: calc(1.1rem * var(--ur-scale));
+  --head-base: calc(54px * var(--ur-scale));
+  --head-step: calc(3px * var(--ur-scale));
+  --head-max-frac: 0.34; /* Icon-Spalte max. 34% der Kartenbreite */
+  gap: var(--ur-card-gap);
+  padding: var(--ur-card-pad-y) var(--ur-inset);
   flex: 1 1 0;
   min-height: 0;
   justify-content: flex-start;
   align-items: stretch;
+  overflow: hidden; /* Clip nur innerhalb der Karte, nicht über den braunen Rand */
 }
 
-.match-shell.matchday .action-card.unit-card .ac-title-row {
+.match-shell.matchday .action-card.unit-card .ac-title-row,
+.match-shell.matchday .action-card.build-card .ac-title-row {
   position: relative;
   display: flex;
   width: 100%;
@@ -369,38 +384,42 @@ select {
   justify-content: center;
   min-height: 1.05em;
   flex: 0 0 auto;
-  /* Vertikal darf die Titelzeile etwas schrumpfen (Braunfläche) */
   margin-bottom: 0;
 }
 
-.match-shell.matchday .action-card.unit-card .ac-title {
+.match-shell.matchday .action-card.unit-card .ac-title,
+.match-shell.matchday .action-card.build-card .ac-title {
   font-size: var(--ur-title);
   text-align: center;
   margin: 0;
 }
 
-.match-shell.matchday .action-card.unit-card .ur-count {
+.match-shell.matchday .action-card.unit-card .ur-count,
+.match-shell.matchday .action-card.build-card .ur-count {
   position: absolute;
   right: 0;
   top: 0;
 }
 
-.match-shell.matchday .action-card.unit-card .ur-body {
+.match-shell.matchday .action-card.unit-card .ur-body,
+.match-shell.matchday .action-card.build-card .ur-body {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--ur-pad);
+  gap: var(--ur-inset);
   width: 100%;
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
 }
 
-/* Kopf: freigestelltes PNG, Größe proportional zur Rail; Level leicht größer */
-.match-shell.matchday .action-card.unit-card .ur-head {
+/* Icon links: Kopf (Personen) / Stand (Gebäude) — immer quadratisch, nie in sich verzerrt */
+.match-shell.matchday .action-card.unit-card .ur-head,
+.match-shell.matchday .action-card.build-card .ur-head {
   --head-size: var(--head-base);
-  /* max 34% der Kartenbreite, damit Button-Spalte „UPGRADE“ behält */
-  width: min(var(--head-size), 34%);
-  height: min(var(--head-size), 34%);
+  width: min(var(--head-size), calc(100% * var(--head-max-frac)));
+  aspect-ratio: 1 / 1;
+  height: auto;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -408,24 +427,31 @@ select {
   overflow: visible;
 }
 
-.match-shell.matchday .action-card.unit-card .ur-head[data-lv="2"] {
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="2"],
+.match-shell.matchday .action-card.build-card .ur-head[data-lv="2"] {
   --head-size: calc(var(--head-base) + var(--head-step));
 }
-.match-shell.matchday .action-card.unit-card .ur-head[data-lv="3"] {
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="3"],
+.match-shell.matchday .action-card.build-card .ur-head[data-lv="3"] {
   --head-size: calc(var(--head-base) + 2 * var(--head-step));
 }
-.match-shell.matchday .action-card.unit-card .ur-head[data-lv="4"] {
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="4"],
+.match-shell.matchday .action-card.build-card .ur-head[data-lv="4"] {
   --head-size: calc(var(--head-base) + 3 * var(--head-step));
 }
-.match-shell.matchday .action-card.unit-card .ur-head[data-lv="5"] {
+.match-shell.matchday .action-card.unit-card .ur-head[data-lv="5"],
+.match-shell.matchday .action-card.build-card .ur-head[data-lv="5"] {
   --head-size: calc(var(--head-base) + 4 * var(--head-step));
 }
 
-.match-shell.matchday .action-card.unit-card .ur-head .ac-icon {
+.match-shell.matchday .action-card.unit-card .ur-head .ac-icon,
+.match-shell.matchday .action-card.build-card .ur-head .ac-icon {
   width: 100%;
   height: 100%;
+  aspect-ratio: 1 / 1;
   object-fit: contain;
   object-position: center;
+  flex: none;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 
@@ -451,11 +477,11 @@ select {
   margin-top: 0;
   width: auto;
   flex: 1 1 auto;
-  /* Platz für „UPGRADE“ + Icon + Betrag auch bei schmaler Rail */
-  min-width: min(100%, 7.6em);
+  min-width: 0; /* nicht über rechten --ur-inset hinausdrücken */
 }
 
-.match-shell.matchday .action-card.unit-card .ar-cost-btn {
+.match-shell.matchday .action-card.unit-card .ar-cost-btn,
+.match-shell.matchday .action-card.build-card .ar-cost-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -515,12 +541,124 @@ select {
   text-overflow: clip;
 }
 
-.match-shell.matchday .action-card.unit-card .ar-cost-btn .ar-cost-ico {
+.match-shell.matchday .action-card.unit-card .ar-cost-btn .ar-cost-ico,
+.match-shell.matchday .action-card.build-card .ar-cost-btn .ar-cost-ico {
   width: var(--ur-btn-ico);
   height: var(--ur-btn-ico);
   object-fit: contain;
   pointer-events: none;
   flex: 0 0 auto;
+}
+
+.match-shell.matchday .ar-cost-btn.ar-bauen {
+  background: linear-gradient(180deg, #f0b14a 0%, #d4891f 72%, #b86e14 100%);
+}
+
+/* Neubau: Nutzen / Produktion pro Minute (Währungsicon soft-bound) */
+.match-shell.matchday .action-card.build-card .br-benefit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(3px * var(--ur-scale));
+  min-height: 1em;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: var(--ur-benefit-font);
+  color: #5adc78;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.match-shell.matchday .action-card.build-card .br-benefit .br-prod-ico {
+  width: var(--ur-benefit-ico);
+  height: var(--ur-benefit-ico);
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.match-shell.matchday .action-card.build-card .br-benefit small {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: #ffecc8;
+}
+
+/* Upgrade: Icon aktuell → Icon Folgelevel, darunter Prod / +Delta */
+.match-shell.matchday .action-card.build-card.upgrade-card {
+  gap: var(--ur-card-gap);
+}
+
+.match-shell.matchday .action-card.build-card .br-compare {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: calc(3px * var(--ur-scale));
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.match-shell.matchday .action-card.build-card .br-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(2px * var(--ur-scale));
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.match-shell.matchday .action-card.build-card .br-compare .ur-head {
+  /* Gleiche Head-Formel wie Personen/Neubau — nur etwas kompakter in der Zweier-Spalte */
+  width: min(calc(var(--head-base) * 0.92), 46%);
+  aspect-ratio: 1 / 1;
+  height: auto;
+}
+
+.match-shell.matchday .action-card.build-card .br-compare .ac-arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  font-size: var(--ur-arrow-size);
+  font-weight: 900;
+  color: #ffdca0;
+  line-height: 1;
+  padding-bottom: 0.9em; /* optisch zur Icon-Mitte, nicht zu den Stats */
+}
+
+.match-shell.matchday .action-card.build-card .br-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: 1em;
+  font-family: var(--display);
+  font-weight: 900;
+  font-size: var(--ur-stat-font);
+  line-height: 1;
+}
+
+.match-shell.matchday .action-card.build-card .br-stat.current {
+  color: #beb8ae;
+}
+
+.match-shell.matchday .action-card.build-card .br-stat.next {
+  color: #5adc78;
+}
+
+.match-shell.matchday .action-card.build-card .br-stat small {
+  font-size: 0.78em;
+  font-weight: 700;
+  color: #ffecc8;
+  white-space: nowrap;
+}
+
+.match-shell.matchday .action-card.build-card .br-upgrade-actions {
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.match-shell.matchday .action-card.build-card.cd {
+  opacity: 1; /* Kosten-Buttons selbst werden grau */
 }
 
 .match-shell.matchday .ar-cost-btn .ar-cost-ico {
@@ -595,10 +733,12 @@ select {
 .match-shell.matchday .ar-icon-btn.ready .btn-ready { display: block; }
 .match-shell.matchday .ar-icon-btn.ready .btn-cd { display: none; }
 
-.match-shell.matchday .build-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* Neubau: Karten teilen die Höhe wie Personen; Upgrade: inhaltshoch (keine Riesen-Braunfläche) */
+.match-shell.matchday #build-place-rows .build-card {
+  flex: 1 1 0;
+}
+.match-shell.matchday #build-upgrade-rows .build-card {
+  flex: 0 0 auto;
 }
 
 /* Action Cards: Titel · Icon(s) · Stats · Kosten · Button — Icons soft via standIconPath */
@@ -750,6 +890,8 @@ select {
   min-height: 0;
   grid-column: 2;
   background: #1e293b;
+  container-type: inline-size;
+  container-name: game-wrap;
 }
 
 .match-shell.matchday #game-wrap.placing {
@@ -774,6 +916,98 @@ select {
   overflow: visible;
   height: auto;
 }
+
+/*
+ * Slim Frosted Wallet — Höhe = Side-Rail-Banner-Button (.rail-banner / PERSONEN|BAUEN).
+ * --wb-h wird in layoutHud() aus der gemessenen Banner-Höhe gesetzt (Regel).
+ */
+.match-shell.matchday .wallet-row.wallet-bar {
+  --wb-h: 34px; /* Fallback ≈ .rail-banner @ Desktop */
+  --wb-pad: 2px;
+  --wb-gap: 3px;
+  --wb-chip-h: calc(var(--wb-h) - 2 * var(--wb-pad));
+  --wb-ico: var(--wb-chip-h);
+  /* Abspos über gesamte Shell, nicht in einer Grid-Zelle verdichtet */
+  grid-column: 1 / -1;
+  grid-row: 1;
+  position: absolute;
+  z-index: 12;
+  top: max(6px, env(safe-area-inset-top, 0px));
+  /* Fallback: Mitte zwischen Personen-Rail (~22%) und Bildmitte (50%) */
+  left: 36%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--wb-gap);
+  width: max-content;
+  max-width: min(46vw, 100%);
+  height: var(--wb-h);
+  min-height: var(--wb-h);
+  max-height: var(--wb-h);
+  margin: 0;
+  padding: var(--wb-pad) var(--wb-pad);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: none;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.match-shell.matchday .wallet-bar .wb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wb-gap);
+  height: var(--wb-chip-h);
+  min-height: var(--wb-chip-h);
+  max-height: var(--wb-chip-h);
+  padding: 0 calc(var(--wb-chip-h) * 0.22) 0 0;
+  border-radius: 999px;
+  background: rgba(255, 252, 245, 0.94);
+  border: none;
+  box-shadow: none;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.match-shell.matchday .wallet-bar .wb-plate {
+  width: var(--wb-ico);
+  height: var(--wb-ico);
+  aspect-ratio: 1 / 1;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.match-shell.matchday .wallet-bar .wb-plate img {
+  width: 90%;
+  height: 90%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  flex: none;
+}
+
+.match-shell.matchday .wallet-bar .wb-chip b {
+  font-family: var(--display);
+  font-size: calc(var(--wb-chip-h) * 0.42);
+  font-weight: 800;
+  line-height: 1;
+  min-width: 1em;
+  color: var(--ink, #1c120a);
+}
+
+.match-shell.matchday .wallet-bar .wb-chip.gold b { color: #a16207; }
+.match-shell.matchday .wallet-bar .wb-chip.bier b { color: #b45309; }
+.match-shell.matchday .wallet-bar .wb-chip.merch b { color: #1d4ed8; }
+.match-shell.matchday .wallet-bar .wb-chip.sec b { color: #0369a1; }
 
 .match-shell.matchday .wallet-row {
   justify-content: center;
@@ -817,9 +1051,8 @@ select {
     grid-template-columns: minmax(168px, 24%) 1fr minmax(160px, 24%);
   }
   .match-shell.matchday .ar-icon-btn { height: 40px; min-height: 40px; }
-  /* Build/other rails only — unit-card buttons scale via container queries */
-  .match-shell.matchday .action-card:not(.unit-card) .ar-cost-btn,
-  .match-shell.matchday .build-rail .ar-cost-btn {
+  /* Legacy image-buttons only — unit/build cost-buttons scale via cqw */
+  .match-shell.matchday .action-card:not(.unit-card):not(.build-card) .ar-cost-btn {
     min-height: 28px;
     height: 28px;
     max-height: 28px;
@@ -828,17 +1061,19 @@ select {
     border-radius: 9px;
     padding: 0 5px;
   }
-  .match-shell.matchday .action-card:not(.unit-card) .ar-cost-btn .ar-cost-ico,
-  .match-shell.matchday .build-rail .ar-cost-btn .ar-cost-ico {
+  .match-shell.matchday .action-card:not(.unit-card):not(.build-card) .ar-cost-btn .ar-cost-ico {
     width: 13px;
     height: 13px;
   }
-  .match-shell.matchday .action-card .ac-icon { width: 72px; height: 72px; }
-  .match-shell.matchday .action-card.unit-card .ur-head .ac-icon {
-    width: 100%;
-    height: 100%;
+  /* Legacy Action-Cards only — unit/build skalieren ausschließlich über --rail-scale */
+  .match-shell.matchday .action-card:not(.unit-card):not(.build-card) .ac-icon {
+    width: 72px;
+    height: 72px;
   }
-  .match-shell.matchday .action-card .ac-icons .ac-icon { width: 64px; height: 64px; }
+  .match-shell.matchday .action-card:not(.unit-card):not(.build-card) .ac-icons .ac-icon {
+    width: 64px;
+    height: 64px;
+  }
   .match-shell.matchday .action-card .ac-btn-img { height: 46px; }
 }
 
