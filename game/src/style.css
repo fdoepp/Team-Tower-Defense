@@ -331,9 +331,12 @@ select {
 
 /* Unit Action Cards — Kopf links, gleich große Buttons rechts */
 .match-shell.matchday .action-card.unit-card {
+  /* Abstand links→Kopf = Abstand Kopf→Buttons (Border 3px liegt außerhalb) */
   --ur-pad: 8px;
+  --ur-edge: 5px; /* 5 + 3 Border ≈ 8 Gap, Person näher am linken Rand */
   gap: 4px;
   padding: 6px var(--ur-pad) 7px;
+  padding-left: var(--ur-edge);
   flex: 1 1 0;
   min-height: 0;
   justify-content: flex-start;
