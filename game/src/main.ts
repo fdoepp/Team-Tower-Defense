@@ -967,3 +967,49 @@ function renderResult(): void {
 }
 
 render();
+
+/** Visual QA: `?demoStands=1` auto-starts a paused match with filled Bau-slots. */
+if (new URLSearchParams(location.search).has("demoStands")) {
+  state.settings = defaultSoloSettings();
+  state.setup = defaultSetup();
+  state.match = new Match({
+    settings: state.settings,
+    playerSetup: state.setup,
+    aiSetup: { mix: defaultMix() },
+  });
+  const m = state.match;
+  m.setSpeed(0);
+  m.gold = 9999;
+  const plan: Array<{
+    blockId: number;
+    index: number;
+    kind: BuildingKind;
+    owner: TeamId | "neutral";
+  }> = [
+    { blockId: 0, index: 0, kind: "bier", owner: "ksc" },
+    { blockId: 0, index: 1, kind: "fanshop", owner: "ksc" },
+    { blockId: 0, index: 2, kind: "ordner", owner: "ksc" },
+    { blockId: 0, index: 3, kind: "bier", owner: "ksc" },
+    { blockId: 1, index: 2, kind: "bier", owner: "neutral" },
+    { blockId: 1, index: 3, kind: "fanshop", owner: "neutral" },
+    { blockId: 2, index: 0, kind: "bier", owner: "vfb" },
+    { blockId: 2, index: 1, kind: "fanshop", owner: "vfb" },
+    { blockId: 2, index: 2, kind: "ordner", owner: "vfb" },
+    { blockId: 2, index: 3, kind: "bier", owner: "vfb" },
+  ];
+  for (const p of plan) {
+    const s = m.slots.find((x) => x.blockId === p.blockId && x.index === p.index);
+    if (!s) continue;
+    s.building = p.kind;
+    s.owner = p.owner;
+    s.greyNeutral = p.owner === "neutral";
+    s.level = 3;
+    s.stewardCd = 9999;
+    if (p.kind === "bier") s.beer = 40;
+    if (p.kind === "ordner") {
+      s.structMaxHp = 120;
+      s.structHp = 120;
+    }
+  }
+  go("match");
+}
