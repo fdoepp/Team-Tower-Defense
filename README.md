@@ -31,6 +31,7 @@ Dauerhaftes Hosting: Branch `gh-pages` ist vorbereitet. In GitHub → Settings �
 ## Dokument
 
 - **[Game Design Concept](docs/GAME_DESIGN.md)** — vollständiges Konzept
+- **[UI Final DB](docs/icons/ui-final/README.md)** — freigegebene UI-Elemente (Freigabe-Gate, alle Branches)
 
 ## Implementiert (Prototyp)
 

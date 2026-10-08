@@ -61,6 +61,14 @@ Deploy-Default-Orientierung: **parallel** zum Bildrand (`SLOT_EMPTY_ORIENTATION`
 4. Register: `docs/mockups/icons/ASSET_DB.json` · Spiegel: `game/public/icons/ASSET_DB.json`.
 5. Alte gelbe Bauzaun-Optik nicht mehr neu generieren; `slot-empty.png` zeigt auf die parallele Neutrale.
 
+## UI Final DB (verbindlich für freigegebenes UI)
+
+Finale UI-Icons leben in **`docs/icons/ui-final/UI_FINAL_DB.json`** (Runtime: `game/public/icons/ui-final/`).
+
+- Ablage nach `released` **nur** nach deiner Freigabe: `node scripts/ui-final/approve.mjs <id> --by <name>`
+- Pflicht: freigestellt (RGBA) + Proportionen beibehalten (uniforme Skalierung)
+- Alle Branches bedienen sich dort — siehe `.cursor/rules/ui-final-db.mdc` und `docs/icons/ui-final/README.md`
+
 ## Action Cards (Gebäude + Einheiten) — soft-bound & live balance
 
 Linke und rechte Rail komponieren Karten zur Laufzeit — **keine** eingebackenen Icon- oder Kosten-Sprites.

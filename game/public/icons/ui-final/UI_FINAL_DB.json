@@ -1,0 +1,1158 @@
+{
+  "version": 1,
+  "name": "UI_FINAL",
+  "description": "Final freigegebene UI-Elemente. Alle Branches laden Runtime-UI ausschließlich aus released. Ablage nur nach manueller Freigabe. (Runtime-Spiegel — nur released Dateien liegen neben dieser Datei.)",
+  "rules": {
+    "approvalRequired": true,
+    "approver": "repo-owner",
+    "freigestellt": "RGBA cutout required (transparent background), except documented chrome backgrounds",
+    "preserveAspect": "Runtime must draw with uniform scale / contain — never stretch",
+    "consumeFrom": "game/public/icons/ui-final/",
+    "pendingDir": "docs/icons/ui-final/pending/",
+    "sourceOfTruth": "docs/icons/ui-final/UI_FINAL_DB.json"
+  },
+  "released": {},
+  "pending": {
+    "pennantKsc": {
+      "id": "pennantKsc",
+      "file": "pennant-ksc.png",
+      "source": "game/public/icons/ui/pennant-ksc.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7542,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          62,
+          17,
+          193,
+          238
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.877356+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "pennantVfb": {
+      "id": "pennantVfb",
+      "file": "pennant-vfb.png",
+      "source": "game/public/icons/ui/pennant-vfb.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7545,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          62,
+          17,
+          193,
+          238
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.878988+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmpty": {
+      "id": "slotEmpty",
+      "file": "slot-empty.png",
+      "source": "game/public/icons/ui/slot-empty.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.881071+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyParallel": {
+      "id": "slotEmptyParallel",
+      "file": "slot-empty-parallel.png",
+      "source": "game/public/icons/ui/slot-empty-parallel.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.882952+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyOrtho": {
+      "id": "slotEmptyOrtho",
+      "file": "slot-empty-ortho.png",
+      "source": "game/public/icons/ui/slot-empty-ortho.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.2728,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          16,
+          15,
+          239,
+          240
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.885804+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyOrthoBlue": {
+      "id": "slotEmptyOrthoBlue",
+      "file": "slot-empty-ortho-blue.png",
+      "source": "game/public/icons/ui/slot-empty-ortho-blue.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.2728,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          16,
+          15,
+          239,
+          240
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.888329+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyOrthoRed": {
+      "id": "slotEmptyOrthoRed",
+      "file": "slot-empty-ortho-red.png",
+      "source": "game/public/icons/ui/slot-empty-ortho-red.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.2728,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          16,
+          15,
+          239,
+          240
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.890849+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyPersp": {
+      "id": "slotEmptyPersp",
+      "file": "slot-empty-persp.png",
+      "source": "game/public/icons/ui/slot-empty-persp.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.892677+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyPerspBlue": {
+      "id": "slotEmptyPerspBlue",
+      "file": "slot-empty-persp-blue.png",
+      "source": "game/public/icons/ui/slot-empty-persp-blue.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.894155+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyPerspRed": {
+      "id": "slotEmptyPerspRed",
+      "file": "slot-empty-persp-red.png",
+      "source": "game/public/icons/ui/slot-empty-persp-red.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.895658+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "currencyGold": {
+      "id": "currencyGold",
+      "file": "currency-gold.png",
+      "source": "game/public/icons/ui/currency-gold.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6421,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          39,
+          38,
+          216,
+          217
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.897319+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "currencyBier": {
+      "id": "currencyBier",
+      "file": "currency-bier.png",
+      "source": "game/public/icons/ui/currency-bier.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8396,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          53,
+          38,
+          202,
+          217
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.898994+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "currencyFanartikel": {
+      "id": "currencyFanartikel",
+      "file": "currency-fanartikel.png",
+      "source": "game/public/icons/ui/currency-fanartikel.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.9645,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          38,
+          64,
+          217,
+          191
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.900436+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "currencySicherheit": {
+      "id": "currencySicherheit",
+      "file": "currency-sicherheit.png",
+      "source": "game/public/icons/ui/currency-sicherheit.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7668,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          55,
+          38,
+          200,
+          217
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.901992+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnKaufenGrey": {
+      "id": "btnKaufenGrey",
+      "file": "btn-kaufen-grey.png",
+      "source": "game/public/icons/ui/btn-kaufen-grey.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5713,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          6,
+          241,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.902908+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnKaufenGreen": {
+      "id": "btnKaufenGreen",
+      "file": "btn-kaufen-green.png",
+      "source": "game/public/icons/ui/btn-kaufen-green.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5724,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          6,
+          241,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.903879+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnSendenGrey": {
+      "id": "btnSendenGrey",
+      "file": "btn-senden-grey.png",
+      "source": "game/public/icons/ui/btn-senden-grey.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.655,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          58,
+          213,
+          197
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.905196+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnSendenGreen": {
+      "id": "btnSendenGreen",
+      "file": "btn-senden-green.png",
+      "source": "game/public/icons/ui/btn-senden-green.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6584,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          58,
+          213,
+          196
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.906712+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnSendenBlue": {
+      "id": "btnSendenBlue",
+      "file": "btn-senden-blue.png",
+      "source": "game/public/icons/ui/btn-senden-blue.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5551,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          75,
+          6,
+          243,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.907713+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnBauenAmber": {
+      "id": "btnBauenAmber",
+      "file": "btn-bauen-amber.png",
+      "source": "game/public/icons/ui/btn-bauen-amber.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5545,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          72,
+          6,
+          246,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.908676+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnBauenGrey": {
+      "id": "btnBauenGrey",
+      "file": "btn-bauen-grey.png",
+      "source": "game/public/icons/ui/btn-bauen-grey.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.55,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          72,
+          6,
+          247,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.909501+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnUpgradePurple": {
+      "id": "btnUpgradePurple",
+      "file": "btn-upgrade-purple.png",
+      "source": "game/public/icons/ui/btn-upgrade-purple.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5696,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          76,
+          6,
+          242,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.910463+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnUpgradeGrey": {
+      "id": "btnUpgradeGrey",
+      "file": "btn-upgrade-grey.png",
+      "source": "game/public/icons/ui/btn-upgrade-grey.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5669,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          76,
+          6,
+          243,
+          89
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.911387+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "scoreboard": {
+      "id": "scoreboard",
+      "file": "scoreboard-top.png",
+      "source": "game/public/icons/ui/scoreboard-top.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.2637,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          15,
+          14,
+          1024,
+          492
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.944083+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "scoreboardOrbHeim": {
+      "id": "scoreboardOrbHeim",
+      "file": "scoreboard-top-orb-heim.png",
+      "source": "game/public/icons/ui/scoreboard-top-orb-heim.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.267,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          15,
+          20,
+          1024,
+          487
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.963846+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "scoreboardOrbGast": {
+      "id": "scoreboardOrbGast",
+      "file": "scoreboard-top-orb-gast.png",
+      "source": "game/public/icons/ui/scoreboard-top-orb-gast.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.266,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          16,
+          19,
+          1024,
+          488
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.981151+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "menuRail": {
+      "id": "menuRail",
+      "file": "menu-rail-brown.png",
+      "source": "game/public/icons/ui/menu-rail-brown.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGB",
+        "native": {
+          "w": 720,
+          "h": 1280
+        },
+        "aspectRatio": 0.5625,
+        "alphaCoverage": 0,
+        "opaqueCornerRatio": 1,
+        "contentBBox": [
+          0,
+          0,
+          719,
+          1279
+        ],
+        "freigestellt": false,
+        "exception": "menu-rail-background",
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:43.037745+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "menuRailTile": {
+      "id": "menuRailTile",
+      "file": "menu-rail-brown-tile.png",
+      "source": "game/public/icons/ui/menu-rail-brown-tile.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGB",
+        "native": {
+          "w": 504,
+          "h": 1024
+        },
+        "aspectRatio": 0.492188,
+        "alphaCoverage": 0,
+        "opaqueCornerRatio": 1,
+        "contentBBox": [
+          0,
+          0,
+          503,
+          1023
+        ],
+        "freigestellt": false,
+        "exception": "menu-rail-background",
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:43.058720+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyParallelBlue": {
+      "id": "slotEmptyParallelBlue",
+      "file": "slot-empty-parallel-blue.png",
+      "source": "game/public/icons/ui/slot-empty-parallel-blue.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/slot-empty-parallel-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T21:53:43.176870+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyParallelRed": {
+      "id": "slotEmptyParallelRed",
+      "file": "slot-empty-parallel-red.png",
+      "source": "game/public/icons/ui/slot-empty-parallel-red.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/slot-empty-parallel-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T21:53:43.291660+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyIso": {
+      "id": "slotEmptyIso",
+      "file": "slot-empty-iso.png",
+      "source": "game/public/icons/ui/slot-empty-iso.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/slot-empty-iso.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6936,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          16,
+          40,
+          239,
+          215
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T21:53:43.409845+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyIsoBlue": {
+      "id": "slotEmptyIsoBlue",
+      "file": "slot-empty-iso-blue.png",
+      "source": "game/public/icons/ui/slot-empty-iso-blue.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/slot-empty-iso-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7867,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          32,
+          65,
+          225,
+          201
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T21:53:43.528559+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmptyIsoRed": {
+      "id": "slotEmptyIsoRed",
+      "file": "slot-empty-iso-red.png",
+      "source": "game/public/icons/ui/slot-empty-iso-red.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/slot-empty-iso-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7866,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          32,
+          65,
+          225,
+          201
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T21:53:43.639834+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    }
+  },
+  "runtimeBinding": {
+    "module": "game/src/game/uiFinal.ts",
+    "resolver": "uiFinalIconPath / UI_FINAL_PATHS",
+    "drawHelpers": [
+      "drawIcon",
+      "drawUniformInBox",
+      "fitUniform"
+    ]
+  }
+}

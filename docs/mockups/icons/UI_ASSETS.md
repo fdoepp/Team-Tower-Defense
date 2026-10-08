@@ -49,6 +49,8 @@ Binding: `UI_ICONS.pennantKsc` / `pennantVfb`.
 Register: [`ASSET_DB.json`](ASSET_DB.json). Gesamtregel: [`../A2c-RULES.md`](../A2c-RULES.md).  
 Final-Preview: [`ui-review/pennant-final/`](ui-review/pennant-final/).
 
+**Final freigegeben:** [`../../icons/ui-final/README.md`](../../icons/ui-final/README.md) — alle Branches laden freigegebenes UI aus `UI_FINAL_DB` (Freigabe-Gate, freigestellt, keine Verzerrung).
+
 ## Einzel-Review (Buttons / Wimpel / Leerplatz)
 
 Für Optimierung einzeln dargestellt unter `docs/mockups/icons/ui-review/`:
