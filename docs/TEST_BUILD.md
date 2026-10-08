@@ -11,6 +11,12 @@ Basis: `cursor/matchday-game-a9b1` (neueste Gameplay-Linie)
 
 Andere Agents geprüft: `bauplatz-gang-main-4235` (Layout-Ports auf main-Linie, ohne vollständigen FX/HP-Kanon), `icon-ui-einzeln-3755` (UI/Scoreboard), `currency-icons-clean-dba3` (Asset-Kanon — Pixel hier identisch).
 
+## Live
+
+**Play:** https://radical-instructor-briefs-don.trycloudflare.com
+
+Handy quer / Vollbild empfohlen.
+
 ## Lokal
 
 ```bash
