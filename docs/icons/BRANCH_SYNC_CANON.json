@@ -1,0 +1,31 @@
+{
+  "decided": "2026-10-08",
+  "source": "docs/icons/BRANCH_ASSET_DECISIONS.md + user choices",
+  "choices": {
+    "currency-gold.png": "currency (left / logo-only)",
+    "currency-bier.png": "currency (left) + foam whitened to #FFF",
+    "currency-fanartikel.png": "currency (left / scarf)",
+    "currency-sicherheit.png": "currency (left / shield)",
+    "slot-empty.png": "game (right)",
+    "pennant-ksc.png": "game (right)",
+    "pennant-vfb.png": "game (right)",
+    "fx-*": "currency (D left)",
+    "hp-bar-*": "currency (D left)",
+    "btn-bauen-*": "game (D right)",
+    "btn-upgrade-*": "game (D right)",
+    "btn-senden-blue.png": "game (D right)",
+    "stadium + tribune-*": "stadium/game (D right)"
+  },
+  "apply_to_branches": [
+    "cursor/currency-icons-clean-dba3",
+    "cursor/matchday-game-a9b1",
+    "cursor/buildings-on-plots-4235",
+    "cursor/wallet-bar-vorschlaege-3755",
+    "cursor/matchday-icons-a9b1",
+    "cursor/icon-ui-einzeln-3755",
+    "main",
+    "cursor/matchday-logic-main-939c",
+    "cursor/scoreboard-cutout-main-a9b1",
+    "cursor/stadium-floodlight-bg-dba3"
+  ]
+}

@@ -9,14 +9,17 @@ Personen-Sidebar und Gebäude-Rail teilen **dieselbe** Kartendarstellung und **d
 
 ## Skalierungsregel
 
-1. Container `.rail-rows` hat `container-type: size`.
-2. Ein einziger Faktor:
+1. Container `.rail-rows` hat `container-type: size` (stellt `cqw`/`cqh` für **Kinder** bereit).
+2. Jedes Maß auf der Card als Länge (Ref-Box 220×480, Faktor 0.68…1.08):
 
-   `--rail-scale = clamp(0.68, min(100cqw/220px, 100cqh/480px), 1.08)`
+   `clamp(N*0.68, min(100cqw*N/220, 100cqh*N/480), N*1.08)`
 
-3. Alle Card-Maße = Design-Basis × `--ur-scale` (`--ur-scale` = `--rail-scale`).
-4. **Keine** getrennten `clamp()`-Min/Max pro Property (die würden Relationen brechen).
-5. Icons: immer `aspect-ratio: 1 / 1`, `object-fit: contain` — nie gestreckt.
+   **Nicht** `calc(Npx * (100cqw / 220px))` — Chromium verwirft das → Länge 0 →
+   Köpfe fallen auf PNG-Intrinsisch **256px**.
+3. Alle Tokens teilen dieselbe Ref-Box → Relationen bleiben (kein verzerrendes
+   per-Property-clamp mit anderen Grenzen).
+4. Icons: immer `aspect-ratio: 1 / 1`, `object-fit: contain` — nie gestreckt.
+   `.ur-head` setzt `width` **und** `height` explizit (`min(--head-size, 34%)`).
 
 ## Design-Basen (@ scale = 1)
 
