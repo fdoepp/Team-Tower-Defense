@@ -401,6 +401,16 @@ select {
   color: #fff8eb;
 }
 
+.match-shell.matchday .action-card.unit-card .ur-role {
+  margin: 0 0 2px;
+  padding: 0 2px;
+  font-size: clamp(0.55rem, 1.1vh, 0.68rem);
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  color: rgba(255, 248, 235, 0.72);
+}
+
 .match-shell.matchday .action-card.unit-card .ur-count {
   position: absolute;
   right: 0;

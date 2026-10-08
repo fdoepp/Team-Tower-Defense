@@ -30,6 +30,7 @@ import {
   PYRO_FIGHT_MERCH,
   STEWARD_HIRE_GOLD,
   UNIT_FULL_LABEL,
+  UNIT_ROLE_BLURB,
   UPGRADE_COST,
   UPGRADE_MAX,
   unitBuyCost,
@@ -165,9 +166,9 @@ function renderSetup(): void {
         <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
       </div>
       <div class="card stack">
-        ${row("normalos", "Fans (Momentum · Sicherheit)")}
-        ${row("ultras", "Ultras (Senden · Fanartikel)")}
-        ${row("hooligans", "Hooligans (Nahkampf · Bier)")}
+        ${row("normalos", "Fans (Stimmung · Sicherheit)")}
+        ${row("ultras", "Ultras (Pyro · Ordnerposten knacken)")}
+        ${row("hooligans", "Hooligans (Nahkampf · Gang)")}
         <p class="tiny">Summe ${mixSum(mix)} / 8 ${isValidMix(mix) ? "✓" : ""}</p>
       </div>
       <div class="row">
@@ -263,6 +264,7 @@ function renderMatchScreen(): void {
               <h3 class="ac-title">${UNIT_FULL_LABEL[kind]}</h3>
               <b class="ur-count" id="${countId}">×0</b>
             </div>
+            <p class="ur-role">${UNIT_ROLE_BLURB[kind]}</p>
             <div class="ur-body">
               <div class="ur-head" data-unit-head="${kind}" data-lv="1">
                 <img class="ac-icon" data-unit-icon="${kind}" src="${icon.startsWith("/") ? icon : `/${icon}`}" alt="${UNIT_FULL_LABEL[kind]}">
