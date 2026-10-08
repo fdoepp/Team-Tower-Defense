@@ -138,11 +138,15 @@ export function quadCenter(q: QuadNorm): { x: number; y: number } {
   };
 }
 
-/** Pennant sits near the far-left corner of the plot cell. */
+/**
+ * Pennant foot on the plot cell — near the left edge, on the ground line.
+ * Y is weighted toward the near (bottom) edge so the upright billboard
+ * plants on the floor instead of floating at the far corner.
+ */
 export function quadPennantPos(q: QuadNorm): { x: number; y: number } {
   return {
-    x: q.tl.x * 0.65 + q.bl.x * 0.35,
-    y: q.tl.y * 0.75 + q.tr.y * 0.25,
+    x: q.bl.x * 0.72 + q.tl.x * 0.28,
+    y: q.bl.y * 0.88 + q.tl.y * 0.12,
   };
 }
 
