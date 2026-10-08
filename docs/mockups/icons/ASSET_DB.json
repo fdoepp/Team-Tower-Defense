@@ -9,14 +9,14 @@
       "orientation": "axis-aligned",
       "control": "grey",
       "locked": true,
-      "notes": "Deploy-Default = parallel ohne Standarte. Alias von slot-empty-parallel.png."
+      "notes": "Deploy-Default = parallel ohne Standarte. Alias von slot-empty-parallel.png. Fahnenlos; Teamfarbe über Boden."
     },
     "slotEmptyParallel": {
       "path": "ui/slot-empty-parallel.png",
       "role": "bauplatz",
       "control": "grey",
       "locked": true,
-      "notes": "Neutral/grau — Standarte aus."
+      "notes": "Neutral/grau — Standarte aus. Fahnenlos; Teamfarbe über Boden."
     },
     "slotEmptyIso": {
       "path": "ui/slot-empty-iso.png",
@@ -31,7 +31,7 @@
       "team": "ksc",
       "control": "blue",
       "locked": true,
-      "notes": "Teamkontrolle KSC — Standarte blau ein."
+      "notes": "Fahnenlos; Teamfarbe über Bodentönung (nicht Standarte im Icon)."
     },
     "slotEmptyParallelRed": {
       "path": "ui/slot-empty-parallel-red.png",
@@ -39,7 +39,7 @@
       "team": "vfb",
       "control": "red",
       "locked": true,
-      "notes": "Teamkontrolle VfB — Standarte rot ein."
+      "notes": "Fahnenlos; Teamfarbe über Bodentönung (nicht Standarte im Icon)."
     },
     "slotEmptyIsoBlue": {
       "path": "ui/slot-empty-iso-blue.png",
@@ -72,6 +72,32 @@
       "style": "holzpfosten-streifenfahne-vorschlag-a",
       "locked": true,
       "notes": "Gäste-Besitz/Front-Marker. Gleiche Form wie pennantKsc, nur rot-weiß."
+    },
+    "slotEmptyOrtho": {
+      "path": "ui/slot-empty-ortho.png",
+      "role": "bauplatz",
+      "control": "grey",
+      "orientation": "axis-aligned",
+      "locked": true,
+      "notes": "Warp-Quelle für Floor-Grid. Keine Fahne — neutraler Boden."
+    },
+    "slotEmptyOrthoBlue": {
+      "path": "ui/slot-empty-ortho-blue.png",
+      "role": "bauplatz-eigen",
+      "team": "ksc",
+      "control": "blue",
+      "orientation": "axis-aligned",
+      "locked": true,
+      "notes": "Warp-Quelle. Keine Fahne — Boden blau getönt."
+    },
+    "slotEmptyOrthoRed": {
+      "path": "ui/slot-empty-ortho-red.png",
+      "role": "bauplatz-eigen",
+      "team": "vfb",
+      "control": "red",
+      "orientation": "axis-aligned",
+      "locked": true,
+      "notes": "Warp-Quelle. Keine Fahne — Boden rot getönt."
     }
   },
   "runtimeBinding": {

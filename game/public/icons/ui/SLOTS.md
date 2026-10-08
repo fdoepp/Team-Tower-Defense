@@ -1,12 +1,21 @@
 # Bauplatz-Icons (kanonisch)
 
-| Kontrolle | Datei (Deploy-Default parallel) |
-|---|---|
-| Grau / Neutral | `slot-empty.png` (= `slot-empty-parallel.png`) |
-| KSC / blau | `slot-empty-parallel-blue.png` |
-| VfB / rot | `slot-empty-parallel-red.png` |
+## Live-Kopplung an das Bodenraster (Deploy-Default)
 
-**Jedes neue Spiel:** `preloadIcons()` lädt alle Varianten.  
-**Runtime:** `slotEmptyIconPath(control)` — Standarte kommt bei Teamkontrolle dazu und fällt bei Grau wieder weg.
+Runtime (`FLOOR_GRID_COUPLE` in `floorGrid.ts`):
 
-Siehe `docs/mockups/A2c-RULES.md` → Bauplatz.
+1. Plot-Zellen liegen auf dem Derby-BG-Bodenraster (Vanishing Point + Spaltenstrahlen + Tiefenlinien).
+2. Quelle ist das **achsenparallele, fahnenlose** Icon `slot-empty-ortho*.png`.
+3. Beim Screen-Draw wird es per `drawIconQuad` in die Zellen-Trapezoid geschnitten.
+4. **Keine Fahne/Wimpel im Slot-Icon** — Teamfarbe nur über den Boden der Form (neutral / blau / rot). Standarten bleiben separate Runtime-Marker auf gebauten Buden.
+
+| Kontrolle | Warp-Quelle (ortho, ohne Fahne) | Boden |
+|---|---|---|
+| Grau / Neutral | `slot-empty-ortho.png` | erdbraun |
+| KSC / blau | `slot-empty-ortho-blue.png` | blau getönt |
+| VfB / rot | `slot-empty-ortho-red.png` | rot getönt |
+
+Statische Perspektiv-PNGs (`slot-empty-persp*` / `slot-empty-parallel*`) sind dieselben fahnenlosen Varianten als Preview/Fallback.
+Iso-Raute: `slot-empty-iso*.png`.
+
+Siehe `game/src/game/floorGrid.ts` · `drawBaustelle` in `render.ts`.
