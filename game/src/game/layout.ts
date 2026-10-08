@@ -1,4 +1,4 @@
-/** Matchday Comic — stadium top third, 3 stands, gang with 12 Baustellen */
+/** Matchday Comic — ~⅓ scoreboard / ⅓ blocks / ⅓ gang */
 
 export const BLOCK_COUNT = 3;
 export const HEIM_BLOCK = 0;
@@ -10,25 +10,25 @@ export const SEAT_COLS = 3;
 export const SEAT_ROWS = 4;
 
 /**
- * Vertical pack:
- * - ~top third: night stadium bowl + scoreboard zone
- * - stands (Heim | Neutral | Gäste) sit in the bowl
- * - open gang with 12 scattered Baustellen
+ * Vertical pack (~thirds):
+ * - top: stadium bowl + scoreboard + currencies
+ * - middle: Heim | Neutral | Gäste stands
+ * - bottom: gang with Baustellen
  */
 export const L = {
-  /** Stadium atmosphere fills roughly top third */
-  stadiumH: 0.34,
-  blockTop: 0.16,
-  blockBodyH: 0.2,
-  gangPadTop: 0.015,
-  /** Gang + Baustellen fill the remaining field */
-  gangH: 0.6,
+  stadiumH: 0.32,
+  /** Stands sit in the middle third */
+  blockTop: 0.32,
+  blockBodyH: 0.3,
+  gangPadTop: 0.01,
+  /** Gang is the bottom ~third — not half the screen */
+  gangH: 0.34,
   blocksLeft: 0.04,
   blocksRight: 0.96,
   blockGap: 0.024,
   doorFrac: 0.14,
-  plotW: 0.14,
-  plotH: 0.15,
+  plotW: 0.1,
+  plotH: 0.095,
 };
 
 /** 4 plots per block → 12 total */
@@ -39,26 +39,25 @@ export const BUILDABLE_INDICES_NEUTRAL = BUILDABLE_INDICES;
 export const ULTRA_PAD_INDEX = 0;
 
 /**
- * 12 Baustellen on the gang, ordered by territory:
+ * 12 Baustellen packed into the bottom gang third.
  * flat 0–3 Heim (left), 4–7 Neutral (center), 8–11 Gäste (right).
- * Normalized canvas fractions (top-left of plot).
  */
 export const PLOT_SCATTER: readonly { x: number; y: number; w: number; h: number }[] = [
-  // Heim — left column cluster
-  { x: 0.04, y: 0.44, w: 0.135, h: 0.145 },
-  { x: 0.18, y: 0.50, w: 0.13, h: 0.14 },
-  { x: 0.06, y: 0.64, w: 0.135, h: 0.145 },
-  { x: 0.20, y: 0.78, w: 0.13, h: 0.14 },
+  // Heim — left (gang starts ~0.63)
+  { x: 0.04, y: 0.655, w: 0.1, h: 0.095 },
+  { x: 0.16, y: 0.69, w: 0.095, h: 0.09 },
+  { x: 0.05, y: 0.79, w: 0.1, h: 0.095 },
+  { x: 0.17, y: 0.875, w: 0.095, h: 0.09 },
   // Neutral — center
-  { x: 0.36, y: 0.46, w: 0.135, h: 0.145 },
-  { x: 0.50, y: 0.52, w: 0.13, h: 0.14 },
-  { x: 0.38, y: 0.66, w: 0.135, h: 0.145 },
-  { x: 0.52, y: 0.78, w: 0.13, h: 0.14 },
+  { x: 0.37, y: 0.66, w: 0.1, h: 0.095 },
+  { x: 0.50, y: 0.70, w: 0.095, h: 0.09 },
+  { x: 0.38, y: 0.80, w: 0.1, h: 0.095 },
+  { x: 0.51, y: 0.88, w: 0.095, h: 0.09 },
   // Gäste — right
-  { x: 0.68, y: 0.44, w: 0.135, h: 0.145 },
-  { x: 0.82, y: 0.50, w: 0.13, h: 0.14 },
-  { x: 0.70, y: 0.64, w: 0.135, h: 0.145 },
-  { x: 0.83, y: 0.78, w: 0.13, h: 0.14 },
+  { x: 0.71, y: 0.655, w: 0.1, h: 0.095 },
+  { x: 0.84, y: 0.69, w: 0.095, h: 0.09 },
+  { x: 0.72, y: 0.79, w: 0.1, h: 0.095 },
+  { x: 0.85, y: 0.875, w: 0.095, h: 0.09 },
 ];
 
 export function blockWidthNorm(): number {
@@ -104,7 +103,7 @@ export function gangY(): number {
 }
 
 export function gangMidY(): number {
-  return gangY() + L.gangH * 0.4;
+  return gangY() + L.gangH * 0.42;
 }
 
 export function doorPos(blockId: number): { x: number; y: number } {

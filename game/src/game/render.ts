@@ -42,6 +42,7 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawBlocks(ctx, m, w, h);
   drawSeats(ctx, m, w, h);
   drawGang(ctx, m, w, h);
+  drawFrontStandards(ctx, m, w, h);
   drawSlots(ctx, m, w, h);
   drawTerritoryPennants(ctx, m, w, h);
   drawFans(ctx, m, w, h);
@@ -343,10 +344,11 @@ function drawScoreboard(
   w: number,
   h: number,
 ): void {
-  const boardW = Math.min(w * 0.42, h * 0.55);
-  const boardH = boardW * (720 / 1280) * 0.72;
+  // Keep scoreboard inside the top third (above the stands)
+  const boardW = Math.min(w * 0.38, h * 0.42);
+  const boardH = Math.min(boardW * (720 / 1280) * 0.68, h * 0.22);
   const bx = (w - boardW) / 2;
-  const by = h * 0.012;
+  const by = h * 0.008;
   // Soft stadium glow behind board
   const glow = ctx.createRadialGradient(
     w * 0.5,
@@ -438,21 +440,60 @@ function drawGang(
   ctx.fillStyle = "rgba(239,68,68,0.18)";
   ctx.fillRect(aEdge, y, left + span - aEdge, gh);
 
-  // Front lines
+  // Front lines (thicker so territory edge is obvious)
   ctx.save();
-  ctx.setLineDash([6, 5]);
-  ctx.lineWidth = 2.5;
-  ctx.strokeStyle = "rgba(59,130,246,0.85)";
+  ctx.setLineDash([7, 5]);
+  ctx.lineWidth = 3.5;
+  ctx.strokeStyle = "rgba(59,130,246,0.95)";
   ctx.beginPath();
   ctx.moveTo(px, y + 4);
   ctx.lineTo(px, y + gh - 4);
   ctx.stroke();
-  ctx.strokeStyle = "rgba(239,68,68,0.85)";
+  ctx.strokeStyle = "rgba(239,68,68,0.95)";
   ctx.beginPath();
   ctx.moveTo(ax, y + 4);
   ctx.lineTo(ax, y + gh - 4);
   ctx.stroke();
   ctx.restore();
+}
+
+/** Big flag standards planted at each team's frontmost battle line */
+function drawFrontStandards(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  const y = h * gangY();
+  const gh = h * L.gangH;
+  const left = w * L.blocksLeft;
+  const span = w * (L.blocksRight - L.blocksLeft);
+  const poles: { x: number; team: "ksc" | "vfb" }[] = [
+    { x: left + span * m.linePlayer, team: m.playerTeam },
+    { x: left + span * m.lineAi, team: m.aiTeam },
+  ];
+  for (const pole of poles) {
+    const src = pole.team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
+    const baseY = y + gh * 0.88;
+    const poleH = gh * 0.72;
+    // pole
+    ctx.strokeStyle = "#44403c";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(pole.x, baseY);
+    ctx.lineTo(pole.x, baseY - poleH);
+    ctx.stroke();
+    // base disk
+    ctx.fillStyle = "rgba(15,23,42,0.45)";
+    ctx.beginPath();
+    ctx.ellipse(pole.x, baseY + 2, 8, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // flag
+    const fw = Math.min(w * 0.07, h * 0.09);
+    const fh = fw * 1.15;
+    const bob = Math.sin(m.realElapsed * 3.5 + (pole.team === "ksc" ? 0 : 1)) * 2;
+    drawIcon(ctx, src, pole.x - 2, baseY - poleH - fh * 0.15 + bob, fw, fh, 0.02);
+  }
 }
 
 function drawPyroShots(
@@ -506,17 +547,19 @@ function drawSlots(
 }
 
 /**
- * Fahnen nur auf gebauten/geclaimten Buden — nie am Start auf leeren Plots.
- * (Frontlinie allein steckt keine Fahne; erst Besitz durch Bauen/Claim.)
+ * Fahne an Plot = baubar/besetzt von diesem Team.
+ * So ist klar, welche Bauplätze gerade in welcher Hand sind.
  */
 function plotPennantTeam(
   m: Match,
   s: BuildSlot,
 ): "ksc" | "vfb" | null {
-  void m;
   if (s.building && !s.greyNeutral && (s.owner === "ksc" || s.owner === "vfb")) {
     return s.owner;
   }
+  // Empty / claimable: show who may build here right now
+  if (m.inPlayerTerritory(s.blockId, s.index)) return m.playerTeam;
+  if (m.inAiTerritory(s.blockId, s.index)) return m.aiTeam;
   return null;
 }
 
@@ -531,14 +574,14 @@ function drawTerritoryPennants(
     if (!team) continue;
     const p = pennantPos(s.blockId, s.index);
     const src = team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
-    const pw = Math.min(w * 0.055, h * 0.065);
+    const pw = Math.min(w * 0.045, h * 0.055);
     const ph = pw * 1.15;
-    const bob = Math.sin(m.realElapsed * 3.2 + s.blockId + s.index) * 2;
+    const bob = Math.sin(m.realElapsed * 3.2 + s.blockId + s.index) * 1.5;
     drawIcon(ctx, src, p.x * w - pw * 0.15, p.y * h - ph * 0.35 + bob, pw, ph, 0.02);
   }
 }
 
-/** Toy-3D Baustelle from slot-empty asset */
+/** Toy-3D Baustelle — tinted by who can currently build here */
 function drawBaustelle(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -546,10 +589,10 @@ function drawBaustelle(
   bw: number,
   bh: number,
   sel: boolean,
+  claim: "ksc" | "vfb" | null,
 ): void {
   const drew = drawIcon(ctx, UI_ICONS.slotEmpty, x, y, bw, bh, 0.02);
   if (!drew) {
-    // fallback fence plot
     const r = Math.min(10, Math.min(bw, bh) * 0.12);
     ctx.fillStyle = "#4b5563";
     roundRect(ctx, x + 4, y + 4, bw - 8, bh - 8, r);
@@ -558,19 +601,24 @@ function drawBaustelle(
     ctx.lineWidth = 3;
     roundRect(ctx, x + 6, y + 6, bw - 12, bh - 12, r - 2);
     ctx.stroke();
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.font = `800 ${Math.max(16, Math.floor(bh * 0.28))}px Outfit, Manrope, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("+", x + bw / 2, y + bh / 2);
-    ctx.textBaseline = "alphabetic";
+  }
+  // Territory wash on empty plots
+  if (claim) {
+    ctx.fillStyle =
+      claim === "ksc" ? "rgba(37,99,235,0.28)" : "rgba(220,38,38,0.28)";
+    roundRect(ctx, x + 6, y + 6, bw - 12, bh - 12, 8);
+    ctx.fill();
+    ctx.strokeStyle =
+      claim === "ksc" ? "rgba(59,130,246,0.85)" : "rgba(248,113,113,0.85)";
+    ctx.lineWidth = 2.5;
+    roundRect(ctx, x + 3, y + 3, bw - 6, bh - 6, 9);
+    ctx.stroke();
   }
   if (sel) {
     ctx.strokeStyle = "#22c55e";
     ctx.lineWidth = 3.5;
     roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 10);
     ctx.stroke();
-    // soft green pulse
     ctx.strokeStyle = "rgba(34,197,94,0.35)";
     ctx.lineWidth = 6;
     roundRect(ctx, x - 1, y - 1, bw + 2, bh + 2, 12);
@@ -596,7 +644,8 @@ function drawBuilding(
   const cx = x + bw / 2;
 
   if (!s.building) {
-    drawBaustelle(ctx, x, y, bw, bh, sel);
+    const claim = plotPennantTeam(m, s);
+    drawBaustelle(ctx, x, y, bw, bh, sel, claim);
     return;
   }
 
