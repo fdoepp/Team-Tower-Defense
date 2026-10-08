@@ -12,7 +12,1528 @@
     "sourceOfTruth": "docs/icons/ui-final/UI_FINAL_DB.json",
     "scope": "ui + units + stands + tribunes"
   },
-  "released": {},
+  "released": {
+    "fanBlue2": {
+      "id": "fanBlue2",
+      "file": "fan-blue-2.png",
+      "source": "game/public/icons/units/fan-blue-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8265,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          69,
+          45,
+          185,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.250607+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.173299+00:00"
+    },
+    "fanBlue3": {
+      "id": "fanBlue3",
+      "file": "fan-blue-3.png",
+      "source": "game/public/icons/units/fan-blue-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8204,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          68,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.340844+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.264757+00:00"
+    },
+    "fanBlue4": {
+      "id": "fanBlue4",
+      "file": "fan-blue-4.png",
+      "source": "game/public/icons/units/fan-blue-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8086,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          54,
+          45,
+          200,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.429777+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.353992+00:00"
+    },
+    "fanBlue5": {
+      "id": "fanBlue5",
+      "file": "fan-blue-5.png",
+      "source": "game/public/icons/units/fan-blue-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8193,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          72,
+          44,
+          183,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.516691+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.442735+00:00"
+    },
+    "fanGrey2": {
+      "id": "fanGrey2",
+      "file": "fan-grey-2.png",
+      "source": "game/public/icons/units/fan-grey-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8265,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          69,
+          45,
+          185,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.692964+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.616770+00:00"
+    },
+    "fanGrey3": {
+      "id": "fanGrey3",
+      "file": "fan-grey-3.png",
+      "source": "game/public/icons/units/fan-grey-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8204,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          68,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.784662+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.706075+00:00"
+    },
+    "fanGrey4": {
+      "id": "fanGrey4",
+      "file": "fan-grey-4.png",
+      "source": "game/public/icons/units/fan-grey-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8086,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          54,
+          45,
+          200,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.872197+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.797774+00:00"
+    },
+    "fanRed2": {
+      "id": "fanRed2",
+      "file": "fan-red-2.png",
+      "source": "game/public/icons/units/fan-red-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8265,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          69,
+          45,
+          185,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.134859+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.061355+00:00"
+    },
+    "fanRed3": {
+      "id": "fanRed3",
+      "file": "fan-red-3.png",
+      "source": "game/public/icons/units/fan-red-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8204,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          68,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.220294+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.147210+00:00"
+    },
+    "fanRed4": {
+      "id": "fanRed4",
+      "file": "fan-red-4.png",
+      "source": "game/public/icons/units/fan-red-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8086,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          54,
+          45,
+          200,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.305573+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.232993+00:00"
+    },
+    "hooliganBlue1": {
+      "id": "hooliganBlue1",
+      "file": "hooligan-blue-1.png",
+      "source": "game/public/icons/units/hooligan-blue-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8197,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.485749+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.412451+00:00"
+    },
+    "hooliganBlue2": {
+      "id": "hooliganBlue2",
+      "file": "hooligan-blue-2.png",
+      "source": "game/public/icons/units/hooligan-blue-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8231,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          76,
+          45,
+          179,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.575603+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.498276+00:00"
+    },
+    "hooliganBlue3": {
+      "id": "hooliganBlue3",
+      "file": "hooligan-blue-3.png",
+      "source": "game/public/icons/units/hooligan-blue-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.9306,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          246
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.662951+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.590022+00:00"
+    },
+    "hooliganBlue4": {
+      "id": "hooliganBlue4",
+      "file": "hooligan-blue-4.png",
+      "source": "game/public/icons/units/hooligan-blue-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8282,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          69,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.782977+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.675330+00:00"
+    },
+    "hooliganBlue5": {
+      "id": "hooliganBlue5",
+      "file": "hooligan-blue-5.png",
+      "source": "game/public/icons/units/hooligan-blue-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7985,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          59,
+          45,
+          196,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.875171+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.800966+00:00"
+    },
+    "hooliganGrey1": {
+      "id": "hooliganGrey1",
+      "file": "hooligan-grey-1.png",
+      "source": "game/public/icons/units/hooligan-grey-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8197,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.962716+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.888059+00:00"
+    },
+    "hooliganGrey2": {
+      "id": "hooliganGrey2",
+      "file": "hooligan-grey-2.png",
+      "source": "game/public/icons/units/hooligan-grey-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8231,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          76,
+          45,
+          179,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.054710+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.976032+00:00"
+    },
+    "hooliganGrey3": {
+      "id": "hooliganGrey3",
+      "file": "hooligan-grey-3.png",
+      "source": "game/public/icons/units/hooligan-grey-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.9306,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          246
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.142642+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.068822+00:00"
+    },
+    "hooliganGrey4": {
+      "id": "hooliganGrey4",
+      "file": "hooligan-grey-4.png",
+      "source": "game/public/icons/units/hooligan-grey-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8282,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          69,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.232678+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.155143+00:00"
+    },
+    "hooliganGrey5": {
+      "id": "hooliganGrey5",
+      "file": "hooligan-grey-5.png",
+      "source": "game/public/icons/units/hooligan-grey-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7985,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          59,
+          45,
+          196,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.322012+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.246397+00:00"
+    },
+    "hooliganRed1": {
+      "id": "hooliganRed1",
+      "file": "hooligan-red-1.png",
+      "source": "game/public/icons/units/hooligan-red-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8197,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.411378+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.335318+00:00"
+    },
+    "hooliganRed2": {
+      "id": "hooliganRed2",
+      "file": "hooligan-red-2.png",
+      "source": "game/public/icons/units/hooligan-red-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8231,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          76,
+          45,
+          179,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.504427+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.424715+00:00"
+    },
+    "hooliganRed3": {
+      "id": "hooliganRed3",
+      "file": "hooligan-red-3.png",
+      "source": "game/public/icons/units/hooligan-red-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.9306,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          246
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.597345+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.518250+00:00"
+    },
+    "hooliganRed4": {
+      "id": "hooliganRed4",
+      "file": "hooligan-red-4.png",
+      "source": "game/public/icons/units/hooligan-red-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8282,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          69,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.685666+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.611056+00:00"
+    },
+    "hooliganRed5": {
+      "id": "hooliganRed5",
+      "file": "hooligan-red-5.png",
+      "source": "game/public/icons/units/hooligan-red-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7985,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          59,
+          45,
+          196,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.774588+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.698813+00:00"
+    },
+    "ordnerBlue1": {
+      "id": "ordnerBlue1",
+      "file": "ordner-blue-1.png",
+      "source": "game/public/icons/units/ordner-blue-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8428,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          83,
+          44,
+          171,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.861081+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.787680+00:00"
+    },
+    "ordnerBlue2": {
+      "id": "ordnerBlue2",
+      "file": "ordner-blue-2.png",
+      "source": "game/public/icons/units/ordner-blue-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8466,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          86,
+          45,
+          168,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.949129+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.873795+00:00"
+    },
+    "ordnerBlue3": {
+      "id": "ordnerBlue3",
+      "file": "ordner-blue-3.png",
+      "source": "game/public/icons/units/ordner-blue-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8394,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          87,
+          45,
+          167,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.038896+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.962125+00:00"
+    },
+    "ordnerBlue4": {
+      "id": "ordnerBlue4",
+      "file": "ordner-blue-4.png",
+      "source": "game/public/icons/units/ordner-blue-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8056,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          80,
+          45,
+          174,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.125970+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.051964+00:00"
+    },
+    "ordnerBlue5": {
+      "id": "ordnerBlue5",
+      "file": "ordner-blue-5.png",
+      "source": "game/public/icons/units/ordner-blue-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7932,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          80,
+          45,
+          175,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.211101+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.138757+00:00"
+    },
+    "ordnerGrey1": {
+      "id": "ordnerGrey1",
+      "file": "ordner-grey-1.png",
+      "source": "game/public/icons/units/ordner-grey-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8428,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          83,
+          44,
+          171,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.300089+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.223572+00:00"
+    },
+    "ordnerGrey2": {
+      "id": "ordnerGrey2",
+      "file": "ordner-grey-2.png",
+      "source": "game/public/icons/units/ordner-grey-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8466,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          86,
+          45,
+          168,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.397155+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.313717+00:00"
+    },
+    "ordnerGrey3": {
+      "id": "ordnerGrey3",
+      "file": "ordner-grey-3.png",
+      "source": "game/public/icons/units/ordner-grey-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8394,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          87,
+          45,
+          167,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.490786+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.412176+00:00"
+    },
+    "ordnerGrey4": {
+      "id": "ordnerGrey4",
+      "file": "ordner-grey-4.png",
+      "source": "game/public/icons/units/ordner-grey-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8056,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          80,
+          45,
+          174,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.605193+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.504983+00:00"
+    },
+    "ordnerGrey5": {
+      "id": "ordnerGrey5",
+      "file": "ordner-grey-5.png",
+      "source": "game/public/icons/units/ordner-grey-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7932,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          80,
+          45,
+          175,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.717456+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.619764+00:00"
+    },
+    "ordnerRed1": {
+      "id": "ordnerRed1",
+      "file": "ordner-red-1.png",
+      "source": "game/public/icons/units/ordner-red-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8428,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          83,
+          44,
+          171,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.809917+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.731128+00:00"
+    },
+    "ordnerRed2": {
+      "id": "ordnerRed2",
+      "file": "ordner-red-2.png",
+      "source": "game/public/icons/units/ordner-red-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8466,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          86,
+          45,
+          168,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.899017+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.823293+00:00"
+    },
+    "ordnerRed3": {
+      "id": "ordnerRed3",
+      "file": "ordner-red-3.png",
+      "source": "game/public/icons/units/ordner-red-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8394,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          87,
+          45,
+          167,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.986925+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.912034+00:00"
+    },
+    "ordnerRed4": {
+      "id": "ordnerRed4",
+      "file": "ordner-red-4.png",
+      "source": "game/public/icons/units/ordner-red-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.8056,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          80,
+          45,
+          174,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:19.078210+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:19.000409+00:00"
+    },
+    "ordnerRed5": {
+      "id": "ordnerRed5",
+      "file": "ordner-red-5.png",
+      "source": "game/public/icons/units/ordner-red-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7932,
+        "opaqueCornerRatio": 0.0,
+        "contentBBox": [
+          80,
+          45,
+          175,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:19.167736+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:19.091879+00:00"
+    }
+  },
   "pending": {
     "pennantKsc": {
       "id": "pennantKsc",
@@ -1217,7 +2738,7 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.832,
+        "alphaCoverage": 0.8318,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
           81,
@@ -1229,153 +2750,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:50.319265+00:00"
+        "checkedAt": "2026-10-08T22:52:08.336560+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "fanBlue2": {
-      "id": "fanBlue2",
-      "file": "fan-blue-2.png",
-      "source": "game/public/icons/units/fan-blue-2.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8265,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          69,
-          45,
-          185,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:50.409587+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "fanBlue3": {
-      "id": "fanBlue3",
-      "file": "fan-blue-3.png",
-      "source": "game/public/icons/units/fan-blue-3.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8204,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          68,
-          45,
-          186,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:50.497483+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "fanBlue4": {
-      "id": "fanBlue4",
-      "file": "fan-blue-4.png",
-      "source": "game/public/icons/units/fan-blue-4.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8086,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          54,
-          45,
-          200,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:50.585388+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "fanBlue5": {
-      "id": "fanBlue5",
-      "file": "fan-blue-5.png",
-      "source": "game/public/icons/units/fan-blue-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8193,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          72,
-          44,
-          183,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:50.677118+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "fanGrey1": {
       "id": "fanGrey1",
@@ -1397,129 +2774,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.832,
+        "alphaCoverage": 0.8012,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          81,
-          45,
-          174,
-          247
+          76,
+          23,
+          178,
+          245
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:50.770510+00:00"
+        "checkedAt": "2026-10-08T22:52:08.427298+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "fanGrey2": {
-      "id": "fanGrey2",
-      "file": "fan-grey-2.png",
-      "source": "game/public/icons/units/fan-grey-2.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8265,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          69,
-          45,
-          185,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:50.858627+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "fanGrey3": {
-      "id": "fanGrey3",
-      "file": "fan-grey-3.png",
-      "source": "game/public/icons/units/fan-grey-3.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8204,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          68,
-          45,
-          186,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:50.953835+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "fanGrey4": {
-      "id": "fanGrey4",
-      "file": "fan-grey-4.png",
-      "source": "game/public/icons/units/fan-grey-4.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8086,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          54,
-          45,
-          200,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:51.043987+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "fanGrey5": {
       "id": "fanGrey5",
@@ -1541,21 +2810,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.8193,
+        "alphaCoverage": 0.7854,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          72,
-          44,
-          183,
-          247
+          66,
+          22,
+          188,
+          245
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:51.142620+00:00"
+        "checkedAt": "2026-10-08T22:52:08.516899+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "fanRed1": {
       "id": "fanRed1",
@@ -1577,7 +2846,7 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.832,
+        "alphaCoverage": 0.8318,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
           81,
@@ -1589,117 +2858,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:51.238907+00:00"
+        "checkedAt": "2026-10-08T22:52:08.605612+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "fanRed2": {
-      "id": "fanRed2",
-      "file": "fan-red-2.png",
-      "source": "game/public/icons/units/fan-red-2.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8265,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          69,
-          45,
-          185,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:51.328105+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "fanRed3": {
-      "id": "fanRed3",
-      "file": "fan-red-3.png",
-      "source": "game/public/icons/units/fan-red-3.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8204,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          68,
-          45,
-          186,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:51.417490+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "fanRed4": {
-      "id": "fanRed4",
-      "file": "fan-red-4.png",
-      "source": "game/public/icons/units/fan-red-4.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8086,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          54,
-          45,
-          200,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:51.505982+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "fanRed5": {
       "id": "fanRed5",
@@ -1721,1101 +2882,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.8193,
+        "alphaCoverage": 0.7854,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          72,
-          44,
-          183,
-          247
+          66,
+          22,
+          188,
+          245
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:51.596977+00:00"
+        "checkedAt": "2026-10-08T22:52:08.692390+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganBlue1": {
-      "id": "hooliganBlue1",
-      "file": "hooligan-blue-1.png",
-      "source": "game/public/icons/units/hooligan-blue-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8197,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          77,
-          43,
-          177,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:51.700362+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganBlue2": {
-      "id": "hooliganBlue2",
-      "file": "hooligan-blue-2.png",
-      "source": "game/public/icons/units/hooligan-blue-2.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8231,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          76,
-          45,
-          179,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:51.801800+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganBlue3": {
-      "id": "hooliganBlue3",
-      "file": "hooligan-blue-3.png",
-      "source": "game/public/icons/units/hooligan-blue-3.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.9306,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          77,
-          43,
-          177,
-          246
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:51.908449+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganBlue4": {
-      "id": "hooliganBlue4",
-      "file": "hooligan-blue-4.png",
-      "source": "game/public/icons/units/hooligan-blue-4.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8282,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          69,
-          45,
-          186,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.009311+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganBlue5": {
-      "id": "hooliganBlue5",
-      "file": "hooligan-blue-5.png",
-      "source": "game/public/icons/units/hooligan-blue-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7985,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          59,
-          45,
-          196,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.104364+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganGrey1": {
-      "id": "hooliganGrey1",
-      "file": "hooligan-grey-1.png",
-      "source": "game/public/icons/units/hooligan-grey-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8197,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          77,
-          43,
-          177,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.203756+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganGrey2": {
-      "id": "hooliganGrey2",
-      "file": "hooligan-grey-2.png",
-      "source": "game/public/icons/units/hooligan-grey-2.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8231,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          76,
-          45,
-          179,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.303324+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganGrey3": {
-      "id": "hooliganGrey3",
-      "file": "hooligan-grey-3.png",
-      "source": "game/public/icons/units/hooligan-grey-3.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.9306,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          77,
-          43,
-          177,
-          246
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.402590+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganGrey4": {
-      "id": "hooliganGrey4",
-      "file": "hooligan-grey-4.png",
-      "source": "game/public/icons/units/hooligan-grey-4.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8282,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          69,
-          45,
-          186,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.500370+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganGrey5": {
-      "id": "hooliganGrey5",
-      "file": "hooligan-grey-5.png",
-      "source": "game/public/icons/units/hooligan-grey-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7985,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          59,
-          45,
-          196,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.602253+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganRed1": {
-      "id": "hooliganRed1",
-      "file": "hooligan-red-1.png",
-      "source": "game/public/icons/units/hooligan-red-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8197,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          77,
-          43,
-          177,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.699722+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganRed2": {
-      "id": "hooliganRed2",
-      "file": "hooligan-red-2.png",
-      "source": "game/public/icons/units/hooligan-red-2.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8231,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          76,
-          45,
-          179,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.795706+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganRed3": {
-      "id": "hooliganRed3",
-      "file": "hooligan-red-3.png",
-      "source": "game/public/icons/units/hooligan-red-3.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.9306,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          77,
-          43,
-          177,
-          246
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.892363+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganRed4": {
-      "id": "hooliganRed4",
-      "file": "hooligan-red-4.png",
-      "source": "game/public/icons/units/hooligan-red-4.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8282,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          69,
-          45,
-          186,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:52.989402+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "hooliganRed5": {
-      "id": "hooliganRed5",
-      "file": "hooligan-red-5.png",
-      "source": "game/public/icons/units/hooligan-red-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7985,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          59,
-          45,
-          196,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:53.084527+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerBlue1": {
-      "id": "ordnerBlue1",
-      "file": "ordner-blue-1.png",
-      "source": "game/public/icons/units/ordner-blue-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8428,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          83,
-          44,
-          171,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:53.189369+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerBlue2": {
-      "id": "ordnerBlue2",
-      "file": "ordner-blue-2.png",
-      "source": "game/public/icons/units/ordner-blue-2.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8466,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          86,
-          45,
-          168,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:53.294955+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerBlue3": {
-      "id": "ordnerBlue3",
-      "file": "ordner-blue-3.png",
-      "source": "game/public/icons/units/ordner-blue-3.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8394,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          87,
-          45,
-          167,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:53.389002+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerBlue4": {
-      "id": "ordnerBlue4",
-      "file": "ordner-blue-4.png",
-      "source": "game/public/icons/units/ordner-blue-4.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8056,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          80,
-          45,
-          174,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:53.481441+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerBlue5": {
-      "id": "ordnerBlue5",
-      "file": "ordner-blue-5.png",
-      "source": "game/public/icons/units/ordner-blue-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7932,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          80,
-          45,
-          175,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:53.572355+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerGrey1": {
-      "id": "ordnerGrey1",
-      "file": "ordner-grey-1.png",
-      "source": "game/public/icons/units/ordner-grey-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8428,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          83,
-          44,
-          171,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:53.661032+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerGrey2": {
-      "id": "ordnerGrey2",
-      "file": "ordner-grey-2.png",
-      "source": "game/public/icons/units/ordner-grey-2.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8466,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          86,
-          45,
-          168,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:53.750214+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerGrey3": {
-      "id": "ordnerGrey3",
-      "file": "ordner-grey-3.png",
-      "source": "game/public/icons/units/ordner-grey-3.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8394,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          87,
-          45,
-          167,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:53.838577+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerGrey4": {
-      "id": "ordnerGrey4",
-      "file": "ordner-grey-4.png",
-      "source": "game/public/icons/units/ordner-grey-4.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8056,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          80,
-          45,
-          174,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:53.927768+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerGrey5": {
-      "id": "ordnerGrey5",
-      "file": "ordner-grey-5.png",
-      "source": "game/public/icons/units/ordner-grey-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7932,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          80,
-          45,
-          175,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.018828+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerRed1": {
-      "id": "ordnerRed1",
-      "file": "ordner-red-1.png",
-      "source": "game/public/icons/units/ordner-red-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8428,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          83,
-          44,
-          171,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.107134+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerRed2": {
-      "id": "ordnerRed2",
-      "file": "ordner-red-2.png",
-      "source": "game/public/icons/units/ordner-red-2.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8466,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          86,
-          45,
-          168,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.193586+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerRed3": {
-      "id": "ordnerRed3",
-      "file": "ordner-red-3.png",
-      "source": "game/public/icons/units/ordner-red-3.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8394,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          87,
-          45,
-          167,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.279711+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerRed4": {
-      "id": "ordnerRed4",
-      "file": "ordner-red-4.png",
-      "source": "game/public/icons/units/ordner-red-4.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.8056,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          80,
-          45,
-          174,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.366812+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "ordnerRed5": {
-      "id": "ordnerRed5",
-      "file": "ordner-red-5.png",
-      "source": "game/public/icons/units/ordner-red-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7932,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          80,
-          45,
-          175,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.454377+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraBlue1": {
       "id": "ultraBlue1",
@@ -2837,21 +2918,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.7153,
+        "alphaCoverage": 0.8006,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          51,
-          20,
-          203,
-          235
+          69,
+          54,
+          187,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.541306+00:00"
+        "checkedAt": "2026-10-08T22:52:08.779801+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraBlue2": {
       "id": "ultraBlue2",
@@ -2873,21 +2954,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6705,
+        "alphaCoverage": 0.7827,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          49,
-          20,
-          206,
-          235
+          67,
+          54,
+          189,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.627961+00:00"
+        "checkedAt": "2026-10-08T22:52:08.865172+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraBlue3": {
       "id": "ultraBlue3",
@@ -2909,21 +2990,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6562,
+        "alphaCoverage": 0.7614,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          36,
-          20,
-          219,
-          235
+          57,
+          54,
+          203,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.714166+00:00"
+        "checkedAt": "2026-10-08T22:52:08.950463+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraBlue4": {
       "id": "ultraBlue4",
@@ -2945,21 +3026,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6558,
+        "alphaCoverage": 0.7603,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          33,
-          20,
-          221,
-          235
+          55,
+          54,
+          205,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.801582+00:00"
+        "checkedAt": "2026-10-08T22:52:09.035516+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraBlue5": {
       "id": "ultraBlue5",
@@ -2981,21 +3062,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6781,
+        "alphaCoverage": 0.7754,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          21,
-          20,
-          234,
-          235
+          42,
+          54,
+          211,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.888738+00:00"
+        "checkedAt": "2026-10-08T22:52:09.120424+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraGrey1": {
       "id": "ultraGrey1",
@@ -3017,21 +3098,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.7153,
+        "alphaCoverage": 0.8006,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          51,
-          20,
-          203,
-          235
+          69,
+          54,
+          187,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:54.974624+00:00"
+        "checkedAt": "2026-10-08T22:52:09.208774+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraGrey2": {
       "id": "ultraGrey2",
@@ -3053,21 +3134,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6705,
+        "alphaCoverage": 0.7825,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          49,
-          20,
-          206,
-          235
+          67,
+          54,
+          189,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:55.063413+00:00"
+        "checkedAt": "2026-10-08T22:52:09.294268+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraGrey3": {
       "id": "ultraGrey3",
@@ -3089,21 +3170,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6562,
+        "alphaCoverage": 0.7614,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          36,
-          20,
-          219,
-          235
+          57,
+          54,
+          203,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:55.156244+00:00"
+        "checkedAt": "2026-10-08T22:52:09.379850+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraGrey4": {
       "id": "ultraGrey4",
@@ -3125,21 +3206,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6558,
+        "alphaCoverage": 0.7603,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          33,
-          20,
-          221,
-          235
+          55,
+          54,
+          205,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:55.246065+00:00"
+        "checkedAt": "2026-10-08T22:52:09.465443+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraGrey5": {
       "id": "ultraGrey5",
@@ -3161,21 +3242,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6781,
+        "alphaCoverage": 0.7754,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          21,
-          20,
-          234,
-          235
+          42,
+          54,
+          211,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:55.334195+00:00"
+        "checkedAt": "2026-10-08T22:52:09.550739+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraRed1": {
       "id": "ultraRed1",
@@ -3197,21 +3278,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.7153,
+        "alphaCoverage": 0.8006,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          51,
-          20,
-          203,
-          235
+          69,
+          54,
+          187,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:55.420229+00:00"
+        "checkedAt": "2026-10-08T22:52:09.635381+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraRed2": {
       "id": "ultraRed2",
@@ -3233,21 +3314,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6705,
+        "alphaCoverage": 0.7861,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          49,
-          20,
-          206,
-          235
+          67,
+          54,
+          189,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:55.506622+00:00"
+        "checkedAt": "2026-10-08T22:52:09.720549+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraRed3": {
       "id": "ultraRed3",
@@ -3269,21 +3350,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6562,
+        "alphaCoverage": 0.7622,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          36,
-          20,
-          219,
-          235
+          57,
+          54,
+          203,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:55.596248+00:00"
+        "checkedAt": "2026-10-08T22:52:09.805484+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraRed4": {
       "id": "ultraRed4",
@@ -3305,21 +3386,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6558,
+        "alphaCoverage": 0.7617,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          33,
-          20,
-          221,
-          235
+          55,
+          54,
+          205,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:55.685720+00:00"
+        "checkedAt": "2026-10-08T22:52:09.892324+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "ultraRed5": {
       "id": "ultraRed5",
@@ -3341,21 +3422,21 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.6781,
+        "alphaCoverage": 0.7754,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          21,
-          20,
-          234,
-          235
+          42,
+          54,
+          211,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:33:55.775589+00:00"
+        "checkedAt": "2026-10-08T22:52:09.978661+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "tribuneBlue": {
       "id": "tribuneBlue",
@@ -5132,15 +5213,15 @@
     ]
   },
   "inventory": {
-    "pendingCount": 142,
-    "releasedCount": 0,
+    "pendingCount": 102,
+    "releasedCount": 40,
     "byCategory": {
       "ui": 34,
       "persons": 60,
       "tribunes": 3,
       "buildings": 45
     },
-    "gatheredAt": "2026-10-08T22:34:53.817912+00:00",
+    "gatheredAt": "2026-10-08T22:50:20.548601+00:00",
     "canon": {
       "persons": "units/{fan|ordner|hooligan|ultra}-{grey|blue|red}-{1..5}.png (60)",
       "buildings": "stands/{bier|fanshop|ordner}-{grey|blue|red}-{1..5}.png (45) as stand*",
