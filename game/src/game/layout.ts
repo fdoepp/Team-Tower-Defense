@@ -50,11 +50,11 @@ export const PLOT_SCATTER: readonly { x: number; y: number; w: number; h: number
   { x: 0.16, y: 0.69, w: 0.095, h: 0.09 },
   { x: 0.05, y: 0.79, w: 0.1, h: 0.095 },
   { x: 0.17, y: 0.875, w: 0.095, h: 0.09 },
-  // Neutral — center
-  { x: 0.37, y: 0.66, w: 0.1, h: 0.095 },
-  { x: 0.50, y: 0.70, w: 0.095, h: 0.09 },
-  { x: 0.38, y: 0.80, w: 0.1, h: 0.095 },
-  { x: 0.51, y: 0.88, w: 0.095, h: 0.09 },
+  // Neutral — Heim-facing Ordner | empty | empty | Gast-facing Ordner
+  { x: 0.33, y: 0.70, w: 0.1, h: 0.095 },
+  { x: 0.43, y: 0.78, w: 0.095, h: 0.09 },
+  { x: 0.52, y: 0.78, w: 0.095, h: 0.09 },
+  { x: 0.62, y: 0.70, w: 0.1, h: 0.095 },
   // Gäste — right
   { x: 0.71, y: 0.655, w: 0.1, h: 0.095 },
   { x: 0.84, y: 0.69, w: 0.095, h: 0.09 },
