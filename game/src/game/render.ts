@@ -41,7 +41,7 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
-import { scaleQuad } from "./floorGrid";
+import { boothFacadeQuad, scaleQuad } from "./floorGrid";
 
 export { SEATS_PER_BLOCK } from "./layout";
 export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
@@ -549,26 +549,16 @@ function drawBuilding(
     return;
   }
 
-  // Built plot: Leerfläche is gone. Anchor the stand on the floor-grid cell center.
+  // Built plot: front faces the viewer (upright). Per-slot perspective only
+  // sets foot position + size from the VP facade math — no icon warp/yaw.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
   let size = Math.min(bw, bh) * 0.98;
   let pq: ReturnType<typeof scaleQuad> | null = null;
+  let facade: ReturnType<typeof boothFacadeQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    const mid = {
-      x: (pq.tl.x + pq.tr.x + pq.br.x + pq.bl.x) / 4,
-      y: (pq.tl.y + pq.tr.y + pq.br.y + pq.bl.y) / 4,
-    };
-    const near = {
-      x: (pq.bl.x + pq.br.x) / 2,
-      y: (pq.bl.y + pq.br.y) / 2,
-    };
-    // Slightly bias foot toward the near edge so the stand sits in the cell.
-    cx = mid.x * 0.55 + near.x * 0.45;
-    footY = mid.y * 0.4 + near.y * 0.6;
-    const cellW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
-    size = Math.max(28, cellW * 0.95);
+    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height);
   }
 
   const color = teamColor(
@@ -577,19 +567,40 @@ function drawBuilding(
   const lv = Math.max(1, Math.min(5, s.level || 1));
   const iconSrc = standIconPath(s.building, color, lv);
 
-  // Soft ground contact on the plot (no empty Bauplatz under a built stand).
-  ctx.fillStyle = "rgba(15,23,42,0.35)";
-  ctx.beginPath();
-  ctx.ellipse(cx, footY + size * 0.06, size * 0.32, size * 0.08, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  const drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
-    t: m.realElapsed,
-    phase: s.blockId * 1.7 + s.index * 0.9,
-    mode: s.prodFlash > 0.2 ? "cheer" : "idle",
-    facing: 1,
-    hop: 0,
-  });
+  let drew = false;
+  if (facade && pq) {
+    cx = (facade.bl.x + facade.br.x) / 2;
+    footY = (facade.bl.y + facade.br.y) / 2;
+    const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
+    const topY = (facade.tl.y + facade.tr.y) / 2;
+    const facadeH = Math.max(1, footY - topY);
+    // Facade math drives size (far slots smaller); blit stays upright to viewer.
+    size = Math.max(32, Math.min(baseW * 1.05, facadeH));
+    ctx.fillStyle = "rgba(15,23,42,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
+    ctx.fill();
+    drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
+      t: m.realElapsed,
+      phase: s.blockId * 1.7 + s.index * 0.9,
+      mode: "idle",
+      facing: 1,
+      hop: 0,
+    });
+  }
+  if (!drew) {
+    ctx.fillStyle = "rgba(15,23,42,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(cx, footY + size * 0.04, size * 0.3, size * 0.075, 0, 0, Math.PI * 2);
+    ctx.fill();
+    drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
+      t: m.realElapsed,
+      phase: s.blockId * 1.7 + s.index * 0.9,
+      mode: "idle",
+      facing: 1,
+      hop: 0,
+    });
+  }
   if (!drew) {
     ctx.fillStyle = grey ? "#e2e8f0" : player ? "#eff6ff" : ai ? "#fef2f2" : "#f8fafc";
     roundRect(ctx, x, y, bw, bh, r);
