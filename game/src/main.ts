@@ -280,26 +280,26 @@ function renderMatchScreen(): void {
             .join("")}
         </div>
       </aside>
+      <div class="wallet-row wallet-bar" aria-label="Ressourcen">
+        <span class="wb-chip gold">
+          <span class="wb-plate"><img data-wallet-cur="gold" src="/${UI_ICONS.currencyGold.replace(/^\//, "")}" alt=""></span>
+          <b id="gold">0</b>
+        </span>
+        <span class="wb-chip bier">
+          <span class="wb-plate"><img data-wallet-cur="bier" src="/${UI_ICONS.currencyBier.replace(/^\//, "")}" alt=""></span>
+          <b id="cur-beer">0</b>
+        </span>
+        <span class="wb-chip merch">
+          <span class="wb-plate"><img data-wallet-cur="fanartikel" src="/${UI_ICONS.currencyFanartikel.replace(/^\//, "")}" alt=""></span>
+          <b id="cur-merch">0</b>
+        </span>
+        <span class="wb-chip sec">
+          <span class="wb-plate"><img data-wallet-cur="sicherheit" src="/${UI_ICONS.currencySicherheit.replace(/^\//, "")}" alt=""></span>
+          <b id="cur-sec">0</b>
+        </span>
+      </div>
       <div id="game-wrap">
         <div class="top-hud" id="pitch-hud">
-          <div class="wallet-row wallet-bar" aria-label="Ressourcen">
-            <span class="wb-chip gold">
-              <span class="wb-plate"><img data-wallet-cur="gold" src="/${UI_ICONS.currencyGold.replace(/^\//, "")}" alt=""></span>
-              <b id="gold">0</b>
-            </span>
-            <span class="wb-chip bier">
-              <span class="wb-plate"><img data-wallet-cur="bier" src="/${UI_ICONS.currencyBier.replace(/^\//, "")}" alt=""></span>
-              <b id="cur-beer">0</b>
-            </span>
-            <span class="wb-chip merch">
-              <span class="wb-plate"><img data-wallet-cur="fanartikel" src="/${UI_ICONS.currencyFanartikel.replace(/^\//, "")}" alt=""></span>
-              <b id="cur-merch">0</b>
-            </span>
-            <span class="wb-chip sec">
-              <span class="wb-plate"><img data-wallet-cur="sicherheit" src="/${UI_ICONS.currencySicherheit.replace(/^\//, "")}" alt=""></span>
-              <b id="cur-sec">0</b>
-            </span>
-          </div>
           <!-- Scoreboard + Momentum live on canvas (stadion top third) -->
           <div class="pitch-score sr-only" aria-label="Spielstand">
             <b id="hud-score">0:0</b>
@@ -470,14 +470,36 @@ function renderMatchScreen(): void {
   const buildPlaceRows = app.querySelector<HTMLElement>("#build-place-rows")!;
   const buildUpgradeRows = app.querySelector<HTMLElement>("#build-upgrade-rows")!;
   const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
+  const leftRail = app.querySelector<HTMLElement>(".left-rail")!;
+  const walletBar = app.querySelector<HTMLElement>(".wallet-bar")!;
 
+  /**
+   * Wallet immer am oberen Rand der linken Bildhälfte:
+   * horizontal mittig zwischen Rechtskante Personen-Rail und Bildmitte (#game-wrap).
+   */
   const layoutHud = () => {
-    const rect = wrap.getBoundingClientRect();
-    if (rect.width < 32 || rect.height < 32) return;
+    const wrapRect = wrap.getBoundingClientRect();
+    if (wrapRect.width < 32 || wrapRect.height < 32) return;
     pitchHud.style.top = "0";
     pitchHud.style.left = "0";
     pitchHud.style.width = "100%";
     pitchHud.style.height = "auto";
+
+    const shellRect = shell.getBoundingClientRect();
+    const railRect = leftRail.getBoundingClientRect();
+    if (shellRect.width < 32 || !walletBar) return;
+
+    // Bildmitte = Mitte des Spielfelds (nicht der gesamten Shell inkl. Rails)
+    const imageCenterX = wrapRect.left + wrapRect.width * 0.5;
+    const railRight = railRect.width > 8 ? railRect.right : wrapRect.left;
+    const midX = (railRight + imageCenterX) * 0.5;
+    // Relative zur Shell (Containing Block spannt grid 1 / -1)
+    const leftPx = midX - shellRect.left;
+    walletBar.style.top = "";
+    walletBar.style.left = `${leftPx}px`;
+
+    const scale = Math.min(1.08, Math.max(0.78, wrapRect.width / 900));
+    walletBar.style.setProperty("--wb-scale", String(scale));
   };
 
   const closeBuildRail = () => {
@@ -490,6 +512,7 @@ function renderMatchScreen(): void {
     wrap.classList.remove("placing");
     buildPlaceRows.classList.remove("hidden");
     buildUpgradeRows.classList.add("hidden");
+    requestAnimationFrame(layoutHud);
   };
 
   const openBuildRail = (mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
@@ -522,6 +545,7 @@ function renderMatchScreen(): void {
             : "Genau dieses Haus upgraden";
       }
     }
+    requestAnimationFrame(layoutHud);
   };
 
   /** Soft-bound: from→to Stand-Icons + aktuelle Prod / +Delta + Gold-Kosten. */

@@ -920,9 +920,18 @@ select {
   height: auto;
 }
 
-/* Slim Frosted Wallet — ein --wb-scale, keine Verzerrung, Kanon-Icons soft-bound */
+/* Slim Frosted Wallet — volle Grid-Fläche als Containing Block; left/top via layoutHud() */
 .match-shell.matchday .wallet-row.wallet-bar {
-  --wb-scale: inherit;
+  --wb-scale: 1;
+  /* Abspos über gesamte Shell, nicht in einer Grid-Zelle verdichtet */
+  grid-column: 1 / -1;
+  grid-row: 1;
+  position: absolute;
+  z-index: 12;
+  top: max(6px, env(safe-area-inset-top, 0px));
+  /* Fallback: Mitte zwischen Personen-Rail (~22%) und Bildmitte (50%) */
+  left: 36%;
+  transform: translateX(-50%);
   display: inline-flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -930,8 +939,9 @@ select {
   justify-content: center;
   gap: calc(2px * var(--wb-scale));
   width: max-content;
-  max-width: 100%;
-  margin: 0 auto;
+  max-width: min(46vw, 100%);
+  height: max-content;
+  margin: 0;
   padding: calc(1px * var(--wb-scale)) calc(2px * var(--wb-scale));
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
@@ -994,16 +1004,6 @@ select {
   justify-content: center;
   pointer-events: none;
 }
-
-/* Wallet unter Canvas-Scoreboard — Scoreboard bleibt am oberen Rand zentriert */
-.match-shell.matchday .wallet-row {
-  margin-top: min(
-    36vh,
-    calc(560px * 508 / 1041),
-    calc(48vw * 508 / 1041)
-  );
-}
-
 
 .sr-only {
   position: absolute !important;
