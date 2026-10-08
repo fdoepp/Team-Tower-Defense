@@ -1,6 +1,9 @@
 import {
   AI_SOFT_REGEN,
+  AI_START_BEER,
   AI_START_GOLD_BONUS,
+  AI_START_MERCH,
+  GANG_SPEED_BASE,
   BANNER_ADVANCE_SPEED,
   BANNER_CATCHUP,
   BANNER_MIN_GAP,
@@ -39,6 +42,7 @@ import {
   NEUTRAL_STEWARD_RESPAWN,
   ORDNER_POST_HP,
   ORDNER_POST_HP_PER_LEVEL,
+  PATH_WALK_SPEED,
   PROD_BEER,
   PROD_MERCH,
   PROD_SECURITY,
@@ -250,9 +254,9 @@ export class Match {
   captureAcc: Record<string, number> = {};
   aiGold = START_GOLD + AI_START_GOLD_BONUS;
   aiBuildRot = 0;
-  /** soft AI combat resources (not shared with player wallet) */
-  aiMerch = 40;
-  aiBeer = 40;
+  /** soft AI combat resources — same empty send wallets as player at kickoff */
+  aiMerch = AI_START_MERCH;
+  aiBeer = AI_START_BEER;
   aiSecurity = START_SECURITY;
   width = 960;
   height = 440;
@@ -1284,7 +1288,7 @@ canBuy(kind: FanKind): boolean {
     u.hp = Math.min(u.hp, u.maxHp);
     this.sendToGang(u);
     this.cd.pyroFight = 0;
-    this.toast("Ultra → Pyro Wurf");
+    this.toast("Ultra → Pyro: Ordnerposten / Gang");
     return true;
   }
 
@@ -2345,7 +2349,7 @@ canBuy(kind: FanKind): boolean {
       }
     }
 
-    const speed = 0.22;
+    const speed = PATH_WALK_SPEED;
     const d = dist(f.x, f.y, t.x, t.y);
     if (d < 0.012) {
       f.x = t.x;
@@ -2499,7 +2503,7 @@ canBuy(kind: FanKind): boolean {
   private tickGangMove(f: FanUnit, dt: number): void {
     if (f.isSteward) return;
     const dir = f.team === this.playerTeam ? 1 : -1;
-    const speed = 0.065 * FAN_STATS[f.kind].fight;
+    const speed = GANG_SPEED_BASE * FAN_STATS[f.kind].fight;
     const midY = gangMidY();
     const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
 
