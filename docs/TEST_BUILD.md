@@ -15,7 +15,7 @@ Basis: `cursor/matchday-game-a9b1` + Fixes aus Agent-Abgleich
 
 ## Live
 
-**Play:** https://terrorists-processor-arising-waiting.trycloudflare.com
+**Play:** https://column-mia-instruments-volt.trycloudflare.com
 
 Handy quer / Vollbild empfohlen. Hard-Refresh bei Cache.
 
