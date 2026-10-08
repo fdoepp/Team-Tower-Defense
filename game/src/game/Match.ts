@@ -30,10 +30,13 @@ import {
   NEUTRAL_STEWARD_RESPAWN,
   ORDNER_POST_HP,
   ORDNER_POST_HP_PER_LEVEL,
+  MOMENTUM_APPROACH,
+  MOMENTUM_EPS,
+  MOMENTUM_WEIGHT,
+  MOOD_FROM_POWER,
   PROD_BEER,
   PROD_MERCH,
   PROD_SECURITY,
-  PROD_SHOP_MOOD,
   PYRO_FIGHT_HP_MUL,
   PYRO_FIGHT_MERCH,
   RANGED_DAMAGE_SCALE,
@@ -1494,7 +1497,6 @@ export class Match {
           }
         } else if (s.building === "fanshop") {
           this.gain("merch", PROD_MERCH * rate * dt, undefined, "FANARTIKEL");
-          this.moodHeim = clamp(this.moodHeim + PROD_SHOP_MOOD * rate * dt, 0, 3);
         }
         void p;
       } else if (s.owner === this.aiTeam) {
@@ -1509,11 +1511,6 @@ export class Match {
           );
         } else if (s.building === "fanshop") {
           this.aiMerch = Math.min(120, this.aiMerch + PROD_MERCH * rate * dt);
-          this.moodGaeste = clamp(
-            this.moodGaeste + PROD_SHOP_MOOD * rate * dt,
-            0,
-            3,
-          );
         }
       }
     }
@@ -1531,12 +1528,6 @@ export class Match {
             this.floatAtSlot(s, `+${n} Sicherheit`, true);
           else if (s.building === "fanshop") {
             this.floatAtSlot(s, `+${n} Fanartikel`, true);
-            this.floatAt(
-              this.standWorld(s).x,
-              this.standWorld(s).y - 0.04,
-              "+Stimmung",
-              true,
-            );
           }
         } else {
           // AI stands also show production so both sides are readable
@@ -2946,48 +2937,48 @@ export class Match {
   }
 
   /**
-   * Stimmung from crowd jubel (additive targets) + mild decay.
-   * Momentum follows moodHeim − moodGaeste only (no direct seat pressure).
+   * Momentum = people in own home block only (kind weight × level).
+   * No buildings, no goal bumps. Mood HUD tracks the same power.
+   * Goal celebration sends people to Bier → they leave the block briefly.
    */
-  private tickJubelMomentum(dt: number): void {
-    let jubelHeim = 0;
-    let jubelGast = 0;
+  private blockPower(team: TeamId): number {
+    const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+    let power = 0;
     for (const f of this.fans) {
-      if (f.hp <= 0 || f.isSteward) continue;
-      if (f.state !== "block" && f.state !== "stand") continue;
-      const j = FAN_STATS[f.kind].jubel * unitLevelMul(f.level || 1);
-      if (f.team === this.playerTeam) jubelHeim += j;
-      else if (f.team === this.aiTeam) jubelGast += j;
+      if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
+      // Only seated / returning-in-block counts — gang & stand visits drop out
+      if (f.state !== "block" || f.blockId !== home) continue;
+      power +=
+        MOMENTUM_WEIGHT[f.kind] * unitLevelMul(f.level || 1);
     }
-    const targetHeim = clamp(0.35 + jubelHeim * 0.045, 0, 3);
-    const targetGast = clamp(0.35 + jubelGast * 0.045, 0, 3);
-    // Approach targets; shop/goal bumps elsewhere remain until pulled back
-    const approach = 1 - Math.exp(-0.45 * dt);
-    this.moodHeim = clamp(
-      this.moodHeim + (targetHeim - this.moodHeim) * approach,
-      0,
-      3,
-    );
-    this.moodGaeste = clamp(
-      this.moodGaeste + (targetGast - this.moodGaeste) * approach,
-      0,
-      3,
-    );
-    // Slow drift toward 1.0 so temporary spikes fade
-    this.moodHeim = clamp(this.moodHeim + (1 - this.moodHeim) * (0.02 * dt), 0, 3);
-    this.moodGaeste = clamp(
-      this.moodGaeste + (1 - this.moodGaeste) * (0.02 * dt),
-      0,
-      3,
-    );
+    return power;
+  }
 
-    const signed = clamp((this.moodHeim - this.moodGaeste) / 2.2, -1, 1);
-    const k = 0.07;
-    const lambda = 0.06;
+  private tickJubelMomentum(dt: number): void {
+    const pHeim = this.blockPower(this.playerTeam);
+    const pGast = this.blockPower(this.aiTeam);
+    const rel = (pHeim - pGast) / (pHeim + pGast + MOMENTUM_EPS);
+    const targetMom = clamp(rel, -1, 1);
+    const approach = 1 - Math.exp(-MOMENTUM_APPROACH * dt);
     this.momentum = clamp(
-      this.momentum + (k * signed - lambda * this.momentum) * dt,
+      this.momentum + (targetMom - this.momentum) * approach,
       -1,
       1,
+    );
+
+    // Mood display mirrors block power (not shops / not goals)
+    const targetHeim = clamp(0.35 + pHeim * MOOD_FROM_POWER, 0, 3);
+    const targetGast = clamp(0.35 + pGast * MOOD_FROM_POWER, 0, 3);
+    const moodApproach = 1 - Math.exp(-0.55 * dt);
+    this.moodHeim = clamp(
+      this.moodHeim + (targetHeim - this.moodHeim) * moodApproach,
+      0,
+      3,
+    );
+    this.moodGaeste = clamp(
+      this.moodGaeste + (targetGast - this.moodGaeste) * moodApproach,
+      0,
+      3,
     );
   }
 
@@ -3056,17 +3047,50 @@ export class Match {
   private scoreGoal(team: TeamId): void {
     if (team === "ksc") this.scoreKsc++;
     else this.scoreVfb++;
-    if (team === this.playerTeam) {
-      this.moodHeim = clamp(this.moodHeim + 0.35, 0, 3);
-      this.momentum = clamp(this.momentum + 0.12, -1, 1);
-    } else {
-      this.moodGaeste = clamp(this.moodGaeste + 0.35, 0, 3);
-      this.momentum = clamp(this.momentum - 0.12, -1, 1);
-    }
+    // No direct mood/momentum bump — celebration leaves the block (Bierrunde)
     this.lastGoalTeam = team;
     this.scorePulse = 1;
     this.spawnGoalConfetti(team);
+    this.startGoalCelebration(team);
     this.toast(`TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`);
+  }
+
+  /**
+   * Scoring side's seated home crowd rushes the Bierstand to celebrate.
+   * They leave the block briefly → block power (and momentum) dips;
+   * beer buys still pay gold into the till.
+   */
+  private startGoalCelebration(team: TeamId): void {
+    const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+    const bier = this.nearestBierStand(team, home);
+    if (!bier) {
+      // No stand — still cheer in place, but power stays in the block
+      for (const f of this.fans) {
+        if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
+        if (f.state === "block" && f.blockId === home) f.cheerT = 2.2;
+      }
+      return;
+    }
+    let n = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
+      if (f.onOffense) continue;
+      if (f.state !== "block" || f.blockId !== home) continue;
+      const sp = this.standWorld(bier);
+      this.startPath(
+        f,
+        this.pathViaDoors(f.blockId, bier.blockId, sp),
+        "stand",
+      );
+      f.standKey = slotKey(bier.blockId, bier.index);
+      f.cheerT = 2.5;
+      n++;
+    }
+    // Ensure the Bierrunde can actually buy (gold into till)
+    if (n > 0) {
+      bier.beer = Math.min(bier.capacity, Math.max(bier.beer, n));
+      this.toast("Jubel — Bierrunde!");
+    }
   }
 
   private spawnGoalConfetti(team: TeamId): void {

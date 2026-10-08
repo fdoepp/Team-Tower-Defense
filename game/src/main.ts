@@ -968,9 +968,9 @@ function renderMatchScreen(): void {
       const lpH = app.querySelector("#mom-p-heim");
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
-      if (lpH) lpH.textContent = `Stimmung Heim ${m.moodHeim.toFixed(1)}`;
+      if (lpH) lpH.textContent = `Kurve Heim ${m.moodHeim.toFixed(1)}`;
       if (lpT) lpT.textContent = `nächstes Tor Heim ${Math.round(ch.pHeim * 100)}%`;
-      if (lpG) lpG.textContent = `Stimmung Gast ${m.moodGaeste.toFixed(1)}`;
+      if (lpG) lpG.textContent = `Kurve Gast ${m.moodGaeste.toFixed(1)}`;
       const bar = app.querySelector("#momentum-bar");
       if (bar) {
         bar.classList.remove("kick");

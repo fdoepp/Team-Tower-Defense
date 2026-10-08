@@ -265,7 +265,22 @@ export function visitGoldPayout(
 export const PROD_BEER = 0.28;
 export const PROD_SECURITY = 0.3;
 export const PROD_MERCH = 0.34;
-export const PROD_SHOP_MOOD = 0.018;
+
+/**
+ * Block power → Momentum (people only, own home block).
+ * Fans weigh most (Stimmung), Ultras/Hools less while seated.
+ */
+export const MOMENTUM_WEIGHT: Record<FanKind, number> = {
+  normalos: 1.0,
+  ultras: 0.55,
+  hooligans: 0.35,
+};
+/** Softener in (pH−pG)/(pH+pG+ε) so small crowds don't flip hard */
+export const MOMENTUM_EPS = 2.5;
+/** How fast momentum tracks relative block power (1/s scale via exp) */
+export const MOMENTUM_APPROACH = 0.5;
+/** Mood HUD tracks the same power (display scale 0…3) */
+export const MOOD_FROM_POWER = 0.09;
 
 /** Seconds between pitch goal rolls (before fever) */
 export const GOAL_ROLL_INTERVAL = 22;
