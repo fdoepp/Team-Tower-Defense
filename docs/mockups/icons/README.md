@@ -10,7 +10,8 @@ Einzel-Icons (256×256 PNG) für den Matchday-Comic-/Toy-Look.
 | `bier-{blue\|red\|grey}-1.png` … `5.png` | **Default** farbige Bierstände (verbindlich, siehe `.cursor/rules/stadium-background.mdc`) |
 | `fanshop-1.png` … `fanshop-5.png` | Fanshop Fallback (= grau) |
 | `fanshop-{blue\|red\|grey}-1.png` … `5.png` | **Default** farbige Fanshops (verbindlich) |
-| `ordner-1.png` … `ordner-5.png` | Ordnerposten Upgrade 1–5 |
+| `ordner-1.png` … `ordner-5.png` | Ordnerposten Fallback (= grau) |
+| `ordner-{blue\|red\|grey}-1.png` … `5.png` | **Default** farbige Ordnerposten (verbindlich; Kanon-Ordner in der Tür) |
 
 ## Figuren (`game/public/icons/units/`)
 
@@ -19,7 +20,8 @@ Einzel-Icons (256×256 PNG) für den Matchday-Comic-/Toy-Look.
 | `fan-1.png` … `fan-5.png` | Normalos / Fans Upgrade 1–5 |
 | `ultra-1.png` … `ultra-5.png` | Ultras Upgrade 1–5 |
 | `hooligan-1.png` … `hooligan-5.png` | Hooligans Upgrade 1–5 |
-| `ordner-1.png` … `ordner-5.png` | Ordner (Wachpatrouille) Upgrade 1–5 |
+| `ordner-1.png` … `ordner-5.png` | Ordner Fallback |
+| `ordner-{blue\|red\|grey}-1.png` … `5.png` | **Kanon** farbige Ordner-Units |
 
 ## Übersicht
 

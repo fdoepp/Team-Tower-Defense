@@ -37,6 +37,7 @@ Ab sofort für Implementierungen:
 - **Währungen:** Logo-only Icons `docs/mockups/icons/ui/currency-{gold,bier,fanartikel,sicherheit}.png` (Anzahl nur im HUD-Text)
 - **Bierstand:** final — immer `game/public/icons/stands/bier-{blue\|red\|grey}-{1..5}.png` (bei jeder weiteren Spielcode-Änderung diese Assets laden)
 - **Fanshop:** final — immer `game/public/icons/stands/fanshop-{blue\|red\|grey}-{1..5}.png` (Fähnchen nur Lv2; ebenfalls bei jeder Code-Änderung verbindlich)
+- **Ordnerposten:** final — immer `game/public/icons/stands/ordner-{blue\|red\|grey}-{1..5}.png` (Kanon-Ordner-Units in der Tür; bei jedem neuen Spielaufsetzen diese Gebäude)
 
 Siehe auch `.cursor/rules/stadium-background.mdc` (`alwaysApply`).
 

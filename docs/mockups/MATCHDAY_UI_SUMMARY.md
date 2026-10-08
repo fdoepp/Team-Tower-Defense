@@ -22,12 +22,12 @@ Pfad Spiel: `game/public/icons/` · Übersicht: `docs/mockups/icons/preview-all.
 ### Stände
 - **Bierstand** `stands/bier-{blue\|red\|grey}-1`…`5` (Defaults freigegeben) — Lv4 Neon korrekt **BIER**; Fallback `bier-1`…`5` = grau
 - **Fanshop** `stands/fanshop-{blue\|red\|grey}-1`…`5` (Defaults freigegeben; Fähnchen nur Lv2); Fallback `fanshop-1`…`5` = grau
-- **Ordnerposten** `stands/ordner-1`…`5`
+- **Ordnerposten** `stands/ordner-{blue\|red\|grey}-1`…`5` (Defaults freigegeben; Kanon-Ordner in der Tür); Fallback `ordner-1`…`5` = grau
 
 ### Figuren
 - **Fans** `units/fan-1`…`5` — offen, freundlich, **Fähnchen**
 - **Ultras** `units/ultra-1`…`5` — Kapuze oben, Sonnenbrille, Bier, Bengalos, Megafon
 - **Hooligans** `units/hooligan-1`…`5`
-- **Ordner** `units/ordner-1`…`5`
+- **Ordner** `units/ordner-{blue\|red\|grey}-1`…`5` (Kanon); Fallback `ordner-1`…`5`
 
 **35 Icons** total.
