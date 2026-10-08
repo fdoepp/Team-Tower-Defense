@@ -20,6 +20,17 @@ Maschinenlesbar: [`ultra-canon.json`](./ultra-canon.json)
 Spiegel: `unit-icons-agent/assets/units/ultra-*.png`  
 Arbeitsnotizen: `unit-icons-agent/docs/ultra-progression/` (nur Doku).
 
+## Teamfarben (geteilt)
+
+Blau und Rot sind **dieselben** Midtones wie bei Fans, Hooligans, Ordnern und den farbigen Ständen:
+
+| Farbe | Ziel-Midtone (RGB) | Referenz |
+| --- | --- | --- |
+| Blau | `(31, 76, 160)` | Fan-/Hooligan-Trikot/Hoodie |
+| Rot | `(151, 27, 32)` | Fan-/Hooligan-Trikot/Hoodie |
+
+Kein separates Ultra-Navy oder Ultra-Burgundy.
+
 ## Stil
 
 - Chibi / Bloons-Comic: großer Kopf, kurze Beine, dicke Outlines
