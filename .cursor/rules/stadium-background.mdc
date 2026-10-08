@@ -55,11 +55,35 @@ Sheets: `docs/mockups/icons/stands-colored/sheet-bier-{blue\|red\|grey}.png`
 - Lv4: Neon-**BIER**-Schild, 2 Vendor (männlich + Dirndl), gestreifte Front, **4** Fässer um den Stand (keine Fässer auf der Theke)
 - Lv5: aufwendigeres Neon, gleiche 2 Vendor, Gläser auf Theke, **5** Fässer um den Stand
 
-Teamfarbe steckt in Theke / Markise / Neon — Fässer bleiben braun mit grauen Reifen. Fanshop/Ordner-Stände sind **nicht** durch diese Regel ersetzt (separate Assets).
+Teamfarbe steckt in Theke / Markise / Neon — Fässer bleiben braun mit grauen Reifen.
+
+## Fanshop buildings (default — binding)
+
+For **every** future match / building render, upgrade preview, and new game creation work, always use these freigestellte Fanshop icons — do **not** invent new shop art or regenerate from scratch unless the user explicitly asks for a redesign:
+
+| Farbe | Pfade (Lv1–5) |
+|---|---|
+| Heim / blau | `game/public/icons/stands/fanshop-blue-{1..5}.png` |
+| Gäste / rot | `game/public/icons/stands/fanshop-red-{1..5}.png` |
+| Neutral / grau | `game/public/icons/stands/fanshop-grey-{1..5}.png` |
+| Unfarbig / Fallback | `game/public/icons/stands/fanshop-{1..5}.png` (= grau) |
+
+Canonical mockup copies: `docs/mockups/icons/stands-colored/fanshop-{blue\|red\|grey}-{1..5}.png`  
+Sheets: `docs/mockups/icons/stands-colored/sheet-fanshop-{blue\|red\|grey}.png`
+
+**Progression contract (do not regress):**
+
+- Lv1: Holz-Schalständer, wenige Teamfarbe/weiß-Schals, **1** Vendor **neben** dem Ständer — **keine** Fähnchen
+- Lv2: Theke ohne Markise, Trikots + Schal auf der Theke, **1** Vendor dahinter, **ein** kleines Fähnchen am Tisch erlaubt
+- Lv3: gestreifte Markise (Teamfarbe/weiß), Lampions/Lichterkette, mehr Ware, **1** Vendor — **keine** Fähnchen
+- Lv4: Schild **FANSHOP**, 2 Vendor, braune Holzkisten seitlich, gestreifte Markise — **keine** Fähnchen
+- Lv5: Neon-**FANSHOP**, 2 Vendor, max. Ware, braune Holzkisten — **keine** Fähnchen
+
+Teamfarbe steckt in Schals / Trikots / Markise / Neon — Holzkisten bleiben braun. Ordner-Stände sind **nicht** durch diese Regel ersetzt.
 
 ## Out of scope / do not regress
 
 - Older assets (`stadium-floodlight-bg.jpg`, `stadium-floodlight-empty-bg.jpg`) are archives only — not the default match BG.
 - Do not put text on crowd flags in new BG art.
-- Do not replace the approved Bierstand defaults above with older sheet art or new generations without an explicit redesign ask.
+- Do not replace the approved Bierstand or Fanshop defaults above with older sheet art or new generations without an explicit redesign ask.
 - This rule is the visual contract; wiring it into `drawMatch` can wait until an explicit implementation task.
