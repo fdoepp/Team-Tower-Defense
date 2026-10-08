@@ -71,9 +71,11 @@ import {
   ULTRA_VS_POST_MUL,
   UPGRADE_COST,
   UPGRADE_MAX,
+  UNIT_UPGRADE_MAX,
   ANIM_DRINK_SEC,
   ANIM_SHOP_SEC,
   ANIM_THROW_SEC,
+  defaultUnitLevels,
   productionRate,
   unitLevelMul,
   unitUpgradeCost,
@@ -91,6 +93,7 @@ import {
   type SoloSettings,
   type SpeedMode,
   type TeamId,
+  type UnitUiKind,
 } from "./types";
 import { clamp, expandMix, slotKey, teamLabel } from "./util";
 import {
@@ -256,6 +259,14 @@ export class Match {
   /** battle line gangX 0..1 (vorderster Ultra) */
   linePlayer = 0;
   lineAi = 1;
+  /**
+   * Central per-type unit levels (player + AI).
+   * One upgrade raises ALL living persons of that type for the team.
+   */
+  unitLevels: Record<TeamId, Record<UnitUiKind, number>> = {
+    ksc: defaultUnitLevels(),
+    vfb: defaultUnitLevels(),
+  };
 
   constructor(cfg: MatchConfig) {
     this.cfg = cfg;
@@ -340,6 +351,12 @@ export class Match {
     this.speed = 1;
   }
 
+  unitLevelOf(team: TeamId | "neutral", kind: UnitUiKind): number {
+    if (team === "neutral") return 1;
+    const lv = this.unitLevels[team]?.[kind] ?? 1;
+    return Math.max(1, Math.min(UNIT_UPGRADE_MAX, lv));
+  }
+
   private makeFan(
     kind: FanKind,
     team: TeamId | "neutral",
@@ -349,7 +366,7 @@ export class Match {
     const seat = Math.max(0, seatIndex | 0);
     // Roughly spread home slot; then micro-drift + cheer bob in place
     const p = crowdHomePos(blockId, seat);
-    const level = 1;
+    const level = this.unitLevelOf(team, kind);
     const beerIv = visitInterval(kind, "beer", level);
     const shopIv = visitInterval(kind, "shop", level);
     const maxHp = this.baseMaxHp(kind, level, false);
@@ -403,7 +420,7 @@ export class Match {
   private makeSteward(team: TeamId | "neutral", stand: BuildSlot): FanUnit {
     const sp = this.stewardPostPos(stand);
     const gx = this.postGangX(stand);
-    const level = 1;
+    const level = this.unitLevelOf(team, "ordner");
     const hp = this.stewardMaxHp(level);
     // Spawn already on gang — tickFans skips stewards, so a "moving" path
     // would never finish and they'd never patrol.
@@ -1259,68 +1276,26 @@ export class Match {
     return true;
   }
 
-  /** Lowest-level living player unit of this kind (or Ordner if kind omitted via steward flag) */
-  lowestLevelUnit(
-    kind: FanKind | "ordner",
-    team: TeamId = this.playerTeam,
-  ): FanUnit | null {
-    let best: FanUnit | null = null;
-    for (const f of this.fans) {
-      if (f.hp <= 0 || f.team !== team) continue;
-      if (kind === "ordner") {
-        if (!f.isSteward) continue;
-      } else {
-        if (f.isSteward || f.kind !== kind) continue;
-      }
-      if (!best || (f.level || 1) < (best.level || 1)) best = f;
-    }
-    return best;
+  /** Central type level for sidebar (all units of that type share it). */
+  unitLevelLabel(kind: UnitUiKind, team: TeamId = this.playerTeam): string {
+    return `Lv${this.unitLevelOf(team, kind)}`;
   }
 
-  minUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
-    const u = this.lowestLevelUnit(kind, team);
-    return u ? u.level || 1 : 1;
+  unitUpgradeCostFor(kind: UnitUiKind): number | null {
+    return unitUpgradeCost(this.unitLevelOf(this.playerTeam, kind));
   }
 
-  maxUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
-    let max = 0;
-    for (const f of this.fans) {
-      if (f.hp <= 0 || f.team !== team) continue;
-      if (kind === "ordner") {
-        if (!f.isSteward) continue;
-      } else if (f.isSteward || f.kind !== kind) continue;
-      max = Math.max(max, f.level || 1);
-    }
-    return max;
-  }
-
-  /** Sidebar label: "Lv3" or "Lv1–3" when the squad is mixed */
-  unitLevelLabel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): string {
-    const lo = this.minUnitLevel(kind, team);
-    const hi = this.maxUnitLevel(kind, team);
-    if (hi <= 0) return "Lv1";
-    if (lo === hi) return `Lv${lo}`;
-    return `Lv${lo}–${hi}`;
-  }
-
-  unitUpgradeCostFor(kind: FanKind | "ordner"): number | null {
-    const u = this.lowestLevelUnit(kind, this.playerTeam);
-    if (!u) return null;
-    return unitUpgradeCost(u.level || 1);
-  }
-
-  canUpgradeUnit(kind: FanKind | "ordner"): boolean {
+  canUpgradeUnit(kind: UnitUiKind): boolean {
     const cost = this.unitUpgradeCostFor(kind);
     return cost != null && this.gold >= cost;
   }
 
-  tryUpgradeUnit(kind: FanKind | "ordner"): boolean {
-    const u = this.lowestLevelUnit(kind, this.playerTeam);
-    if (!u) {
-      this.toast(kind === "ordner" ? "Kein Ordner" : "Keine Einheit");
-      return false;
-    }
-    const cost = unitUpgradeCost(u.level || 1);
+  /**
+   * Upgrade ALL living persons of this type for the player team.
+   * New buys spawn at the central type level via unitLevelOf.
+   */
+  tryUpgradeUnit(kind: UnitUiKind): boolean {
+    const cost = this.unitUpgradeCostFor(kind);
     if (cost == null) {
       this.toast("Max. Stufe");
       return false;
@@ -1330,13 +1305,38 @@ export class Match {
       return false;
     }
     this.gold -= cost;
-    u.level = (u.level || 1) + 1;
-    this.applyUnitLevelStats(u);
-    const label =
-      kind === "ordner" ? "Ordner" : FAN_STATS[kind].label;
-    this.floatAt(u.x, u.y, `${label} Lv${u.level}`, true);
-    this.toast(`${label} → Lv${u.level}`);
+    const prev = this.unitLevelOf(this.playerTeam, kind);
+    const next = prev + 1;
+    this.unitLevels[this.playerTeam][kind] = next;
+    this.applyUnitLevelBuff(this.playerTeam, kind, prev, next);
+    const label = kind === "ordner" ? "Ordner" : FAN_STATS[kind].label;
+    this.toast(`Alle ${label} → Lv${next}`);
     return true;
+  }
+
+  /** Scale HP of every living unit of this type when the central level rises. */
+  private applyUnitLevelBuff(
+    team: TeamId,
+    kind: UnitUiKind,
+    fromLv: number,
+    toLv: number,
+  ): void {
+    const fromMul = unitLevelMul(fromLv);
+    const toMul = unitLevelMul(toLv);
+    if (toMul <= fromMul) return;
+    const ratio = toMul / fromMul;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.team !== team) continue;
+      const isOrdner = f.isSteward;
+      if (kind === "ordner" ? !isOrdner : isOrdner || f.kind !== kind) continue;
+      f.level = toLv;
+      if (isOrdner) {
+        this.applyUnitLevelStats(f);
+      } else {
+        f.maxHp = Math.round(f.maxHp * ratio);
+        f.hp = Math.min(f.maxHp, Math.round(f.hp * ratio));
+      }
+    }
   }
 
   update(dt: number): void {
@@ -2745,13 +2745,19 @@ export class Match {
   }
 
   private attackOf(f: FanUnit): number {
-    const mul = unitLevelMul(f.level || 1);
+    const kind: UnitUiKind = f.isSteward ? "ordner" : f.kind;
+    const lv =
+      f.team === "neutral" ? f.level || 1 : this.unitLevelOf(f.team, kind);
+    const mul = unitLevelMul(lv);
     if (f.isSteward) return STEWARD_STATS.attack * mul;
     return FAN_STATS[f.kind].attack * mul;
   }
 
   private defenseOf(f: FanUnit): number {
-    const mul = unitLevelMul(f.level || 1);
+    const kind: UnitUiKind = f.isSteward ? "ordner" : f.kind;
+    const lv =
+      f.team === "neutral" ? f.level || 1 : this.unitLevelOf(f.team, kind);
+    const mul = unitLevelMul(lv);
     if (f.isSteward) return STEWARD_STATS.defense * mul;
     return FAN_STATS[f.kind].defense * mul;
   }
@@ -3160,8 +3166,8 @@ export class Match {
       if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
       // Only seated / returning-in-block counts — gang & stand visits drop out
       if (f.state !== "block" || f.blockId !== home) continue;
-      power +=
-        MOMENTUM_WEIGHT[f.kind] * unitLevelMul(f.level || 1);
+      const lv = this.unitLevelOf(f.team, f.kind);
+      power += MOMENTUM_WEIGHT[f.kind] * unitLevelMul(lv);
     }
     return power;
   }
@@ -3437,17 +3443,17 @@ export class Match {
     const trailing = this.aiTrailingCrowd();
     if (Math.random() > (trailing ? 0.55 : 0.4)) return;
     // When behind on Kurve, prioritize combat upgrades over Fans
-    const kinds: (FanKind | "ordner")[] = trailing
+    const kinds: UnitUiKind[] = trailing
       ? ["hooligans", "ultras", "ordner", "normalos"]
       : ["hooligans", "ultras", "normalos", "ordner"];
     for (const kind of kinds) {
-      const u = this.lowestLevelUnit(kind, this.aiTeam);
-      if (!u) continue;
-      const cost = unitUpgradeCost(u.level || 1);
+      const lv = this.unitLevelOf(this.aiTeam, kind);
+      const cost = unitUpgradeCost(lv);
       if (cost == null || this.aiGold < cost) continue;
       this.aiGold -= cost;
-      u.level = (u.level || 1) + 1;
-      this.applyUnitLevelStats(u);
+      const next = lv + 1;
+      this.unitLevels[this.aiTeam][kind] = next;
+      this.applyUnitLevelBuff(this.aiTeam, kind, lv, next);
       return;
     }
   }

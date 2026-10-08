@@ -816,7 +816,7 @@ function renderMatchScreen(): void {
       setFb("#fb-en", foe.normalos);
       setFb("#fb-eh", foe.hooligans);
       setFb("#fb-eo", foe.ordner);
-      // Sidebar icons / level badges follow lowest living unit level per kind
+      // Sidebar icons / level badges follow central per-type level
       const tcNow = teamColor(m.playerTeam);
       const kinds: (FanKind | "ordner")[] = [
         "normalos",
@@ -825,14 +825,12 @@ function renderMatchScreen(): void {
         "ordner",
       ];
       for (const kind of kinds) {
-        const lvMin = m.minUnitLevel(kind);
-        const lvMax = m.maxUnitLevel(kind);
+        const lv = m.unitLevelOf(m.playerTeam, kind);
         const img = app.querySelector<HTMLImageElement>(
           `[data-unit-icon="${kind}"]`,
         );
         if (img) {
-          // Icon follows strongest unit so upgrades are visually obvious
-          const next = unitIconPath(kind, tcNow, Math.max(1, lvMax || 1));
+          const next = unitIconPath(kind, tcNow, Math.max(1, lv));
           if (img.getAttribute("src") !== next) img.src = next;
         }
         const lvEl = app.querySelector(`[data-unit-lv="${kind}"]`);
@@ -850,7 +848,7 @@ function renderMatchScreen(): void {
           upBtn.title =
             cost == null
               ? "Max. Stufe"
-              : `Schwächste Einheit → Lv${lvMin + 1} · ${cost}€`;
+              : `Alle ${kind === "ordner" ? "Ordner" : kind} → Lv${lv + 1} · ${cost}€`;
         }
       }
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
