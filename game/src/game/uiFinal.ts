@@ -111,6 +111,7 @@ export type UiFinalId =
   | "tribuneGrey"
   | "tribuneRed"
   | "ultraBlue1"
+  | "ultraBlue2"
   | "ultraBlue5"
   | "ultraGrey1"
   | "ultraGrey5"
@@ -972,6 +973,14 @@ export const UI_FINAL_PATHS = {
   "ultraBlue1": {
     file: "ultra-blue-1.png",
     path: "icons/ui-final/ultra-blue-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ultraBlue2": {
+    file: "ultra-blue-2.png",
+    path: "icons/ui-final/ultra-blue-2.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
