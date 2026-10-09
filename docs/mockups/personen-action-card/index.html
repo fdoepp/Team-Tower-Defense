@@ -18,7 +18,7 @@
     padding: 16px;
   }
   h1 { font-size: 1.1rem; margin: 0 0 6px; }
-  .note { color: #bbb; font-size: 0.85rem; max-width: 1000px; margin-bottom: 14px; line-height: 1.4; }
+  .note { color: #bbb; font-size: 0.85rem; max-width: 1040px; margin-bottom: 14px; line-height: 1.4; }
   .nav { margin-bottom: 12px; font-size: 0.85rem; }
   .nav a { color: #fde68a; margin-right: 14px; }
   .stage { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
@@ -76,11 +76,6 @@
     min-height: 0;
   }
 
-  /*
-   * A v2: keine Personen-Icons → volle Breite für Original-Holzbuttons.
-   * Titel wie B: „Ultras (Lvl.1, x3)“
-   * Reihenfolge: Kauf → Upgrade → Send
-   */
   .card {
     flex: 1 1 0;
     min-height: 0;
@@ -93,13 +88,9 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
-    padding: 4px 2px 5px; /* wenig Seitenpolster — Breite steuern die %-Tracks */
+    padding: 4px 0 5px;
     color: var(--ink);
     overflow: hidden;
-  }
-  .card.featured {
-    outline: 2px solid #fbbf24;
-    outline-offset: 0;
   }
 
   .title {
@@ -110,85 +101,101 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding: 0 3%;
   }
   .title .meta {
     font-weight: 700;
     color: #6b4e2e;
   }
 
-  /*
-   * Prozentuale Aufteilung der beigen Box-Breite:
-   * Triple: 3% | 30% Kauf | 2% | 30% Upgrade | 2% | 30% Send | 3%
-   * Dual:   3% | 46% Kauf | 2% | 46% Upgrade | 3%
-   */
+  /* Einheitliches Grid auf allen Karten — Spalten bündig übereinander */
   .actions {
     flex: 1 1 0;
     display: grid;
-    align-content: stretch;
+    grid-template-columns: 3% 30% 2% 30% 2% 30% 3%;
     align-items: stretch;
+    justify-items: stretch;
     min-height: 0;
     width: 100%;
-    column-gap: 0;
-    row-gap: 0;
+    margin: 0;
+    padding: 0;
+    gap: 0;
   }
-  .actions.triple {
-    grid-template-columns: 3% 30% 2% 30% 2% 30% 3%;
-  }
-  .actions.triple .cost-btn:nth-child(1) { grid-column: 2; }
-  .actions.triple .cost-btn:nth-child(2) { grid-column: 4; }
-  .actions.triple .cost-btn:nth-child(3) { grid-column: 6; }
-  .actions.dual {
-    grid-template-columns: 3% 46% 2% 46% 3%;
-  }
-  .actions.dual .cost-btn:nth-child(1) { grid-column: 2; }
-  .actions.dual .cost-btn:nth-child(2) { grid-column: 4; }
+  .actions .cost-btn:nth-child(1) { grid-column: 2; }
+  .actions .cost-btn:nth-child(2) { grid-column: 4; }
+  .actions .cost-btn:nth-child(3) { grid-column: 6; }
 
-  /* Original Icon-UI Buttons (Holzrahmen + gebackenes Label); Kosten live darunter */
+  /*
+   * Button füllt die Grid-Zelle 1:1 (kein container-type am Button —
+   * das verhindert Stretch). Innen-Wrapper für dynamische Schrift.
+   */
   .cost-btn {
     appearance: none;
     border: 0;
     margin: 0;
+    padding: 0;
     width: 100%;
     height: 100%;
-    min-height: 56px;
-    padding: 0 6px 8px;
-    border-radius: 10px;
+    min-width: 0;
+    min-height: 52px;
+    border-radius: 8px;
     background-color: transparent;
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100% 100%;
+    cursor: pointer;
+    overflow: hidden;
+    display: block;
+  }
+  .cost-btn.kaufen { background-image: url("btn-kaufen-chrome.png"); }
+  .cost-btn.upgrade { background-image: url("btn-upgrade-chrome.png"); }
+  .cost-btn.senden { background-image: url("btn-senden-chrome.png"); }
+
+  .cost-btn .inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.28em;
+    padding: 0 6%;
     color: #fff;
     font-weight: 900;
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0;
-    cursor: pointer;
+    font-family: inherit;
     text-shadow: 0 1px 1px rgba(0,0,0,.55);
-    filter: drop-shadow(0 1px 0 rgba(0,0,0,.28));
+    container-type: inline-size;
+    /* dynamisch an Button-Breite — eng genug für „UPGRADE 🪙22“ in 30%-Spalte */
+    font-size: clamp(8px, 11cqw, 14px);
     overflow: hidden;
   }
-  .cost-btn.kaufen { background-image: url("btn-kaufen.png"); }
-  .cost-btn.upgrade { background-image: url("btn-upgrade.png"); }
-  .cost-btn.senden { background-image: url("btn-senden.png"); }
+  .cost-btn .txt,
+  .cost-btn .pay {
+    font-size: 1em;
+    font-weight: inherit;
+    font-family: inherit;
+    letter-spacing: 0;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  /* Dynamisch: volle Wörter wenn die Zelle breit genug ist, sonst Kurzform */
+  .cost-btn .txt .short { display: none; }
+  .cost-btn .txt .full { display: inline; }
+  @container (max-width: 100px) {
+    .cost-btn .txt .full { display: none; }
+    .cost-btn .txt .short { display: inline; }
+  }
   .cost-btn .pay {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    font-size: 13px;
-    line-height: 1;
-    /* leichtes Plättchen, damit Kosten über dem gebackenen Label lesbar bleiben */
-    background: rgba(0, 0, 0, .28);
-    border-radius: 6px;
-    padding: 2px 6px 3px;
+    gap: 0.18em;
   }
   .cost-btn .pay img {
-    width: 15px;
-    height: 15px;
+    width: 1.1em;
+    height: 1.1em;
     object-fit: contain;
     flex: 0 0 auto;
-    filter: drop-shadow(0 0 1px rgba(0,0,0,.4));
   }
 
   .zoom {
@@ -200,20 +207,13 @@
   .zoom h2 { margin: 0 0 8px; font-size: 0.95rem; }
   .zoom .card {
     height: 128px;
-    padding: 8px 4px 10px;
+    padding: 8px 0 10px;
     gap: 6px;
     border-width: 3px;
     border-radius: 12px;
   }
   .zoom .title { font-size: 16px; }
-  .zoom .actions { /* gleiche %-Aufteilung wie in der Rail */ }
-  .zoom .cost-btn {
-    min-height: 72px;
-    padding: 0 10px 12px;
-    border-radius: 12px;
-  }
-  .zoom .cost-btn .pay { font-size: 15px; padding: 3px 8px 4px; }
-  .zoom .cost-btn .pay img { width: 18px; height: 18px; }
+  .zoom .cost-btn { min-height: 70px; }
   .legend {
     margin-top: 10px;
     font-size: 0.8rem;
@@ -224,17 +224,16 @@
 </style>
 </head>
 <body>
-  <h1>Personen-Action-Card — Vorschlag A (ohne Icons, Original-Buttons)</h1>
+  <h1>Personen-Action-Card — Vorschlag A</h1>
   <p class="nav">
     <a href="index.html">Vorschlag A</a>
     <a href="index-b.html">Vorschlag B</a>
     <a href="compare.html">Vergleich A/B</a>
   </p>
   <p class="note">
-    Keine Personen-Icons → mehr Platz für die <b>Original-Holzbuttons</b> (mit Umrandung + Label).
-    Titel wie B: <code>Ultras (Lvl.1, x3)</code>. Reihenfolge: <b>Kauf → Upgrade → Send</b>.
-    Kosten live unten im Button; Verb kommt aus dem Button-Asset.
-    Button-Breiten dynamisch: Triple <code>3%·30%·2%·30%·2%·30%·3%</code>, Dual <code>3%·46%·2%·46%·3%</code>.
+    Grid überall <code>3%·30%·2%·30%·2%·30%·3%</code> → Kauf/Upgrade/Send bündig übereinander
+    (Dual lässt die Send-Spalte leer). Getrimmtes Holz-Chrome ohne Transparent-Ränder.
+    Verb + Kosten eine Zeile, gleiche Schrift (<code>cqw</code> am Innen-Wrapper). Kein gelber Auswahlrahmen.
   </p>
 
   <div class="stage">
@@ -244,32 +243,32 @@
         <div class="cards">
           <article class="card">
             <div class="title">Fans <span class="meta">(Lvl.1, x5)</span></div>
-            <div class="actions dual">
-              <button class="cost-btn kaufen" type="button"><span class="pay"><img src="cur-sec.png" alt="">12</span></button>
-              <button class="cost-btn upgrade" type="button"><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
+            <div class="actions">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-sec.png" alt="">12</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
             </div>
           </article>
-          <article class="card featured">
+          <article class="card">
             <div class="title">Ultras <span class="meta">(Lvl.1, x3)</span></div>
-            <div class="actions triple">
-              <button class="cost-btn kaufen" type="button"><span class="pay"><img src="cur-merch.png" alt="">12</span></button>
-              <button class="cost-btn upgrade" type="button"><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
-              <button class="cost-btn senden" type="button"><span class="pay"><img src="cur-merch.png" alt="">6</span></button>
+            <div class="actions">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-merch.png" alt="">12</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+              <button class="cost-btn senden" type="button"><span class="inner"><span class="txt"><span class="full">SENDEN</span><span class="short">SEND</span></span><span class="pay"><img src="cur-merch.png" alt="">6</span></span></button>
             </div>
           </article>
           <article class="card">
             <div class="title">Hooligans <span class="meta">(Lvl.1, x2)</span></div>
-            <div class="actions triple">
-              <button class="cost-btn kaufen" type="button"><span class="pay"><img src="cur-bier.png" alt="">12</span></button>
-              <button class="cost-btn upgrade" type="button"><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
-              <button class="cost-btn senden" type="button"><span class="pay"><img src="cur-bier.png" alt="">6</span></button>
+            <div class="actions">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-bier.png" alt="">12</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+              <button class="cost-btn senden" type="button"><span class="inner"><span class="txt"><span class="full">SENDEN</span><span class="short">SEND</span></span><span class="pay"><img src="cur-bier.png" alt="">6</span></span></button>
             </div>
           </article>
           <article class="card">
             <div class="title">Ordner <span class="meta">(Lvl.1, x1)</span></div>
-            <div class="actions dual">
-              <button class="cost-btn kaufen" type="button"><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
-              <button class="cost-btn upgrade" type="button"><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
+            <div class="actions">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
             </div>
           </article>
         </div>
@@ -279,17 +278,17 @@
 
     <div class="zoom">
       <h2>Detail · Ultras</h2>
-      <article class="card featured">
+      <article class="card">
         <div class="title">Ultras <span class="meta">(Lvl.1, x3)</span></div>
-        <div class="actions triple">
-          <button class="cost-btn kaufen" type="button"><span class="pay"><img src="cur-merch.png" alt="">12</span></button>
-          <button class="cost-btn upgrade" type="button"><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
-          <button class="cost-btn senden" type="button"><span class="pay"><img src="cur-merch.png" alt="">6</span></button>
+        <div class="actions">
+          <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-merch.png" alt="">12</span></span></button>
+          <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+          <button class="cost-btn senden" type="button"><span class="inner"><span class="txt"><span class="full">SENDEN</span><span class="short">SEND</span></span><span class="pay"><img src="cur-merch.png" alt="">6</span></span></button>
         </div>
       </article>
       <div class="legend">
-        Ohne Personen-Icons · Original-Buttons <code>btn-kaufen / btn-upgrade / btn-senden</code>.<br>
-        Titel wie B · Kauf → Upgrade → Send · Breiten %-anteilig in der beigen Box.
+        Gleiches %-Grid auf jeder Karte · Dual = Send-Spalte leer (bündig).<br>
+        Verb+Kosten eine Zeile · Schrift dynamisch · kein gelber Rahmen.
       </div>
     </div>
   </div>
