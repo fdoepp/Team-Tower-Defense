@@ -23,7 +23,8 @@ Optik an **Holzrahmen-Buttons** und **Menu-Rail-Holz**. Keine „Einheiten gesam
 ```
 
 Reihenfolge: **Kauf → Upgrade → Send**. \* SENDEN nur Ultras + Hooligans.  
-Keine Personen-Icons. Titel wie B.
+Keine Personen-Icons. Titel wie B.  
+Button-Breiten %-anteilig in der beigen Box: Triple `3%·30%·2%·30%·2%·30%·3%`, Dual `3%·46%·2%·46%·3%`.
 
 ## Vorschlag B — Buttons untereinander
 
