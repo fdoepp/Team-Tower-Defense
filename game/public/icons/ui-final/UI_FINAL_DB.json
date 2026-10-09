@@ -3933,14 +3933,11 @@
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
       "category": "persons",
       "source": "game/public/icons/units/ultra-red-5.png"
-    }
-  },
-  "pending": {
+    },
     "pennantKsc": {
       "id": "pennantKsc",
       "file": "pennant-ksc.png",
-      "source": "game/public/icons/ui/pennant-ksc.png",
-      "status": "pendingApproval",
+      "status": "released",
       "role": "ui",
       "requirements": {
         "freigestellt": true,
@@ -3949,7 +3946,7 @@
       },
       "validation": {
         "ok": true,
-        "file": "pennant-ksc.png",
+        "file": "/workspace/docs/icons/ui-final/pending/pennant-ksc.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -3968,17 +3965,18 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T07:13:05.992030+00:00"
+        "checkedAt": "2026-10-09T07:29:01.520958+00:00"
       },
-      "notes": "Neu generiert ohne rote Hilfslinien, freigeschnitten (RGBA). Top-Rim bereinigt.",
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:29:01.534Z",
+      "notes": "Freigegeben — freigestellt, ohne Hilfslinien, upright Perspective.",
       "category": "ui",
-      "updatedAt": "2026-10-09T07:13:05.912325+00:00"
+      "source": "game/public/icons/ui/pennant-ksc.png"
     },
     "pennantVfb": {
       "id": "pennantVfb",
       "file": "pennant-vfb.png",
-      "source": "game/public/icons/ui/pennant-vfb.png",
-      "status": "pendingApproval",
+      "status": "released",
       "role": "ui",
       "requirements": {
         "freigestellt": true,
@@ -3987,7 +3985,7 @@
       },
       "validation": {
         "ok": true,
-        "file": "pennant-vfb.png",
+        "file": "/workspace/docs/icons/ui-final/pending/pennant-vfb.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -4006,12 +4004,16 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T07:13:06.083782+00:00"
+        "checkedAt": "2026-10-09T07:29:01.650014+00:00"
       },
-      "notes": "Neu generiert ohne rote Hilfslinien, freigeschnitten (RGBA). Top-Rim bereinigt.",
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:29:01.662Z",
+      "notes": "Freigegeben — freigestellt, ohne Hilfslinien, upright Perspective.",
       "category": "ui",
-      "updatedAt": "2026-10-09T07:13:05.912325+00:00"
-    },
+      "source": "game/public/icons/ui/pennant-vfb.png"
+    }
+  },
+  "pending": {
     "slotEmptyParallel": {
       "id": "slotEmptyParallel",
       "file": "slot-empty-parallel.png",
@@ -5394,12 +5396,12 @@
     ]
   },
   "inventory": {
-    "pendingCount": 40,
-    "releasedCount": 103,
+    "pendingCount": 38,
+    "releasedCount": 105,
     "byCategory": {
       "ui": {
-        "pending": 28,
-        "released": 7
+        "pending": 26,
+        "released": 9
       },
       "persons": {
         "pending": 12,
@@ -5414,7 +5416,7 @@
         "released": 3
       }
     },
-    "gatheredAt": "2026-10-09T07:27:44.206994+00:00",
+    "gatheredAt": "2026-10-09T07:29:01.696562+00:00",
     "canon": {
       "persons": "units/{fan|ordner|hooligan|ultra}-{grey|blue|red}-{1..5}.png (60)",
       "buildings": "stands/{bier|fanshop|ordner}-{grey|blue|red}-{1..5}.png (45) as stand*",

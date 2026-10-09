@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=40** · **released=103**
+**pending=38** · **released=105**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -32,8 +32,6 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 118. `currencySicherheit` — `currency-sicherheit.png`
 119. `menuRail` — `menu-rail-brown.png`
 120. `menuRailTile` — `menu-rail-brown-tile.png`
-121. `pennantKsc` — `pennant-ksc.png`
-122. `pennantVfb` — `pennant-vfb.png`
 124. `scoreboardMomentum` — `scoreboard-momentum.png`
 125. `scoreboardOrbGast` — `scoreboard-top-orb-gast.png`
 126. `scoreboardOrbHeim` — `scoreboard-top-orb-heim.png`
@@ -61,4 +59,5 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 - **55** `ultraGrey5` — `ultra-grey-5.png`
 - **56** `ultraRed1` — `ultra-red-1.png`
 - **60** `ultraRed5` — `ultra-red-5.png`
-
+- **121** `pennantKsc` — `pennant-ksc.png`
+- **122** `pennantVfb` — `pennant-vfb.png`
