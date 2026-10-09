@@ -28,6 +28,7 @@ import {
   STEWARD_HIRE_GOLD,
   UPGRADE_COST,
   UPGRADE_MAX,
+  productionRate,
   type BuildingKind,
   type FanKind,
   type FanMix,
@@ -45,6 +46,38 @@ import {
 } from "./game/util";
 
 void preloadIcons();
+
+const BUILD_NAME: Record<BuildingKind, string> = {
+  bier: "Bierstand",
+  fanshop: "Fanshop",
+  ordner: "Ordnerposten",
+};
+
+function buildingYieldCurrency(kind: BuildingKind): string {
+  if (kind === "bier") return UI_ICONS.currencyBier;
+  if (kind === "fanshop") return UI_ICONS.currencyFanartikel;
+  return UI_ICONS.currencySicherheit;
+}
+
+/** Ertragszahl wie im Tick-Modell (Lv1=1.2 … +0.5 je Stufe). */
+function buildingYieldAmount(level: number): number {
+  return Math.round(productionRate(level) * 10) / 10;
+}
+
+function formatYieldAmount(n: number): string {
+  return n.toFixed(1);
+}
+
+function yieldChipHtml(
+  kind: BuildingKind,
+  amount: number,
+  opts?: { delta?: boolean; id?: string },
+): string {
+  const sign = opts?.delta ? (amount >= 0 ? "+" : "") : "+";
+  const id = opts?.id ? ` id="${opts.id}"` : "";
+  const deltaCls = opts?.delta ? " yield-delta" : "";
+  return `<span class="yield-chip${deltaCls}"${id}><img src="${buildingYieldCurrency(kind)}" alt=""><span class="yield-amt">${sign}${formatYieldAmount(amount)}</span></span>`;
+}
 
 /** Live Verb+Kosten über Button-Chrome (kein gebackenes Label). */
 function arCostBtnHtml(opts: {
@@ -365,13 +398,13 @@ function renderMatchScreen(): void {
       </div>
       <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
         <header class="rail-banner" id="build-rail-title">Bauen</header>
-        <p class="rail-hint" id="build-hint">Gebäude wählen</p>
         <div class="build-rows" id="build-place-rows">
           <button type="button" class="build-card" data-pending-build="bier">
             <div class="build-top">
               <img class="build-preview" src="icons/stands/bier-${tc}-1.png" alt="">
               <div class="build-info">
-                <span>Bierstand</span>
+                <span class="build-name">Bierstand</span>
+                ${yieldChipHtml("bier", buildingYieldAmount(1))}
               </div>
             </div>
             ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.bier })}
@@ -380,7 +413,8 @@ function renderMatchScreen(): void {
             <div class="build-top">
               <img class="build-preview" src="icons/stands/fanshop-${tc}-1.png" alt="">
               <div class="build-info">
-                <span>Fanshop</span>
+                <span class="build-name">Fanshop</span>
+                ${yieldChipHtml("fanshop", buildingYieldAmount(1))}
               </div>
             </div>
             ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.fanshop })}
@@ -389,7 +423,8 @@ function renderMatchScreen(): void {
             <div class="build-top">
               <img class="build-preview" src="icons/stands/ordner-${tc}-1.png" alt="">
               <div class="build-info">
-                <span>Ordnerposten</span>
+                <span class="build-name">Ordnerposten</span>
+                ${yieldChipHtml("ordner", buildingYieldAmount(1))}
               </div>
             </div>
             ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.ordner })}
@@ -397,19 +432,20 @@ function renderMatchScreen(): void {
         </div>
         <div class="build-rows hidden" id="build-upgrade-rows">
           <div class="upgrade-panel" id="upgrade-panel">
-            <p class="upgrade-title" id="upgrade-title">Dieses Haus</p>
+            <p class="upgrade-title" id="upgrade-title">Gebäude</p>
             <div class="upgrade-preview">
               <div class="up-stage">
                 <img id="upgrade-from-img" src="" alt="">
-                <span id="upgrade-from-lv">Lv1</span>
+                <span class="up-lv" id="upgrade-from-lv">Lv1</span>
+                <span class="yield-chip" id="upgrade-from-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">+1.2</span></span>
               </div>
               <div class="up-arrow" aria-hidden="true">→</div>
-              <div class="up-stage">
+              <div class="up-stage up-stage-next">
                 <img id="upgrade-to-img" src="" alt="">
-                <span id="upgrade-to-lv">Lv2</span>
+                <span class="up-lv" id="upgrade-to-lv">Lv2</span>
+                <span class="yield-chip yield-delta" id="upgrade-to-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">+0.5</span></span>
               </div>
             </div>
-            <p class="upgrade-blurb" id="upgrade-blurb">Besserer Ertrag & stärkeres Gebäude</p>
             <button type="button" class="ar-cost-btn upgrade" id="rail-upgrade">
               <span class="inner">
                 <span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span>
@@ -421,7 +457,7 @@ function renderMatchScreen(): void {
             <div class="build-top">
               <img class="build-preview" src="${unitIconPath("ordner", tc, 1)}" alt="">
               <div class="build-info">
-                <span>Ordner anheuern</span>
+                <span class="build-name">Ordner anheuern</span>
               </div>
             </div>
             ${arCostBtnHtml({ kind: "kaufen", full: "KAUFEN", short: "KAUF", amount: STEWARD_HIRE_GOLD })}
@@ -465,6 +501,24 @@ function renderMatchScreen(): void {
     buildUpgradeRows.classList.add("hidden");
   };
 
+  const setYieldChip = (
+    el: Element | null,
+    kind: BuildingKind,
+    amount: number,
+    delta: boolean,
+  ) => {
+    if (!el) return;
+    const img = el.querySelector("img");
+    const amt = el.querySelector(".yield-amt");
+    if (img) img.src = buildingYieldCurrency(kind);
+    if (amt) {
+      const sign = delta ? (amount >= 0 ? "+" : "") : "+";
+      amt.textContent = `${sign}${formatYieldAmount(amount)}`;
+    }
+    el.classList.toggle("yield-delta", delta);
+    el.classList.toggle("hidden", false);
+  };
+
   const openBuildRail = (mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
     state.buildTarget = target;
     m.selectedSlot = target;
@@ -473,12 +527,10 @@ function renderMatchScreen(): void {
     buildRail.classList.add("open");
     shell.classList.add("build-open");
     const title = app.querySelector("#build-rail-title");
-    const hint = app.querySelector("#build-hint");
     if (mode === "place") {
       buildPlaceRows.classList.remove("hidden");
       buildUpgradeRows.classList.add("hidden");
       if (title) title.textContent = "Bauen";
-      if (hint) hint.textContent = "Gebäude für diesen Plot wählen";
       syncPendingBuildUi();
     } else {
       buildPlaceRows.classList.add("hidden");
@@ -496,12 +548,12 @@ function renderMatchScreen(): void {
       const toImg = app.querySelector<HTMLImageElement>("#upgrade-to-img");
       const fromLv = app.querySelector("#upgrade-from-lv");
       const toLv = app.querySelector("#upgrade-to-lv");
-      const blurb = app.querySelector("#upgrade-blurb");
+      const fromYield = app.querySelector("#upgrade-from-yield");
+      const toYield = app.querySelector("#upgrade-to-yield");
       const upTitle = app.querySelector("#upgrade-title");
       const kind = slot?.building;
-      const name =
-        kind === "bier" ? "Bierstand" : kind === "fanshop" ? "Fanshop" : kind === "ordner" ? "Ordnerposten" : "Gebäude";
-      if (upTitle) upTitle.textContent = `${name} upgraden`;
+      const name = kind ? BUILD_NAME[kind] : "Gebäude";
+      if (upTitle) upTitle.textContent = name;
       if (kind && fromImg && toImg) {
         const fromSrc = standIconPath(kind, tc, lv);
         const toSrc = standIconPath(kind, tc, Math.min(UPGRADE_MAX, next));
@@ -511,18 +563,19 @@ function renderMatchScreen(): void {
         toImg.alt = `${name} Lv${Math.min(UPGRADE_MAX, next)}`;
       }
       if (fromLv) fromLv.textContent = `Lv${lv}`;
-      if (toLv) toLv.textContent = slot && slot.level >= UPGRADE_MAX ? "Max" : `Lv${next}`;
-      if (blurb) {
-        blurb.textContent =
-          kind === "bier"
-            ? "Mehr Bier-Produktion & Kapazität"
-            : kind === "fanshop"
-              ? "Mehr Fanartikel & Stimmung"
-              : kind === "ordner"
-                ? "Stärkerer Posten & mehr Ordner-Power"
-                : "Gebäude verbessern";
+      const atMax = !!(slot && slot.level >= UPGRADE_MAX);
+      if (toLv) toLv.textContent = atMax ? "Max" : `Lv${next}`;
+      if (kind) {
+        const curY = buildingYieldAmount(lv);
+        setYieldChip(fromYield, kind, curY, false);
+        if (atMax) {
+          toYield?.classList.add("hidden");
+        } else {
+          const delta = buildingYieldAmount(next) - curY;
+          setYieldChip(toYield, kind, delta, true);
+        }
       }
-      if (cost == null || !slot || slot.level >= UPGRADE_MAX) {
+      if (cost == null || !slot || atMax) {
         upBtn.disabled = true;
         upBtn.classList.add("cd");
         if (costEl) costEl.textContent = "—";
@@ -537,28 +590,17 @@ function renderMatchScreen(): void {
       hireBtn.classList.toggle("hidden", slot?.building !== "ordner");
       hireBtn.disabled = !canHire;
       hireBtn.classList.toggle("cd", !canHire);
-      if (hint) {
-        hint.textContent =
-          slot?.building === "ordner"
-            ? "Genau dieses Haus: Upgrade oder Ordner"
-            : "Genau dieses Haus upgraden";
-      }
+      buildUpgradeRows.classList.toggle("hire-open", slot?.building === "ordner");
     }
   };
 
   const syncPendingBuildUi = () => {
-    const hint = app.querySelector("#build-hint");
     app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
       const kind = btn.dataset.pendingBuild as BuildingKind;
       const on = state.pendingBuild === kind;
       btn.classList.toggle("selected", on);
       btn.classList.toggle("cd", m.gold < BUILD_COST[kind]);
     });
-    if (hint && !buildPlaceRows.classList.contains("hidden")) {
-      hint.textContent = state.buildTarget
-        ? "Gebäude für diesen Plot wählen"
-        : "Plot tippen";
-    }
   };
 
   const resize = () => {
