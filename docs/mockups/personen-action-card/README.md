@@ -1,54 +1,75 @@
-# Personen-Action-Card — Vorschlag A
+# Personen-Action-Card — Vorschläge A & B
 
 **Status:** Vorschlag zur Freigabe  
-**Preview:** [index.html](./index.html) · `preview-rail.png` · `preview-ultras.png`
+**Mocks:** [A — horizontal](./index.html) · [B — vertikal](./index-b.html) · [Vergleich](./compare.html)
 
 ## Ziel
 
 Vier Personen-Karten (Fans, Ultras, Hooligans, Ordner) in der **linken Rail**, Handy-Querformat, **ohne Scroll**.  
-Optik an den **Holzrahmen-Buttons** (Kaufen/Senden/Upgrade) und dem **Menu-Rail-Holz** — nicht an Flat-CSS-Buttons.
+Optik an **Holzrahmen-Buttons** und **Menu-Rail-Holz**. Keine „Einheiten gesamt“-Zeile.
 
-## Layout (pro Karte)
+---
+
+## Vorschlag A — Buttons nebeneinander
 
 ```
 ┌─────────────────────────────────────┐
 │ [Kopf]  Name LvN              ×n    │
 │         ┌────────┬────────┬───────┐ │
-│         │KAUFEN  │SENDEN* │UPGRADE│ │
+│         │ KAUF   │ SEND*  │  UP   │ │
 │         │ 🪙 12  │ 👕 6   │ 🪙 22 │ │
 │         └────────┴────────┴───────┘ │
 └─────────────────────────────────────┘
 ```
 
-\* SENDEN nur Ultras + Hooligans.  
-Keine „Einheiten gesamt“-Zeile mehr — Platz geht an Karten/Buttons.
+\* SENDEN nur Ultras + Hooligans. Kurzlabels in der engen Rail.
 
-## Eng vs. breit
+## Vorschlag B — Buttons untereinander
 
-In der schmalen Rail (~194px): Kurzlabels **KAUF / SEND / UP** + Icon + Zahl.  
-Detail/breitere Karten: volle Wörter **KAUFEN / SENDEN / UPGRADE**.
+```
+┌─────────────────────────────────────┐
+│ Ultras (Lvl.1, x3)                  │
+│ [Kopf]  ┌─────────────────────────┐ │
+│         │ KAUFEN           🪙 12  │ │
+│         ├─────────────────────────┤ │  ← Gap 2px
+│         │ SENDEN           👕 6   │ │
+│         ├─────────────────────────┤ │
+│         │ UPGRADE          🪙 22  │ │
+│         └─────────────────────────┘ │
+└─────────────────────────────────────┘
+```
 
-## Regeln
+Titel über dem Icon; Buttons rechts, volle Resthöhe, sehr kleine Abstände.
 
-1. **Kosten im Button** — Verb + Währungs-Icon + Zahl (Live-Text).
-2. **Button-Chrome** = Holzrahmen + Flächenfarbe (Assets `btn-*-chrome.png` im Mockup; Originale aus Icon-UI mit gebackenem Label → für Live-UI nur Chrome).
-3. **Keine Extra-Preiszeile** unter dem Namen.
-4. Button-Mindesthöhe **46px** (Touch).
-5. Farben: Kaufen grün · Senden blau · Upgrade violett · disabled grau.
-6. Icon links = aktuelle Unit-Stufe (`unitIconPath`).
-7. Zahlen aus `BUY_COST` / `PYRO_FIGHT_MERCH` / `HOOLIGAN_ORDER_BEER` / `unitUpgradeCost` — nicht ins PNG backen.
-8. Rail-Hintergrund = `menu-rail-brown-tile` (`rail-tile.png`).
+---
 
-## Maß (844×480 Querformat-Mock)
+## Bewertung (Kurz)
 
-| Element | Maß |
-| --- | --- |
-| Linke Rail | ~40% |
-| Banner „Personen“ | ~26px |
-| Figur | nur Kopfzeile, bündig links (getrimmt) |
-| Buttons | volle Kartenbreite, ≥ 56px hoch, Padding ≥ 10px |
-| Inhalt | Verb + Kosten gestapelt, kleiner als die Button-Fläche |
+| | A horizontal | B vertikal |
+| --- | --- | --- |
+| Label-Lesbarkeit | Kurzlabels nötig bei 3 Buttons | Volle Wörter gut möglich |
+| Touch-Höhe | Sehr gut (≥58px) | Flacher (~28–36px bei 3 Actions), aber breit |
+| Holz-Chrome | Risiko zu stauchen | Näher an 320×96-Querformat |
+| Kosten vergleichen | Schnell nebeneinander | Eher von oben nach unten |
+| Rail-Breite | Braucht ~40% | Kommt mit ~36% klar |
 
-## Bezug Ablage
+**Empfehlung:** B für Alltag / Holz-Look; A wenn horizontales Kosten-Scanning wichtiger ist.  
+Details: [compare.html](./compare.html).
 
-Siehe [`docs/icons/ui-final/STORAGE_CANON.md`](../../icons/ui-final/STORAGE_CANON.md) — Button-PNGs sind nur Chrome; Label + Kosten = Live.
+### Sieht das im Spiel genauso aus?
+
+- **Ja für Assets & Live-Text** — beide nutzen `btn-*-chrome` + Rail-Tile; Kosten/Labels bleiben Live (STORAGE_CANON).
+- **B:** geringeres Abweichungsrisiko (breite Zeilen verzeihen Font/Padding).
+- **A:** mittleres Risiko, wenn die echte Rail schmaler wird — dann wieder Stauchen/Kurzlabels.
+
+---
+
+## Regeln (beide)
+
+1. Kosten im Button (Verb + Währungs-Icon + Zahl) als Live-Text.
+2. Button-Chrome = Holzrahmen + Fläche (`btn-*-chrome.png`).
+3. Icon = aktuelle Unit-Stufe (`unitIconPath`).
+4. Zahlen aus `BUY_COST` / `PYRO_FIGHT_MERCH` / `HOOLIGAN_ORDER_BEER` / `unitUpgradeCost`.
+5. Rail-Hintergrund = `menu-rail-brown-tile`.
+
+Siehe [`docs/icons/ui-final/STORAGE_CANON.md`](../../icons/ui-final/STORAGE_CANON.md).
