@@ -29,10 +29,13 @@ import {
   MIX_MIN,
   PYRO_FIGHT_MERCH,
   STEWARD_HIRE_GOLD,
+  BUILDING_FULL_LABEL,
   UNIT_FULL_LABEL,
   UNIT_ROLE_BLURB,
   UPGRADE_COST,
   UPGRADE_MAX,
+  productionPerMinute,
+  productionUnitLabel,
   unitBuyCost,
   unitUpgradeCost,
   type BuildingKind,
@@ -212,7 +215,7 @@ function renderMatchScreen(): void {
     <div class="match-shell matchday">
       <aside class="side-rail left-rail" aria-label="Personen">
         <header class="rail-banner">Personen</header>
-        <div class="unit-rows">
+        <div class="unit-rows rail-rows">
           ${(["normalos", "ultras", "hooligans", "ordner"] as UnitUiKind[])
             .map((kind) => {
               const buy = unitBuyCost(kind);
@@ -280,13 +283,25 @@ function renderMatchScreen(): void {
             .join("")}
         </div>
       </aside>
+      <div class="wallet-row wallet-bar" aria-label="Ressourcen">
+        <span class="wb-chip gold">
+          <span class="wb-plate"><img data-wallet-cur="gold" src="/${UI_ICONS.currencyGold.replace(/^\//, "")}" alt=""></span>
+          <b id="gold">0</b>
+        </span>
+        <span class="wb-chip bier">
+          <span class="wb-plate"><img data-wallet-cur="bier" src="/${UI_ICONS.currencyBier.replace(/^\//, "")}" alt=""></span>
+          <b id="cur-beer">0</b>
+        </span>
+        <span class="wb-chip merch">
+          <span class="wb-plate"><img data-wallet-cur="fanartikel" src="/${UI_ICONS.currencyFanartikel.replace(/^\//, "")}" alt=""></span>
+          <b id="cur-merch">0</b>
+        </span>
+        <span class="wb-chip sec">
+          <span class="wb-plate"><img data-wallet-cur="sicherheit" src="/${UI_ICONS.currencySicherheit.replace(/^\//, "")}" alt=""></span>
+          <b id="cur-sec">0</b>
+        </span>
+      </div>
       <div id="game-wrap">
-        <div class="wallet-row wallet-fixed" aria-label="Ressourcen">
-          <span class="wi gold chip"><img src="${UI_ICONS.currencyGold}" alt=""><b id="gold">0</b></span>
-          <span class="wi bier chip"><img src="${UI_ICONS.currencyBier}" alt=""><b id="cur-beer">0</b></span>
-          <span class="wi merch chip"><img src="${UI_ICONS.currencyFanartikel}" alt=""><b id="cur-merch">0</b></span>
-          <span class="wi sec chip"><img src="${UI_ICONS.currencySicherheit}" alt=""><b id="cur-sec">0</b></span>
-        </div>
         <div class="top-hud" id="pitch-hud">
           <div
             class="scoreboard-slot"
@@ -368,69 +383,95 @@ function renderMatchScreen(): void {
       <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
         <header class="rail-banner" id="build-rail-title">Bauen</header>
         <p class="rail-hint" id="build-hint">Gebäude wählen</p>
-        <div class="build-rows" id="build-place-rows">
-          <button type="button" class="build-card" data-pending-build="bier">
-            <div class="build-top">
-              <img class="build-preview" src="icons/stands/bier-${tc}-1.png" alt="">
-              <div class="build-info">
-                <span>Bierstand</span>
-                <small>${BUILD_COST.bier} Gold</small>
+        <div class="build-rows rail-rows" id="build-place-rows">
+          ${(["bier", "fanshop", "ordner"] as BuildingKind[])
+            .map((kind) => {
+              const src = standIconPath(kind, tc, 1);
+              const gold = UI_ICONS.currencyGold.startsWith("/")
+                ? UI_ICONS.currencyGold
+                : `/${UI_ICONS.currencyGold}`;
+              const prodCur =
+                kind === "bier" ? "beer" : kind === "fanshop" ? "merch" : "security";
+              const prodIco = currencyIconPath(prodCur);
+              const prodAmt = productionPerMinute(kind, 1);
+              const prodUnit = productionUnitLabel(kind);
+              return `<div class="action-card build-card" data-pending-build="${kind}" role="button" tabindex="0">
+            <div class="ac-title-row">
+              <h3 class="ac-title">${BUILDING_FULL_LABEL[kind]}</h3>
+            </div>
+            <div class="ur-body">
+              <div class="ur-head br-stand">
+                <img class="ac-icon" data-stand-kind="${kind}" data-stand-level="1" src="${src.startsWith("/") ? src : `/${src}`}" alt="${BUILDING_FULL_LABEL[kind]}">
+              </div>
+              <div class="ur-actions">
+                <div class="br-benefit" title="Ressourcenproduktion">
+                  <img class="br-prod-ico" data-build-prod-icon src="${prodIco.startsWith("/") ? prodIco : `/${prodIco}`}" alt="">
+                  <b data-build-prod-amt>+${prodAmt}</b>
+                  <small data-build-prod-unit>${prodUnit}</small>
+                </div>
+                <button type="button" class="ar-cost-btn ar-bauen" data-build-place="${kind}" title="Bauen">
+                  <span class="ar-verb">BAUEN</span>
+                  <img class="ar-cost-ico" data-build-cost-icon src="${gold}" alt="">
+                  <span class="ar-cost-amt" data-build-cost-amt>${BUILD_COST[kind]}</span>
+                </button>
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnBauenAmber}" alt="Bauen">
-          </button>
-          <button type="button" class="build-card" data-pending-build="fanshop">
-            <div class="build-top">
-              <img class="build-preview" src="icons/stands/fanshop-${tc}-1.png" alt="">
-              <div class="build-info">
-                <span>Fanshop</span>
-                <small>${BUILD_COST.fanshop} Gold</small>
-              </div>
-            </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnBauenAmber}" alt="Bauen">
-          </button>
-          <button type="button" class="build-card" data-pending-build="ordner">
-            <div class="build-top">
-              <img class="build-preview" src="icons/stands/ordner-${tc}-1.png" alt="">
-              <div class="build-info">
-                <span>Ordnerposten</span>
-                <small>${BUILD_COST.ordner} Gold</small>
-              </div>
-            </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnBauenAmber}" alt="Bauen">
-          </button>
+          </div>`;
+            })
+            .join("")}
         </div>
-        <div class="build-rows hidden" id="build-upgrade-rows">
-          <div class="upgrade-panel" id="upgrade-panel">
-            <p class="upgrade-title" id="upgrade-title">Dieses Haus</p>
-            <div class="upgrade-preview">
-              <div class="up-stage">
-                <img id="upgrade-from-img" src="" alt="">
-                <span id="upgrade-from-lv">Lv1</span>
+        <div class="build-rows rail-rows hidden" id="build-upgrade-rows">
+          <div class="action-card build-card upgrade-card" id="upgrade-panel">
+            <div class="ac-title-row">
+              <h3 class="ac-title" id="upgrade-title">Gebäude</h3>
+              <b class="ur-count" id="upgrade-lv-label">Lv1</b>
+            </div>
+            <div class="br-compare" aria-label="Upgrade-Vergleich">
+              <div class="br-col current">
+                <div class="ur-head br-stand" id="upgrade-from-head" data-lv="1">
+                  <img id="upgrade-from-img" class="ac-icon" src="" alt="">
+                </div>
+                <div class="br-stat current">
+                  <b id="upgrade-stat-from">—</b>
+                  <small id="upgrade-stat-unit-from"></small>
+                </div>
               </div>
-              <div class="up-arrow" aria-hidden="true">→</div>
-              <div class="up-stage">
-                <img id="upgrade-to-img" src="" alt="">
-                <span id="upgrade-to-lv">Lv2</span>
+              <span class="ac-arrow" aria-hidden="true">→</span>
+              <div class="br-col next">
+                <div class="ur-head br-stand" id="upgrade-to-head" data-lv="2">
+                  <img id="upgrade-to-img" class="ac-icon" src="" alt="">
+                </div>
+                <div class="br-stat next">
+                  <b id="upgrade-stat-delta">—</b>
+                  <small id="upgrade-stat-unit-to"></small>
+                </div>
               </div>
             </div>
-            <p class="upgrade-blurb" id="upgrade-blurb">Besserer Ertrag & stärkeres Gebäude</p>
-            <button type="button" class="upgrade-buy" id="rail-upgrade">
-              <span id="rail-upgrade-label">Upgrade</span>
-              <small id="rail-upgrade-cost">—</small>
-              <img class="build-kaufen" src="${UI_ICONS.btnUpgradePurple}" alt="Upgrade">
-            </button>
+            <div class="ur-actions br-upgrade-actions">
+              <button type="button" class="ar-cost-btn ar-upgrade" id="rail-upgrade" title="Upgrade">
+                <span class="ar-verb">UPGRADE</span>
+                <img class="ar-cost-ico" id="rail-upgrade-cost-icon" src="${UI_ICONS.currencyGold.startsWith("/") ? UI_ICONS.currencyGold : `/${UI_ICONS.currencyGold}`}" alt="">
+                <span class="ar-cost-amt" id="rail-upgrade-cost">—</span>
+              </button>
+            </div>
           </div>
-          <button type="button" class="build-card" id="rail-hire-ordner">
-            <div class="build-top">
-              <img class="build-preview" src="${unitIconPath("ordner", tc, 1)}" alt="">
-              <div class="build-info">
-                <span>Ordner anheuern</span>
-                <small>${STEWARD_HIRE_GOLD} Gold</small>
+          <div class="action-card build-card" id="rail-hire-ordner" role="button" tabindex="0">
+            <div class="ac-title-row">
+              <h3 class="ac-title">Ordner anheuern</h3>
+            </div>
+            <div class="ur-body">
+              <div class="ur-head">
+                <img class="ac-icon" data-unit-kind="ordner" src="/${unitHeadIconPath("ordner", tc, 1)}" alt="Ordner">
+              </div>
+              <div class="ur-actions">
+                <button type="button" class="ar-cost-btn ar-kaufen" id="rail-hire-ordner-btn" title="Anheuern">
+                  <span class="ar-verb">KAUFEN</span>
+                  <img class="ar-cost-ico" src="${UI_ICONS.currencyGold.startsWith("/") ? UI_ICONS.currencyGold : `/${UI_ICONS.currencyGold}`}" alt="">
+                  <span class="ar-cost-amt">${STEWARD_HIRE_GOLD}</span>
+                </button>
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-          </button>
+          </div>
         </div>
         <button type="button" class="rail-close" id="build-rail-close">Schließen</button>
       </aside>
@@ -449,14 +490,41 @@ function renderMatchScreen(): void {
   const buildPlaceRows = app.querySelector<HTMLElement>("#build-place-rows")!;
   const buildUpgradeRows = app.querySelector<HTMLElement>("#build-upgrade-rows")!;
   const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
+  const leftRail = app.querySelector<HTMLElement>(".left-rail")!;
+  const walletBar = app.querySelector<HTMLElement>(".wallet-bar")!;
 
+  /**
+   * Wallet am oberen Rand der linken Bildhälfte:
+   * - mittig zwischen Personen-Rail-Rechtskante und Bildmitte
+   * - Höhe = Side-Rail-Banner (.rail-banner)
+   */
   const layoutHud = () => {
-    const rect = wrap.getBoundingClientRect();
-    if (rect.width < 32 || rect.height < 32) return;
+    const wrapRect = wrap.getBoundingClientRect();
+    if (wrapRect.width < 32 || wrapRect.height < 32) return;
     pitchHud.style.top = "0";
     pitchHud.style.left = "0";
     pitchHud.style.width = "100%";
     pitchHud.style.height = "auto";
+
+    const shellRect = shell.getBoundingClientRect();
+    const railRect = leftRail.getBoundingClientRect();
+    if (shellRect.width < 32 || !walletBar) return;
+
+    const imageCenterX = wrapRect.left + wrapRect.width * 0.5;
+    const railRight = railRect.width > 8 ? railRect.right : wrapRect.left;
+    const midX = (railRight + imageCenterX) * 0.5;
+    walletBar.style.left = `${midX - shellRect.left}px`;
+
+    const banner =
+      leftRail.querySelector<HTMLElement>(".rail-banner") ??
+      shell.querySelector<HTMLElement>(".rail-banner");
+    const bannerRect = banner?.getBoundingClientRect();
+    if (bannerRect && bannerRect.height > 8) {
+      walletBar.style.setProperty("--wb-h", `${bannerRect.height}px`);
+      walletBar.style.top = `${Math.max(0, bannerRect.top - shellRect.top)}px`;
+    } else {
+      walletBar.style.top = "";
+    }
   };
 
   const closeBuildRail = () => {
@@ -469,6 +537,7 @@ function renderMatchScreen(): void {
     wrap.classList.remove("placing");
     buildPlaceRows.classList.remove("hidden");
     buildUpgradeRows.classList.add("hidden");
+    requestAnimationFrame(layoutHud);
   };
 
   const openBuildRail = (mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
@@ -490,75 +559,142 @@ function renderMatchScreen(): void {
       buildPlaceRows.classList.add("hidden");
       buildUpgradeRows.classList.remove("hidden");
       if (title) title.textContent = "Upgrade";
-      const slot = m.slots.find(
-        (s) => s.blockId === target.blockId && s.index === target.index,
-      );
-      const lv = slot?.level ?? 1;
-      const next = lv + 1;
-      const cost = slot ? (UPGRADE_COST as readonly number[])[next] : null;
-      const upBtn = app.querySelector<HTMLButtonElement>("#rail-upgrade")!;
-      const costEl = app.querySelector("#rail-upgrade-cost");
-      const labelEl = app.querySelector("#rail-upgrade-label");
-      const fromImg = app.querySelector<HTMLImageElement>("#upgrade-from-img");
-      const toImg = app.querySelector<HTMLImageElement>("#upgrade-to-img");
-      const fromLv = app.querySelector("#upgrade-from-lv");
-      const toLv = app.querySelector("#upgrade-to-lv");
-      const blurb = app.querySelector("#upgrade-blurb");
-      const upTitle = app.querySelector("#upgrade-title");
-      const kind = slot?.building;
-      const name =
-        kind === "bier" ? "Bierstand" : kind === "fanshop" ? "Fanshop" : kind === "ordner" ? "Ordnerposten" : "Gebäude";
-      if (upTitle) upTitle.textContent = `${name} upgraden`;
-      if (kind && fromImg && toImg) {
-        const fromSrc = standIconPath(kind, tc, lv);
-        const toSrc = standIconPath(kind, tc, Math.min(UPGRADE_MAX, next));
-        fromImg.src = fromSrc.startsWith("/") ? fromSrc : `/${fromSrc}`;
-        toImg.src = toSrc.startsWith("/") ? toSrc : `/${toSrc}`;
-        fromImg.alt = `${name} Lv${lv}`;
-        toImg.alt = `${name} Lv${Math.min(UPGRADE_MAX, next)}`;
-      }
-      if (fromLv) fromLv.textContent = `Lv${lv}`;
-      if (toLv) toLv.textContent = slot && slot.level >= UPGRADE_MAX ? "Max" : `Lv${next}`;
-      if (blurb) {
-        blurb.textContent =
-          kind === "bier"
-            ? "Mehr Bier-Produktion & Kapazität"
-            : kind === "fanshop"
-              ? "Mehr Fanartikel & Stimmung"
-              : kind === "ordner"
-                ? "Stärkerer Posten & mehr Ordner-Power"
-                : "Gebäude verbessern";
-      }
-      if (cost == null || !slot || slot.level >= UPGRADE_MAX) {
-        upBtn.disabled = true;
-        if (labelEl) labelEl.textContent = "Maximale Stufe";
-        if (costEl) costEl.textContent = `Lv${UPGRADE_MAX}`;
-      } else {
-        upBtn.disabled = m.gold < cost;
-        if (labelEl) labelEl.textContent = `Upgrade auf Lv${next}`;
-        if (costEl) costEl.textContent = `${cost} Gold`;
-      }
-      const hireBtn = app.querySelector<HTMLButtonElement>("#rail-hire-ordner")!;
-      const canHire = !!(slot && m.canHireSteward(slot));
-      hireBtn.classList.toggle("hidden", slot?.building !== "ordner");
-      hireBtn.disabled = !canHire;
-      hireBtn.classList.toggle("cd", !canHire);
+      syncUpgradeActionCard(target);
       if (hint) {
+        const slot = m.slots.find(
+          (s) => s.blockId === target.blockId && s.index === target.index,
+        );
         hint.textContent =
           slot?.building === "ordner"
             ? "Genau dieses Haus: Upgrade oder Ordner"
             : "Genau dieses Haus upgraden";
       }
     }
+    requestAnimationFrame(layoutHud);
+  };
+
+  const syncUpgradeActionCard = (target: { blockId: number; index: number }) => {
+    const slot = m.slots.find(
+      (s) => s.blockId === target.blockId && s.index === target.index,
+    );
+    const lv = slot?.level ?? 1;
+    const next = lv + 1;
+    const cost = slot ? (UPGRADE_COST as readonly number[])[next] : null;
+    const upBtn = app.querySelector<HTMLButtonElement>("#rail-upgrade")!;
+    const costEl = app.querySelector("#rail-upgrade-cost");
+    const costIco = app.querySelector<HTMLImageElement>("#rail-upgrade-cost-icon");
+    const fromImg = app.querySelector<HTMLImageElement>("#upgrade-from-img");
+    const toImg = app.querySelector<HTMLImageElement>("#upgrade-to-img");
+    const upTitle = app.querySelector("#upgrade-title");
+    const lvLabel = app.querySelector("#upgrade-lv-label");
+    const fromHead = app.querySelector<HTMLElement>("#upgrade-from-head");
+    const toHead = app.querySelector<HTMLElement>("#upgrade-to-head");
+    const statFrom = app.querySelector("#upgrade-stat-from");
+    const statDelta = app.querySelector("#upgrade-stat-delta");
+    const unitFrom = app.querySelector("#upgrade-stat-unit-from");
+    const unitTo = app.querySelector("#upgrade-stat-unit-to");
+    const kind = slot?.building;
+    const name = kind ? BUILDING_FULL_LABEL[kind] : "Gebäude";
+    const asSrc = (p: string) => (p.startsWith("/") ? p : `/${p}`);
+    if (upTitle) upTitle.textContent = name;
+    if (lvLabel) {
+      lvLabel.textContent =
+        slot && kind && slot.level >= UPGRADE_MAX
+          ? `Lv${UPGRADE_MAX}`
+          : `Lv${lv}→${Math.min(UPGRADE_MAX, next)}`;
+    }
+    if (costIco) costIco.src = asSrc(UI_ICONS.currencyGold);
+    if (kind && fromImg && toImg) {
+      const toLv = Math.min(UPGRADE_MAX, next);
+      fromImg.src = asSrc(standIconPath(kind, tc, lv));
+      fromImg.alt = `${name} Lv${lv}`;
+      toImg.src = asSrc(standIconPath(kind, tc, toLv));
+      toImg.alt = `${name} Lv${toLv}`;
+      if (fromHead) fromHead.dataset.lv = String(Math.min(UPGRADE_MAX, lv));
+      if (toHead) toHead.dataset.lv = String(toLv);
+      const cur = productionPerMinute(kind, lv);
+      const nxt = productionPerMinute(kind, toLv);
+      const unit = productionUnitLabel(kind);
+      if (statFrom) statFrom.textContent = String(cur);
+      if (statDelta) {
+        statDelta.textContent =
+          slot && slot.level >= UPGRADE_MAX ? String(cur) : `+${nxt - cur}`;
+      }
+      if (unitFrom) unitFrom.textContent = unit;
+      if (unitTo) unitTo.textContent = unit;
+    }
+    const maxed = !slot || !kind || slot.level >= UPGRADE_MAX || cost == null;
+    if (maxed) {
+      upBtn.disabled = true;
+      upBtn.classList.add("cd");
+      if (costEl) costEl.textContent = "—";
+    } else {
+      upBtn.disabled = m.gold < cost;
+      upBtn.classList.toggle("cd", m.gold < cost);
+      if (costEl) costEl.textContent = String(cost);
+    }
+    const hireCard = app.querySelector<HTMLElement>("#rail-hire-ordner")!;
+    const hireBtn = app.querySelector<HTMLButtonElement>("#rail-hire-ordner-btn");
+    const canHire = !!(slot && m.canHireSteward(slot));
+    hireCard.classList.toggle("hidden", slot?.building !== "ordner");
+    hireCard.classList.toggle("cd", !canHire);
+    if (hireBtn) {
+      hireBtn.disabled = !canHire;
+      hireBtn.classList.toggle("cd", !canHire);
+    }
+    const hireIcon = hireCard.querySelector<HTMLImageElement>("[data-unit-kind='ordner']");
+    if (hireIcon) {
+      const src = unitHeadIconPath("ordner", tc, m.unitLevelOf(m.playerTeam, "ordner"));
+      hireIcon.src = src.startsWith("/") ? src : `/${src}`;
+    }
+  };
+
+  const syncWalletIcons = () => {
+    const asSrc = (p: string) => (p.startsWith("/") ? p : `/${p}`);
+    const map: Record<string, string> = {
+      gold: UI_ICONS.currencyGold,
+      bier: UI_ICONS.currencyBier,
+      fanartikel: UI_ICONS.currencyFanartikel,
+      sicherheit: UI_ICONS.currencySicherheit,
+    };
+    app.querySelectorAll<HTMLImageElement>("[data-wallet-cur]").forEach((img) => {
+      const key = img.dataset.walletCur ?? "";
+      const path = map[key];
+      if (!path) return;
+      const next = asSrc(path);
+      if (img.getAttribute("src") !== next) img.src = next;
+    });
   };
 
   const syncPendingBuildUi = () => {
     const hint = app.querySelector("#build-hint");
-    app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
-      const kind = btn.dataset.pendingBuild as BuildingKind;
+    app.querySelectorAll<HTMLElement>("[data-pending-build]").forEach((card) => {
+      const kind = card.dataset.pendingBuild as BuildingKind;
       const on = state.pendingBuild === kind;
-      btn.classList.toggle("selected", on);
-      btn.classList.toggle("cd", m.gold < BUILD_COST[kind]);
+      const cost = BUILD_COST[kind];
+      const poor = m.gold < cost;
+      card.classList.toggle("selected", on);
+      card.classList.toggle("cd", poor);
+      const asSrc = (p: string) => (p.startsWith("/") ? p : `/${p}`);
+      const icon = card.querySelector<HTMLImageElement>("[data-stand-kind]");
+      if (icon) icon.src = asSrc(standIconPath(kind, tc, 1));
+      const prodCur =
+        kind === "bier" ? "beer" : kind === "fanshop" ? "merch" : "security";
+      const prodIco = card.querySelector<HTMLImageElement>("[data-build-prod-icon]");
+      if (prodIco) prodIco.src = asSrc(currencyIconPath(prodCur));
+      const prodAmt = card.querySelector("[data-build-prod-amt]");
+      if (prodAmt) prodAmt.textContent = `+${productionPerMinute(kind, 1)}`;
+      const prodUnit = card.querySelector("[data-build-prod-unit]");
+      if (prodUnit) prodUnit.textContent = productionUnitLabel(kind);
+      const costAmt = card.querySelector("[data-build-cost-amt]");
+      if (costAmt) costAmt.textContent = String(cost);
+      const goldIco = card.querySelector<HTMLImageElement>("[data-build-cost-icon]");
+      if (goldIco) goldIco.src = asSrc(UI_ICONS.currencyGold);
+      const buildBtn = card.querySelector<HTMLButtonElement>("[data-build-place]");
+      if (buildBtn) {
+        buildBtn.disabled = poor;
+        buildBtn.classList.toggle("cd", poor);
+      }
     });
     if (hint && !buildPlaceRows.classList.contains("hidden")) {
       hint.textContent = state.buildTarget
@@ -851,22 +987,33 @@ function renderMatchScreen(): void {
       syncOverlay();
     });
   });
-  app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const kind = btn.dataset.pendingBuild as BuildingKind;
-      if (!state.buildTarget) {
-        m.toast("Zuerst einen freien Plot tippen");
-        return;
+  const tryPlaceBuilding = (kind: BuildingKind) => {
+    if (!state.buildTarget) {
+      m.toast("Zuerst einen freien Plot tippen");
+      return;
+    }
+    m.buildMenu = state.buildTarget;
+    m.selectedSlot = state.buildTarget;
+    const ok = m.tryBuild(kind);
+    if (ok) {
+      closeBuildRail();
+    } else {
+      syncPendingBuildUi();
+    }
+    syncOverlay();
+  };
+  app.querySelectorAll<HTMLElement>("[data-pending-build]").forEach((card) => {
+    card.addEventListener("click", (ev) => {
+      const kind = card.dataset.pendingBuild as BuildingKind;
+      if ((ev.target as HTMLElement).closest("[data-build-place], [data-pending-build]")) {
+        tryPlaceBuilding(kind);
       }
-      m.buildMenu = state.buildTarget;
-      m.selectedSlot = state.buildTarget;
-      const ok = m.tryBuild(kind);
-      if (ok) {
-        closeBuildRail();
-      } else {
-        syncPendingBuildUi();
+    });
+    card.addEventListener("keydown", (ev) => {
+      if (ev.key === "Enter" || ev.key === " ") {
+        ev.preventDefault();
+        tryPlaceBuilding(card.dataset.pendingBuild as BuildingKind);
       }
-      syncOverlay();
     });
   });
   app.querySelector("#rail-upgrade")?.addEventListener("click", () => {
@@ -877,7 +1024,7 @@ function renderMatchScreen(): void {
     closeBuildRail();
     syncOverlay();
   });
-  app.querySelector("#rail-hire-ordner")?.addEventListener("click", () => {
+  const hireOrdner = () => {
     if (state.buildTarget) {
       m.buildMenu = state.buildTarget;
       m.selectedSlot = state.buildTarget;
@@ -885,6 +1032,11 @@ function renderMatchScreen(): void {
       openBuildRail("upgrade", state.buildTarget);
     }
     syncOverlay();
+  };
+  app.querySelector("#rail-hire-ordner")?.addEventListener("click", hireOrdner);
+  app.querySelector("#rail-hire-ordner-btn")?.addEventListener("click", (ev) => {
+    ev.stopPropagation();
+    hireOrdner();
   });
   btnHire.addEventListener("click", () => {
     m.tryHireSteward();
@@ -929,6 +1081,7 @@ function renderMatchScreen(): void {
       setFb("#fb-n", own.normalos);
       setFb("#fb-h", own.hooligans);
       setFb("#fb-o", own.ordner);
+      syncWalletIcons();
       syncUnitActionCards();
       const hudScore = app.querySelector("#hud-score");
       const hudMin = app.querySelector("#hud-minute");

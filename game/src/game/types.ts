@@ -187,6 +187,20 @@ export function productionRate(level: number): number {
   return 0.7 + level * 0.5;
 }
 
+/** Produktion/min für Action-Card-Stats (PROD_* × productionRate × 60). */
+export function productionPerMinute(kind: BuildingKind, level: number): number {
+  const rate = productionRate(level);
+  const perSec =
+    kind === "bier" ? PROD_BEER * rate : kind === "fanshop" ? PROD_MERCH * rate : PROD_SECURITY * rate;
+  return Math.round(perSec * 60);
+}
+
+export function productionUnitLabel(kind: BuildingKind): string {
+  if (kind === "bier") return "Bier/min";
+  if (kind === "fanshop") return "Fanart./min";
+  return "Sich./min";
+}
+
 /** Multiplier for combat / payout stats at unit level */
 export function unitLevelMul(level: number): number {
   const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
