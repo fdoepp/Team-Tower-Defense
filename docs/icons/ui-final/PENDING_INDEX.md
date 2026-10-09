@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=35** · **released=108**
+**pending=32** · **released=111**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -8,9 +8,6 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
 ### persons
 
-1. `fanBlue1` — `fan-blue-1.png`
-6. `fanGrey1` — `fan-grey-1.png`
-11. `fanRed1` — `fan-red-1.png`
 47. `ultraBlue2` — `ultra-blue-2.png`
 48. `ultraBlue3` — `ultra-blue-3.png`
 49. `ultraBlue4` — `ultra-blue-4.png`
@@ -61,3 +58,6 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 - **143** `scoreboardChrome` — `scoreboard-chrome.png` — **Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)**
 - **119** `menuRail` — `menu-rail-brown.png`
 - **120** `menuRailTile` — `menu-rail-brown-tile.png`
+- **1** `fanBlue1` — `fan-blue-1.png`
+- **6** `fanGrey1` — `fan-grey-1.png`
+- **11** `fanRed1` — `fan-red-1.png`

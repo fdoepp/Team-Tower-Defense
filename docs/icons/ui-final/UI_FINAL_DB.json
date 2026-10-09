@@ -4131,6 +4131,123 @@
       "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt).",
       "category": "ui",
       "source": "game/public/icons/ui/menu-rail-brown-tile.png"
+    },
+    "fanBlue1": {
+      "id": "fanBlue1",
+      "file": "fan-blue-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fan-blue-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.824,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          81,
+          45,
+          173,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T08:07:51.954887+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T08:07:51.968Z",
+      "notes": "Freigegeben — saubere Kopfversion; grau/rot aus blauer Basis.",
+      "category": "persons",
+      "source": "game/public/icons/units/fan-blue-1.png"
+    },
+    "fanGrey1": {
+      "id": "fanGrey1",
+      "file": "fan-grey-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fan-grey-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.824,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          81,
+          45,
+          173,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T08:07:52.114818+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T08:07:52.128Z",
+      "notes": "Freigegeben — saubere Kopfversion; grau/rot aus blauer Basis.",
+      "category": "persons",
+      "source": "game/public/icons/units/fan-grey-1.png"
+    },
+    "fanRed1": {
+      "id": "fanRed1",
+      "file": "fan-red-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fan-red-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.824,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          81,
+          45,
+          173,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T08:07:52.241219+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T08:07:52.254Z",
+      "notes": "Freigegeben — saubere Kopfversion; grau/rot aus blauer Basis.",
+      "category": "persons",
+      "source": "game/public/icons/units/fan-red-1.png"
     }
   },
   "pending": {
@@ -4924,120 +5041,6 @@
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
       "category": "ui"
     },
-    "fanBlue1": {
-      "id": "fanBlue1",
-      "file": "fan-blue-1.png",
-      "source": "game/public/icons/units/fan-blue-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "fan-blue-1.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.824,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          81,
-          45,
-          173,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T08:02:49.653188+00:00"
-      },
-      "notes": "Neu generiert: Kopf ohne transparente Löcher und ohne blaue Artefakte. Bitte erneut freigeben.",
-      "updatedAt": "2026-10-09T08:02:49.667572+00:00"
-    },
-    "fanGrey1": {
-      "id": "fanGrey1",
-      "file": "fan-grey-1.png",
-      "source": "game/public/icons/units/fan-grey-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "fan-grey-1.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.824,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          81,
-          45,
-          173,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T08:05:54.089499+00:00"
-      },
-      "notes": "Aus neuem fanBlue1 umgefärbt (grau wie Alt-Palette). Kopf sauber. Bitte erneut freigeben.",
-      "updatedAt": "2026-10-09T08:05:54.006602+00:00"
-    },
-    "fanRed1": {
-      "id": "fanRed1",
-      "file": "fan-red-1.png",
-      "source": "game/public/icons/units/fan-red-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "fan-red-1.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.824,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          81,
-          45,
-          173,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T08:05:54.189191+00:00"
-      },
-      "notes": "Aus neuem fanBlue1 umgefärbt (rot/maroon wie Alt-Palette). Kopf sauber. Bitte erneut freigeben.",
-      "updatedAt": "2026-10-09T08:05:54.006602+00:00"
-    },
     "ultraBlue2": {
       "id": "ultraBlue2",
       "file": "ultra-blue-2.png",
@@ -5409,16 +5412,16 @@
     ]
   },
   "inventory": {
-    "pendingCount": 35,
-    "releasedCount": 108,
+    "pendingCount": 32,
+    "releasedCount": 111,
     "byCategory": {
       "ui": {
         "pending": 23,
         "released": 12
       },
       "persons": {
-        "pending": 12,
-        "released": 48
+        "pending": 9,
+        "released": 51
       },
       "buildings": {
         "pending": 0,
@@ -5429,7 +5432,7 @@
         "released": 3
       }
     },
-    "gatheredAt": "2026-10-09T07:30:30.611913+00:00",
+    "gatheredAt": "2026-10-09T08:07:52.300590+00:00",
     "canon": {
       "persons": "units/{fan|ordner|hooligan|ultra}-{grey|blue|red}-{1..5}.png (60)",
       "buildings": "stands/{bier|fanshop|ordner}-{grey|blue|red}-{1..5}.png (45) as stand*",
