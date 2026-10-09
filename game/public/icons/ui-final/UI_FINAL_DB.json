@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "UI_FINAL",
-  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe. (Runtime-Spiegel — nur released Dateien liegen neben dieser Datei.)",
+  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe.",
   "rules": {
     "approvalRequired": true,
     "approver": "repo-owner",
@@ -4966,9 +4966,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.6046,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.5698,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
           20,
           27,
@@ -4979,11 +4979,11 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T10:17:10.678778+00:00"
+        "checkedAt": "2026-10-09T11:06:57.067582+00:00"
       },
-      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben.",
+      "notes": "Neu: flächiges Trikot-Symbol (statt Schal). Alternative Fahne vorhanden — bitte freigeben.",
       "category": "ui",
-      "updatedAt": "2026-10-09T10:15:56.280494+00:00"
+      "updatedAt": "2026-10-09T11:07:12.371587+00:00"
     },
     "btnKaufenGrey": {
       "id": "btnKaufenGrey",
