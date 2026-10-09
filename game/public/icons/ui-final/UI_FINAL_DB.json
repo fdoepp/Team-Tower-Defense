@@ -3582,6 +3582,45 @@
       "approvedBy": "user",
       "approvedAt": "2026-10-09T06:16:51.057Z",
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "scoreboard": {
+      "id": "scoreboard",
+      "file": "scoreboard-top.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/scoreboard-top.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.2637,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          15,
+          14,
+          1024,
+          492
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T06:23:54.538333+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T06:23:54.552Z",
+      "notes": "Referenz Scoreboard — vollständige Demo mit Text, Momentumsbalken und Torchancen-Orb.",
+      "name": "Referenz Scoreboard",
+      "displayName": "Referenz Scoreboard"
     }
   },
   "pending": {
@@ -4197,41 +4236,6 @@
         "preserveAspectRequired": true,
         "reasons": [],
         "checkedAt": "2026-10-08T22:33:59.437108+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
-    },
-    "scoreboard": {
-      "id": "scoreboard",
-      "file": "scoreboard-top.png",
-      "source": "game/public/icons/ui/scoreboard-top.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 1041,
-          "h": 508
-        },
-        "aspectRatio": 2.049213,
-        "alphaCoverage": 0.2637,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          15,
-          14,
-          1024,
-          492
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "checkedAt": "2026-10-08T21:52:42.944083+00:00"
       },
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
       "category": "ui"
@@ -5311,6 +5315,46 @@
         "checkedAt": "2026-10-08T22:34:00.570014+00:00"
       },
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "scoreboardChrome": {
+      "id": "scoreboardChrome",
+      "file": "scoreboard-chrome.png",
+      "source": "game/public/icons/ui/scoreboard-chrome.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/scoreboard-chrome.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.4787,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          30,
+          107,
+          1009,
+          400
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T06:23:54.704315+00:00"
+      },
+      "notes": "Leeres Chrome zum Referenz-Scoreboard (123): ohne Texte, ohne Momentumsbalken, ohne Torchancen-Orb. Für Runtime-Overlays. Wartet auf Freigabe.",
+      "name": "Scoreboard Chrome",
+      "displayName": "Scoreboard Chrome (ohne Text/Balken/Orb)",
+      "category": "ui",
+      "relatedTo": "scoreboard"
     }
   },
   "runtimeBinding": {
@@ -5324,11 +5368,11 @@
   },
   "inventory": {
     "pendingCount": 48,
-    "releasedCount": 94,
+    "releasedCount": 95,
     "byCategory": {
       "ui": {
         "pending": 28,
-        "released": 6
+        "released": 7
       },
       "persons": {
         "pending": 20,
