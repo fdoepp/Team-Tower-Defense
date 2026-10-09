@@ -1,12 +1,12 @@
 {
   "version": 1,
   "name": "UI_FINAL",
-  "description": "Final freigegebene Grafiken (UI, Personen, Geb\u00e4ude, Trib\u00fcnen). Alle Branches laden Runtime ausschlie\u00dflich aus released. Ablage nur nach manueller Freigabe.",
+  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe.",
   "rules": {
     "approvalRequired": true,
     "approver": "repo-owner",
     "freigestellt": "RGBA cutout required (transparent background), except documented chrome backgrounds",
-    "preserveAspect": "Runtime must draw with uniform scale / contain \u2014 never stretch",
+    "preserveAspect": "Runtime must draw with uniform scale / contain — never stretch",
     "consumeFrom": "game/public/icons/ui-final/",
     "pendingDir": "docs/icons/ui-final/pending/",
     "sourceOfTruth": "docs/icons/ui-final/UI_FINAL_DB.json",
@@ -1567,7 +1567,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:20.321302+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:20.237120+00:00"
     },
@@ -1605,7 +1605,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:20.414694+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:20.334836+00:00"
     },
@@ -1643,7 +1643,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:20.516124+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:20.427299+00:00"
     },
@@ -1681,7 +1681,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:20.612097+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:20.530007+00:00"
     },
@@ -1719,7 +1719,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:20.707113+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:20.625621+00:00"
     },
@@ -1757,7 +1757,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:20.802436+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:20.720402+00:00"
     },
@@ -1795,7 +1795,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:20.899571+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:20.815826+00:00"
     },
@@ -1833,7 +1833,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:20.994810+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:20.913189+00:00"
     },
@@ -1871,7 +1871,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:21.088977+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.008187+00:00"
     },
@@ -1909,7 +1909,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:21.187338+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.102925+00:00"
     },
@@ -1947,7 +1947,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:21.286284+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.200491+00:00"
     },
@@ -1985,7 +1985,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:21.384862+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.299954+00:00"
     },
@@ -2023,7 +2023,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:21.484354+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.398255+00:00"
     },
@@ -2061,7 +2061,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:21.583123+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.498251+00:00"
     },
@@ -2099,7 +2099,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:21.681479+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.596683+00:00"
     },
@@ -2137,7 +2137,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:21.778746+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.694977+00:00"
     },
@@ -2175,7 +2175,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:21.876484+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.792562+00:00"
     },
@@ -2213,7 +2213,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:21.973611+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.889927+00:00"
     },
@@ -2251,7 +2251,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:22.075937+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:21.989236+00:00"
     },
@@ -2289,7 +2289,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:22.175970+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:22.090745+00:00"
     },
@@ -2327,7 +2327,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:22.274459+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:22.189924+00:00"
     },
@@ -2365,7 +2365,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:22.369512+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:22.288266+00:00"
     },
@@ -2403,7 +2403,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:22.467499+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:22.383082+00:00"
     },
@@ -2441,7 +2441,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:22.565972+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:22.481857+00:00"
     },
@@ -2479,7 +2479,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:22.661073+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:22.579033+00:00"
     },
@@ -2517,7 +2517,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:22.756822+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:22.674197+00:00"
     },
@@ -2555,7 +2555,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:22.851077+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:22.770069+00:00"
     },
@@ -2593,7 +2593,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:22.947150+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:22.864205+00:00"
     },
@@ -2631,7 +2631,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.043976+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:22.960878+00:00"
     },
@@ -2669,7 +2669,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.139747+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:23.057686+00:00"
     },
@@ -2707,7 +2707,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.233754+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:23.152900+00:00"
     },
@@ -2745,7 +2745,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.329908+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:23.247348+00:00"
     },
@@ -2783,7 +2783,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.425660+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:23.343783+00:00"
     },
@@ -2821,7 +2821,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.521372+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:23.438958+00:00"
     },
@@ -2859,7 +2859,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.615274+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:23.534686+00:00"
     },
@@ -2897,7 +2897,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.707605+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:23.628069+00:00"
     },
@@ -2935,7 +2935,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.800521+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:23.721279+00:00"
     },
@@ -2973,7 +2973,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.897562+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:23.814272+00:00"
     },
@@ -3011,7 +3011,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:23.994520+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:23.910910+00:00"
     },
@@ -3049,7 +3049,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:24.087590+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:24.007802+00:00"
     },
@@ -3087,7 +3087,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:24.181327+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:24.100106+00:00"
     },
@@ -3125,7 +3125,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:24.273619+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:24.194654+00:00"
     },
@@ -3163,7 +3163,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:24.369824+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:24.286653+00:00"
     },
@@ -3201,7 +3201,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:24.463911+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:24.383034+00:00"
     },
@@ -3239,7 +3239,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:55:24.558049+00:00"
       },
-      "notes": "Freigegeben (alle Geb\u00e4ude).",
+      "notes": "Freigegeben (alle Gebäude).",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:55:24.476889+00:00"
     },
@@ -3277,7 +3277,7 @@
         "reasons": [],
         "checkedAt": "2026-10-09T16:19:41.176646+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che b\u00fcndig zur Holz-Innenkante, ohne gebackenes Label. Live-Text +2% Inset im DOM (.ar-cost-btn).",
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.364101+00:00",
@@ -3318,7 +3318,7 @@
         "reasons": [],
         "checkedAt": "2026-10-09T16:19:41.266779+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che b\u00fcndig zur Holz-Innenkante, ohne gebackenes Label. Live-Text +2% Inset im DOM (.ar-cost-btn).",
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.455332+00:00",
@@ -3359,7 +3359,7 @@
         "reasons": [],
         "checkedAt": "2026-10-09T16:04:45.792794+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.544979+00:00",
@@ -3401,7 +3401,7 @@
         "reasons": [],
         "checkedAt": "2026-10-09T16:04:45.964584+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.634937+00:00",
@@ -3442,7 +3442,7 @@
         "reasons": [],
         "checkedAt": "2026-10-09T16:19:41.446234+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che b\u00fcndig zur Holz-Innenkante, ohne gebackenes Label. Live-Text +2% Inset im DOM (.ar-cost-btn).",
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.723844+00:00",
@@ -3632,7 +3632,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T06:23:54.552Z",
-      "notes": "Referenz Scoreboard \u2014 vollst\u00e4ndige Demo mit Text, Momentumsbalken und Torchancen-Orb.",
+      "notes": "Referenz Scoreboard — vollständige Demo mit Text, Momentumsbalken und Torchancen-Orb.",
       "name": "Referenz Scoreboard",
       "displayName": "Referenz Scoreboard"
     },
@@ -3671,7 +3671,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:27:43.269Z",
-      "notes": "Korrektur v2 \u2014 bitte erneut freigeben (Auge/H\u00f6he/Ultra).",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
       "category": "persons",
       "source": "game/public/icons/units/fan-grey-5.png"
     },
@@ -3710,7 +3710,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:27:43.422Z",
-      "notes": "Korrektur v2 \u2014 bitte erneut freigeben (Auge/H\u00f6he/Ultra).",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
       "category": "persons",
       "source": "game/public/icons/units/fan-red-5.png"
     },
@@ -3749,7 +3749,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:27:43.544Z",
-      "notes": "Korrektur v2 \u2014 bitte erneut freigeben (Auge/H\u00f6he/Ultra).",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
       "category": "persons",
       "source": "game/public/icons/units/ultra-blue-1.png"
     },
@@ -3788,7 +3788,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:27:43.699Z",
-      "notes": "Korrektur v2 \u2014 bitte erneut freigeben (Auge/H\u00f6he/Ultra).",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
       "category": "persons",
       "source": "game/public/icons/units/ultra-blue-5.png"
     },
@@ -3827,7 +3827,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:27:43.816Z",
-      "notes": "Korrektur v2 \u2014 bitte erneut freigeben (Auge/H\u00f6he/Ultra).",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
       "category": "persons",
       "source": "game/public/icons/units/ultra-grey-1.png"
     },
@@ -3866,7 +3866,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:27:43.936Z",
-      "notes": "Korrektur v2 \u2014 bitte erneut freigeben (Auge/H\u00f6he/Ultra).",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
       "category": "persons",
       "source": "game/public/icons/units/ultra-grey-5.png"
     },
@@ -3905,7 +3905,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:27:44.057Z",
-      "notes": "Korrektur v2 \u2014 bitte erneut freigeben (Auge/H\u00f6he/Ultra).",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
       "category": "persons",
       "source": "game/public/icons/units/ultra-red-1.png"
     },
@@ -3944,7 +3944,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:27:44.176Z",
-      "notes": "Korrektur v2 \u2014 bitte erneut freigeben (Auge/H\u00f6he/Ultra).",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
       "category": "persons",
       "source": "game/public/icons/units/ultra-red-5.png"
     },
@@ -3983,7 +3983,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:29:01.534Z",
-      "notes": "Freigegeben \u2014 freigestellt, ohne Hilfslinien, upright Perspective.",
+      "notes": "Freigegeben — freigestellt, ohne Hilfslinien, upright Perspective.",
       "category": "ui",
       "source": "game/public/icons/ui/pennant-ksc.png"
     },
@@ -4022,7 +4022,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:29:01.662Z",
-      "notes": "Freigegeben \u2014 freigestellt, ohne Hilfslinien, upright Perspective.",
+      "notes": "Freigegeben — freigestellt, ohne Hilfslinien, upright Perspective.",
       "category": "ui",
       "source": "game/public/icons/ui/pennant-vfb.png"
     },
@@ -4104,7 +4104,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:30:30.431Z",
-      "notes": "Freigegeben \u2014 Men\u00fc-Holzpaneel (menu-rail-background, nicht freigestellt).",
+      "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt).",
       "category": "ui",
       "source": "game/public/icons/ui/menu-rail-brown.png"
     },
@@ -4143,7 +4143,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:30:30.578Z",
-      "notes": "Freigegeben \u2014 Men\u00fc-Holzpaneel (menu-rail-background, nicht freigestellt).",
+      "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt).",
       "category": "ui",
       "source": "game/public/icons/ui/menu-rail-brown-tile.png"
     },
@@ -4182,7 +4182,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T08:07:51.968Z",
-      "notes": "Freigegeben \u2014 saubere Kopfversion; grau/rot aus blauer Basis.",
+      "notes": "Freigegeben — saubere Kopfversion; grau/rot aus blauer Basis.",
       "category": "persons",
       "source": "game/public/icons/units/fan-blue-1.png"
     },
@@ -4221,7 +4221,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T08:07:52.128Z",
-      "notes": "Freigegeben \u2014 saubere Kopfversion; grau/rot aus blauer Basis.",
+      "notes": "Freigegeben — saubere Kopfversion; grau/rot aus blauer Basis.",
       "category": "persons",
       "source": "game/public/icons/units/fan-grey-1.png"
     },
@@ -4260,7 +4260,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T08:07:52.254Z",
-      "notes": "Freigegeben \u2014 saubere Kopfversion; grau/rot aus blauer Basis.",
+      "notes": "Freigegeben — saubere Kopfversion; grau/rot aus blauer Basis.",
       "category": "persons",
       "source": "game/public/icons/units/fan-red-1.png"
     },
@@ -4299,7 +4299,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T08:54:07.826Z",
-      "notes": "Kopf nahtlos, Schuhe wei\u00df ohne Blau, Pyro gut. Bitte erneut freigeben."
+      "notes": "Kopf nahtlos, Schuhe weiß ohne Blau, Pyro gut. Bitte erneut freigeben."
     },
     "ultraGrey2": {
       "id": "ultraGrey2",
@@ -4336,7 +4336,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T09:00:46.554Z",
-      "notes": "Aus freigegebenem ultraBlue2 eingef\u00e4rbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe pr\u00fcfen."
+      "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen."
     },
     "ultraRed2": {
       "id": "ultraRed2",
@@ -4373,7 +4373,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T09:00:46.683Z",
-      "notes": "Aus freigegebenem ultraBlue2 eingef\u00e4rbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe pr\u00fcfen."
+      "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen."
     },
     "ultraBlue3": {
       "id": "ultraBlue3",
@@ -4484,7 +4484,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T09:53:29.596Z",
-      "notes": "Aus freigegebenem ultraBlue3 eingef\u00e4rbt. Bitte vor Freigabe pr\u00fcfen."
+      "notes": "Aus freigegebenem ultraBlue3 eingefärbt. Bitte vor Freigabe prüfen."
     },
     "ultraGrey4": {
       "id": "ultraGrey4",
@@ -4521,7 +4521,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T09:53:29.729Z",
-      "notes": "Aus freigegebenem ultraBlue4 eingef\u00e4rbt. Bitte vor Freigabe pr\u00fcfen."
+      "notes": "Aus freigegebenem ultraBlue4 eingefärbt. Bitte vor Freigabe prüfen."
     },
     "ultraRed3": {
       "id": "ultraRed3",
@@ -4558,7 +4558,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T09:53:29.856Z",
-      "notes": "Aus freigegebenem ultraBlue3 eingef\u00e4rbt. Bitte vor Freigabe pr\u00fcfen."
+      "notes": "Aus freigegebenem ultraBlue3 eingefärbt. Bitte vor Freigabe prüfen."
     },
     "ultraRed4": {
       "id": "ultraRed4",
@@ -4595,7 +4595,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T09:53:29.985Z",
-      "notes": "Aus freigegebenem ultraBlue4 eingef\u00e4rbt. Bitte vor Freigabe pr\u00fcfen."
+      "notes": "Aus freigegebenem ultraBlue4 eingefärbt. Bitte vor Freigabe prüfen."
     },
     "currencyBier": {
       "id": "currencyBier",
@@ -4632,7 +4632,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T10:55:11.121Z",
-      "notes": "Reines Icon ohne Zahl/Label (f\u00fcr Wallet-Chips). Bitte freigeben."
+      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben."
     },
     "currencyGold": {
       "id": "currencyGold",
@@ -4669,7 +4669,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T10:55:11.280Z",
-      "notes": "Reines Icon ohne Zahl/Label (f\u00fcr Wallet-Chips). Bitte freigeben."
+      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben."
     },
     "currencySicherheit": {
       "id": "currencySicherheit",
@@ -4706,7 +4706,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T10:55:11.415Z",
-      "notes": "Reines Icon ohne Zahl/Label (f\u00fcr Wallet-Chips). Bitte freigeben."
+      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben."
     },
     "currencyFanartikel": {
       "id": "currencyFanartikel",
@@ -4743,7 +4743,7 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T11:41:22.926Z",
-      "notes": "Trikot (fl\u00e4chig) statt Schal \u2014 bewusst abweichend von currency-icons-clean-Schal. Bitte freigeben."
+      "notes": "Trikot (flächig) statt Schal — bewusst abweichend von currency-icons-clean-Schal. Bitte freigeben."
     }
   },
   "pending": {
@@ -5047,7 +5047,7 @@
         "reasons": [],
         "checkedAt": "2026-10-09T16:04:45.441999+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "chrome-button",
@@ -5088,7 +5088,7 @@
         "reasons": [],
         "checkedAt": "2026-10-09T16:19:41.355209+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che b\u00fcndig zur Holz-Innenkante, ohne gebackenes Label. Live-Text +2% Inset im DOM (.ar-cost-btn).",
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "chrome-button",
@@ -5129,7 +5129,7 @@
         "reasons": [],
         "checkedAt": "2026-10-09T16:04:45.529901+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "chrome-button",
@@ -5168,7 +5168,7 @@
         "preserveAspectRequired": true,
         "checkedAt": "2026-10-08T21:52:42.963846+00:00"
       },
-      "notes": "REFERENZ-DEMO Orb Heim-stark \u2014 nicht Runtime-Default. Orb als kleines Live-Overlay auf Chrome-Track.",
+      "notes": "REFERENZ-DEMO Orb Heim-stark — nicht Runtime-Default. Orb als kleines Live-Overlay auf Chrome-Track.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "reference-demo"
@@ -5205,7 +5205,7 @@
         "preserveAspectRequired": true,
         "checkedAt": "2026-10-08T21:52:42.981151+00:00"
       },
-      "notes": "REFERENZ-DEMO Orb Gast-stark \u2014 nicht Runtime-Default. Orb als kleines Live-Overlay auf Chrome-Track.",
+      "notes": "REFERENZ-DEMO Orb Gast-stark — nicht Runtime-Default. Orb als kleines Live-Overlay auf Chrome-Track.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "reference-demo"
@@ -5434,7 +5434,7 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:00.570014+00:00"
       },
-      "notes": "REFERENZ-DEMO (Broadcast-Tech) \u2014 nicht Runtime-Default. Runtime = scoreboardChrome + scoreboard-slots.json + Live-Overlays.",
+      "notes": "REFERENZ-DEMO (Broadcast-Tech) — nicht Runtime-Default. Runtime = scoreboardChrome + scoreboard-slots.json + Live-Overlays.",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "reference-demo"
     }
@@ -5483,7 +5483,7 @@
       "Team tower defense konzepte (cursor/team-td-konzept-dba3)",
       "docs/icons/FINAL_ICON_INVENTORY.md"
     ],
-    "excludedLegacy": "stands/{bier|fanshop|ordner}-{1..5}.png without color \u2014 prefer colored canon"
+    "excludedLegacy": "stands/{bier|fanshop|ordner}-{1..5}.png without color — prefer colored canon"
   },
   "rejected": {
     "btnSendenGreen": {
@@ -5491,7 +5491,7 @@
       "file": "btn-senden-green.png",
       "role": "ui",
       "status": "rejected",
-      "reason": "Kanon ist btnSendenBlue (released). Gr\u00fcnes Senden nicht verwenden.",
+      "reason": "Kanon ist btnSendenBlue (released). Grünes Senden nicht verwenden.",
       "rejectedAt": "2026-10-09T12:06:03.203227+00:00",
       "rejectedBy": "storage-canon"
     }

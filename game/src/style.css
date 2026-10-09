@@ -541,12 +541,12 @@ select {
   align-content: flex-start;
 }
 
-/* Build card: %-Abstände; Anteil der Rail, nie über 40% Höhe */
+/* Build card: Inhalt bestimmt Höhe, hart bei 40% Rail-Höhe kappen */
 .match-shell.matchday .build-card {
   display: flex;
   flex-direction: column;
   gap: 4%;
-  flex: 0 1 40%;
+  flex: 0 1 auto;
   min-height: 0;
   min-width: 0;
   width: 100%;
@@ -571,7 +571,7 @@ select {
   grid-template-columns: minmax(0, var(--br-icon, 26%)) minmax(0, 1fr);
   gap: 4%;
   align-items: center;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   min-width: 0;
   width: 100%;
@@ -693,14 +693,14 @@ select {
  * Overlay: Holz-Innenkante + 2% (Breite L/R, Höhe T/B).
  */
 .match-shell.matchday .ar-cost-btn {
-  /* Face bündig zur Holz-Innenkante; Live-Text +2% Abstand */
-  --wood-x: 5.94%;
-  --wood-y-top: 15.62%;
-  --wood-y-bot: 12.50%;
+  /* Face-Kante des Chrome-PNG; Live-Text Holz-Innen + 2% */
+  --wood-x: 6.41%;
+  --wood-y-top: 13.54%;
+  --wood-y-bot: 18.75%;
   --inset: 2%;
   position: relative;
   display: block;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   width: 100%;
   max-width: 100%;
   height: auto;
@@ -808,12 +808,12 @@ select {
   opacity: 0.55;
 }
 
-/* Upgrade panel — max. 40% Rail-Höhe, nie volle Höhe */
+/* Upgrade panel — Inhalt bestimmt Höhe, max. 40% Rail */
 .match-shell.matchday .upgrade-panel {
   display: flex;
   flex-direction: column;
   gap: 4%;
-  flex: 0 1 40%;
+  flex: 0 1 auto;
   min-height: 0;
   min-width: 0;
   max-width: 100%;
