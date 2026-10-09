@@ -1,0 +1,40 @@
+# UI Final — Ablage-Kanon (Chrome vs Live)
+
+**Status:** verbindlich für pending + neue Releases  
+**Stand:** 2026-10-09
+
+## Prinzip
+
+**Kunst = Form. Spiel = Zahlen.**  
+Alles, was sich ändert (Score, Minute, Momentum-%, Kosten, Level), gehört **nicht** ins Runtime-PNG.
+
+| Rolle | Ablage | Inhalt |
+| --- | --- | --- |
+| **Chrome** | `pending/` → nach Freigabe `game/public/icons/ui-final/` | Rahmen, Icons, leere Mulden — ohne Zahlen/Füllstände |
+| **Referenz/Demo** | nur Docs / Notes, **nicht** Runtime-Default | Vollbild mit Beispielwerten zur Optik-Freigabe |
+| **Slots** | JSON neben dem Chrome | Normkoordinaten 0–1 für Live-Overlays |
+
+## Pflichtregeln
+
+1. **Native Aspect** — PNG in Original-Seitenverhältnis; Zeichnen nur uniform (`drawIcon` / `fitUniform`).
+2. **Freigestellt** — RGBA, transparente Ecken (Ausnahme: `menu-rail-*` Hintergrund).
+3. **Keine gebackenen Live-Werte** im Runtime-Asset (keine `0:0`, keine `75′`, keine festen %-Balken).
+4. **Buttons** — nur Chrome-Farbe/Form (`btn-kaufen-green` …); Label + Kosten als **Live-Text** im Button (`.ar-cost-btn`).
+5. **Währungen** — nur Symbol-PNG; Zahl daneben im DOM/Canvas.
+6. **Scoreboard** — Runtime = `scoreboardChrome` + Slot-Map; Momentum/Orb-Demos sind Referenz, nicht Deploy-Default.
+7. **Bauplatz-Slots** — leere Flaggen-Chrome OK (kein Live-Text nötig).
+
+## Pending-Klassifikation (aktuell)
+
+| IDs / Keys | Klasse | Aktion |
+| --- | --- | --- |
+| `btnKaufenGreen/Grey`, `btnSendenGrey` | Chrome-Buttons 320×96 | Freigabe OK |
+| `btnSendenGreen` | **veraltet** | Entfernen — Kanon = `btnSendenBlue` (released) |
+| `scoreboardChrome` | Chrome (released) | Runtime + `scoreboard-slots.json` |
+| `scoreboardMomentum`, `scoreboardOrbHeim/Gast` | Referenz-Demos | Nicht als Runtime-Default; Notes setzen |
+| `slotEmpty*` | Chrome (leer) | Freigabe OK wenn Optik stimmt |
+
+## Personen-Karten
+
+Siehe Vorschlag: `docs/mockups/personen-action-card/`.  
+Kosten **im** Button (`KAUFEN` + Icon + Zahl) — keine Extra-Preiszeile. Vier Karten müssen im Handy-Querformat **ohne Scroll** in die linke Rail passen.
