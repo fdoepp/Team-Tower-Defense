@@ -3256,15 +3256,15 @@
       },
       "validation": {
         "ok": true,
-        "file": "game/public/icons/ui-final/btn-bauen-amber.png",
+        "file": "/workspace/game/public/icons/ui-final/btn-bauen-amber.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.1413,
-        "opaqueCornerRatio": 0.0,
+        "alphaCoverage": 0.1635,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           3,
           2,
@@ -3275,14 +3275,15 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T16:19:41.176646+00:00"
+        "checkedAt": "2026-10-09T18:45:19.697800+00:00"
       },
-      "notes": "Chrome 320×96: Holzrahmen (von btnKaufen) + eine Face-Fläche, ohne Label/Silberplatte/Loch im Rim. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
+      "notes": "Freigabe 2026-10-09: Baubutton + Gebäude-Right-Rail. Chrome 320×96 Holzrahmen + eine Face-Fläche, ohne Label/Silberplatte. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
       "category": "ui",
       "approvedBy": "fdoepp",
-      "approvedAt": "2026-10-08T22:57:00.364101+00:00",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
       "chrome": true,
-      "bakedLabel": false
+      "bakedLabel": false,
+      "assetClass": "chrome-button"
     },
     "btnBauenGrey": {
       "id": "btnBauenGrey",
@@ -3297,15 +3298,15 @@
       },
       "validation": {
         "ok": true,
-        "file": "game/public/icons/ui-final/btn-bauen-grey.png",
+        "file": "/workspace/game/public/icons/ui-final/btn-bauen-grey.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.1388,
-        "opaqueCornerRatio": 0.0,
+        "alphaCoverage": 0.1279,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           3,
           2,
@@ -3316,14 +3317,15 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T16:19:41.266779+00:00"
+        "checkedAt": "2026-10-09T18:45:19.789820+00:00"
       },
-      "notes": "Chrome 320×96: Holzrahmen (von btnKaufen) + eine Face-Fläche, ohne Label/Silberplatte/Loch im Rim. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
+      "notes": "Freigabe 2026-10-09: Baubutton + Gebäude-Right-Rail. Chrome 320×96 Holzrahmen + eine Face-Fläche, ohne Label/Silberplatte. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
       "category": "ui",
       "approvedBy": "fdoepp",
-      "approvedAt": "2026-10-08T22:57:00.455332+00:00",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
       "chrome": true,
-      "bakedLabel": false
+      "bakedLabel": false,
+      "assetClass": "chrome-button"
     },
     "btnSendenBlue": {
       "id": "btnSendenBlue",
@@ -3346,7 +3348,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.1408,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           3,
           2,
@@ -3380,15 +3382,15 @@
       },
       "validation": {
         "ok": true,
-        "file": "game/public/icons/ui-final/btn-upgrade-grey.png",
+        "file": "/workspace/game/public/icons/ui-final/btn-upgrade-grey.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.1388,
-        "opaqueCornerRatio": 0.0,
+        "alphaCoverage": 0.1478,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           3,
           2,
@@ -3399,14 +3401,15 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T16:04:45.964584+00:00"
+        "checkedAt": "2026-10-09T18:45:19.975831+00:00"
       },
-      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
+      "notes": "Freigabe 2026-10-09: Baubutton + Gebäude-Right-Rail. Chrome 320×96 Holzrahmen + eine Face-Fläche, ohne Label/Silberplatte. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
       "category": "ui",
       "approvedBy": "fdoepp",
-      "approvedAt": "2026-10-08T22:57:00.634937+00:00",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
       "chrome": true,
-      "bakedLabel": false
+      "bakedLabel": false,
+      "assetClass": "chrome-button"
     },
     "btnUpgradePurple": {
       "id": "btnUpgradePurple",
@@ -3421,15 +3424,15 @@
       },
       "validation": {
         "ok": true,
-        "file": "game/public/icons/ui-final/btn-upgrade-purple.png",
+        "file": "/workspace/game/public/icons/ui-final/btn-upgrade-purple.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.1383,
-        "opaqueCornerRatio": 0.0,
+        "alphaCoverage": 0.1766,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           3,
           2,
@@ -3440,14 +3443,15 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T16:19:41.446234+00:00"
+        "checkedAt": "2026-10-09T18:45:19.882728+00:00"
       },
-      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
+      "notes": "Freigabe 2026-10-09: Baubutton + Gebäude-Right-Rail. Chrome 320×96 Holzrahmen + eine Face-Fläche, ohne Label/Silberplatte. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
       "category": "ui",
       "approvedBy": "fdoepp",
-      "approvedAt": "2026-10-08T22:57:00.723844+00:00",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
       "chrome": true,
-      "bakedLabel": false
+      "bakedLabel": false,
+      "assetClass": "chrome-button"
     },
     "tribuneBlue": {
       "id": "tribuneBlue",
@@ -4102,9 +4106,9 @@
         "reasons": [],
         "checkedAt": "2026-10-09T07:30:30.412524+00:00"
       },
-      "approvedBy": "user",
-      "approvedAt": "2026-10-09T07:30:30.431Z",
-      "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
+      "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt). · Freigabe 2026-10-09: Gebäude-Right-Rail Hintergrund.",
       "category": "ui",
       "source": "game/public/icons/ui/menu-rail-brown.png"
     },
@@ -4141,9 +4145,9 @@
         "reasons": [],
         "checkedAt": "2026-10-09T07:30:30.563812+00:00"
       },
-      "approvedBy": "user",
-      "approvedAt": "2026-10-09T07:30:30.578Z",
-      "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
+      "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt). · Freigabe 2026-10-09: Gebäude-Right-Rail Hintergrund.",
       "category": "ui",
       "source": "game/public/icons/ui/menu-rail-brown-tile.png"
     },
@@ -5034,7 +5038,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.1325,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           3,
           2,
@@ -5075,7 +5079,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.136,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           3,
           2,
@@ -5116,7 +5120,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.1247,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           3,
           2,

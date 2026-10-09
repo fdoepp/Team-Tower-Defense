@@ -32,6 +32,10 @@ Ablage-Regel: [`STORAGE_CANON.md`](./STORAGE_CANON.md) — Chrome vs Live-Werte.
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
 
 ## Released (diese Runde)
+- **`btnBauenAmber`** — `btn-bauen-amber.png` — **Baubutton + Right-Rail freigegeben**
+- **`btnBauenGrey`** — `btn-bauen-grey.png` — **Baubutton CD + Right-Rail freigegeben**
+- **`btnUpgradePurple`** — `btn-upgrade-purple.png` — **Right-Rail Upgrade freigegeben**
+- **`btnUpgradeGrey`** — `btn-upgrade-grey.png` — **Right-Rail Upgrade CD freigegeben**
 - **116** `currencyFanartikel` — `currency-fanartikel.png` (Trikot)
 - **115** `currencyBier` — `currency-bier.png`
 - **117** `currencyGold` — `currency-gold.png`

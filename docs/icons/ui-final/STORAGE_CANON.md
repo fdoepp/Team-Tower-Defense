@@ -29,7 +29,7 @@ Alles, was sich ändert (Score, Minute, Momentum-%, Kosten, Level), gehört **ni
 | IDs / Keys | Klasse | Aktion |
 | --- | --- | --- |
 | `btnKaufenGreen/Grey`, `btnSendenGrey` | Chrome-Buttons 320×96 (eine Fläche, kein Label) | Pending — Optik freigeben |
-| `btnBauenAmber/Grey`, `btnUpgradePurple/Grey`, `btnSendenBlue` | Chrome refreshed (released) | Live-Text im DOM |
+| `btnBauenAmber/Grey`, `btnUpgradePurple/Grey`, `btnSendenBlue` | Chrome **freigegeben** (Right-Rail / Baubutton 2026-10-09) | Live-Text im DOM |
 | `btnSendenGreen` | **veraltet** | Entfernen — Kanon = `btnSendenBlue` (released) |
 | `scoreboardChrome` | Chrome (released) | Runtime + `scoreboard-slots.json` |
 | `scoreboardMomentum`, `scoreboardOrbHeim/Gast` | Referenz-Demos | Nicht als Runtime-Default; Notes setzen |
@@ -48,3 +48,15 @@ Alles, was sich ändert (Score, Minute, Momentum-%, Kosten, Level), gehört **ni
 | Banner | Braun (`#6b4428`→`#4a2c18`), nicht blau |
 
 Runtime: `.left-rail .person-card` + `.ar-cost-btn` — **nicht** neu nachbauen; Abstände und Chrome aus dieser Ablage.
+
+## Gebäude-Rail (rechts — freigegeben 2026-10-09)
+
+| Asset | Rolle |
+| --- | --- |
+| `menuRail` / `menuRailTile` | Holz-Hintergrund der Right-Rail |
+| `btnBauenAmber` / `btnBauenGrey` | BAUEN-Chrome (eine Fläche, Live-Text) |
+| `btnUpgradePurple` / `btnUpgradeGrey` | UPGRADE-Chrome (eine Fläche, Live-Text) |
+| `currencyGold` | Kosten-Icon im Button |
+
+Runtime: `.build-rail .ar-cost-btn` — Holz + eine Face-Fläche; Live-Text Holz-Innen + **2%**; kein gestapeltes Overlay.
+
