@@ -67,10 +67,11 @@ Details: [compare.html](./compare.html).
 
 ## Regeln (beide)
 
-1. Kosten im Button (Verb + Währungs-Icon + Zahl) als Live-Text.
-2. Button-Chrome = Holzrahmen + Fläche (`btn-*-chrome.png`).
-3. Icon = aktuelle Unit-Stufe (`unitIconPath`).
-4. Zahlen aus `BUY_COST` / `PYRO_FIGHT_MERCH` / `HOOLIGAN_ORDER_BEER` / `unitUpgradeCost`.
-5. Rail-Hintergrund = `menu-rail-brown-tile`.
+1. Kosten im Button (Verb + Währungs-Icon + Zahl) als Live-Text — nie im PNG gebacken.
+2. Button-Chrome = Holzrahmen + **eine** Farbfläche (`btn-*-chrome.png`), ohne dunkle Lippe / zweites Feld.
+3. Live-Overlay: `2%` Abstand zu allen Innenkanten des Holzrahmens (Breite für L/R, Höhe für T/B).
+4. Icon = aktuelle Unit-Stufe (`unitIconPath`).
+5. Zahlen aus `BUY_COST` / `PYRO_FIGHT_MERCH` / `HOOLIGAN_ORDER_BEER` / `unitUpgradeCost`.
+6. Rail-Hintergrund = `menu-rail-brown-tile`.
 
 Siehe [`docs/icons/ui-final/STORAGE_CANON.md`](../../icons/ui-final/STORAGE_CANON.md).
