@@ -8,7 +8,6 @@
   :root {
     --wood-deep: #3d2414;
     --ink: #1c120a;
-    --cream: #f3e6c8;
   }
   * { box-sizing: border-box; }
   body {
@@ -19,17 +18,18 @@
     padding: 16px;
   }
   h1 { font-size: 1.1rem; margin: 0 0 6px; }
-  .note { color: #bbb; font-size: 0.85rem; max-width: 960px; margin-bottom: 14px; line-height: 1.4; }
+  .note { color: #bbb; font-size: 0.85rem; max-width: 1000px; margin-bottom: 14px; line-height: 1.4; }
   .stage { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
 
   .phone {
     width: 844px;
-    height: 390px;
+    /* 4 Karten × Buttons ≥56px (Verb+Kosten gestapelt) */
+    height: 480px;
     border-radius: 18px;
     border: 3px solid #333;
     box-shadow: 0 12px 40px rgba(0,0,0,.55);
     display: grid;
-    grid-template-columns: 23% 1fr;
+    grid-template-columns: 40% 1fr;
     overflow: hidden;
   }
   .pitch-fake {
@@ -48,84 +48,105 @@
 
   .rail {
     background: url("rail-tile.png") center / cover;
-    padding: 7px 7px 8px;
+    padding: 4px 3px 4px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 3px;
     min-width: 0;
+    min-height: 0;
   }
   .banner {
     background: linear-gradient(180deg, #6b4428, #4a2c18);
     color: #f8e7c0;
     font-weight: 900;
-    font-size: 13px;
+    font-size: 12px;
     text-align: center;
-    border-radius: 8px;
-    padding: 5px 6px;
+    border-radius: 7px;
+    padding: 4px 6px;
     border: 2px solid var(--wood-deep);
+    flex: 0 0 auto;
   }
 
   .cards {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    flex: 1;
+    gap: 3px;
+    flex: 1 1 0;
     min-height: 0;
   }
 
-  /* Cream wood card — same Bloons/rail language as bars */
   .card {
-    flex: 1;
+    flex: 1 1 0;
     min-height: 0;
     background: linear-gradient(180deg, #f7ebcf, #e5cf9f);
-    border: 3px solid var(--wood-deep);
-    border-radius: 12px;
+    border: 2px solid var(--wood-deep);
+    border-radius: 10px;
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.4),
-      0 2px 0 rgba(0,0,0,.25);
-    display: grid;
-    grid-template-columns: 56px 1fr;
-    grid-template-rows: auto 1fr;
-    gap: 3px 6px;
-    padding: 5px 6px 6px;
+      0 1px 0 rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    /* Figur fast bündig links */
+    padding: 2px 5px 4px 0;
     color: var(--ink);
+    overflow: hidden;
   }
   .card.featured {
     outline: 2px solid #fbbf24;
-    outline-offset: 1px;
+    outline-offset: 0;
+  }
+
+  .top {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    flex: 0 0 auto;
+    height: 28px;
   }
   .head {
-    grid-row: 1 / span 2;
-    width: 56px;
-    height: 100%;
+    /* Auto-Breite nach Sprite — kein Letterboxing, bündig links */
+    width: auto;
+    height: 36px;
+    max-width: 34px;
     object-fit: contain;
-    object-position: center bottom;
+    object-position: left bottom;
+    flex: 0 0 auto;
+    margin: 0 0 -4px 0;
+    pointer-events: none;
   }
   .meta {
+    flex: 1;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     min-width: 0;
+    padding-bottom: 1px;
   }
-  .name { font-weight: 900; font-size: 13px; }
-  .name small { font-size: 10px; color: #6b4e2e; margin-left: 3px; }
+  .name { font-weight: 900; font-size: 12px; white-space: nowrap; }
+  .name small { font-size: 9px; color: #6b4e2e; margin-left: 2px; }
   .count { font-weight: 900; font-size: 14px; }
 
   .actions {
+    flex: 1 1 0;
     display: grid;
-    gap: 4px;
-    align-content: end;
+    gap: 6px;
+    align-content: stretch;
+    align-items: stretch;
+    min-height: 0;
   }
   .actions.dual { grid-template-columns: 1fr 1fr; }
   .actions.triple { grid-template-columns: 1fr 1fr 1fr; }
 
-  /* Real wood-frame button PNGs as chrome; live cost on top */
   .cost-btn {
     appearance: none;
     border: 0;
-    padding: 0;
     margin: 0;
-    min-height: 46px;
+    width: 100%;
+    height: 100%;
+    min-height: 58px;
+    /* Gestapelt: Verb oben, Kosten unten — Button bleibt klar größer als der Inhalt */
+    padding: 11px 10px;
     border-radius: 10px;
     background-color: transparent;
     background-repeat: no-repeat;
@@ -133,37 +154,36 @@
     background-size: 100% 100%;
     color: #fff;
     font-weight: 900;
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0;
+    gap: 5px;
     cursor: pointer;
     text-shadow: 0 1px 1px rgba(0,0,0,.55);
-    filter: drop-shadow(0 1px 0 rgba(0,0,0,.3));
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,.28));
+    overflow: hidden;
   }
-  /* Label-free chrome (baked text removed) — live Verb + Kosten obenauf */
   .cost-btn.kaufen { background-image: url("btn-kaufen-chrome.png"); }
   .cost-btn.senden { background-image: url("btn-senden-chrome.png"); }
   .cost-btn.upgrade { background-image: url("btn-upgrade-chrome.png"); }
   .cost-btn .verb {
-    font-size: 9px;
-    letter-spacing: .03em;
+    font-size: 11px;
+    letter-spacing: .04em;
     line-height: 1;
-    margin-top: 1px;
   }
   .cost-btn .pay {
     display: inline-flex;
     align-items: center;
-    gap: 2px;
-    font-size: 12px;
+    gap: 3px;
+    font-size: 13px;
     line-height: 1;
-    margin-top: 2px;
   }
   .cost-btn .pay img {
-    width: 13px;
-    height: 13px;
+    width: 15px;
+    height: 15px;
     object-fit: contain;
+    flex: 0 0 auto;
     filter: drop-shadow(0 0 1px rgba(0,0,0,.4));
   }
 
@@ -171,19 +191,30 @@
     background: #2a2a2a;
     border-radius: 12px;
     padding: 12px;
-    width: min(400px, 100%);
+    width: min(540px, 100%);
   }
   .zoom h2 { margin: 0 0 8px; font-size: 0.95rem; }
   .zoom .card {
-    height: 108px;
-    grid-template-columns: 76px 1fr;
+    height: 132px;
+    padding: 6px 14px 10px 4px;
+    gap: 6px;
+    border-width: 3px;
+    border-radius: 12px;
   }
-  .zoom .head { width: 76px; }
-  .zoom .name { font-size: 16px; }
-  .zoom .cost-btn { min-height: 52px; }
-  .zoom .cost-btn .verb { font-size: 11px; }
-  .zoom .cost-btn .pay { font-size: 14px; }
-  .zoom .cost-btn .pay img { width: 16px; height: 16px; }
+  .zoom .top { height: 40px; }
+  .zoom .head { width: 44px; height: 52px; margin-bottom: -4px; }
+  .zoom .name { font-size: 17px; }
+  .zoom .name small { font-size: 12px; }
+  .zoom .actions { gap: 10px; }
+  .zoom .cost-btn {
+    min-height: 68px;
+    padding: 12px 14px;
+    gap: 6px;
+    border-radius: 12px;
+  }
+  .zoom .cost-btn .verb { font-size: 13px; }
+  .zoom .cost-btn .pay { font-size: 16px; }
+  .zoom .cost-btn .pay img { width: 18px; height: 18px; }
   .legend {
     margin-top: 10px;
     font-size: 0.8rem;
@@ -196,9 +227,8 @@
 <body>
   <h1>Personen-Action-Card — Vorschlag A (Holz-Buttons wie Rail-Bars)</h1>
   <p class="note">
-    Orientierung an den freigegebenen / Icon-UI <b>Holzrahmen-Buttons</b> (Kaufen grün · Senden blau · Upgrade lila)
-    und dem Menu-Rail-Holz. Keine „Einheiten gesamt“-Zeile mehr — mehr Platz für Karten/Buttons.
-    Kosten live im Button (Icon + Zahl). Eng: Kurzlabels · Detail: volle Wörter.
+    Figur nur oben, eng am linken Kartenrand. Buttons darunter über die volle Breite —
+    größer als Text+Kosten (Padding), Querformat wie Icon-UI. 4 Karten ohne Scroll, kein „Einheiten gesamt“.
   </p>
 
   <div class="stage">
@@ -207,16 +237,20 @@
         <div class="banner">Personen</div>
         <div class="cards">
           <article class="card">
-            <img class="head" src="fan.png" alt="">
-            <div class="meta"><span class="name">Fans <small>Lv1</small></span><span class="count">5</span></div>
+            <div class="top">
+              <img class="head" src="fan-trim.png" alt="">
+              <div class="meta"><span class="name">Fans <small>Lv1</small></span><span class="count">5</span></div>
+            </div>
             <div class="actions dual">
               <button class="cost-btn kaufen" type="button"><span class="verb">KAUF</span><span class="pay"><img src="cur-sec.png" alt="">12</span></button>
               <button class="cost-btn upgrade" type="button"><span class="verb">UP</span><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
             </div>
           </article>
           <article class="card featured">
-            <img class="head" src="ultra.png" alt="">
-            <div class="meta"><span class="name">Ultras <small>Lv1</small></span><span class="count">3</span></div>
+            <div class="top">
+              <img class="head" src="ultra-trim.png" alt="">
+              <div class="meta"><span class="name">Ultras <small>Lv1</small></span><span class="count">3</span></div>
+            </div>
             <div class="actions triple">
               <button class="cost-btn kaufen" type="button"><span class="verb">KAUF</span><span class="pay"><img src="cur-merch.png" alt="">12</span></button>
               <button class="cost-btn senden" type="button"><span class="verb">SEND</span><span class="pay"><img src="cur-merch.png" alt="">6</span></button>
@@ -224,8 +258,10 @@
             </div>
           </article>
           <article class="card">
-            <img class="head" src="hool.png" alt="">
-            <div class="meta"><span class="name">Hooligans <small>Lv1</small></span><span class="count">2</span></div>
+            <div class="top">
+              <img class="head" src="hool-trim.png" alt="">
+              <div class="meta"><span class="name">Hooligans <small>Lv1</small></span><span class="count">2</span></div>
+            </div>
             <div class="actions triple">
               <button class="cost-btn kaufen" type="button"><span class="verb">KAUF</span><span class="pay"><img src="cur-bier.png" alt="">12</span></button>
               <button class="cost-btn senden" type="button"><span class="verb">SEND</span><span class="pay"><img src="cur-bier.png" alt="">6</span></button>
@@ -233,8 +269,10 @@
             </div>
           </article>
           <article class="card">
-            <img class="head" src="ordner.png" alt="">
-            <div class="meta"><span class="name">Ordner <small>Lv1</small></span><span class="count">1</span></div>
+            <div class="top">
+              <img class="head" src="ordner-trim.png" alt="">
+              <div class="meta"><span class="name">Ordner <small>Lv1</small></span><span class="count">1</span></div>
+            </div>
             <div class="actions dual">
               <button class="cost-btn kaufen" type="button"><span class="verb">KAUF</span><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
               <button class="cost-btn upgrade" type="button"><span class="verb">UP</span><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
@@ -248,8 +286,10 @@
     <div class="zoom">
       <h2>Detail · Ultras (volle Labels)</h2>
       <article class="card featured">
-        <img class="head" src="ultra.png" alt="">
-        <div class="meta"><span class="name">Ultras <small>Lv1</small></span><span class="count">3</span></div>
+        <div class="top">
+          <img class="head" src="ultra-trim.png" alt="">
+          <div class="meta"><span class="name">Ultras <small>Lv1</small></span><span class="count">3</span></div>
+        </div>
         <div class="actions triple">
           <button class="cost-btn kaufen" type="button"><span class="verb">KAUFEN</span><span class="pay"><img src="cur-merch.png" alt="">12</span></button>
           <button class="cost-btn senden" type="button"><span class="verb">SENDEN</span><span class="pay"><img src="cur-merch.png" alt="">6</span></button>
@@ -257,9 +297,9 @@
         </div>
       </article>
       <div class="legend">
-        Button-Chrome = Holzrahmen + Farbe aus Icon-UI (<code>btn-*-chrome</code>, Labels entfernt).<br>
-        Rail-Hintergrund = <code>menu-rail-brown-tile</code>. Verb + Kosten nur als Live-Text.<br>
-        „Einheiten gesamt“ entfernt → mehr Höhe für Touch-Buttons (≥46px).
+        Rail 40% · Buttons volle Breite · min-height 56px · Padding 10×8 · Verb/Kosten gestapelt.<br>
+        Figur getrimmt, bündig links in der Kopfzeile — kein Button-Overlap.<br>
+        Chrome = <code>btn-*-chrome</code>.
       </div>
     </div>
   </div>

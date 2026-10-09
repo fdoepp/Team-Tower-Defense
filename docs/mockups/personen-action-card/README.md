@@ -39,14 +39,15 @@ Detail/breitere Karten: volle Wörter **KAUFEN / SENDEN / UPGRADE**.
 7. Zahlen aus `BUY_COST` / `PYRO_FIGHT_MERCH` / `HOOLIGAN_ORDER_BEER` / `unitUpgradeCost` — nicht ins PNG backen.
 8. Rail-Hintergrund = `menu-rail-brown-tile` (`rail-tile.png`).
 
-## Maß (844×390 Querformat)
+## Maß (844×480 Querformat-Mock)
 
 | Element | Maß |
 | --- | --- |
-| Linke Rail | ~23% ≈ 194px |
-| Banner „Personen“ | ~28px |
-| Pro Karte | ~84px (ohne Gesamt-Zeile) |
-| Buttons | ≥ 46px hoch |
+| Linke Rail | ~40% |
+| Banner „Personen“ | ~26px |
+| Figur | nur Kopfzeile, bündig links (getrimmt) |
+| Buttons | volle Kartenbreite, ≥ 56px hoch, Padding ≥ 10px |
+| Inhalt | Verb + Kosten gestapelt, kleiner als die Button-Fläche |
 
 ## Bezug Ablage
 
