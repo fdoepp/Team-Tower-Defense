@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=49** · **released=93**
+**pending=48** · **released=94**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -46,7 +46,6 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 124. `scoreboardMomentum` — `scoreboard-momentum.png`
 125. `scoreboardOrbGast` — `scoreboard-top-orb-gast.png`
 126. `scoreboardOrbHeim` — `scoreboard-top-orb-heim.png`
-127. `slotEmpty` — `slot-empty.png`
 128. `slotEmptyIso` — `slot-empty-iso.png`
 129. `slotEmptyIsoBlue` — `slot-empty-iso-blue.png`
 130. `slotEmptyIsoRed` — `slot-empty-iso-red.png`
@@ -60,8 +59,6 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 138. `slotEmptyPerspBlue` — `slot-empty-persp-blue.png`
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
 
-## Released (Tribünen — diese Runde)
+## Released (diese Runde)
 
-- `tribuneBlue` — `tribune-block-blue.png`
-- `tribuneGrey` — `tribune-block-grey.png`
-- `tribuneRed` — `tribune-block-red.png`
+- `slotEmpty` — `slot-empty.png` (127)
