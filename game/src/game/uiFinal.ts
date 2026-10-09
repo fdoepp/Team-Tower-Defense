@@ -66,6 +66,7 @@ export type UiFinalId =
   | "scoreboard"
   | "scoreboardChrome"
   | "slotEmpty"
+  | "stadiumBg"
   | "standBierBlue1"
   | "standBierBlue2"
   | "standBierBlue3"
@@ -629,6 +630,14 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+  },
+  "stadiumBg": {
+    file: "stadium-floodlight-derby-bg.jpg",
+    path: "icons/ui-final/stadium-floodlight-derby-bg.jpg",
+    native: { w: 1280, h: 720 },
+    aspectRatio: 1.777778,
+    preserveAspect: true,
+    freigestellt: false,
   },
   "standBierBlue1": {
     file: "bier-blue-1.png",

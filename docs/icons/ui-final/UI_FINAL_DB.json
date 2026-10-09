@@ -1,16 +1,16 @@
 {
   "version": 1,
   "name": "UI_FINAL",
-  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe.",
+  "description": "Final freigegebene Runtime-Grafiken (UI, Personen, Gebäude, Tribünen, Szenen). Alle Branches laden ausschließlich aus released. Ablage nur nach manueller Freigabe.",
   "rules": {
     "approvalRequired": true,
     "approver": "repo-owner",
-    "freigestellt": "RGBA cutout required (transparent background), except documented chrome backgrounds",
+    "freigestellt": "RGBA cutout required (transparent background), except documented chrome (menu-rail-*) and scene plates (stadium-floodlight*.jpg)",
     "preserveAspect": "Runtime must draw with uniform scale / contain — never stretch",
     "consumeFrom": "game/public/icons/ui-final/",
     "pendingDir": "docs/icons/ui-final/pending/",
     "sourceOfTruth": "docs/icons/ui-final/UI_FINAL_DB.json",
-    "scope": "ui + units + stands + tribunes"
+    "scope": "ui + units + stands + tribunes + scene plates"
   },
   "released": {
     "fanBlue2": {
@@ -4764,6 +4764,44 @@
       "bakedLabel": false,
       "assetClass": "currency-icon",
       "category": "ui"
+    },
+    "stadiumBg": {
+      "id": "stadiumBg",
+      "file": "stadium-floodlight-derby-bg.jpg",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": false,
+        "preserveAspect": true,
+        "format": "jpg",
+        "exception": "stadium-plate-jpg"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/stadium-floodlight-derby-bg.jpg",
+        "mode": "RGB",
+        "native": {
+          "w": 1280,
+          "h": 720
+        },
+        "aspectRatio": 1.777778,
+        "alphaCoverage": 0,
+        "opaqueCornerRatio": 1,
+        "contentBBox": [
+          0,
+          0,
+          1279,
+          719
+        ],
+        "freigestellt": false,
+        "exception": "stadium-plate-jpg",
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T18:55:55.500966+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:55:55.515Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "pending": {

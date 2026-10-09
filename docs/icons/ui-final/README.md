@@ -1,6 +1,6 @@
 # UI Final DB
 
-Zentrale Freigabe-Datenbank für **alle** Runtime-Grafiken (Personen, Gebäude, UI, Tribünen).
+Zentrale Freigabe-Datenbank für **alle** Runtime-Grafiken (Personen, Gebäude, UI, Tribünen, Szenen-Plates).
 
 | | |
 |---|---|
@@ -13,7 +13,7 @@ Zentrale Freigabe-Datenbank für **alle** Runtime-Grafiken (Personen, Gebäude, 
 ## Regeln
 
 1. **Freigabe Pflicht** — Ablage in `released` nur nach manueller Freigabe (`approve --by`).
-2. **Freigestellt** — PNG RGBA-Cutout (Ausnahme: dokumentierte Rails).
+2. **Freigestellt** — PNG RGBA-Cutout (Ausnahmen: dokumentierte Rails `menu-rail-*`, Szenen-Plate `stadium-floodlight*.jpg`).
 3. **preserveAspect** — Runtime nur mit uniformer Skalierung (`drawIcon`), nie verzerren.
 
 ## Bestand (pending)

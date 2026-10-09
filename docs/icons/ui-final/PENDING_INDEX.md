@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=18** · **released=124**
+**pending=18** · **released=125**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -32,6 +32,7 @@ Ablage-Regel: [`STORAGE_CANON.md`](./STORAGE_CANON.md) — Chrome vs Live-Werte.
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
 
 ## Released (diese Runde)
+- **144** `stadiumBg` — `stadium-floodlight-derby-bg.jpg` — **Gesamthintergrund freigegeben** (JPG Plate 1280×720, Ausnahme `stadium-plate-jpg`)
 - **117** `currencyGold` — `currency-gold.png` — **Währung + Counter freigegeben**
 - **115** `currencyBier` — `currency-bier.png` — **Währung + Counter freigegeben**
 - **116** `currencyFanartikel` — `currency-fanartikel.png` — **Währung + Counter freigegeben**

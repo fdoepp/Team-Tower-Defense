@@ -48,6 +48,8 @@ if (db.released?.[id]) {
   console.error(`id ${id} is already released — revoke first if replacing`);
   process.exit(1);
 }
+const ext = path.extname(base).toLowerCase().replace(".", "") || "png";
+const format = ext === "jpeg" ? "jpg" : ext;
 db.pending[id] = {
   id,
   file: base,
@@ -55,9 +57,10 @@ db.pending[id] = {
   status: "pendingApproval",
   role,
   requirements: {
-    freigestellt: true,
+    freigestellt: Boolean(validation.freigestellt),
     preserveAspect: true,
-    format: "png",
+    format,
+    ...(validation.exception ? { exception: validation.exception } : {}),
   },
   validation,
   notes: "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",

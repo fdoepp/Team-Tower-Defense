@@ -50,6 +50,8 @@ export type SlotEmptyOrientation = "parallel" | "iso";
 export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "parallel";
 
 export const SCENE_ASSETS = {
+  /** Gesamthintergrund — UI Final `stadiumBg` (JPG plate, preserveAspect). */
+  stadiumBg: uiPath("stadiumBg", "assets/stadium-floodlight-derby-bg.jpg"),
   tribuneBlue: uiPath("tribuneBlue", "assets/tribune-block-blue.png"),
   tribuneGrey: uiPath("tribuneGrey", "assets/tribune-block-grey.png"),
   tribuneRed: uiPath("tribuneRed", "assets/tribune-block-red.png"),

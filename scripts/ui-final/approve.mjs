@@ -53,6 +53,11 @@ fs.mkdirSync(RELEASED_DIR, { recursive: true });
 const releasedFile = path.join(RELEASED_DIR, pending.file);
 fs.copyFileSync(pendingFile, releasedFile);
 
+const req = pending.requirements || {};
+const format =
+  req.format ||
+  path.extname(pending.file).toLowerCase().replace(".", "").replace("jpeg", "jpg") ||
+  "png";
 db.released = db.released || {};
 db.released[id] = {
   id,
@@ -60,9 +65,12 @@ db.released[id] = {
   status: "released",
   role: pending.role || "ui",
   requirements: {
-    freigestellt: true,
+    freigestellt: Boolean(validation.freigestellt),
     preserveAspect: true,
-    format: "png",
+    format,
+    ...(validation.exception || req.exception
+      ? { exception: validation.exception || req.exception }
+      : {}),
   },
   validation,
   approvedBy: by,

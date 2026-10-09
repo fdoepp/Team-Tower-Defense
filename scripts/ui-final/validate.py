@@ -30,8 +30,12 @@ def validate(path: Path) -> dict:
 
     exception = None
     name = path.name
+    suffix = path.suffix.lower()
     if name.startswith("menu-rail"):
         exception = "menu-rail-background"
+    # Full-bleed match plate — opaque JPG, not a freigestellte cutout
+    elif name.startswith("stadium-floodlight") and suffix in (".jpg", ".jpeg"):
+        exception = "stadium-plate-jpg"
 
     freigestellt = mode in ("RGBA", "LA", "PA") and alpha_frac > 0.02 and corner_opaque < 0.85
     ok = bool(freigestellt or exception)
