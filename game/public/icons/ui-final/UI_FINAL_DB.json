@@ -4053,6 +4053,84 @@
       "name": "Scoreboard Chrome",
       "displayName": "Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)",
       "relatedTo": "scoreboard"
+    },
+    "menuRail": {
+      "id": "menuRail",
+      "file": "menu-rail-brown.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/menu-rail-brown.png",
+        "mode": "RGB",
+        "native": {
+          "w": 720,
+          "h": 1280
+        },
+        "aspectRatio": 0.5625,
+        "alphaCoverage": 0,
+        "opaqueCornerRatio": 1,
+        "contentBBox": [
+          0,
+          0,
+          719,
+          1279
+        ],
+        "freigestellt": false,
+        "exception": "menu-rail-background",
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:30:30.412524+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:30:30.431Z",
+      "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt).",
+      "category": "ui",
+      "source": "game/public/icons/ui/menu-rail-brown.png"
+    },
+    "menuRailTile": {
+      "id": "menuRailTile",
+      "file": "menu-rail-brown-tile.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/menu-rail-brown-tile.png",
+        "mode": "RGB",
+        "native": {
+          "w": 504,
+          "h": 1024
+        },
+        "aspectRatio": 0.492188,
+        "alphaCoverage": 0,
+        "opaqueCornerRatio": 1,
+        "contentBBox": [
+          0,
+          0,
+          503,
+          1023
+        ],
+        "freigestellt": false,
+        "exception": "menu-rail-background",
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:30:30.563812+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:30:30.578Z",
+      "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt).",
+      "category": "ui",
+      "source": "game/public/icons/ui/menu-rail-brown-tile.png"
     }
   },
   "pending": {
@@ -4662,76 +4740,6 @@
         "exception": null,
         "preserveAspectRequired": true,
         "checkedAt": "2026-10-08T21:52:42.981151+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
-    },
-    "menuRail": {
-      "id": "menuRail",
-      "file": "menu-rail-brown.png",
-      "source": "game/public/icons/ui/menu-rail-brown.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGB",
-        "native": {
-          "w": 720,
-          "h": 1280
-        },
-        "aspectRatio": 0.5625,
-        "alphaCoverage": 0,
-        "opaqueCornerRatio": 1,
-        "contentBBox": [
-          0,
-          0,
-          719,
-          1279
-        ],
-        "freigestellt": false,
-        "exception": "menu-rail-background",
-        "preserveAspectRequired": true,
-        "checkedAt": "2026-10-08T21:52:43.037745+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
-    },
-    "menuRailTile": {
-      "id": "menuRailTile",
-      "file": "menu-rail-brown-tile.png",
-      "source": "game/public/icons/ui/menu-rail-brown-tile.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGB",
-        "native": {
-          "w": 504,
-          "h": 1024
-        },
-        "aspectRatio": 0.492188,
-        "alphaCoverage": 0,
-        "opaqueCornerRatio": 1,
-        "contentBBox": [
-          0,
-          0,
-          503,
-          1023
-        ],
-        "freigestellt": false,
-        "exception": "menu-rail-background",
-        "preserveAspectRequired": true,
-        "checkedAt": "2026-10-08T21:52:43.058720+00:00"
       },
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
       "category": "ui"
@@ -5397,12 +5405,12 @@
     ]
   },
   "inventory": {
-    "pendingCount": 37,
-    "releasedCount": 106,
+    "pendingCount": 35,
+    "releasedCount": 108,
     "byCategory": {
       "ui": {
-        "pending": 25,
-        "released": 10
+        "pending": 23,
+        "released": 12
       },
       "persons": {
         "pending": 12,
@@ -5417,7 +5425,7 @@
         "released": 3
       }
     },
-    "gatheredAt": "2026-10-09T07:29:43.910845+00:00",
+    "gatheredAt": "2026-10-09T07:30:30.611913+00:00",
     "canon": {
       "persons": "units/{fan|ordner|hooligan|ultra}-{grey|blue|red}-{1..5}.png (60)",
       "buildings": "stands/{bier|fanshop|ordner}-{grey|blue|red}-{1..5}.png (45) as stand*",
