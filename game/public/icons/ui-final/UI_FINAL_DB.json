@@ -4981,14 +4981,14 @@
         "reasons": [],
         "checkedAt": "2026-10-09T11:06:57.067582+00:00"
       },
-      "notes": "Neu: flächiges Trikot-Symbol (statt Schal). Alternative Fahne vorhanden — bitte freigeben.",
+      "notes": "Trikot (flächig) statt Schal — bewusst abweichend von currency-icons-clean-Schal. Bitte freigeben.",
       "category": "ui",
-      "updatedAt": "2026-10-09T11:07:12.371587+00:00"
+      "updatedAt": "2026-10-09T11:13:17.078621+00:00"
     },
     "btnKaufenGrey": {
       "id": "btnKaufenGrey",
       "file": "btn-kaufen-grey.png",
-      "source": "game/public/icons/ui/btn-kaufen-grey.png",
+      "source": "icon-ui-einzeln-3755/btn-vorschlaege",
       "status": "pendingApproval",
       "role": "ui",
       "requirements": {
@@ -5001,32 +5001,32 @@
         "file": "btn-kaufen-grey.png",
         "mode": "RGBA",
         "native": {
-          "w": 256,
-          "h": 256
+          "w": 320,
+          "h": 96
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.6579,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5713,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          42,
-          58,
-          213,
-          196
+          77,
+          6,
+          241,
+          89
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T10:17:41.986420+00:00"
+        "checkedAt": "2026-10-09T11:13:17.273955+00:00"
       },
-      "notes": "Sidebar-Button, freigestellt. Bitte freigeben.",
+      "notes": "Aus Icon-UI Agent (btn-vorschlaege) 320×96 Holzrahmen-Kanon. Bitte freigeben.",
       "category": "ui",
-      "updatedAt": "2026-10-09T10:15:56.280494+00:00"
+      "updatedAt": "2026-10-09T11:13:17.078621+00:00"
     },
     "btnKaufenGreen": {
       "id": "btnKaufenGreen",
       "file": "btn-kaufen-green.png",
-      "source": "game/public/icons/ui/btn-kaufen-green.png",
+      "source": "icon-ui-einzeln-3755/btn-vorschlaege",
       "status": "pendingApproval",
       "role": "ui",
       "requirements": {
@@ -5039,32 +5039,32 @@
         "file": "btn-kaufen-green.png",
         "mode": "RGBA",
         "native": {
-          "w": 256,
-          "h": 256
+          "w": 320,
+          "h": 96
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.6579,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.5724,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          42,
-          58,
-          213,
-          196
+          77,
+          6,
+          241,
+          89
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T10:17:41.893587+00:00"
+        "checkedAt": "2026-10-09T11:13:17.179135+00:00"
       },
-      "notes": "Sidebar-Button, freigestellt. Bitte freigeben.",
+      "notes": "Aus Icon-UI Agent (btn-vorschlaege) 320×96 Holzrahmen-Kanon. Bitte freigeben.",
       "category": "ui",
-      "updatedAt": "2026-10-09T10:15:56.280494+00:00"
+      "updatedAt": "2026-10-09T11:13:17.078621+00:00"
     },
     "btnSendenGrey": {
       "id": "btnSendenGrey",
       "file": "btn-senden-grey.png",
-      "source": "game/public/icons/ui/btn-senden-grey.png",
+      "source": "icon-ui-einzeln-3755/btn-vorschlaege",
       "status": "pendingApproval",
       "role": "ui",
       "requirements": {
@@ -5077,27 +5077,27 @@
         "file": "btn-senden-grey.png",
         "mode": "RGBA",
         "native": {
-          "w": 256,
-          "h": 256
+          "w": 320,
+          "h": 96
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.655,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.557,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          42,
-          58,
-          213,
-          197
+          76,
+          6,
+          243,
+          89
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T10:17:42.179371+00:00"
+        "checkedAt": "2026-10-09T11:13:17.367283+00:00"
       },
-      "notes": "Sidebar-Button, freigestellt. Bitte freigeben.",
+      "notes": "Aus Icon-UI Agent (btn-vorschlaege) 320×96 Holzrahmen-Kanon. Bitte freigeben.",
       "category": "ui",
-      "updatedAt": "2026-10-09T10:15:56.280494+00:00"
+      "updatedAt": "2026-10-09T11:13:17.078621+00:00"
     },
     "btnSendenGreen": {
       "id": "btnSendenGreen",
@@ -5133,9 +5133,9 @@
         "reasons": [],
         "checkedAt": "2026-10-09T10:17:42.079052+00:00"
       },
-      "notes": "Sidebar-Button, freigestellt. Bitte freigeben.",
+      "notes": "VERALTET — Kanon ist btnSendenBlue (bereits freigegeben). Nicht freigeben.",
       "category": "ui",
-      "updatedAt": "2026-10-09T10:15:56.280494+00:00"
+      "updatedAt": "2026-10-09T11:13:17.078621+00:00"
     },
     "scoreboardOrbHeim": {
       "id": "scoreboardOrbHeim",
