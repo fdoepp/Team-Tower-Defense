@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=38** · **released=105**
+**pending=37** · **released=106**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -47,7 +47,6 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 137. `slotEmptyPersp` — `slot-empty-persp.png`
 138. `slotEmptyPerspBlue` — `slot-empty-persp-blue.png`
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
-143. `scoreboardChrome` — `scoreboard-chrome.png` — **Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)**
 
 ## Released (diese Runde)
 
@@ -61,3 +60,4 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 - **60** `ultraRed5` — `ultra-red-5.png`
 - **121** `pennantKsc` — `pennant-ksc.png`
 - **122** `pennantVfb` — `pennant-vfb.png`
+- **143** `scoreboardChrome` — `scoreboard-chrome.png` — **Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)**

@@ -4011,6 +4011,48 @@
       "notes": "Freigegeben — freigestellt, ohne Hilfslinien, upright Perspective.",
       "category": "ui",
       "source": "game/public/icons/ui/pennant-vfb.png"
+    },
+    "scoreboardChrome": {
+      "id": "scoreboardChrome",
+      "file": "scoreboard-chrome.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/scoreboard-chrome.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.459,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          32,
+          70,
+          1008,
+          437
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:29:43.862276+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:29:43.876Z",
+      "notes": "Freigegeben — grüne Spieluhr ohne Minuten + KSC/VfB-Logos; ohne Score/Balken/Orb.",
+      "category": "ui",
+      "source": "game/public/icons/ui/scoreboard-chrome.png",
+      "name": "Scoreboard Chrome",
+      "displayName": "Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)",
+      "relatedTo": "scoreboard"
     }
   },
   "pending": {
@@ -5343,47 +5385,6 @@
         "checkedAt": "2026-10-08T22:34:00.570014+00:00"
       },
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "scoreboardChrome": {
-      "id": "scoreboardChrome",
-      "file": "scoreboard-chrome.png",
-      "source": "game/public/icons/ui/scoreboard-chrome.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "scoreboard-chrome.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 1041,
-          "h": 508
-        },
-        "aspectRatio": 2.049213,
-        "alphaCoverage": 0.459,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          32,
-          70,
-          1008,
-          437
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T07:21:24.972941+00:00"
-      },
-      "notes": "Scoreboard Chrome zum Referenz-Scoreboard (123): mit grüner Spieluhr (ohne Minutenzahl) und KSC/VfB-Logos. Ohne Score-Text, ohne Momentumsbalken, ohne Torchancen-Orb. Für Runtime-Overlays. Wartet auf Freigabe.",
-      "name": "Scoreboard Chrome",
-      "displayName": "Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)",
-      "category": "ui",
-      "relatedTo": "scoreboard",
-      "updatedAt": "2026-10-09T07:21:24.986451+00:00"
     }
   },
   "runtimeBinding": {
@@ -5396,12 +5397,12 @@
     ]
   },
   "inventory": {
-    "pendingCount": 38,
-    "releasedCount": 105,
+    "pendingCount": 37,
+    "releasedCount": 106,
     "byCategory": {
       "ui": {
-        "pending": 26,
-        "released": 9
+        "pending": 25,
+        "released": 10
       },
       "persons": {
         "pending": 12,
@@ -5416,7 +5417,7 @@
         "released": 3
       }
     },
-    "gatheredAt": "2026-10-09T07:29:01.696562+00:00",
+    "gatheredAt": "2026-10-09T07:29:43.910845+00:00",
     "canon": {
       "persons": "units/{fan|ordner|hooligan|ultra}-{grey|blue|red}-{1..5}.png (60)",
       "buildings": "stands/{bier|fanshop|ordner}-{grey|blue|red}-{1..5}.png (45) as stand*",
