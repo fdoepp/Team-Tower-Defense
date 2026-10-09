@@ -55,6 +55,7 @@ export type UiFinalId =
   | "pennantKsc"
   | "pennantVfb"
   | "scoreboard"
+  | "scoreboardChrome"
   | "slotEmpty"
   | "standBierBlue1"
   | "standBierBlue2"
@@ -518,6 +519,14 @@ export const UI_FINAL_PATHS = {
   "scoreboard": {
     file: "scoreboard-top.png",
     path: "icons/ui-final/scoreboard-top.png",
+    native: { w: 1041, h: 508 },
+    aspectRatio: 2.049213,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "scoreboardChrome": {
+    file: "scoreboard-chrome.png",
+    path: "icons/ui-final/scoreboard-chrome.png",
     native: { w: 1041, h: 508 },
     aspectRatio: 2.049213,
     preserveAspect: true,
