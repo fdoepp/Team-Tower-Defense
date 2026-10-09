@@ -126,10 +126,17 @@
   .actions .cost-btn:nth-child(3) { grid-column: 6; }
 
   /*
-   * Button füllt die Grid-Zelle 1:1 (kein container-type am Button —
-   * das verhindert Stretch). Innen-Wrapper für dynamische Schrift.
+   * Chrome-PNG: nur Holzrahmen + eine saubere Farbfläche (kein gebackenes Label).
+   * Live-Text im .inner — 2% Abstand zu allen Innenkanten des Holzrahmens.
+   * Holz-Rims müssen zu btn-*-chrome.png passen (siehe Generator).
    */
   .cost-btn {
+    /* Gemessen am Chrome: Innenkante Holzrahmen → Face (eine Fläche, kein Label) */
+    --wood-x: 6.41%;
+    --wood-y-top: 13.54%;
+    --wood-y-bot: 18.75%;
+    /* Live-Text: zusätzlich ~2% der Button-Breite/-Höhe zu allen Innenrändern */
+    --inset: 2%;
     appearance: none;
     border: 0;
     margin: 0;
@@ -146,22 +153,27 @@
     cursor: pointer;
     overflow: hidden;
     display: block;
+    position: relative;
   }
   .cost-btn.kaufen { background-image: url("btn-kaufen-chrome.png"); }
   .cost-btn.upgrade { background-image: url("btn-upgrade-chrome.png"); }
   .cost-btn.senden { background-image: url("btn-senden-chrome.png"); }
 
-  /* Zwei Zeilen: Verb oben, Kosten unten — Holzränder über dicke Chrome-Rims */
+  /* Overlay: Holz-Innenrand + 2% (Breite für L/R, Höhe für T/B) */
   .cost-btn .inner {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    left: calc(var(--wood-x) + var(--inset));
+    right: calc(var(--wood-x) + var(--inset));
+    top: calc(var(--wood-y-top) + var(--inset));
+    bottom: calc(var(--wood-y-bot) + var(--inset));
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
-    gap: 0.28em;
-    padding: 18% 16% 16%; /* Text innerhalb der Farbfläche, nicht auf dem Holzrand */
+    gap: 0.3em;
+    margin: 0;
+    padding: 0;
     color: #fff;
     font-weight: 900;
     font-family: inherit;
@@ -169,6 +181,8 @@
     container-type: inline-size;
     font-size: clamp(9px, 12cqw, 14px);
     overflow: hidden;
+    background: transparent; /* kein zweites Farbfeld */
+    box-shadow: none;
   }
   .cost-btn .txt,
   .cost-btn .pay {
@@ -231,9 +245,9 @@
     <a href="compare.html">Vergleich A/B</a>
   </p>
   <p class="note">
-    Grid überall <code>3%·30%·2%·30%·2%·30%·3%</code> → Spalten bündig.
-    Holzrahmen-Chrome mit sichtbaren Holzrändern. Verb oben, Kosten darunter (zwei Zeilen).
-    Schrift dynamisch (<code>cqw</code>); bei schmalen Zellen Kurzlabels.
+    Chrome ohne gebackenes Label — Verb/Kosten nur live. Eine Farbfläche + Holzrahmen
+    (kein gestapeltes Overlay). Live-Text mit <code>2%</code> Abstand zu allen Innenkanten des Holzrahmens.
+    Grid <code>3%·30%·2%·30%·2%·30%·3%</code>, Verb oben / Kosten unten.
   </p>
 
   <div class="stage">
@@ -287,7 +301,7 @@
         </div>
       </article>
       <div class="legend">
-        %-Grid bündig · Holzränder · Verb / Kosten zweizeilig · Schrift dynamisch.
+        Nur Live-Text · 2% Inset vom Holz-Innenrand · eine Farbfläche · zweizeilig.
       </div>
     </div>
   </div>
