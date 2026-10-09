@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "UI_FINAL",
-  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe. (Runtime-Spiegel — nur released Dateien liegen neben dieser Datei.)",
+  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe.",
   "rules": {
     "approvalRequired": true,
     "approver": "repo-owner",
@@ -5055,16 +5055,17 @@
       },
       "validation": {
         "ok": true,
+        "file": "ultra-blue-2.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7827,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7872,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          67,
+          65,
           54,
           189,
           247
@@ -5073,9 +5074,10 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:52:08.865172+00:00"
+        "checkedAt": "2026-10-09T08:10:38.626421+00:00"
       },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
+      "notes": "Neu generiert: Kopf-Versatz behoben, Pyro-Rauch vollständig. Bitte erneut freigeben.",
+      "updatedAt": "2026-10-09T08:10:39.612815+00:00"
     },
     "ultraBlue3": {
       "id": "ultraBlue3",
