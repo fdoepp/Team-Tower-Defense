@@ -10,19 +10,20 @@ Optik an **Holzrahmen-Buttons** und **Menu-Rail-Holz**. Keine „Einheiten gesam
 
 ---
 
-## Vorschlag A — Buttons nebeneinander
+## Vorschlag A — ohne Icons, Original-Buttons
 
 ```
 ┌─────────────────────────────────────┐
-│ [Kopf]  Name LvN              ×n    │
-│         ┌────────┬────────┬───────┐ │
-│         │ KAUF   │ SEND*  │  UP   │ │
-│         │ 🪙 12  │ 👕 6   │ 🪙 22 │ │
-│         └────────┴────────┴───────┘ │
+│ Ultras (Lvl.1, x3)                  │
+│ ┌──────────┬──────────┬───────────┐ │
+│ │ KAUFEN   │ UPGRADE  │ SENDEN*   │ │  ← Original-Holzbuttons
+│ │   🪙 12  │   🪙 22  │   👕 6    │ │  ← Kosten live
+│ └──────────┴──────────┴───────────┘ │
 └─────────────────────────────────────┘
 ```
 
-\* SENDEN nur Ultras + Hooligans. Kurzlabels in der engen Rail.
+Reihenfolge: **Kauf → Upgrade → Send**. \* SENDEN nur Ultras + Hooligans.  
+Keine Personen-Icons. Titel wie B.
 
 ## Vorschlag B — Buttons untereinander
 
@@ -45,22 +46,21 @@ Titel über dem Icon; Buttons rechts, volle Resthöhe, sehr kleine Abstände.
 
 ## Bewertung (Kurz)
 
-| | A horizontal | B vertikal |
+| | A horizontal (ohne Icons) | B vertikal |
 | --- | --- | --- |
-| Label-Lesbarkeit | Kurzlabels nötig bei 3 Buttons | Volle Wörter gut möglich |
-| Touch-Höhe | Sehr gut (≥58px) | Flacher (~28–36px bei 3 Actions), aber breit |
-| Holz-Chrome | Risiko zu stauchen | Näher an 320×96-Querformat |
+| Labels | Original-PNG (KAUFEN/…) | Live-Wörter auf Chrome |
+| Touch-Höhe | Sehr gut (≥56px) | Flacher, dafür breit |
+| Portrait | keins | Icon links |
 | Kosten vergleichen | Schnell nebeneinander | Eher von oben nach unten |
-| Rail-Breite | Braucht ~40% | Kommt mit ~36% klar |
+| Button-Reihenfolge | Kauf → Upgrade → Send | Kauf → Send → Upgrade |
 
-**Empfehlung:** B für Alltag / Holz-Look; A wenn horizontales Kosten-Scanning wichtiger ist.  
+**Empfehlung:** A wenn Original-Buttons + horizontales Scanning; B wenn Portrait + reine Live-Labels.  
 Details: [compare.html](./compare.html).
 
 ### Sieht das im Spiel genauso aus?
 
-- **Ja für Assets & Live-Text** — beide nutzen `btn-*-chrome` + Rail-Tile; Kosten/Labels bleiben Live (STORAGE_CANON).
-- **B:** geringeres Abweichungsrisiko (breite Zeilen verzeihen Font/Padding).
-- **A:** mittleres Risiko, wenn die echte Rail schmaler wird — dann wieder Stauchen/Kurzlabels.
+- **A:** Original-Button-PNGs + Live-Kosten — sehr nah am Icon-UI, sofern die Rail breit genug bleibt.
+- **B:** Chrome ohne gebackenes Label + Live-Verb — STORAGE_CANON-konform, geringes Layout-Risiko.
 
 ---
 
