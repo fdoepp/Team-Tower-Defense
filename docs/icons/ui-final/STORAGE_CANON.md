@@ -11,18 +11,20 @@ Alles, was sich ändert (Score, Minute, Momentum-%, Kosten, Level), gehört **ni
 | Rolle | Ablage | Inhalt |
 | --- | --- | --- |
 | **Chrome** | `pending/` → nach Freigabe `game/public/icons/ui-final/` | Rahmen, Icons, leere Mulden — ohne Zahlen/Füllstände |
+| **Szene** | `pending/` → nach Freigabe `game/public/icons/ui-final/` (+ Legacy unter `game/public/assets/`) | Gesamthintergrund (JPG), Tribünen-Blöcke |
 | **Referenz/Demo** | nur Docs / Notes, **nicht** Runtime-Default | Vollbild mit Beispielwerten zur Optik-Freigabe |
 | **Slots** | JSON neben dem Chrome | Normkoordinaten 0–1 für Live-Overlays |
 
 ## Pflichtregeln
 
-1. **Native Aspect** — PNG in Original-Seitenverhältnis; Zeichnen nur uniform (`drawIcon` / `fitUniform`).
-2. **Freigestellt** — RGBA, transparente Ecken (Ausnahme: `menu-rail-*` Hintergrund).
+1. **Native Aspect** — PNG/JPG in Original-Seitenverhältnis; Zeichnen nur uniform (`drawIcon` / `fitUniform` / Cover-Contain für Plates).
+2. **Freigestellt** — RGBA, transparente Ecken (Ausnahmen: `menu-rail-*` Chrome-BG; `stadium-floodlight*.jpg` Szenen-Plate).
 3. **Keine gebackenen Live-Werte** im Runtime-Asset (keine `0:0`, keine `75′`, keine festen %-Balken).
 4. **Buttons** — nur Chrome-Farbe/Form (`btn-kaufen-green` …); Label + Kosten als **Live-Text** im Button (`.ar-cost-btn`).
 5. **Währungen** — nur Symbol-PNG; Zahl daneben im DOM/Canvas.
 6. **Scoreboard** — Runtime = `scoreboardChrome` + Slot-Map; Momentum/Orb-Demos sind Referenz, nicht Deploy-Default.
 7. **Bauplatz-Slots** — leere Flaggen-Chrome OK (kein Live-Text nötig).
+8. **Gesamthintergrund** — id `stadiumBg`, Datei `stadium-floodlight-derby-bg.jpg` (1280×720), Rolle `scene`, Ausnahme `stadium-plate-jpg`. Leere Anzeigetafel oben für HUD.
 
 ## Pending-Klassifikation (aktuell)
 
@@ -70,4 +72,12 @@ Runtime: `.build-rail .ar-cost-btn` — Holz + eine Face-Fläche; Live-Text Holz
 | `currencySicherheit` | Schild mit Haken |
 
 Nur Symbol-PNG; Zahl live im Wallet-Chip / Button-Pay-Zeile.
+
+## Szene — Gesamthintergrund (freigegeben 2026-10-09)
+
+| Asset | Datei | Format |
+| --- | --- | --- |
+| `stadiumBg` | `stadium-floodlight-derby-bg.jpg` | JPG Plate 1280×720 |
+
+Nacht-Derby, blau/rot gesplittet, leerer Boden vorn, leere Anzeigetafel. Runtime: `SCENE_ASSETS.stadiumBg` → UI Final wenn released. Tribünen darüber: `tribuneBlue` / `tribuneGrey` / `tribuneRed`.
 

@@ -12,8 +12,8 @@ alwaysApply: true
 # UI Final DB (verbindlich)
 
 ## Quelle
-- Freigegebene Grafiken (UI, Personen, Gebäude, Tribünen) kommen **nur** aus `game/public/icons/ui-final/` laut `docs/icons/ui-final/UI_FINAL_DB.json` (`released`).
-- Alle Branches und Agents bedienen sich dort — keine parallelen „finalen“ Kopien in Feature-Branches anlegen.
+- Freigegebene Grafiken (UI, Personen, Gebäude, Tribünen, Gesamthintergrund) kommen **nur** aus `game/public/icons/ui-final/` laut `docs/icons/ui-final/UI_FINAL_DB.json` (`released`).
+- Alle Branches und Agents bedienen sich dort — keine parallelen „finalen“ Kopien in Feature-Branches anlegen. Nicht in `ASSET_DB.json` ablegen.
 
 ## Freigabe-Gate
 - **Niemals** ein Icon nach `released` schreiben ohne explizite Nutzer-Freigabe.
@@ -21,7 +21,7 @@ alwaysApply: true
 - Kandidaten liegen in `docs/icons/ui-final/pending/` mit Status `pendingApproval`.
 
 ## Anforderungen jedes Icons
-1. **Freigestellt** — PNG RGBA, transparenter Hintergrund (Validierung in `scripts/ui-final/validate.py`). Ausnahme nur dokumentierte Rails (`menu-rail-*`).
+1. **Freigestellt** — PNG RGBA, transparenter Hintergrund (Validierung in `scripts/ui-final/validate.py`). Ausnahmen: dokumentierte Rails (`menu-rail-*`), Szenen-Plate (`stadium-floodlight*.jpg` → `stadium-plate-jpg`).
 2. **Keine Verzerrung** — natives Aspect Ratio speichern; Zeichnen ausschließlich mit uniformer Skalierung (`drawIcon`, `drawUniformInBox`, `fitUniform`). Nie `drawImage` mit abweichendem Ziel-AR ohne Contain.
 
 ## Runtime

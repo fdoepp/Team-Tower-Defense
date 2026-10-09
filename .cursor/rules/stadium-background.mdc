@@ -1,0 +1,32 @@
+---
+description: Stadium visual baseline for LaneLink match rendering
+alwaysApply: true
+---
+
+# LaneLink stadium visuals (binding)
+
+For all **future** match / gameplay implementations and visual work:
+
+## Background
+
+- Always use the freigegebene Gesamthintergrund from **UI Final DB** id `stadiumBg`
+  (`game/public/icons/ui-final/stadium-floodlight-derby-bg.jpg` when released;
+  legacy fallback `game/public/assets/stadium-floodlight-derby-bg.jpg` via `SCENE_ASSETS.stadiumBg`).
+- Do **not** redraw a green pitch, flat abstract field, or alternate stadium BG as the primary scene.
+- Keep the blank top **Anzeigetafel** area free for HUD / score overlay (do not paint score text into the bitmap).
+- Format exception: opaque JPG plate (not freigestellte PNG) — documented in `STORAGE_CANON.md`.
+
+## Fan blocks (Tribünen)
+
+- Place the freigestellte tribune assets **on top of** that background, scaled to the playfield layout
+  (UI Final ids `tribuneBlue` / `tribuneGrey` / `tribuneRed`):
+  - Heim (left): `tribune-block-blue.png`
+  - Neutral (center): `tribune-block-grey.png`
+  - Gäste (right): `tribune-block-red.png`
+- Units, buildings, gang, and combat stay **game-rendered** on/around these blocks — do not bake fans into the tribune PNGs.
+
+## Out of scope / do not regress
+
+- Older assets (`stadium-floodlight-bg.jpg`, `stadium-floodlight-empty-bg.jpg`) are archives only — not the default match BG.
+- Do not put text on crowd flags in new BG art.
+- Freigaben nur über `docs/icons/ui-final/UI_FINAL_DB.json` (`approve.mjs`), nicht parallel in `ASSET_DB.json`.
