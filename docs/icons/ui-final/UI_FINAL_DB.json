@@ -3643,24 +3643,24 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7576,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7811,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          62,
+          72,
           15,
-          180,
-          238
+          182,
+          242
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T23:04:50.953091+00:00"
+        "checkedAt": "2026-10-09T06:29:22.330594+00:00"
       },
-      "notes": "Perspektive angepasst: senkrechter Holzpfosten / viewer-facing für Floor-Grid-Setting (wie Gebäude-Billboards).",
+      "notes": "Neu generiert: viewer-facing / senkrechter Pfosten für Floor-Grid-Perspektive (Billboard wie Gebäude).",
       "category": "ui",
-      "updatedAt": "2026-10-08T23:04:50.968096+00:00"
+      "updatedAt": "2026-10-09T06:29:22.343029+00:00"
     },
     "pennantVfb": {
       "id": "pennantVfb",
@@ -3681,24 +3681,24 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7577,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7426,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          62,
+          68,
           15,
-          181,
-          238
+          187,
+          242
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T23:04:51.056801+00:00"
+        "checkedAt": "2026-10-09T06:29:22.416123+00:00"
       },
-      "notes": "Perspektive angepasst: senkrechter Holzpfosten / viewer-facing für Floor-Grid-Setting (wie Gebäude-Billboards).",
+      "notes": "Neu generiert: viewer-facing / senkrechter Pfosten für Floor-Grid-Perspektive (Billboard wie Gebäude).",
       "category": "ui",
-      "updatedAt": "2026-10-08T23:04:51.071071+00:00"
+      "updatedAt": "2026-10-09T06:29:22.428243+00:00"
     },
     "slotEmptyParallel": {
       "id": "slotEmptyParallel",
