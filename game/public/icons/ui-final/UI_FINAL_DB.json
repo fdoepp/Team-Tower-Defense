@@ -4248,6 +4248,43 @@
       "notes": "Freigegeben — saubere Kopfversion; grau/rot aus blauer Basis.",
       "category": "persons",
       "source": "game/public/icons/units/fan-red-1.png"
+    },
+    "ultraBlue2": {
+      "id": "ultraBlue2",
+      "file": "ultra-blue-2.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-blue-2.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7884,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          65,
+          54,
+          190,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T08:54:07.809826+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T08:54:07.826Z",
+      "notes": "Kopf nahtlos, Schuhe weiß ohne Blau, Pyro gut. Bitte erneut freigeben."
     }
   },
   "pending": {
@@ -5041,44 +5078,6 @@
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
       "category": "ui"
     },
-    "ultraBlue2": {
-      "id": "ultraBlue2",
-      "file": "ultra-blue-2.png",
-      "source": "game/public/icons/units/ultra-blue-2.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "ultra-blue-2.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7884,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          65,
-          54,
-          190,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T08:25:57.139751+00:00"
-      },
-      "notes": "Kopf nahtlos, Schuhe weiß ohne Blau, Pyro gut. Bitte erneut freigeben.",
-      "updatedAt": "2026-10-09T08:25:57.155239+00:00"
-    },
     "ultraBlue3": {
       "id": "ultraBlue3",
       "file": "ultra-blue-3.png",
@@ -5154,7 +5153,7 @@
     "ultraGrey2": {
       "id": "ultraGrey2",
       "file": "ultra-grey-2.png",
-      "source": "game/public/icons/units/ultra-grey-2.png",
+      "source": "derived-from-ultraBlue2",
       "status": "pendingApproval",
       "role": "unit",
       "category": "persons",
@@ -5165,27 +5164,29 @@
       },
       "validation": {
         "ok": true,
+        "file": "ultra-grey-2.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7825,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7884,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          67,
+          65,
           54,
-          189,
+          190,
           247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.294268+00:00"
+        "checkedAt": "2026-10-09T08:57:20.704132+00:00"
       },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
+      "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen.",
+      "updatedAt": "2026-10-09T08:57:20.629354+00:00"
     },
     "ultraGrey3": {
       "id": "ultraGrey3",
@@ -5262,7 +5263,7 @@
     "ultraRed2": {
       "id": "ultraRed2",
       "file": "ultra-red-2.png",
-      "source": "game/public/icons/units/ultra-red-2.png",
+      "source": "derived-from-ultraBlue2",
       "status": "pendingApproval",
       "role": "unit",
       "category": "persons",
@@ -5273,27 +5274,29 @@
       },
       "validation": {
         "ok": true,
+        "file": "ultra-red-2.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7861,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7884,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          67,
+          65,
           54,
-          189,
+          190,
           247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.720549+00:00"
+        "checkedAt": "2026-10-09T08:57:20.800284+00:00"
       },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
+      "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen.",
+      "updatedAt": "2026-10-09T08:57:20.629354+00:00"
     },
     "ultraRed3": {
       "id": "ultraRed3",
