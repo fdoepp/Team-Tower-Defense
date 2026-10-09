@@ -4581,6 +4581,117 @@
       "approvedBy": "user",
       "approvedAt": "2026-10-09T09:53:29.985Z",
       "notes": "Aus freigegebenem ultraBlue4 eingefärbt. Bitte vor Freigabe prüfen."
+    },
+    "currencyBier": {
+      "id": "currencyBier",
+      "file": "currency-bier.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-bier.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6002,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          20,
+          213,
+          234
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T10:55:11.107252+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T10:55:11.121Z",
+      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben."
+    },
+    "currencyGold": {
+      "id": "currencyGold",
+      "file": "currency-gold.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-gold.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.4857,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          25,
+          20,
+          230,
+          234
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T10:55:11.266415+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T10:55:11.280Z",
+      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben."
+    },
+    "currencySicherheit": {
+      "id": "currencySicherheit",
+      "file": "currency-sicherheit.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-sicherheit.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5847,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          40,
+          20,
+          214,
+          234
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T10:55:11.401569+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T10:55:11.415Z",
+      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben."
     }
   },
   "pending": {
@@ -4836,82 +4947,6 @@
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
       "category": "ui"
     },
-    "currencyGold": {
-      "id": "currencyGold",
-      "file": "currency-gold.png",
-      "source": "game/public/icons/ui/currency-gold.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "currency-gold.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.4857,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          25,
-          20,
-          230,
-          234
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T10:17:26.014467+00:00"
-      },
-      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben.",
-      "category": "ui",
-      "updatedAt": "2026-10-09T10:15:56.280494+00:00"
-    },
-    "currencyBier": {
-      "id": "currencyBier",
-      "file": "currency-bier.png",
-      "source": "game/public/icons/ui/currency-bier.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "currency-bier.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.6002,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          42,
-          20,
-          213,
-          234
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T10:16:53.387426+00:00"
-      },
-      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben.",
-      "category": "ui",
-      "updatedAt": "2026-10-09T10:15:56.280494+00:00"
-    },
     "currencyFanartikel": {
       "id": "currencyFanartikel",
       "file": "currency-fanartikel.png",
@@ -4931,9 +4966,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6046,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           20,
           27,
@@ -4945,44 +4980,6 @@
         "preserveAspectRequired": true,
         "reasons": [],
         "checkedAt": "2026-10-09T10:17:10.678778+00:00"
-      },
-      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben.",
-      "category": "ui",
-      "updatedAt": "2026-10-09T10:15:56.280494+00:00"
-    },
-    "currencySicherheit": {
-      "id": "currencySicherheit",
-      "file": "currency-sicherheit.png",
-      "source": "game/public/icons/ui/currency-sicherheit.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "currency-sicherheit.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5847,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          40,
-          20,
-          214,
-          234
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T10:17:41.793587+00:00"
       },
       "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben.",
       "category": "ui",
@@ -5007,9 +5004,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6579,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           58,
@@ -5045,9 +5042,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6579,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           58,
@@ -5083,9 +5080,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.655,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           58,
@@ -5121,9 +5118,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6584,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           58,

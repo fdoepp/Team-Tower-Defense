@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=23** · **released=120**
+**pending=20** · **released=123**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -14,10 +14,7 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 109. `btnKaufenGrey` — `btn-kaufen-grey.png`
 111. `btnSendenGreen` — `btn-senden-green.png`
 112. `btnSendenGrey` — `btn-senden-grey.png`
-115. `currencyBier` — `currency-bier.png`
 116. `currencyFanartikel` — `currency-fanartikel.png`
-117. `currencyGold` — `currency-gold.png`
-118. `currencySicherheit` — `currency-sicherheit.png`
 124. `scoreboardMomentum` — `scoreboard-momentum.png`
 125. `scoreboardOrbGast` — `scoreboard-top-orb-gast.png`
 126. `scoreboardOrbHeim` — `scoreboard-top-orb-heim.png`
@@ -35,6 +32,9 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
 
 ## Released (diese Runde)
+- **115** `currencyBier` — `currency-bier.png`
+- **117** `currencyGold` — `currency-gold.png`
+- **118** `currencySicherheit` — `currency-sicherheit.png`
 - **53** `ultraGrey3` — `ultra-grey-3.png`
 - **54** `ultraGrey4` — `ultra-grey-4.png`
 - **58** `ultraRed3` — `ultra-red-3.png`
