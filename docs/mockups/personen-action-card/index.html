@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Personen Action Card — Vorschlag</title>
+<style>
+  :root {
+    --wood: #5c3a22;
+    --wood-deep: #3d2414;
+    --cream: #f3e6c8;
+    --ink: #1c120a;
+    --green: #2f9e44;
+    --green-d: #237a34;
+    --blue: #2563eb;
+    --blue-d: #1d4ed8;
+    --purple: #7c3aed;
+    --purple-d: #5b21b6;
+    --grey: #6b7280;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #1a1a1a;
+    color: #f5f5f5;
+    padding: 16px;
+  }
+  h1 { font-size: 1.1rem; margin: 0 0 6px; }
+  .note { color: #bbb; font-size: 0.85rem; max-width: 920px; margin-bottom: 14px; line-height: 1.4; }
+  .stage {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  /* ~844×390 landscape phone chrome */
+  .phone {
+    width: 844px;
+    height: 390px;
+    border-radius: 18px;
+    background:
+      linear-gradient(180deg, #2a4a2a 0%, #1e3a1e 40%, #163016 100%);
+    border: 3px solid #333;
+    box-shadow: 0 12px 40px rgba(0,0,0,.55);
+    display: grid;
+    grid-template-columns: 23% 1fr;
+    overflow: hidden;
+    position: relative;
+  }
+  .pitch-fake {
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(255,250,220,.15), transparent 50%),
+      repeating-linear-gradient(90deg, #2f6b2f 0 40px, #2a622a 40px 80px);
+    position: relative;
+  }
+  .pitch-fake::after {
+    content: "Stadion (Querformat)";
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: rgba(255,255,255,.35);
+    font-weight: 800;
+    letter-spacing: .04em;
+  }
+  .rail {
+    background:
+      repeating-linear-gradient(90deg, #4a2f1c 0 3px, #5a3a24 3px 14px);
+    padding: 6px 7px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+  }
+  .banner {
+    background: linear-gradient(180deg, #6b4428, #4a2c18);
+    color: #f8e7c0;
+    font-weight: 900;
+    font-size: 13px;
+    text-align: center;
+    border-radius: 8px;
+    padding: 4px 6px;
+    border: 2px solid var(--wood-deep);
+    letter-spacing: .03em;
+  }
+  .seats {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 700;
+    color: #e8d4b0;
+    opacity: .9;
+  }
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-height: 0;
+  }
+  .card {
+    flex: 1;
+    min-height: 0;
+    background: linear-gradient(180deg, #f7ebcf, #e8d4a8);
+    border: 2.5px solid var(--wood-deep);
+    border-radius: 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 4px 6px;
+    padding: 5px 6px 6px;
+    color: var(--ink);
+  }
+  .card.featured {
+    outline: 2px solid #fbbf24;
+    outline-offset: 1px;
+  }
+  .head {
+    grid-row: 1 / span 2;
+    width: 54px;
+    height: 100%;
+    object-fit: contain;
+    object-position: center bottom;
+    align-self: stretch;
+    image-rendering: auto;
+  }
+  .meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px;
+    min-width: 0;
+  }
+  .name {
+    font-weight: 900;
+    font-size: 13px;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .name small {
+    font-weight: 800;
+    font-size: 10px;
+    color: #6b4e2e;
+    margin-left: 3px;
+  }
+  .count {
+    font-weight: 900;
+    font-size: 14px;
+  }
+  .actions {
+    display: grid;
+    gap: 4px;
+    align-content: end;
+  }
+  .actions.dual { grid-template-columns: 1fr 1fr; }
+  .actions.triple { grid-template-columns: 1fr 1fr 1fr; }
+  .cost-btn {
+    appearance: none;
+    border: 2px solid var(--wood-deep);
+    border-radius: 9px;
+    min-height: 44px;
+    padding: 3px 4px 4px;
+    color: #fff;
+    font-weight: 900;
+    line-height: 1.05;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.28),
+      0 2px 0 rgba(0,0,0,.25);
+    cursor: pointer;
+  }
+  .cost-btn .verb {
+    font-size: 10px;
+    letter-spacing: .02em;
+    text-shadow: 0 1px 0 rgba(0,0,0,.35);
+  }
+  .cost-btn .pay {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: 12px;
+  }
+  .cost-btn .pay img {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+  }
+  .cost-btn.kaufen { background: linear-gradient(180deg, #3cb85a, var(--green-d)); }
+  .cost-btn.senden { background: linear-gradient(180deg, #3b82f6, var(--blue-d)); }
+  .cost-btn.upgrade { background: linear-gradient(180deg, #8b5cf6, var(--purple-d)); }
+  .cost-btn:disabled,
+  .cost-btn.grey {
+    background: linear-gradient(180deg, #9ca3af, #6b7280);
+    opacity: .95;
+  }
+  .zoom {
+    background: #2a2a2a;
+    border-radius: 12px;
+    padding: 12px;
+    width: min(360px, 100%);
+  }
+  .zoom h2 { margin: 0 0 8px; font-size: 0.95rem; }
+  .zoom .card {
+    height: 92px;
+    grid-template-columns: 72px 1fr;
+  }
+  .zoom .head { width: 72px; }
+  .zoom .name { font-size: 16px; }
+  .zoom .cost-btn .verb { font-size: 11px; }
+  .zoom .cost-btn .pay { font-size: 13px; }
+  .zoom .cost-btn .pay img { width: 16px; height: 16px; }
+  .legend {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #ccc;
+    line-height: 1.45;
+  }
+  .legend code { color: #fde68a; }
+</style>
+</head>
+<body>
+  <h1>Personen-Action-Card — Vorschlag (Kosten im Button)</h1>
+  <p class="note">
+    Ziel: Vier Personen-Karten in der linken Rail im Handy-Querformat <b>ohne Scroll</b>.
+    Kaufen / Senden / Upgrade mit Live-Kosten <b>im gleichen Button</b> (Währungs-Icon + Zahl).
+    Touch-Höhe der Buttons ≥&nbsp;44px. Keine Extra-Preiszeile — spart Höhe.
+    Feature-Karte = Ultras (3 Aktionen). Fans/Ordner nur Kaufen+Upgrade.
+  </p>
+
+  <div class="stage">
+    <div class="phone" id="phone">
+      <aside class="rail" aria-label="Personen">
+        <div class="banner">Personen</div>
+        <p class="seats">Einheiten gesamt <b>14</b></p>
+        <div class="cards">
+          <!-- Fans -->
+          <article class="card">
+            <img class="head" src="fan.png" alt="">
+            <div class="meta"><span class="name">Fans <small>Lv1</small></span><span class="count">5</span></div>
+            <div class="actions dual">
+              <button class="cost-btn kaufen" type="button"><span class="verb">KAUF</span><span class="pay"><img src="cur-sec.png" alt="">12</span></button>
+              <button class="cost-btn upgrade" type="button"><span class="verb">UP</span><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
+            </div>
+          </article>
+          <!-- Ultras featured -->
+          <article class="card featured">
+            <img class="head" src="ultra.png" alt="">
+            <div class="meta"><span class="name">Ultras <small>Lv1</small></span><span class="count">3</span></div>
+            <div class="actions triple">
+              <button class="cost-btn kaufen" type="button"><span class="verb">KAUF</span><span class="pay"><img src="cur-merch.png" alt="">12</span></button>
+              <button class="cost-btn senden" type="button"><span class="verb">SEND</span><span class="pay"><img src="cur-merch.png" alt="">6</span></button>
+              <button class="cost-btn upgrade" type="button"><span class="verb">UP</span><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
+            </div>
+          </article>
+          <!-- Hooligans -->
+          <article class="card">
+            <img class="head" src="hool.png" alt="">
+            <div class="meta"><span class="name">Hooligans <small>Lv1</small></span><span class="count">2</span></div>
+            <div class="actions triple">
+              <button class="cost-btn kaufen" type="button"><span class="verb">KAUF</span><span class="pay"><img src="cur-bier.png" alt="">12</span></button>
+              <button class="cost-btn senden" type="button"><span class="verb">SEND</span><span class="pay"><img src="cur-bier.png" alt="">6</span></button>
+              <button class="cost-btn upgrade" type="button"><span class="verb">UP</span><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
+            </div>
+          </article>
+          <!-- Ordner -->
+          <article class="card">
+            <img class="head" src="ordner.png" alt="">
+            <div class="meta"><span class="name">Ordner <small>Lv1</small></span><span class="count">1</span></div>
+            <div class="actions dual">
+              <button class="cost-btn kaufen" type="button"><span class="verb">KAUF</span><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
+              <button class="cost-btn upgrade" type="button"><span class="verb">UP</span><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
+            </div>
+          </article>
+        </div>
+      </aside>
+      <div class="pitch-fake"></div>
+    </div>
+
+    <div class="zoom">
+      <h2>Detail · Ultras-Karte</h2>
+      <article class="card featured">
+        <img class="head" src="ultra.png" alt="">
+        <div class="meta"><span class="name">Ultras <small>Lv1</small></span><span class="count">3</span></div>
+        <div class="actions triple">
+          <button class="cost-btn kaufen" type="button"><span class="verb">KAUFEN</span><span class="pay"><img src="cur-merch.png" alt="">12</span></button>
+          <button class="cost-btn senden" type="button"><span class="verb">SENDEN</span><span class="pay"><img src="cur-merch.png" alt="">6</span></button>
+          <button class="cost-btn upgrade" type="button"><span class="verb">UPGRADE</span><span class="pay"><img src="cur-gold.png" alt="">22</span></button>
+        </div>
+      </article>
+      <div class="legend">
+        <b>Warum so:</b> Kosten live aus <code>types.ts</code> — keine neuen PNGs bei Balance-Änderungen.<br>
+        Grün = Kaufen · Blau = Senden · Violett = Upgrade · Grey = disabled.<br>
+        Rail ~23% von 844px ≈ 194px · Kartenhöhe ≈ 78px · Buttons 44px touch.
+      </div>
+    </div>
+  </div>
+</body>
+</html>
