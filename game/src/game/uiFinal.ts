@@ -10,14 +10,17 @@ export type UiFinalId =
   | "btnSendenBlue"
   | "btnUpgradeGrey"
   | "btnUpgradePurple"
+  | "fanBlue1"
   | "fanBlue2"
   | "fanBlue3"
   | "fanBlue4"
   | "fanBlue5"
+  | "fanGrey1"
   | "fanGrey2"
   | "fanGrey3"
   | "fanGrey4"
   | "fanGrey5"
+  | "fanRed1"
   | "fanRed2"
   | "fanRed3"
   | "fanRed4"
@@ -166,6 +169,14 @@ export const UI_FINAL_PATHS = {
     preserveAspect: true,
     freigestellt: true,
   },
+  "fanBlue1": {
+    file: "fan-blue-1.png",
+    path: "icons/ui-final/fan-blue-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
   "fanBlue2": {
     file: "fan-blue-2.png",
     path: "icons/ui-final/fan-blue-2.png",
@@ -198,6 +209,14 @@ export const UI_FINAL_PATHS = {
     preserveAspect: true,
     freigestellt: true,
   },
+  "fanGrey1": {
+    file: "fan-grey-1.png",
+    path: "icons/ui-final/fan-grey-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
   "fanGrey2": {
     file: "fan-grey-2.png",
     path: "icons/ui-final/fan-grey-2.png",
@@ -225,6 +244,14 @@ export const UI_FINAL_PATHS = {
   "fanGrey5": {
     file: "fan-grey-5.png",
     path: "icons/ui-final/fan-grey-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanRed1": {
+    file: "fan-red-1.png",
+    path: "icons/ui-final/fan-red-1.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
