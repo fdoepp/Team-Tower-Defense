@@ -1,0 +1,40 @@
+---
+description: Stadium visual baseline for LaneLink match rendering
+alwaysApply: true
+---
+
+# LaneLink stadium visuals (binding)
+
+For all **future** match / gameplay implementations and visual work:
+
+## Background
+
+- Always use **`game/public/assets/stadium-floodlight-derby-bg.jpg`** as the match backdrop.
+- Do **not** redraw a green pitch, flat abstract field, or alternate stadium BG as the primary scene.
+- Keep the blank top **Anzeigetafel** area free for HUD / score overlay (do not paint score text into the bitmap).
+
+## Fan blocks (Tribünen)
+
+- Place the freigestellte tribune assets **on top of** that background, scaled to the playfield layout:
+  - Heim (left): `game/public/assets/tribune-block-blue.png`
+  - Neutral (center): `game/public/assets/tribune-block-grey.png`
+  - Gäste (right): `game/public/assets/tribune-block-red.png`
+- Units, buildings, gang, and combat stay **game-rendered** on/around these blocks — do not bake fans into the tribune PNGs.
+- Optional sheet (all three): `game/public/assets/tribune-blocks-sheet.png`
+
+## Currency HUD symbols
+
+Always use these **logo-only** freigestellte icons for match currencies (no baked-in numbers or labels — counts come from live HUD text):
+
+- Gold → `docs/mockups/icons/ui/currency-gold.png`
+- Bier → `docs/mockups/icons/ui/currency-bier.png`
+- Fanartikel → `docs/mockups/icons/ui/currency-fanartikel.png`
+- Sicherheit → `docs/mockups/icons/ui/currency-sicherheit.png`
+
+Do **not** redraw ad-hoc coin/mug/scarf/shield glyphs in canvas when these assets are available.
+
+## Out of scope / do not regress
+
+- Older assets (`stadium-floodlight-bg.jpg`, `stadium-floodlight-empty-bg.jpg`) are archives only — not the default match BG.
+- Do not put text on crowd flags in new BG art.
+- This rule is the visual contract; wiring it into `drawMatch` can wait until an explicit implementation task.
