@@ -4047,12 +4047,13 @@
       },
       "approvedBy": "user",
       "approvedAt": "2026-10-09T07:29:43.876Z",
-      "notes": "Freigegeben — grüne Spieluhr ohne Minuten + KSC/VfB-Logos; ohne Score/Balken/Orb.",
+      "notes": "Chrome ohne Score/Balken/Orb. Runtime + docs/icons/ui-final/scoreboard-slots.json.",
       "category": "ui",
       "source": "game/public/icons/ui/scoreboard-chrome.png",
       "name": "Scoreboard Chrome",
       "displayName": "Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)",
-      "relatedTo": "scoreboard"
+      "relatedTo": "scoreboard",
+      "slots": "docs/icons/ui-final/scoreboard-slots.json"
     },
     "menuRail": {
       "id": "menuRail",
@@ -4765,8 +4766,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.743216+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "slotEmptyOrtho": {
       "id": "slotEmptyOrtho",
@@ -4801,8 +4804,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.480030+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "slotEmptyOrthoBlue": {
       "id": "slotEmptyOrthoBlue",
@@ -4837,8 +4842,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.299220+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "slotEmptyOrthoRed": {
       "id": "slotEmptyOrthoRed",
@@ -4873,8 +4880,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.391071+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "slotEmptyPersp": {
       "id": "slotEmptyPersp",
@@ -4909,8 +4918,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:02.008907+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "slotEmptyPerspBlue": {
       "id": "slotEmptyPerspBlue",
@@ -4945,8 +4956,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.831048+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "slotEmptyPerspRed": {
       "id": "slotEmptyPerspRed",
@@ -4981,8 +4994,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.917625+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "btnKaufenGrey": {
       "id": "btnKaufenGrey",
@@ -5018,9 +5033,10 @@
         "reasons": [],
         "checkedAt": "2026-10-09T11:13:17.273955+00:00"
       },
-      "notes": "Aus Icon-UI Agent (btn-vorschlaege) 320×96 Holzrahmen-Kanon. Bitte freigeben.",
+      "notes": "Chrome-Button 320×96 (Icon-UI). Live-Text/Kosten im DOM (.ar-cost-btn), nicht ins PNG. Bitte freigeben.",
       "category": "ui",
-      "updatedAt": "2026-10-09T11:13:17.078621+00:00"
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "chrome-button"
     },
     "btnKaufenGreen": {
       "id": "btnKaufenGreen",
@@ -5056,9 +5072,10 @@
         "reasons": [],
         "checkedAt": "2026-10-09T11:13:17.179135+00:00"
       },
-      "notes": "Aus Icon-UI Agent (btn-vorschlaege) 320×96 Holzrahmen-Kanon. Bitte freigeben.",
+      "notes": "Chrome-Button 320×96 (Icon-UI). Live-Text/Kosten im DOM (.ar-cost-btn), nicht ins PNG. Bitte freigeben.",
       "category": "ui",
-      "updatedAt": "2026-10-09T11:13:17.078621+00:00"
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "chrome-button"
     },
     "btnSendenGrey": {
       "id": "btnSendenGrey",
@@ -5094,47 +5111,10 @@
         "reasons": [],
         "checkedAt": "2026-10-09T11:13:17.367283+00:00"
       },
-      "notes": "Aus Icon-UI Agent (btn-vorschlaege) 320×96 Holzrahmen-Kanon. Bitte freigeben.",
+      "notes": "Chrome-Button 320×96 (Icon-UI). Live-Text/Kosten im DOM (.ar-cost-btn), nicht ins PNG. Bitte freigeben.",
       "category": "ui",
-      "updatedAt": "2026-10-09T11:13:17.078621+00:00"
-    },
-    "btnSendenGreen": {
-      "id": "btnSendenGreen",
-      "file": "btn-senden-green.png",
-      "source": "game/public/icons/ui/btn-senden-green.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "btn-senden-green.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.6584,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          42,
-          58,
-          213,
-          196
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T10:17:42.079052+00:00"
-      },
-      "notes": "VERALTET — Kanon ist btnSendenBlue (bereits freigegeben). Nicht freigeben.",
-      "category": "ui",
-      "updatedAt": "2026-10-09T11:13:17.078621+00:00"
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "chrome-button"
     },
     "scoreboardOrbHeim": {
       "id": "scoreboardOrbHeim",
@@ -5168,8 +5148,10 @@
         "preserveAspectRequired": true,
         "checkedAt": "2026-10-08T21:52:42.963846+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "REFERENZ-DEMO Orb Heim-stark — nicht Runtime-Default. Orb als kleines Live-Overlay auf Chrome-Track.",
+      "category": "ui",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "reference-demo"
     },
     "scoreboardOrbGast": {
       "id": "scoreboardOrbGast",
@@ -5203,8 +5185,10 @@
         "preserveAspectRequired": true,
         "checkedAt": "2026-10-08T21:52:42.981151+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "REFERENZ-DEMO Orb Gast-stark — nicht Runtime-Default. Orb als kleines Live-Overlay auf Chrome-Track.",
+      "category": "ui",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "reference-demo"
     },
     "slotEmptyParallelBlue": {
       "id": "slotEmptyParallelBlue",
@@ -5239,8 +5223,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.567236+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "slotEmptyParallelRed": {
       "id": "slotEmptyParallelRed",
@@ -5275,8 +5261,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.656747+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "slotEmptyIso": {
       "id": "slotEmptyIso",
@@ -5311,8 +5299,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.208971+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "slotEmptyIsoBlue": {
       "id": "slotEmptyIsoBlue",
@@ -5347,8 +5337,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.026138+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "slotEmptyIsoRed": {
       "id": "slotEmptyIsoRed",
@@ -5383,8 +5375,10 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:01.115744+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
     },
     "scoreboardMomentum": {
       "id": "scoreboardMomentum",
@@ -5420,7 +5414,9 @@
         "reasons": [],
         "checkedAt": "2026-10-08T22:34:00.570014+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "REFERENZ-DEMO (Broadcast-Tech) — nicht Runtime-Default. Runtime = scoreboardChrome + scoreboard-slots.json + Live-Overlays.",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "reference-demo"
     }
   },
   "runtimeBinding": {
@@ -5468,5 +5464,16 @@
       "docs/icons/FINAL_ICON_INVENTORY.md"
     ],
     "excludedLegacy": "stands/{bier|fanshop|ordner}-{1..5}.png without color — prefer colored canon"
+  },
+  "rejected": {
+    "btnSendenGreen": {
+      "id": "btnSendenGreen",
+      "file": "btn-senden-green.png",
+      "role": "ui",
+      "status": "rejected",
+      "reason": "Kanon ist btnSendenBlue (released). Grünes Senden nicht verwenden.",
+      "rejectedAt": "2026-10-09T12:06:03.203227+00:00",
+      "rejectedBy": "storage-canon"
+    }
   }
 }

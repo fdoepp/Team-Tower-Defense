@@ -1,8 +1,10 @@
 # UI Final — Freigabe-Status
 
-**pending=19** · **released=124**
+**pending=18** · **released=124**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
+
+Ablage-Regel: [`STORAGE_CANON.md`](./STORAGE_CANON.md) — Chrome vs Live-Werte. Scoreboard-Slots: [`scoreboard-slots.json`](./scoreboard-slots.json).
 
 ## Pending
 
@@ -12,7 +14,6 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
 108. `btnKaufenGreen` — `btn-kaufen-green.png`
 109. `btnKaufenGrey` — `btn-kaufen-grey.png`
-111. `btnSendenGreen` — `btn-senden-green.png`
 112. `btnSendenGrey` — `btn-senden-grey.png`
 124. `scoreboardMomentum` — `scoreboard-momentum.png`
 125. `scoreboardOrbGast` — `scoreboard-top-orb-gast.png`
