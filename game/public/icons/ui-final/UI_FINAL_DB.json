@@ -3340,7 +3340,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.55,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           72,
           6,
@@ -3357,7 +3357,7 @@
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.544979+00:00",
-      "remadeAt": "2026-10-08T22:59:41.420585+00:00"
+      "remadeAt": "2026-10-08T22:59:41.416122+00:00"
     },
     "btnUpgradeGrey": {
       "id": "btnUpgradeGrey",
@@ -3434,6 +3434,117 @@
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.723844+00:00"
+    },
+    "tribuneBlue": {
+      "id": "tribuneBlue",
+      "file": "tribune-block-blue.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 426,
+          "h": 309
+        },
+        "aspectRatio": 1.378641,
+        "alphaCoverage": 0.2294,
+        "opaqueCornerRatio": 0.0078,
+        "contentBBox": [
+          6,
+          6,
+          419,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T05:19:08.914458+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T05:19:08.929Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "tribuneGrey": {
+      "id": "tribuneGrey",
+      "file": "tribune-block-grey.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 386,
+          "h": 308
+        },
+        "aspectRatio": 1.253247,
+        "alphaCoverage": 0.1768,
+        "opaqueCornerRatio": 0.0117,
+        "contentBBox": [
+          6,
+          6,
+          379,
+          301
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T05:19:09.063883+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T05:19:09.077Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "tribuneRed": {
+      "id": "tribuneRed",
+      "file": "tribune-block-red.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 426,
+          "h": 309
+        },
+        "aspectRatio": 1.378641,
+        "alphaCoverage": 0.2293,
+        "opaqueCornerRatio": 0.0078,
+        "contentBBox": [
+          6,
+          6,
+          419,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T05:19:09.191613+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T05:19:09.204Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "pending": {
@@ -3456,9 +3567,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7576,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           62,
           15,
@@ -3469,11 +3580,11 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T23:04:51.162536+00:00"
+        "checkedAt": "2026-10-08T23:04:50.953091+00:00"
       },
       "notes": "Perspektive angepasst: senkrechter Holzpfosten / viewer-facing für Floor-Grid-Setting (wie Gebäude-Billboards).",
       "category": "ui",
-      "updatedAt": "2026-10-08T23:04:51.177113+00:00"
+      "updatedAt": "2026-10-08T23:04:50.968096+00:00"
     },
     "pennantVfb": {
       "id": "pennantVfb",
@@ -3494,9 +3605,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7577,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           62,
           15,
@@ -3507,11 +3618,11 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T23:04:51.262675+00:00"
+        "checkedAt": "2026-10-08T23:04:51.056801+00:00"
       },
       "notes": "Perspektive angepasst: senkrechter Holzpfosten / viewer-facing für Floor-Grid-Setting (wie Gebäude-Billboards).",
       "category": "ui",
-      "updatedAt": "2026-10-08T23:04:51.277235+00:00"
+      "updatedAt": "2026-10-08T23:04:51.071071+00:00"
     },
     "slotEmpty": {
       "id": "slotEmpty",
@@ -5164,114 +5275,6 @@
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
-    "tribuneBlue": {
-      "id": "tribuneBlue",
-      "file": "tribune-block-blue.png",
-      "source": "game/public/assets/tribune-block-blue.png",
-      "status": "pendingApproval",
-      "role": "scene",
-      "category": "tribunes",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 426,
-          "h": 309
-        },
-        "aspectRatio": 1.378641,
-        "alphaCoverage": 0.2294,
-        "opaqueCornerRatio": 0.0078,
-        "contentBBox": [
-          6,
-          6,
-          419,
-          302
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:58.732509+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "tribuneGrey": {
-      "id": "tribuneGrey",
-      "file": "tribune-block-grey.png",
-      "source": "game/public/assets/tribune-block-grey.png",
-      "status": "pendingApproval",
-      "role": "scene",
-      "category": "tribunes",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 386,
-          "h": 308
-        },
-        "aspectRatio": 1.253247,
-        "alphaCoverage": 0.1768,
-        "opaqueCornerRatio": 0.0117,
-        "contentBBox": [
-          6,
-          6,
-          379,
-          301
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:58.823319+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "tribuneRed": {
-      "id": "tribuneRed",
-      "file": "tribune-block-red.png",
-      "source": "game/public/assets/tribune-block-red.png",
-      "status": "pendingApproval",
-      "role": "scene",
-      "category": "tribunes",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 426,
-          "h": 309
-        },
-        "aspectRatio": 1.378641,
-        "alphaCoverage": 0.2293,
-        "opaqueCornerRatio": 0.0078,
-        "contentBBox": [
-          6,
-          6,
-          419,
-          302
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:58.912351+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
     "scoreboardMomentum": {
       "id": "scoreboardMomentum",
       "file": "scoreboard-momentum.png",
@@ -5319,13 +5322,25 @@
     ]
   },
   "inventory": {
-    "pendingCount": 52,
-    "releasedCount": 90,
+    "pendingCount": 49,
+    "releasedCount": 93,
     "byCategory": {
-      "ui": 34,
-      "persons": 60,
-      "tribunes": 3,
-      "buildings": 45
+      "ui": {
+        "pending": 29,
+        "released": 5
+      },
+      "persons": {
+        "pending": 20,
+        "released": 40
+      },
+      "buildings": {
+        "pending": 0,
+        "released": 45
+      },
+      "scene": {
+        "pending": 0,
+        "released": 3
+      }
     },
     "gatheredAt": "2026-10-08T22:57:00.814634+00:00",
     "canon": {

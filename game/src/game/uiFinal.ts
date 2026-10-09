@@ -95,6 +95,9 @@ export type UiFinalId =
   | "standOrdnerRed3"
   | "standOrdnerRed4"
   | "standOrdnerRed5"
+  | "tribuneBlue"
+  | "tribuneGrey"
+  | "tribuneRed"
 ;
 
 export type UiFinalEntry = {
@@ -825,6 +828,30 @@ export const UI_FINAL_PATHS = {
     path: "icons/ui-final/stand-ordner-red-5.png",
     native: { w: 512, h: 512 },
     aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "tribuneBlue": {
+    file: "tribune-block-blue.png",
+    path: "icons/ui-final/tribune-block-blue.png",
+    native: { w: 426, h: 309 },
+    aspectRatio: 1.378641,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "tribuneGrey": {
+    file: "tribune-block-grey.png",
+    path: "icons/ui-final/tribune-block-grey.png",
+    native: { w: 386, h: 308 },
+    aspectRatio: 1.253247,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "tribuneRed": {
+    file: "tribune-block-red.png",
+    path: "icons/ui-final/tribune-block-red.png",
+    native: { w: 426, h: 309 },
+    aspectRatio: 1.378641,
     preserveAspect: true,
     freigestellt: true,
   },
