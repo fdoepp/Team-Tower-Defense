@@ -183,6 +183,12 @@ export const RANGED_RANGE = MELEE_RANGE * 5;
  */
 export const ORDNER_POST_HP = 1100;
 export const ORDNER_POST_HP_PER_LEVEL = 220;
+
+/** Gebäude-HP eines Ordnerpostens auf Stufe `level`. */
+export function ordnerPostMaxHp(level: number): number {
+  const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
+  return ORDNER_POST_HP + (lv - 1) * ORDNER_POST_HP_PER_LEVEL;
+}
 export const HIT_DAMAGE_SCALE = 0.7;
 /** Pyro ranged damage scale (vs melee) */
 export const RANGED_DAMAGE_SCALE = 0.85;
@@ -382,11 +388,28 @@ export const STEWARD_STATS = {
   patrolSpeed: 0.05,
   /** Under Ultra gang speed (~0.075) so Ultras can open range for Pyro */
   chaseSpeed: 0.06,
-  /** Patrol / heal radius around own post (gangX) */
+  /** Patrol / heal radius around own post (gangX), Lv1 */
   postRadius: 0.11,
+  /** Extra heal/patrol radius per Ordnerposten-Stufe über 1 */
+  postRadiusPerLevel: 0.02,
   chaseRadius: 0.2,
+  /** HP/s Heilung im Radius, Lv1 */
   healPerSec: 10,
+  /** Extra Heal/s pro Ordnerposten-Stufe über 1 */
+  healPerSecPerLevel: 2,
 };
+
+/** Heil-/Patrouillenradius (gangX) eines Ordnerpostens. */
+export function stewardPostRadius(level: number): number {
+  const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
+  return STEWARD_STATS.postRadius + (lv - 1) * STEWARD_STATS.postRadiusPerLevel;
+}
+
+/** Heilrate (HP/s) im Posten-Radius. */
+export function stewardHealPerSec(level: number): number {
+  const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
+  return STEWARD_STATS.healPerSec + (lv - 1) * STEWARD_STATS.healPerSecPerLevel;
+}
 
 /**
  * Block crowd: roughly spread home slots + tiny drift, while they

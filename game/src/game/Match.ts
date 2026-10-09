@@ -40,8 +40,10 @@ import {
   NEUTRAL_POST_GAST_INDEX,
   NEUTRAL_POST_HEIM_INDEX,
   NEUTRAL_STEWARD_RESPAWN,
-  ORDNER_POST_HP,
   ORDNER_POST_HP_PER_LEVEL,
+  ordnerPostMaxHp,
+  stewardHealPerSec,
+  stewardPostRadius,
   MOMENTUM_APPROACH,
   MOMENTUM_EPS,
   MOMENTUM_WEIGHT,
@@ -501,8 +503,7 @@ export class Match {
   }
 
   private initOrdnerPostHp(s: BuildSlot): void {
-    const lv = s.level || 1;
-    s.structMaxHp = ORDNER_POST_HP + (lv - 1) * ORDNER_POST_HP_PER_LEVEL;
+    s.structMaxHp = ordnerPostMaxHp(s.level || 1);
     s.structHp = s.structMaxHp;
   }
 
@@ -1780,11 +1781,12 @@ export class Match {
       }
 
       // Slow heal while inside the tight post radius (patrol bubble)
+      const postLv = stand.level || 1;
       if (
-        Math.abs(f.gangX - postGx) <= STEWARD_STATS.postRadius + 0.01 &&
+        Math.abs(f.gangX - postGx) <= stewardPostRadius(postLv) + 0.01 &&
         f.hp < f.maxHp
       ) {
-        f.hp = Math.min(f.maxHp, f.hp + STEWARD_STATS.healPerSec * dt);
+        f.hp = Math.min(f.maxHp, f.hp + stewardHealPerSec(postLv) * dt);
       }
 
       f.state = "gang";
@@ -1802,7 +1804,10 @@ export class Match {
   /** Always patrol in a tight bubble around the home Ordnerposten */
   private stewardPatrolBand(f: FanUnit): { min: number; max: number } {
     const postGx = this.stewardPostGangX(f);
-    const r = STEWARD_STATS.postRadius;
+    const stand = this.slots.find(
+      (s) => slotKey(s.blockId, s.index) === f.homeStandKey,
+    );
+    const r = stewardPostRadius(stand?.level || 1);
     return {
       min: clamp(postGx - r, 0.02, 0.98),
       max: clamp(postGx + r, 0.02, 0.98),

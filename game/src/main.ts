@@ -24,11 +24,17 @@ import {
   HOOLIGAN_ORDER_BEER,
   MIX_MAX,
   MIX_MIN,
+  PROD_BEER,
+  PROD_MERCH,
+  PROD_SECURITY,
   PYRO_FIGHT_MERCH,
   STEWARD_HIRE_GOLD,
   UPGRADE_COST,
   UPGRADE_MAX,
+  ordnerPostMaxHp,
   productionRate,
+  stewardHealPerSec,
+  stewardPostRadius,
   type BuildingKind,
   type FanKind,
   type FanMix,
@@ -59,24 +65,47 @@ function buildingYieldCurrency(kind: BuildingKind): string {
   return UI_ICONS.currencySicherheit;
 }
 
-/** Ertragszahl wie im Tick-Modell (Lv1=1.2 … +0.5 je Stufe). */
-function buildingYieldAmount(level: number): number {
-  return Math.round(productionRate(level) * 10) / 10;
+function buildingYieldUnit(kind: BuildingKind): string {
+  if (kind === "bier") return "Bier";
+  if (kind === "fanshop") return "Fanart.";
+  return "Sich.";
 }
 
-function formatYieldAmount(n: number): string {
-  return n.toFixed(1);
+/** Tatsächliche Produktion / Sekunde (PROD_* × productionRate). */
+function buildingYieldPerSec(kind: BuildingKind, level: number): number {
+  const base =
+    kind === "bier" ? PROD_BEER : kind === "fanshop" ? PROD_MERCH : PROD_SECURITY;
+  return Math.round(base * productionRate(level) * 100) / 100;
+}
+
+function formatYieldPerSec(n: number): string {
+  return n.toFixed(2);
+}
+
+/** Heilradius als % der Gang-Breite (gangX×100). */
+function formatHealRadius(level: number): string {
+  return String(Math.round(stewardPostRadius(level) * 100));
 }
 
 function yieldChipHtml(
   kind: BuildingKind,
-  amount: number,
+  perSec: number,
   opts?: { delta?: boolean; id?: string },
 ): string {
-  const sign = opts?.delta ? (amount >= 0 ? "+" : "") : "+";
+  const sign = opts?.delta ? (perSec >= 0 ? "+" : "") : "";
   const id = opts?.id ? ` id="${opts.id}"` : "";
   const deltaCls = opts?.delta ? " yield-delta" : "";
-  return `<span class="yield-chip${deltaCls}"${id}><img src="${buildingYieldCurrency(kind)}" alt=""><span class="yield-amt">${sign}${formatYieldAmount(amount)}</span></span>`;
+  return `<span class="yield-chip${deltaCls}"${id}><img src="${buildingYieldCurrency(kind)}" alt=""><span class="yield-amt">${sign}${formatYieldPerSec(perSec)} ${buildingYieldUnit(kind)}/s</span></span>`;
+}
+
+function statChipHtml(
+  label: string,
+  value: string,
+  opts?: { delta?: boolean; id?: string },
+): string {
+  const id = opts?.id ? ` id="${opts.id}"` : "";
+  const deltaCls = opts?.delta ? " yield-delta" : "";
+  return `<span class="stat-chip${deltaCls}"${id}><span class="stat-label">${label}</span><span class="stat-amt">${value}</span></span>`;
 }
 
 /** Live Verb+Kosten über Button-Chrome (kein gebackenes Label). */
@@ -404,7 +433,7 @@ function renderMatchScreen(): void {
               <img class="build-preview" src="icons/stands/bier-${tc}-1.png" alt="">
               <div class="build-info">
                 <span class="build-name">Bierstand</span>
-                ${yieldChipHtml("bier", buildingYieldAmount(1))}
+                ${yieldChipHtml("bier", buildingYieldPerSec("bier", 1))}
               </div>
             </div>
             ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.bier })}
@@ -414,20 +443,10 @@ function renderMatchScreen(): void {
               <img class="build-preview" src="icons/stands/fanshop-${tc}-1.png" alt="">
               <div class="build-info">
                 <span class="build-name">Fanshop</span>
-                ${yieldChipHtml("fanshop", buildingYieldAmount(1))}
+                ${yieldChipHtml("fanshop", buildingYieldPerSec("fanshop", 1))}
               </div>
             </div>
             ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.fanshop })}
-          </button>
-          <button type="button" class="build-card" data-pending-build="ordner">
-            <div class="build-top">
-              <img class="build-preview" src="icons/stands/ordner-${tc}-1.png" alt="">
-              <div class="build-info">
-                <span class="build-name">Ordnerposten</span>
-                ${yieldChipHtml("ordner", buildingYieldAmount(1))}
-              </div>
-            </div>
-            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.ordner })}
           </button>
         </div>
         <div class="build-rows hidden" id="build-upgrade-rows">
@@ -437,13 +456,17 @@ function renderMatchScreen(): void {
               <div class="up-stage">
                 <img id="upgrade-from-img" src="" alt="">
                 <span class="up-lv" id="upgrade-from-lv">Lv1</span>
-                <span class="yield-chip" id="upgrade-from-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">+1.2</span></span>
+                <div class="up-stats" id="upgrade-from-stats">
+                  <span class="yield-chip" id="upgrade-from-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">0.41 Bier/s</span></span>
+                </div>
               </div>
               <div class="up-arrow" aria-hidden="true">→</div>
               <div class="up-stage up-stage-next">
                 <img id="upgrade-to-img" src="" alt="">
                 <span class="up-lv" id="upgrade-to-lv">Lv2</span>
-                <span class="yield-chip yield-delta" id="upgrade-to-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">+0.5</span></span>
+                <div class="up-stats" id="upgrade-to-stats">
+                  <span class="yield-chip yield-delta" id="upgrade-to-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">+0.17 Bier/s</span></span>
+                </div>
               </div>
             </div>
             <button type="button" class="ar-cost-btn upgrade" id="rail-upgrade">
@@ -501,22 +524,49 @@ function renderMatchScreen(): void {
     buildUpgradeRows.classList.add("hidden");
   };
 
-  const setYieldChip = (
-    el: Element | null,
+  const fillUpgradeStats = (
+    host: Element | null,
     kind: BuildingKind,
-    amount: number,
-    delta: boolean,
+    level: number,
+    deltaFrom: number | null,
   ) => {
-    if (!el) return;
-    const img = el.querySelector("img");
-    const amt = el.querySelector(".yield-amt");
-    if (img) img.src = buildingYieldCurrency(kind);
-    if (amt) {
-      const sign = delta ? (amount >= 0 ? "+" : "") : "+";
-      amt.textContent = `${sign}${formatYieldAmount(amount)}`;
+    if (!host) return;
+    const isDelta = deltaFrom != null;
+    const lv = isDelta ? level : level;
+    const parts: string[] = [];
+    if (kind === "ordner") {
+      const hp = ordnerPostMaxHp(lv);
+      const radius = formatHealRadius(lv);
+      const heal = stewardHealPerSec(lv);
+      if (isDelta) {
+        const dHp = hp - ordnerPostMaxHp(deltaFrom!);
+        const dR = Math.round(stewardPostRadius(lv) * 100) - Math.round(stewardPostRadius(deltaFrom!) * 100);
+        const dHeal = heal - stewardHealPerSec(deltaFrom!);
+        parts.push(statChipHtml("HP", `${dHp >= 0 ? "+" : ""}${dHp}`, { delta: true }));
+        parts.push(statChipHtml("Radius", `${dR >= 0 ? "+" : ""}${dR}%`, { delta: true }));
+        parts.push(statChipHtml("Heilung", `${dHeal >= 0 ? "+" : ""}${dHeal}/s`, { delta: true }));
+      } else {
+        parts.push(statChipHtml("HP", String(hp)));
+        parts.push(statChipHtml("Radius", `${radius}%`));
+        parts.push(statChipHtml("Heilung", `${heal}/s`));
+      }
+      // Sicherheit-Ertrag zusätzlich
+      const y = buildingYieldPerSec(kind, lv);
+      if (isDelta) {
+        const dY = y - buildingYieldPerSec(kind, deltaFrom!);
+        parts.push(yieldChipHtml(kind, dY, { delta: true }));
+      } else {
+        parts.push(yieldChipHtml(kind, y));
+      }
+    } else {
+      const y = buildingYieldPerSec(kind, lv);
+      if (isDelta) {
+        parts.push(yieldChipHtml(kind, y - buildingYieldPerSec(kind, deltaFrom!), { delta: true }));
+      } else {
+        parts.push(yieldChipHtml(kind, y));
+      }
     }
-    el.classList.toggle("yield-delta", delta);
-    el.classList.toggle("hidden", false);
+    host.innerHTML = parts.join("");
   };
 
   const openBuildRail = (mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
@@ -548,8 +598,8 @@ function renderMatchScreen(): void {
       const toImg = app.querySelector<HTMLImageElement>("#upgrade-to-img");
       const fromLv = app.querySelector("#upgrade-from-lv");
       const toLv = app.querySelector("#upgrade-to-lv");
-      const fromYield = app.querySelector("#upgrade-from-yield");
-      const toYield = app.querySelector("#upgrade-to-yield");
+      const fromStats = app.querySelector("#upgrade-from-stats");
+      const toStats = app.querySelector("#upgrade-to-stats");
       const upTitle = app.querySelector("#upgrade-title");
       const kind = slot?.building;
       const name = kind ? BUILD_NAME[kind] : "Gebäude";
@@ -566,13 +616,11 @@ function renderMatchScreen(): void {
       const atMax = !!(slot && slot.level >= UPGRADE_MAX);
       if (toLv) toLv.textContent = atMax ? "Max" : `Lv${next}`;
       if (kind) {
-        const curY = buildingYieldAmount(lv);
-        setYieldChip(fromYield, kind, curY, false);
+        fillUpgradeStats(fromStats, kind, lv, null);
         if (atMax) {
-          toYield?.classList.add("hidden");
+          if (toStats) toStats.innerHTML = "";
         } else {
-          const delta = buildingYieldAmount(next) - curY;
-          setYieldChip(toYield, kind, delta, true);
+          fillUpgradeStats(toStats, kind, next, lv);
         }
       }
       if (cost == null || !slot || atMax) {

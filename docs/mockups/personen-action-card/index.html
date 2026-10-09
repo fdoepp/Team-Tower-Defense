@@ -131,11 +131,10 @@
    * Holz-Rims müssen zu btn-*-chrome.png passen (siehe Generator).
    */
   .cost-btn {
-    /* Gemessen am Chrome: Innenkante Holzrahmen → Face (eine Fläche, kein Label) */
-    --wood-x: 6.41%;
-    --wood-y-top: 13.54%;
-    --wood-y-bot: 18.75%;
-    /* Live-Text: zusätzlich ~2% der Button-Breite/-Höhe zu allen Innenrändern */
+    /* Face ~2% innerhalb Holz-Innenkante; Live-Text nochmals +2% */
+    --wood-x: 8.28%;
+    --wood-y-top: 15.62%;
+    --wood-y-bot: 20.83%;
     --inset: 2%;
     appearance: none;
     border: 0;

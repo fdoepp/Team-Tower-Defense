@@ -3263,7 +3263,7 @@
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.1413,
+        "alphaCoverage": 0.1416,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
           3,
@@ -3275,9 +3275,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T15:28:08.638507+00:00"
+        "checkedAt": "2026-10-09T16:04:45.617790+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Farbfl\u00e4che, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
+      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.364101+00:00",
@@ -3304,7 +3304,7 @@
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.1391,
+        "alphaCoverage": 0.1388,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
           3,
@@ -3316,9 +3316,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T15:28:08.730240+00:00"
+        "checkedAt": "2026-10-09T16:04:45.706079+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Farbfl\u00e4che, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
+      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.455332+00:00",
@@ -3345,7 +3345,7 @@
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.1417,
+        "alphaCoverage": 0.1408,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
           3,
@@ -3357,9 +3357,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T15:27:28.537986+00:00"
+        "checkedAt": "2026-10-09T16:04:45.792794+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Farbfl\u00e4che, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
+      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.544979+00:00",
@@ -3399,9 +3399,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T15:27:28.750077+00:00"
+        "checkedAt": "2026-10-09T16:04:45.964584+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Farbfl\u00e4che, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
+      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.634937+00:00",
@@ -3428,7 +3428,7 @@
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.1384,
+        "alphaCoverage": 0.1383,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
           3,
@@ -3440,9 +3440,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T15:27:28.638517+00:00"
+        "checkedAt": "2026-10-09T16:04:45.878041+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Farbfl\u00e4che, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
+      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.723844+00:00",
@@ -5045,9 +5045,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T15:27:28.162550+00:00"
+        "checkedAt": "2026-10-09T16:04:45.441999+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Farbfl\u00e4che, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
+      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "chrome-button",
@@ -5086,9 +5086,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T15:27:28.067841+00:00"
+        "checkedAt": "2026-10-09T16:04:45.349315+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Farbfl\u00e4che, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
+      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "chrome-button",
@@ -5115,7 +5115,7 @@
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.1165,
+        "alphaCoverage": 0.1247,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
           3,
@@ -5127,9 +5127,9 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T15:27:28.256323+00:00"
+        "checkedAt": "2026-10-09T16:04:45.529901+00:00"
       },
-      "notes": "Chrome 320\u00d796: Holzrahmen + eine Farbfl\u00e4che, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
+      "notes": "Chrome 320\u00d796: Holzrahmen + eine Fl\u00e4che mit ~2% Abstand zur Holz-Innenkante, ohne gebackenes Label. Live-Text im DOM (.ar-cost-btn), +2% Inset.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "chrome-button",

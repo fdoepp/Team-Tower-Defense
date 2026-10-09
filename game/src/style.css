@@ -294,6 +294,8 @@ select {
   min-width: 0;
   container-type: size;
   gap: 2%;
+  /* %-Abstand der Karten zum Holz-Innenrand der Rail */
+  padding: 2.5% max(2.5%, env(safe-area-inset-right)) 2.5% 2.5%;
   animation: build-rail-in 0.22s ease-out;
 }
 
@@ -621,11 +623,12 @@ select {
   max-width: 100%;
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(0.55rem, 6.5cqh, 0.78rem);
+  font-size: clamp(0.48rem, 5.5cqh, 0.72rem);
   color: #5c3a1a;
-  line-height: 1;
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .match-shell.matchday .yield-chip img {
@@ -644,15 +647,53 @@ select {
   display: none;
 }
 
+.match-shell.matchday .stat-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+  min-width: 0;
+  max-width: 100%;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(0.5rem, 5.5cqh, 0.72rem);
+  color: #5c3a1a;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.match-shell.matchday .stat-chip .stat-label {
+  font-weight: 700;
+  color: #7a5530;
+  font-size: 0.9em;
+}
+
+.match-shell.matchday .stat-chip.yield-delta,
+.match-shell.matchday .stat-chip.yield-delta .stat-label {
+  color: #15803d;
+  font-weight: 900;
+}
+
+.match-shell.matchday .up-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 /*
  * Button-Chrome + Live-Text (STORAGE_CANON):
  * PNG = Holz + eine Fläche; Verb/Kosten nur im DOM.
  * Overlay: Holz-Innenkante + 2% (Breite L/R, Höhe T/B).
  */
 .match-shell.matchday .ar-cost-btn {
-  --wood-x: 6.41%;
-  --wood-y-top: 13.54%;
-  --wood-y-bot: 18.75%;
+  /* Face beginnt ~2% innerhalb der Holz-Innenkante; Text nochmals +2% */
+  --wood-x: 8.28%;
+  --wood-y-top: 15.62%;
+  --wood-y-bot: 20.83%;
   --inset: 2%;
   position: relative;
   display: block;
