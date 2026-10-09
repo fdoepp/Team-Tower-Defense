@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "UI_FINAL",
-  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe.",
+  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe. (Runtime-Spiegel — nur released Dateien liegen neben dieser Datei.)",
   "rules": {
     "approvalRequired": true,
     "approver": "repo-owner",
@@ -4285,6 +4285,80 @@
       "approvedBy": "user",
       "approvedAt": "2026-10-09T08:54:07.826Z",
       "notes": "Kopf nahtlos, Schuhe weiß ohne Blau, Pyro gut. Bitte erneut freigeben."
+    },
+    "ultraGrey2": {
+      "id": "ultraGrey2",
+      "file": "ultra-grey-2.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-grey-2.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7884,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          65,
+          54,
+          190,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:00:46.540713+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:00:46.554Z",
+      "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen."
+    },
+    "ultraRed2": {
+      "id": "ultraRed2",
+      "file": "ultra-red-2.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-red-2.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7884,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          65,
+          54,
+          190,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:00:46.669476+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:00:46.683Z",
+      "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen."
     }
   },
   "pending": {
@@ -5150,44 +5224,6 @@
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
-    "ultraGrey2": {
-      "id": "ultraGrey2",
-      "file": "ultra-grey-2.png",
-      "source": "derived-from-ultraBlue2",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "ultra-grey-2.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7884,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          65,
-          54,
-          190,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T08:57:20.704132+00:00"
-      },
-      "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen.",
-      "updatedAt": "2026-10-09T08:57:20.629354+00:00"
-    },
     "ultraGrey3": {
       "id": "ultraGrey3",
       "file": "ultra-grey-3.png",
@@ -5259,44 +5295,6 @@
         "checkedAt": "2026-10-08T22:52:09.465443+00:00"
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
-    },
-    "ultraRed2": {
-      "id": "ultraRed2",
-      "file": "ultra-red-2.png",
-      "source": "derived-from-ultraBlue2",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "ultra-red-2.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.7884,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          65,
-          54,
-          190,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T08:57:20.800284+00:00"
-      },
-      "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen.",
-      "updatedAt": "2026-10-09T08:57:20.629354+00:00"
     },
     "ultraRed3": {
       "id": "ultraRed3",
