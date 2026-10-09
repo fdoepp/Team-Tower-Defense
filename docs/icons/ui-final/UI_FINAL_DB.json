@@ -32,9 +32,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8265,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           45,
@@ -70,9 +70,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8204,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           68,
           45,
@@ -108,9 +108,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8086,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           54,
           45,
@@ -146,9 +146,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8193,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           72,
           44,
@@ -184,9 +184,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8265,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           45,
@@ -222,9 +222,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8204,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           68,
           45,
@@ -260,9 +260,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8086,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           54,
           45,
@@ -298,9 +298,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8265,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           45,
@@ -336,9 +336,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8204,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           68,
           45,
@@ -374,9 +374,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8086,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           54,
           45,
@@ -412,9 +412,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8197,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           43,
@@ -450,9 +450,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8231,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           76,
           45,
@@ -488,9 +488,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.9306,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           43,
@@ -526,9 +526,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8282,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           45,
@@ -564,9 +564,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7985,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           59,
           45,
@@ -602,9 +602,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8197,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           43,
@@ -640,9 +640,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8231,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           76,
           45,
@@ -678,9 +678,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.9306,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           43,
@@ -716,9 +716,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8282,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           45,
@@ -754,9 +754,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7985,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           59,
           45,
@@ -792,9 +792,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8197,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           43,
@@ -830,9 +830,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8231,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           76,
           45,
@@ -868,9 +868,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.9306,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           43,
@@ -906,9 +906,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8282,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           45,
@@ -944,9 +944,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7985,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           59,
           45,
@@ -982,9 +982,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8428,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           83,
           44,
@@ -1020,9 +1020,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8466,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           86,
           45,
@@ -1058,9 +1058,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8394,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           87,
           45,
@@ -1096,9 +1096,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8056,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           80,
           45,
@@ -1134,9 +1134,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7932,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           80,
           45,
@@ -1172,9 +1172,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8428,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           83,
           44,
@@ -1210,9 +1210,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8466,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           86,
           45,
@@ -1248,9 +1248,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8394,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           87,
           45,
@@ -1286,9 +1286,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8056,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           80,
           45,
@@ -1324,9 +1324,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7932,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           80,
           45,
@@ -1362,9 +1362,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8428,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           83,
           44,
@@ -1400,9 +1400,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8466,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           86,
           45,
@@ -1438,9 +1438,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8394,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           87,
           45,
@@ -1476,9 +1476,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8056,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           80,
           45,
@@ -1514,9 +1514,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7932,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           80,
           45,
@@ -1552,9 +1552,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6432,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           75,
           16,
@@ -1590,9 +1590,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5822,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           16,
           26,
@@ -1628,9 +1628,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5434,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           31,
           16,
@@ -1666,9 +1666,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5255,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           16,
@@ -1704,9 +1704,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5355,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           16,
@@ -1742,9 +1742,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.642,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           75,
           16,
@@ -1780,9 +1780,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5823,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           16,
           27,
@@ -1818,9 +1818,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5434,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           31,
           16,
@@ -1856,9 +1856,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5262,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           68,
           16,
@@ -1894,9 +1894,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.537,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           16,
@@ -1932,9 +1932,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6413,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           75,
           18,
@@ -1970,9 +1970,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5808,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           17,
           27,
@@ -2008,9 +2008,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5427,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           32,
           17,
@@ -2046,9 +2046,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5235,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           17,
@@ -2084,9 +2084,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5327,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           16,
@@ -2122,9 +2122,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7447,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           109,
           40,
@@ -2160,9 +2160,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7016,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           85,
           54,
@@ -2198,9 +2198,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6348,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           111,
           39,
@@ -2236,9 +2236,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5563,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           111,
           17,
@@ -2274,9 +2274,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5695,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           105,
           18,
@@ -2312,9 +2312,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7434,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           109,
           40,
@@ -2350,9 +2350,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7058,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           85,
           55,
@@ -2388,9 +2388,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6409,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           112,
           41,
@@ -2426,9 +2426,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5605,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           111,
           18,
@@ -2464,9 +2464,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5724,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           106,
           19,
@@ -2502,9 +2502,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.745,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           109,
           40,
@@ -2540,9 +2540,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7037,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           85,
           54,
@@ -2578,9 +2578,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6364,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           111,
           40,
@@ -2616,9 +2616,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5557,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           111,
           17,
@@ -2654,9 +2654,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5688,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           105,
           18,
@@ -2692,9 +2692,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8378,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           127,
           46,
@@ -2730,9 +2730,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.747,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           102,
           41,
@@ -2768,9 +2768,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5874,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           88,
           54,
@@ -2806,9 +2806,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6037,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           91,
           54,
@@ -2844,9 +2844,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6518,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           103,
           54,
@@ -2882,9 +2882,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8444,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           127,
           46,
@@ -2920,9 +2920,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.746,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           102,
           41,
@@ -2958,9 +2958,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5875,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           88,
           54,
@@ -2996,9 +2996,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6048,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           91,
           54,
@@ -3034,9 +3034,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6518,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           103,
           54,
@@ -3072,9 +3072,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.843,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           127,
           46,
@@ -3110,9 +3110,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7476,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           102,
           41,
@@ -3148,9 +3148,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.5924,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           89,
           54,
@@ -3186,9 +3186,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6057,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           92,
           54,
@@ -3224,9 +3224,9 @@
           "w": 512,
           "h": 512
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.651,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           103,
           54,
@@ -3263,7 +3263,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.5545,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           72,
           6,
@@ -3301,7 +3301,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.55,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           72,
           6,
@@ -3340,7 +3340,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.55,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           72,
           6,
@@ -3379,7 +3379,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.5669,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           76,
           6,
@@ -3417,7 +3417,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.5696,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           76,
           6,
@@ -3434,6 +3434,117 @@
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.723844+00:00"
+    },
+    "tribuneBlue": {
+      "id": "tribuneBlue",
+      "file": "tribune-block-blue.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 426,
+          "h": 309
+        },
+        "aspectRatio": 1.378641,
+        "alphaCoverage": 0.2294,
+        "opaqueCornerRatio": 0.0078,
+        "contentBBox": [
+          6,
+          6,
+          419,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T05:19:08.914458+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T05:19:08.929Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "tribuneGrey": {
+      "id": "tribuneGrey",
+      "file": "tribune-block-grey.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 386,
+          "h": 308
+        },
+        "aspectRatio": 1.253247,
+        "alphaCoverage": 0.1768,
+        "opaqueCornerRatio": 0.0117,
+        "contentBBox": [
+          6,
+          6,
+          379,
+          301
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T05:19:09.063883+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T05:19:09.077Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "tribuneRed": {
+      "id": "tribuneRed",
+      "file": "tribune-block-red.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 426,
+          "h": 309
+        },
+        "aspectRatio": 1.378641,
+        "alphaCoverage": 0.2293,
+        "opaqueCornerRatio": 0.0078,
+        "contentBBox": [
+          6,
+          6,
+          419,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T05:19:09.191613+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T05:19:09.204Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "pending": {
@@ -3456,9 +3567,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7576,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           62,
           15,
@@ -3494,9 +3605,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7577,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           62,
           15,
@@ -3531,9 +3642,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6609,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           20,
           65,
@@ -3567,9 +3678,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6609,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           20,
           65,
@@ -3603,9 +3714,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.2728,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           16,
           15,
@@ -3639,9 +3750,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6107,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           46,
           61,
@@ -3675,9 +3786,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6107,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           46,
           61,
@@ -3711,9 +3822,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6609,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           20,
           65,
@@ -3747,9 +3858,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7082,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           21,
           66,
@@ -3783,9 +3894,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7083,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           21,
           66,
@@ -3819,9 +3930,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.865,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           30,
           39,
@@ -3855,9 +3966,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8424,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           37,
           32,
@@ -3891,9 +4002,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8562,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           32,
           34,
@@ -3927,9 +4038,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8532,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           32,
           35,
@@ -3963,9 +4074,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6579,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           58,
@@ -3999,9 +4110,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6579,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           58,
@@ -4035,9 +4146,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.655,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           58,
@@ -4071,9 +4182,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6584,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           58,
@@ -4282,9 +4393,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7082,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           21,
           66,
@@ -4318,9 +4429,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7083,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           21,
           66,
@@ -4354,9 +4465,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.6936,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           16,
           40,
@@ -4390,9 +4501,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7867,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           32,
           65,
@@ -4426,9 +4537,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7866,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           32,
           65,
@@ -4463,9 +4574,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8318,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           81,
           45,
@@ -4499,9 +4610,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7279,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           64,
           0,
@@ -4535,9 +4646,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7854,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           66,
           22,
@@ -4571,9 +4682,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8318,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           81,
           45,
@@ -4607,9 +4718,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7854,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           66,
           22,
@@ -4643,9 +4754,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8006,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           54,
@@ -4679,9 +4790,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7827,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           67,
           54,
@@ -4715,9 +4826,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7614,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           57,
           54,
@@ -4751,9 +4862,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7603,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           55,
           54,
@@ -4787,9 +4898,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7754,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           54,
@@ -4823,9 +4934,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8006,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           54,
@@ -4859,9 +4970,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7825,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           67,
           54,
@@ -4895,9 +5006,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7614,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           57,
           54,
@@ -4931,9 +5042,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7603,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           55,
           54,
@@ -4967,9 +5078,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7754,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           54,
@@ -5003,9 +5114,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8006,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           69,
           54,
@@ -5039,9 +5150,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7861,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           67,
           54,
@@ -5075,9 +5186,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7622,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           57,
           54,
@@ -5111,9 +5222,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7617,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           55,
           54,
@@ -5147,9 +5258,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.7754,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           42,
           54,
@@ -5163,114 +5274,6 @@
         "checkedAt": "2026-10-08T22:52:09.978661+00:00"
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
-    },
-    "tribuneBlue": {
-      "id": "tribuneBlue",
-      "file": "tribune-block-blue.png",
-      "source": "game/public/assets/tribune-block-blue.png",
-      "status": "pendingApproval",
-      "role": "scene",
-      "category": "tribunes",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 426,
-          "h": 309
-        },
-        "aspectRatio": 1.378641,
-        "alphaCoverage": 0.2294,
-        "opaqueCornerRatio": 0.0078,
-        "contentBBox": [
-          6,
-          6,
-          419,
-          302
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:58.732509+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "tribuneGrey": {
-      "id": "tribuneGrey",
-      "file": "tribune-block-grey.png",
-      "source": "game/public/assets/tribune-block-grey.png",
-      "status": "pendingApproval",
-      "role": "scene",
-      "category": "tribunes",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 386,
-          "h": 308
-        },
-        "aspectRatio": 1.253247,
-        "alphaCoverage": 0.1768,
-        "opaqueCornerRatio": 0.0117,
-        "contentBBox": [
-          6,
-          6,
-          379,
-          301
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:58.823319+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "tribuneRed": {
-      "id": "tribuneRed",
-      "file": "tribune-block-red.png",
-      "source": "game/public/assets/tribune-block-red.png",
-      "status": "pendingApproval",
-      "role": "scene",
-      "category": "tribunes",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 426,
-          "h": 309
-        },
-        "aspectRatio": 1.378641,
-        "alphaCoverage": 0.2293,
-        "opaqueCornerRatio": 0.0078,
-        "contentBBox": [
-          6,
-          6,
-          419,
-          302
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:33:58.912351+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     },
     "scoreboardMomentum": {
       "id": "scoreboardMomentum",
@@ -5293,7 +5296,7 @@
         },
         "aspectRatio": 2.049213,
         "alphaCoverage": 0.2637,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           15,
           14,
@@ -5319,13 +5322,25 @@
     ]
   },
   "inventory": {
-    "pendingCount": 52,
-    "releasedCount": 90,
+    "pendingCount": 49,
+    "releasedCount": 93,
     "byCategory": {
-      "ui": 34,
-      "persons": 60,
-      "tribunes": 3,
-      "buildings": 45
+      "ui": {
+        "pending": 29,
+        "released": 5
+      },
+      "persons": {
+        "pending": 20,
+        "released": 40
+      },
+      "buildings": {
+        "pending": 0,
+        "released": 45
+      },
+      "scene": {
+        "pending": 0,
+        "released": 3
+      }
     },
     "gatheredAt": "2026-10-08T22:57:00.814634+00:00",
     "canon": {

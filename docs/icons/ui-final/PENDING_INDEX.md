@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=52** · **released=90**
+**pending=49** · **released=93**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -59,16 +59,9 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 137. `slotEmptyPersp` — `slot-empty-persp.png`
 138. `slotEmptyPerspBlue` — `slot-empty-persp-blue.png`
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
-### tribunes
 
-140. `tribuneBlue` — `tribune-block-blue.png`
-141. `tribuneGrey` — `tribune-block-grey.png`
-142. `tribuneRed` — `tribune-block-red.png`
+## Released (Tribünen — diese Runde)
 
-## Released (Auszug UI)
-
-- `btnBauenAmber` — `btn-bauen-amber.png`
-- `btnBauenGrey` — `btn-bauen-grey.png`
-- `btnSendenBlue` — `btn-senden-blue.png`
-- `btnUpgradeGrey` — `btn-upgrade-grey.png`
-- `btnUpgradePurple` — `btn-upgrade-purple.png`
+- `tribuneBlue` — `tribune-block-blue.png`
+- `tribuneGrey` — `tribune-block-grey.png`
+- `tribuneRed` — `tribune-block-red.png`
