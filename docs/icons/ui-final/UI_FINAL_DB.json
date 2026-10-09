@@ -4692,6 +4692,43 @@
       "approvedBy": "user",
       "approvedAt": "2026-10-09T10:55:11.415Z",
       "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben."
+    },
+    "currencyFanartikel": {
+      "id": "currencyFanartikel",
+      "file": "currency-fanartikel.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-fanartikel.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5698,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          27,
+          234,
+          228
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T11:41:22.913495+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T11:41:22.926Z",
+      "notes": "Trikot (flächig) statt Schal — bewusst abweichend von currency-icons-clean-Schal. Bitte freigeben."
     }
   },
   "pending": {
@@ -4947,44 +4984,6 @@
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
       "category": "ui"
     },
-    "currencyFanartikel": {
-      "id": "currencyFanartikel",
-      "file": "currency-fanartikel.png",
-      "source": "game/public/icons/ui/currency-fanartikel.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "currency-fanartikel.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1.0,
-        "alphaCoverage": 0.5698,
-        "opaqueCornerRatio": 0.0,
-        "contentBBox": [
-          20,
-          27,
-          234,
-          228
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-09T11:06:57.067582+00:00"
-      },
-      "notes": "Trikot (flächig) statt Schal — bewusst abweichend von currency-icons-clean-Schal. Bitte freigeben.",
-      "category": "ui",
-      "updatedAt": "2026-10-09T11:13:17.078621+00:00"
-    },
     "btnKaufenGrey": {
       "id": "btnKaufenGrey",
       "file": "btn-kaufen-grey.png",
@@ -5006,7 +5005,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.5713,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           6,
@@ -5044,7 +5043,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.5724,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           6,
@@ -5082,7 +5081,7 @@
         },
         "aspectRatio": 3.333333,
         "alphaCoverage": 0.557,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           76,
           6,

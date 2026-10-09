@@ -11,6 +11,7 @@ export type UiFinalId =
   | "btnUpgradeGrey"
   | "btnUpgradePurple"
   | "currencyBier"
+  | "currencyFanartikel"
   | "currencyGold"
   | "currencySicherheit"
   | "fanBlue1"
@@ -184,6 +185,14 @@ export const UI_FINAL_PATHS = {
   "currencyBier": {
     file: "currency-bier.png",
     path: "icons/ui-final/currency-bier.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "currencyFanartikel": {
+    file: "currency-fanartikel.png",
+    path: "icons/ui-final/currency-fanartikel.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
