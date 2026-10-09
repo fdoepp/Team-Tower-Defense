@@ -3545,6 +3545,43 @@
       "approvedBy": "user",
       "approvedAt": "2026-10-09T05:19:09.204Z",
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "slotEmpty": {
+      "id": "slotEmpty",
+      "file": "slot-empty.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/slot-empty.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T06:16:51.043352+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T06:16:51.057Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "pending": {
@@ -3623,42 +3660,6 @@
       "notes": "Perspektive angepasst: senkrechter Holzpfosten / viewer-facing für Floor-Grid-Setting (wie Gebäude-Billboards).",
       "category": "ui",
       "updatedAt": "2026-10-08T23:04:51.071071+00:00"
-    },
-    "slotEmpty": {
-      "id": "slotEmpty",
-      "file": "slot-empty.png",
-      "source": "game/public/icons/ui/slot-empty.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.6609,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          20,
-          65,
-          236,
-          199
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:34:02.101423+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
-      "category": "ui"
     },
     "slotEmptyParallel": {
       "id": "slotEmptyParallel",
@@ -5322,12 +5323,12 @@
     ]
   },
   "inventory": {
-    "pendingCount": 49,
-    "releasedCount": 93,
+    "pendingCount": 48,
+    "releasedCount": 94,
     "byCategory": {
       "ui": {
-        "pending": 29,
-        "released": 5
+        "pending": 28,
+        "released": 6
       },
       "persons": {
         "pending": 20,
