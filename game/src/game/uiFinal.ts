@@ -10,6 +10,9 @@ export type UiFinalId =
   | "btnSendenBlue"
   | "btnUpgradeGrey"
   | "btnUpgradePurple"
+  | "currencyBier"
+  | "currencyGold"
+  | "currencySicherheit"
   | "fanBlue1"
   | "fanBlue2"
   | "fanBlue3"
@@ -175,6 +178,30 @@ export const UI_FINAL_PATHS = {
     path: "icons/ui-final/btn-upgrade-purple.png",
     native: { w: 320, h: 96 },
     aspectRatio: 3.333333,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "currencyBier": {
+    file: "currency-bier.png",
+    path: "icons/ui-final/currency-bier.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "currencyGold": {
+    file: "currency-gold.png",
+    path: "icons/ui-final/currency-gold.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "currencySicherheit": {
+    file: "currency-sicherheit.png",
+    path: "icons/ui-final/currency-sicherheit.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
   },
