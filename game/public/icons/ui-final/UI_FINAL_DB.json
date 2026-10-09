@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "UI_FINAL",
-  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe. (Runtime-Spiegel — nur released Dateien liegen neben dieser Datei.)",
+  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe.",
   "rules": {
     "approvalRequired": true,
     "approver": "repo-owner",
@@ -3644,23 +3644,23 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.7811,
+        "alphaCoverage": 0.8201,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          72,
-          15,
-          182,
-          242
+          77,
+          20,
+          177,
+          234
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T06:29:22.330594+00:00"
+        "checkedAt": "2026-10-09T07:13:05.992030+00:00"
       },
-      "notes": "Neu generiert: viewer-facing / senkrechter Pfosten für Floor-Grid-Perspektive (Billboard wie Gebäude).",
+      "notes": "Neu generiert ohne rote Hilfslinien, freigeschnitten (RGBA). Top-Rim bereinigt.",
       "category": "ui",
-      "updatedAt": "2026-10-09T06:29:22.343029+00:00"
+      "updatedAt": "2026-10-09T07:13:05.912325+00:00"
     },
     "pennantVfb": {
       "id": "pennantVfb",
@@ -3682,23 +3682,23 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.7426,
+        "alphaCoverage": 0.8216,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          68,
-          15,
-          187,
-          242
+          77,
+          20,
+          177,
+          234
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T06:29:22.416123+00:00"
+        "checkedAt": "2026-10-09T07:13:06.083782+00:00"
       },
-      "notes": "Neu generiert: viewer-facing / senkrechter Pfosten für Floor-Grid-Perspektive (Billboard wie Gebäude).",
+      "notes": "Neu generiert ohne rote Hilfslinien, freigeschnitten (RGBA). Top-Rim bereinigt.",
       "category": "ui",
-      "updatedAt": "2026-10-09T06:29:22.428243+00:00"
+      "updatedAt": "2026-10-09T07:13:05.912325+00:00"
     },
     "slotEmptyParallel": {
       "id": "slotEmptyParallel",
