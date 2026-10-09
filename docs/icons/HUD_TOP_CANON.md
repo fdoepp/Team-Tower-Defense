@@ -16,6 +16,14 @@
 
 Älteres Asset `scoreboard-momentum.png` (Broadcast-Tech-Look) **nicht** mehr für neue Builds verwenden — durch `scoreboard-top.png` ersetzen bzw. Alias darauf legen.
 
+
+## Referenz vs. Chrome
+
+| Asset | Rolle |
+| --- | --- |
+| `scoreboard-top.png` (**Referenz Scoreboard**, UI Final 123, released) | Vollständige Demo inkl. Text, Momentumsbalken, Torchancen-Orb |
+| `scoreboard-chrome.png` (`scoreboardChrome`, pending) | Leeres Holz-Chrome ohne Text / Balken / Orb — für Runtime-Overlays |
+
 ## Bestandteile (statische Kunst + dynamische Werte)
 
 | Element | Kunst | Dynamisch |

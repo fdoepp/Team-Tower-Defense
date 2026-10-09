@@ -50,6 +50,7 @@ export type UiFinalId =
   | "ordnerRed3"
   | "ordnerRed4"
   | "ordnerRed5"
+  | "scoreboard"
   | "slotEmpty"
   | "standBierBlue1"
   | "standBierBlue2"
@@ -469,6 +470,14 @@ export const UI_FINAL_PATHS = {
     path: "icons/ui-final/ordner-red-5.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "scoreboard": {
+    file: "scoreboard-top.png",
+    path: "icons/ui-final/scoreboard-top.png",
+    native: { w: 1041, h: 508 },
+    aspectRatio: 2.049213,
     preserveAspect: true,
     freigestellt: true,
   },
