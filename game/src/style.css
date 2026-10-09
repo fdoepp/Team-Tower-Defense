@@ -224,18 +224,22 @@ select {
   height: 100%;
 }
 
-/* Matchday Comic — fixed % rails, Bloons touch buttons
-   Rails ≈ 22% screen; buttons ≈ 36–42% of each person card height. */
+/* Matchday Comic — Rahmenlogik MATCH_LAYOUT_TOKENS.json
+   left 21% · pitch 64% · right 15% (build-open). */
 .match-shell.matchday {
-  --rail-w: 22%;
+  --rail-left-w: 21%;
+  --rail-right-w: 15%;
+  --rail-w: var(--rail-left-w);
   --rail-btn-h: clamp(42px, 10vh, 54px);
   --rail-icon: clamp(40px, 7vh, 52px);
+  --wallet-icon: 25px; /* ×1.15 vs 22px baseline */
+  --hud-scale: 1.15;
   flex: 1;
   min-height: 0;
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
   grid-template-rows: 1fr;
   gap: 0;
   position: relative;
@@ -245,8 +249,7 @@ select {
 }
 
 .match-shell.matchday.build-open {
-  --rail-w: 21%;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--rail-w);
+  grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
 }
 
 .match-shell.matchday .side-rail {
@@ -1053,17 +1056,15 @@ select {
   font-weight: 700;
 }
 
-/* Phone landscape: same % rails, never crush buttons below touch size */
+/* Phone landscape: keep Rahmenlogik rails, never crush buttons below touch size */
 @media (max-width: 900px) {
   .match-shell.matchday {
-    --rail-w: 23%;
     --rail-btn-h: clamp(40px, 11vh, 52px);
     --rail-icon: clamp(36px, 8vh, 48px);
-    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
   }
   .match-shell.matchday.build-open {
-    --rail-w: 21.5%;
-    grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--rail-w);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
   }
 }
 
@@ -1170,10 +1171,19 @@ select {
 }
 
 .wallet-row .wi.chip img {
-  width: 22px;
-  height: 22px;
+  width: var(--wallet-icon, 25px);
+  height: var(--wallet-icon, 25px);
   object-fit: contain;
   display: block;
+}
+
+.match-shell.matchday .wallet-row .wi {
+  font-size: calc(0.52rem * var(--hud-scale, 1.15));
+  padding: 2px 6px 2px 3px;
+}
+
+.match-shell.matchday .wallet-row .wi b {
+  font-size: calc(0.68rem * var(--hud-scale, 1.15));
 }
 
 .wallet-row .wi i {
@@ -1955,11 +1965,11 @@ select {
   }
   .match-shell.matchday {
     display: grid !important;
-    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
     pointer-events: auto;
   }
   .match-shell.matchday.build-open {
-    grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--rail-w);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
   }
 }
 

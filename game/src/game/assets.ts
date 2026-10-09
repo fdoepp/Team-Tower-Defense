@@ -53,6 +53,8 @@ export const SCENE_ASSETS = {
   tribuneBlue: uiPath("tribuneBlue", "assets/tribune-block-blue.png"),
   tribuneGrey: uiPath("tribuneGrey", "assets/tribune-block-grey.png"),
   tribuneRed: uiPath("tribuneRed", "assets/tribune-block-red.png"),
+  /** Binding match backdrop — see MATCH_LAYOUT_TOKENS.json / stadium-background rule */
+  stadiumFloodlightDerby: "assets/stadium-floodlight-derby-bg.jpg",
 } as const;
 
 export function tribuneIconPath(blockId: number): string {

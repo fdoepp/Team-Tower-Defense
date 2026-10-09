@@ -28,11 +28,13 @@ import {
   tribuneRect,
 } from "./layout";
 import {
+  SCENE_ASSETS,
   UI_ICONS,
   drawIcon,
   drawIconQuad,
   drawToyIcon,
   drawToyProp,
+  getIcon,
   type ToyAnimMode,
   slotEmptyIconPath,
   standIconPath,
@@ -69,6 +71,23 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawFloats(ctx, m, w, h);
 }
 
+/** Cover-draw stadium-floodlight-derby-bg when available (Rahmenlogik). */
+function drawStadiumBackdrop(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+): boolean {
+  const img = getIcon(SCENE_ASSETS.stadiumFloodlightDerby);
+  if (!img?.complete || !img.naturalWidth) return false;
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  const s = Math.max(w / iw, h / ih);
+  const dw = iw * s;
+  const dh = ih * s;
+  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  return true;
+}
+
 /** Night stadium bowl + floodlights behind the stands (Matchday Comic) */
 function drawStadiumAtmosphere(
   ctx: CanvasRenderingContext2D,
@@ -76,6 +95,17 @@ function drawStadiumAtmosphere(
   w: number,
   h: number,
 ): void {
+  if (drawStadiumBackdrop(ctx, w, h)) {
+    // Soft asphalt veil so gang sprites stay readable over photo BG
+    const floorY = h * gangY();
+    const veil = ctx.createLinearGradient(0, floorY - h * 0.02, 0, h);
+    veil.addColorStop(0, "rgba(55, 58, 64, 0.15)");
+    veil.addColorStop(1, "rgba(40, 42, 48, 0.35)");
+    ctx.fillStyle = veil;
+    ctx.fillRect(0, floorY - h * 0.02, w, h - floorY + h * 0.02);
+    return;
+  }
+
   const skyH = h * (L.blockTop + L.blockBodyH * 0.55);
   const sky = ctx.createLinearGradient(0, 0, 0, skyH);
   sky.addColorStop(0, "#04070f");
@@ -308,18 +338,19 @@ function drawSeats(
   }
 }
 
-/** Center scoreboard + momentum strip (Matchday Comic / mockup) */
+/** Center scoreboard + momentum strip (Matchday Comic / mockup)
+ *  Sizes from MATCH_LAYOUT_TOKENS (scoreboard ×1.15 vs prior baseline). */
 function drawScoreboard(
   ctx: CanvasRenderingContext2D,
   m: Match,
   w: number,
   h: number,
 ): void {
-  // Keep scoreboard inside the top third (above the stands)
-  const boardW = Math.min(w * 0.38, h * 0.42);
-  const boardH = Math.min(boardW * (720 / 1280) * 0.68, h * 0.22);
+  // Rahmenlogik: max 59.8% pitch width, ~17.25% screen height
+  const boardW = Math.min(w * 0.598, h * 0.48);
+  const boardH = Math.min(boardW * (508 / 1041), h * 0.1725);
   const bx = (w - boardW) / 2;
-  const by = h * 0.008;
+  const by = h * 0.03;
   // Soft stadium glow behind board
   const glow = ctx.createRadialGradient(
     w * 0.5,
@@ -1045,7 +1076,7 @@ function drawMannchen(
     f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
   const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
   const color = teamColor(f.team);
-  const lv = unitVisualLevel(m, f.team);
+  const lv = unitVisualLevel(f);
   const src = unitIconPath(f.kind, color, lv);
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing = fanFacing(f);
@@ -1398,7 +1429,6 @@ function drawSteward(
   const size = Math.max(24, h * 0.07);
   const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(f));
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
-  const onGang = f.state === "gang" || f.state === "moving";
   const facing =
     f.state === "moving" || f.path.length > f.pathI
       ? fanFacing(f)
