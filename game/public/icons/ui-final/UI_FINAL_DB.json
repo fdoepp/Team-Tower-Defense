@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "UI_FINAL",
-  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe. (Runtime-Spiegel — nur released Dateien liegen neben dieser Datei.)",
+  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe.",
   "rules": {
     "approvalRequired": true,
     "approver": "repo-owner",
@@ -4938,27 +4938,29 @@
       },
       "validation": {
         "ok": true,
+        "file": "fan-blue-1.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.8318,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.824,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
           81,
           45,
-          174,
+          173,
           247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:53:43.599998+00:00"
+        "checkedAt": "2026-10-09T08:02:49.653188+00:00"
       },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
+      "notes": "Neu generiert: Kopf ohne transparente Löcher und ohne blaue Artefakte. Bitte erneut freigeben.",
+      "updatedAt": "2026-10-09T08:02:49.667572+00:00"
     },
     "fanGrey1": {
       "id": "fanGrey1",
