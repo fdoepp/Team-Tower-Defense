@@ -12,9 +12,9 @@ Ablage-Regel: [`STORAGE_CANON.md`](./STORAGE_CANON.md) — Chrome vs Live-Werte.
 
 ### ui
 
-108. `btnKaufenGreen` — `btn-kaufen-green.png`
-109. `btnKaufenGrey` — `btn-kaufen-grey.png`
-112. `btnSendenGrey` — `btn-senden-grey.png`
+108. `btnKaufenGreen` — `btn-kaufen-green.png` — Chrome (eine Fläche, kein Label)
+109. `btnKaufenGrey` — `btn-kaufen-grey.png` — Chrome (eine Fläche, kein Label)
+112. `btnSendenGrey` — `btn-senden-grey.png` — Chrome (eine Fläche, kein Label)
 124. `scoreboardMomentum` — `scoreboard-momentum.png`
 125. `scoreboardOrbGast` — `scoreboard-top-orb-gast.png`
 126. `scoreboardOrbHeim` — `scoreboard-top-orb-heim.png`

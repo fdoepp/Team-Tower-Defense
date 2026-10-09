@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "UI_FINAL",
-  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe.",
+  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe. (Runtime-Spiegel — nur released Dateien liegen neben dieser Datei.)",
   "rules": {
     "approvalRequired": true,
     "approver": "repo-owner",
@@ -3256,30 +3256,33 @@
       },
       "validation": {
         "ok": true,
+        "file": "game/public/icons/ui-final/btn-bauen-amber.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.5545,
+        "alphaCoverage": 0.1413,
         "opaqueCornerRatio": 0,
         "contentBBox": [
-          72,
-          6,
-          246,
-          89
+          3,
+          2,
+          316,
+          93
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:57:00.441407+00:00"
+        "checkedAt": "2026-10-09T15:28:08.638507+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Farbfläche, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
       "category": "ui",
       "approvedBy": "fdoepp",
-      "approvedAt": "2026-10-08T22:57:00.364101+00:00"
+      "approvedAt": "2026-10-08T22:57:00.364101+00:00",
+      "chrome": true,
+      "bakedLabel": false
     },
     "btnBauenGrey": {
       "id": "btnBauenGrey",
@@ -3294,30 +3297,33 @@
       },
       "validation": {
         "ok": true,
+        "file": "game/public/icons/ui-final/btn-bauen-grey.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.55,
+        "alphaCoverage": 0.1391,
         "opaqueCornerRatio": 0,
         "contentBBox": [
-          72,
-          6,
-          247,
-          89
+          3,
+          2,
+          316,
+          93
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:57:00.531018+00:00"
+        "checkedAt": "2026-10-09T15:28:08.730240+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Farbfläche, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
       "category": "ui",
       "approvedBy": "fdoepp",
-      "approvedAt": "2026-10-08T22:57:00.455332+00:00"
+      "approvedAt": "2026-10-08T22:57:00.455332+00:00",
+      "chrome": true,
+      "bakedLabel": false
     },
     "btnSendenBlue": {
       "id": "btnSendenBlue",
@@ -3332,32 +3338,34 @@
       },
       "validation": {
         "ok": true,
-        "file": "btn-senden-blue.png",
+        "file": "game/public/icons/ui-final/btn-senden-blue.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.55,
+        "alphaCoverage": 0.1417,
         "opaqueCornerRatio": 0,
         "contentBBox": [
-          72,
-          6,
-          247,
-          89
+          3,
+          2,
+          316,
+          93
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:59:41.401996+00:00"
+        "checkedAt": "2026-10-09T15:27:28.537986+00:00"
       },
-      "notes": "Remade in same wood-frame form as btnBauenGrey (107); blue face + SENDEN label; freigegeben with 106/107/113/114.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Farbfläche, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.544979+00:00",
-      "remadeAt": "2026-10-08T22:59:41.416122+00:00"
+      "remadeAt": "2026-10-08T22:59:41.416122+00:00",
+      "chrome": true,
+      "bakedLabel": false
     },
     "btnUpgradeGrey": {
       "id": "btnUpgradeGrey",
@@ -3372,30 +3380,33 @@
       },
       "validation": {
         "ok": true,
+        "file": "game/public/icons/ui-final/btn-upgrade-grey.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.5669,
+        "alphaCoverage": 0.1388,
         "opaqueCornerRatio": 0,
         "contentBBox": [
-          76,
-          6,
-          243,
-          89
+          3,
+          2,
+          316,
+          93
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:57:00.710456+00:00"
+        "checkedAt": "2026-10-09T15:27:28.750077+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Farbfläche, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
       "category": "ui",
       "approvedBy": "fdoepp",
-      "approvedAt": "2026-10-08T22:57:00.634937+00:00"
+      "approvedAt": "2026-10-08T22:57:00.634937+00:00",
+      "chrome": true,
+      "bakedLabel": false
     },
     "btnUpgradePurple": {
       "id": "btnUpgradePurple",
@@ -3410,30 +3421,33 @@
       },
       "validation": {
         "ok": true,
+        "file": "game/public/icons/ui-final/btn-upgrade-purple.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.5696,
+        "alphaCoverage": 0.1384,
         "opaqueCornerRatio": 0,
         "contentBBox": [
-          76,
-          6,
-          242,
-          89
+          3,
+          2,
+          316,
+          93
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:57:00.801249+00:00"
+        "checkedAt": "2026-10-09T15:27:28.638517+00:00"
       },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Farbfläche, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
       "category": "ui",
       "approvedBy": "fdoepp",
-      "approvedAt": "2026-10-08T22:57:00.723844+00:00"
+      "approvedAt": "2026-10-08T22:57:00.723844+00:00",
+      "chrome": true,
+      "bakedLabel": false
     },
     "tribuneBlue": {
       "id": "tribuneBlue",
@@ -5012,31 +5026,33 @@
       },
       "validation": {
         "ok": true,
-        "file": "btn-kaufen-grey.png",
+        "file": "docs/icons/ui-final/pending/btn-kaufen-grey.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.5713,
+        "alphaCoverage": 0.1325,
         "opaqueCornerRatio": 0,
         "contentBBox": [
-          77,
-          6,
-          241,
-          89
+          3,
+          2,
+          316,
+          93
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T11:13:17.273955+00:00"
+        "checkedAt": "2026-10-09T15:27:28.162550+00:00"
       },
-      "notes": "Chrome-Button 320×96 (Icon-UI). Live-Text/Kosten im DOM (.ar-cost-btn), nicht ins PNG. Bitte freigeben.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Farbfläche, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
-      "assetClass": "chrome-button"
+      "assetClass": "chrome-button",
+      "chrome": true,
+      "bakedLabel": false
     },
     "btnKaufenGreen": {
       "id": "btnKaufenGreen",
@@ -5051,31 +5067,33 @@
       },
       "validation": {
         "ok": true,
-        "file": "btn-kaufen-green.png",
+        "file": "docs/icons/ui-final/pending/btn-kaufen-green.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.5724,
+        "alphaCoverage": 0.136,
         "opaqueCornerRatio": 0,
         "contentBBox": [
-          77,
-          6,
-          241,
-          89
+          3,
+          2,
+          316,
+          93
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T11:13:17.179135+00:00"
+        "checkedAt": "2026-10-09T15:27:28.067841+00:00"
       },
-      "notes": "Chrome-Button 320×96 (Icon-UI). Live-Text/Kosten im DOM (.ar-cost-btn), nicht ins PNG. Bitte freigeben.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Farbfläche, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
-      "assetClass": "chrome-button"
+      "assetClass": "chrome-button",
+      "chrome": true,
+      "bakedLabel": false
     },
     "btnSendenGrey": {
       "id": "btnSendenGrey",
@@ -5090,31 +5108,33 @@
       },
       "validation": {
         "ok": true,
-        "file": "btn-senden-grey.png",
+        "file": "docs/icons/ui-final/pending/btn-senden-grey.png",
         "mode": "RGBA",
         "native": {
           "w": 320,
           "h": 96
         },
         "aspectRatio": 3.333333,
-        "alphaCoverage": 0.557,
+        "alphaCoverage": 0.1165,
         "opaqueCornerRatio": 0,
         "contentBBox": [
-          76,
-          6,
-          243,
-          89
+          3,
+          2,
+          316,
+          93
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T11:13:17.367283+00:00"
+        "checkedAt": "2026-10-09T15:27:28.256323+00:00"
       },
-      "notes": "Chrome-Button 320×96 (Icon-UI). Live-Text/Kosten im DOM (.ar-cost-btn), nicht ins PNG. Bitte freigeben.",
+      "notes": "Chrome 320×96: Holzrahmen + eine Farbfläche, ohne gebackenes Label. Live-Text/Kosten im DOM (.ar-cost-btn), 2% Inset vom Holz-Innenrand.",
       "category": "ui",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
-      "assetClass": "chrome-button"
+      "assetClass": "chrome-button",
+      "chrome": true,
+      "bakedLabel": false
     },
     "scoreboardOrbHeim": {
       "id": "scoreboardOrbHeim",

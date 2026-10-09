@@ -46,6 +46,20 @@ import {
 
 void preloadIcons();
 
+/** Live Verb+Kosten über Button-Chrome (kein gebackenes Label). */
+function arCostBtnHtml(opts: {
+  kind: "bauen" | "kaufen" | "upgrade";
+  full: string;
+  short: string;
+  amount: number | string;
+  currencySrc?: string;
+  payId?: string;
+}): string {
+  const cur = opts.currencySrc ?? UI_ICONS.currencyGold;
+  const payId = opts.payId ? ` id="${opts.payId}"` : "";
+  return `<span class="ar-cost-btn ${opts.kind}" aria-hidden="true"><span class="inner"><span class="txt"><span class="full">${opts.full}</span><span class="short">${opts.short}</span></span><span class="pay"${payId}><img src="${cur}" alt="">${opts.amount}</span></span></span>`;
+}
+
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
 type Screen = "menu" | "setup" | "match" | "result";
@@ -358,30 +372,27 @@ function renderMatchScreen(): void {
               <img class="build-preview" src="icons/stands/bier-${tc}-1.png" alt="">
               <div class="build-info">
                 <span>Bierstand</span>
-                <small>${BUILD_COST.bier} Gold</small>
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.bier })}
           </button>
           <button type="button" class="build-card" data-pending-build="fanshop">
             <div class="build-top">
               <img class="build-preview" src="icons/stands/fanshop-${tc}-1.png" alt="">
               <div class="build-info">
                 <span>Fanshop</span>
-                <small>${BUILD_COST.fanshop} Gold</small>
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.fanshop })}
           </button>
           <button type="button" class="build-card" data-pending-build="ordner">
             <div class="build-top">
               <img class="build-preview" src="icons/stands/ordner-${tc}-1.png" alt="">
               <div class="build-info">
                 <span>Ordnerposten</span>
-                <small>${BUILD_COST.ordner} Gold</small>
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.ordner })}
           </button>
         </div>
         <div class="build-rows hidden" id="build-upgrade-rows">
@@ -399,10 +410,11 @@ function renderMatchScreen(): void {
               </div>
             </div>
             <p class="upgrade-blurb" id="upgrade-blurb">Besserer Ertrag & stärkeres Gebäude</p>
-            <button type="button" class="upgrade-buy" id="rail-upgrade">
-              <span id="rail-upgrade-label">Upgrade</span>
-              <small id="rail-upgrade-cost">—</small>
-              <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            <button type="button" class="ar-cost-btn upgrade" id="rail-upgrade">
+              <span class="inner">
+                <span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span>
+                <span class="pay" id="rail-upgrade-pay"><img src="${UI_ICONS.currencyGold}" alt=""><span id="rail-upgrade-cost">—</span></span>
+              </span>
             </button>
           </div>
           <button type="button" class="build-card" id="rail-hire-ordner">
@@ -410,10 +422,9 @@ function renderMatchScreen(): void {
               <img class="build-preview" src="${unitIconPath("ordner", tc, 1)}" alt="">
               <div class="build-info">
                 <span>Ordner anheuern</span>
-                <small>${STEWARD_HIRE_GOLD} Gold</small>
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            ${arCostBtnHtml({ kind: "kaufen", full: "KAUFEN", short: "KAUF", amount: STEWARD_HIRE_GOLD })}
           </button>
         </div>
         <button type="button" class="rail-close" id="build-rail-close">Schließen</button>
@@ -481,7 +492,6 @@ function renderMatchScreen(): void {
       const cost = slot ? (UPGRADE_COST as readonly number[])[next] : null;
       const upBtn = app.querySelector<HTMLButtonElement>("#rail-upgrade")!;
       const costEl = app.querySelector("#rail-upgrade-cost");
-      const labelEl = app.querySelector("#rail-upgrade-label");
       const fromImg = app.querySelector<HTMLImageElement>("#upgrade-from-img");
       const toImg = app.querySelector<HTMLImageElement>("#upgrade-to-img");
       const fromLv = app.querySelector("#upgrade-from-lv");
@@ -514,12 +524,13 @@ function renderMatchScreen(): void {
       }
       if (cost == null || !slot || slot.level >= UPGRADE_MAX) {
         upBtn.disabled = true;
-        if (labelEl) labelEl.textContent = "Maximale Stufe";
-        if (costEl) costEl.textContent = `Lv${UPGRADE_MAX}`;
+        upBtn.classList.add("cd");
+        if (costEl) costEl.textContent = "—";
       } else {
-        upBtn.disabled = m.gold < cost;
-        if (labelEl) labelEl.textContent = `Upgrade auf Lv${next}`;
-        if (costEl) costEl.textContent = `${cost} Gold`;
+        const broke = m.gold < cost;
+        upBtn.disabled = broke;
+        upBtn.classList.toggle("cd", broke);
+        if (costEl) costEl.textContent = String(cost);
       }
       const hireBtn = app.querySelector<HTMLButtonElement>("#rail-hire-ordner")!;
       const canHire = !!(slot && m.canHireSteward(slot));

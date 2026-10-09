@@ -28,7 +28,8 @@ Alles, was sich ändert (Score, Minute, Momentum-%, Kosten, Level), gehört **ni
 
 | IDs / Keys | Klasse | Aktion |
 | --- | --- | --- |
-| `btnKaufenGreen/Grey`, `btnSendenGrey` | Chrome-Buttons 320×96 | Freigabe OK |
+| `btnKaufenGreen/Grey`, `btnSendenGrey` | Chrome-Buttons 320×96 (eine Fläche, kein Label) | Pending — Optik freigeben |
+| `btnBauenAmber/Grey`, `btnUpgradePurple/Grey`, `btnSendenBlue` | Chrome refreshed (released) | Live-Text im DOM |
 | `btnSendenGreen` | **veraltet** | Entfernen — Kanon = `btnSendenBlue` (released) |
 | `scoreboardChrome` | Chrome (released) | Runtime + `scoreboard-slots.json` |
 | `scoreboardMomentum`, `scoreboardOrbHeim/Gast` | Referenz-Demos | Nicht als Runtime-Default; Notes setzen |

@@ -614,9 +614,17 @@ select {
   color: #7a5530;
 }
 
-.match-shell.matchday .build-card .build-kaufen,
-.match-shell.matchday .build-info .build-kaufen,
-.match-shell.matchday .upgrade-buy .build-kaufen {
+/*
+ * Button-Chrome + Live-Text (STORAGE_CANON):
+ * PNG = Holz + eine Fläche; Verb/Kosten nur im DOM.
+ * Overlay: Holz-Innenkante + 2% (Breite L/R, Höhe T/B).
+ */
+.match-shell.matchday .ar-cost-btn {
+  --wood-x: 6.41%;
+  --wood-y-top: 13.54%;
+  --wood-y-bot: 18.75%;
+  --inset: 2%;
+  position: relative;
   display: block;
   flex: 0 0 auto;
   width: 100%;
@@ -624,11 +632,95 @@ select {
   height: var(--rail-btn-h);
   min-height: var(--rail-btn-h);
   max-height: var(--rail-btn-h);
-  object-fit: fill;
-  object-position: center;
-  margin-top: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  overflow: hidden;
   filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.28));
+  box-sizing: border-box;
+  cursor: inherit;
+  font: inherit;
+  color: #fff;
+}
+.match-shell.matchday button.ar-cost-btn {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.match-shell.matchday .ar-cost-btn.bauen {
+  background-image: url("/icons/ui-final/btn-bauen-amber.png");
+}
+.match-shell.matchday .ar-cost-btn.kaufen {
+  background-image: url("/icons/ui/btn-kaufen-green.png");
+}
+.match-shell.matchday .ar-cost-btn.upgrade {
+  background-image: url("/icons/ui-final/btn-upgrade-purple.png");
+}
+.match-shell.matchday .build-card.cd .ar-cost-btn.bauen,
+.match-shell.matchday .ar-cost-btn.bauen.cd {
+  background-image: url("/icons/ui-final/btn-bauen-grey.png");
+}
+.match-shell.matchday .build-card.cd .ar-cost-btn.kaufen,
+.match-shell.matchday .ar-cost-btn.kaufen.cd,
+.match-shell.matchday .build-card:disabled .ar-cost-btn.kaufen {
+  background-image: url("/icons/ui/btn-kaufen-grey.png");
+}
+.match-shell.matchday .ar-cost-btn.upgrade.cd,
+.match-shell.matchday .ar-cost-btn.upgrade:disabled {
+  background-image: url("/icons/ui-final/btn-upgrade-grey.png");
+}
+.match-shell.matchday .ar-cost-btn .inner {
+  position: absolute;
+  left: calc(var(--wood-x) + var(--inset));
+  right: calc(var(--wood-x) + var(--inset));
+  top: calc(var(--wood-y-top) + var(--inset));
+  bottom: calc(var(--wood-y-bot) + var(--inset));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  font-weight: 900;
+  font-family: var(--display), system-ui, sans-serif;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+  container-type: inline-size;
+  font-size: clamp(9px, 12cqw, 14px);
+  overflow: hidden;
+  background: transparent;
   pointer-events: none;
+}
+.match-shell.matchday .ar-cost-btn .txt,
+.match-shell.matchday .ar-cost-btn .pay {
+  font-size: 1em;
+  font-weight: inherit;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.match-shell.matchday .ar-cost-btn .txt .short { display: none; }
+.match-shell.matchday .ar-cost-btn .txt .full { display: inline; }
+@container (max-width: 100px) {
+  .match-shell.matchday .ar-cost-btn .txt .full { display: none; }
+  .match-shell.matchday .ar-cost-btn .txt .short { display: inline; }
+}
+.match-shell.matchday .ar-cost-btn .pay {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+}
+.match-shell.matchday .ar-cost-btn .pay img {
+  width: 1.15em;
+  height: 1.15em;
+  object-fit: contain;
+  flex: 0 0 auto;
 }
 
 .match-shell.matchday .build-card.selected {
@@ -637,7 +729,8 @@ select {
 }
 
 .match-shell.matchday .build-card.cd,
-.match-shell.matchday .upgrade-buy:disabled {
+.match-shell.matchday .ar-cost-btn.upgrade:disabled,
+.match-shell.matchday .ar-cost-btn.upgrade.cd {
   opacity: 0.55;
 }
 
@@ -732,44 +825,9 @@ select {
   overflow: hidden;
 }
 
-.match-shell.matchday .upgrade-buy {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 2px;
+.match-shell.matchday .upgrade-panel .ar-cost-btn {
   flex: 0 0 auto;
   width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  min-height: 0;
-  padding: 6px 7px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #ecfdf5, #bbf7d0);
-  box-shadow: 0 3px 0 #166534;
-  cursor: pointer;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.match-shell.matchday .upgrade-buy span {
-  font-family: var(--display);
-  font-weight: 900;
-  font-size: clamp(0.72rem, 1.5vh, 0.88rem);
-  color: #14532d;
-}
-
-.match-shell.matchday .upgrade-buy small {
-  font-weight: 800;
-  font-size: clamp(0.58rem, 1.25vh, 0.7rem);
-  color: #166534;
-}
-
-.match-shell.matchday .upgrade-buy .build-kaufen {
-  height: var(--rail-btn-h);
-  min-height: var(--rail-btn-h);
-  width: 100%;
-  max-width: 100%;
 }
 
 .match-shell.matchday #game-wrap {
