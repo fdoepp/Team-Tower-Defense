@@ -3,21 +3,22 @@
     "w": 1600,
     "h": 900
   },
-  "notes": "Gesamtsicht-Layout. Tribünen-Band: von Bildmitte (50%) 20% nach oben → 30–50%. Hintergrund: stadium-floodlight-derby-bg.jpg",
+  "notes": "Gesamtsicht-Layout. Tribünen 30–50% (von Mitte 20% nach oben), Abstand zueinander 0,5% der Pitch-Breite (Kante-zu-Kante). Left rail 21% (15+3+3). Hintergrund: stadium-floodlight-derby-bg.jpg",
   "tokens": {
-    "left_rail_w": 0.18,
+    "left_rail_w": 0.21,
     "right_rail_w": 0.15,
     "hud_top": 0.03,
     "scoreboard_max_w_of_pitch": 0.52,
     "scoreboard_h": 0.15,
     "tribune_y0": 0.3,
     "tribune_y1": 0.5,
+    "tribune_gap": 0.005,
     "slot_top_y": 0.52,
     "combat_y0": 0.64,
     "combat_y1": 0.8,
     "slot_bot_y": 0.84,
     "wallet_inset_x": 0.02,
-    "pitch_w": 0.67
+    "pitch_w": 0.64
   },
   "background": "game/public/assets/stadium-floodlight-derby-bg.jpg"
 }
