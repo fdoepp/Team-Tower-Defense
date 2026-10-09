@@ -52,6 +52,8 @@ export type UiFinalId =
   | "ordnerRed3"
   | "ordnerRed4"
   | "ordnerRed5"
+  | "pennantKsc"
+  | "pennantVfb"
   | "scoreboard"
   | "slotEmpty"
   | "standBierBlue1"
@@ -492,6 +494,22 @@ export const UI_FINAL_PATHS = {
   "ordnerRed5": {
     file: "ordner-red-5.png",
     path: "icons/ui-final/ordner-red-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "pennantKsc": {
+    file: "pennant-ksc.png",
+    path: "icons/ui-final/pennant-ksc.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "pennantVfb": {
+    file: "pennant-vfb.png",
+    path: "icons/ui-final/pennant-vfb.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
