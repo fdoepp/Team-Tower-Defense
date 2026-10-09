@@ -17,9 +17,11 @@ export type UiFinalId =
   | "fanGrey2"
   | "fanGrey3"
   | "fanGrey4"
+  | "fanGrey5"
   | "fanRed2"
   | "fanRed3"
   | "fanRed4"
+  | "fanRed5"
   | "hooliganBlue1"
   | "hooliganBlue2"
   | "hooliganBlue3"
@@ -100,6 +102,12 @@ export type UiFinalId =
   | "tribuneBlue"
   | "tribuneGrey"
   | "tribuneRed"
+  | "ultraBlue1"
+  | "ultraBlue5"
+  | "ultraGrey1"
+  | "ultraGrey5"
+  | "ultraRed1"
+  | "ultraRed5"
 ;
 
 export type UiFinalEntry = {
@@ -209,6 +217,14 @@ export const UI_FINAL_PATHS = {
     preserveAspect: true,
     freigestellt: true,
   },
+  "fanGrey5": {
+    file: "fan-grey-5.png",
+    path: "icons/ui-final/fan-grey-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
   "fanRed2": {
     file: "fan-red-2.png",
     path: "icons/ui-final/fan-red-2.png",
@@ -228,6 +244,14 @@ export const UI_FINAL_PATHS = {
   "fanRed4": {
     file: "fan-red-4.png",
     path: "icons/ui-final/fan-red-4.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fanRed5": {
+    file: "fan-red-5.png",
+    path: "icons/ui-final/fan-red-5.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
@@ -870,6 +894,54 @@ export const UI_FINAL_PATHS = {
     path: "icons/ui-final/tribune-block-red.png",
     native: { w: 426, h: 309 },
     aspectRatio: 1.378641,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ultraBlue1": {
+    file: "ultra-blue-1.png",
+    path: "icons/ui-final/ultra-blue-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ultraBlue5": {
+    file: "ultra-blue-5.png",
+    path: "icons/ui-final/ultra-blue-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ultraGrey1": {
+    file: "ultra-grey-1.png",
+    path: "icons/ui-final/ultra-grey-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ultraGrey5": {
+    file: "ultra-grey-5.png",
+    path: "icons/ui-final/ultra-grey-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ultraRed1": {
+    file: "ultra-red-1.png",
+    path: "icons/ui-final/ultra-red-1.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "ultraRed5": {
+    file: "ultra-red-5.png",
+    path: "icons/ui-final/ultra-red-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
   },

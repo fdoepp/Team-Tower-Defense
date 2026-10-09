@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "UI_FINAL",
-  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe.",
+  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe. (Runtime-Spiegel — nur released Dateien liegen neben dieser Datei.)",
   "rules": {
     "approvalRequired": true,
     "approver": "repo-owner",
@@ -3621,6 +3621,318 @@
       "notes": "Referenz Scoreboard — vollständige Demo mit Text, Momentumsbalken und Torchancen-Orb.",
       "name": "Referenz Scoreboard",
       "displayName": "Referenz Scoreboard"
+    },
+    "fanGrey5": {
+      "id": "fanGrey5",
+      "file": "fan-grey-5.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fan-grey-5.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7854,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          66,
+          22,
+          188,
+          245
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.255570+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.269Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/fan-grey-5.png"
+    },
+    "fanRed5": {
+      "id": "fanRed5",
+      "file": "fan-red-5.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fan-red-5.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7854,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          66,
+          22,
+          188,
+          245
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.409603+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.422Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/fan-red-5.png"
+    },
+    "ultraBlue1": {
+      "id": "ultraBlue1",
+      "file": "ultra-blue-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-blue-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8006,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          54,
+          187,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.531678+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.544Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-blue-1.png"
+    },
+    "ultraBlue5": {
+      "id": "ultraBlue5",
+      "file": "ultra-blue-5.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-blue-5.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7754,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          54,
+          211,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.683313+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.699Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-blue-5.png"
+    },
+    "ultraGrey1": {
+      "id": "ultraGrey1",
+      "file": "ultra-grey-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-grey-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8006,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          54,
+          187,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.803859+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.816Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-grey-1.png"
+    },
+    "ultraGrey5": {
+      "id": "ultraGrey5",
+      "file": "ultra-grey-5.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-grey-5.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7754,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          54,
+          211,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.923906+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.936Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-grey-5.png"
+    },
+    "ultraRed1": {
+      "id": "ultraRed1",
+      "file": "ultra-red-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-red-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8006,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          54,
+          187,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:44.044210+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:44.057Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-red-1.png"
+    },
+    "ultraRed5": {
+      "id": "ultraRed5",
+      "file": "ultra-red-5.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-red-5.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7754,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          54,
+          211,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:44.163654+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:44.176Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-red-5.png"
     }
   },
   "pending": {
@@ -3643,9 +3955,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8201,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           20,
@@ -3681,9 +3993,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8216,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           77,
           20,
@@ -4616,9 +4928,9 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1.0,
+        "aspectRatio": 1,
         "alphaCoverage": 0.8143,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           72,
           45,
@@ -4633,42 +4945,6 @@
       },
       "notes": "Größe angepasst auf gleiche Content-Höhe wie fanBlue1/fanRed1 (1/11). Bitte erneut freigeben.",
       "updatedAt": "2026-10-09T07:24:05.106648+00:00"
-    },
-    "fanGrey5": {
-      "id": "fanGrey5",
-      "file": "fan-grey-5.png",
-      "source": "game/public/icons/units/fan-grey-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7854,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          66,
-          22,
-          188,
-          245
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:52:59.859745+00:00"
-      },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
     "fanRed1": {
       "id": "fanRed1",
@@ -4703,78 +4979,6 @@
         "preserveAspectRequired": true,
         "reasons": [],
         "checkedAt": "2026-10-08T22:53:43.781501+00:00"
-      },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
-    },
-    "fanRed5": {
-      "id": "fanRed5",
-      "file": "fan-red-5.png",
-      "source": "game/public/icons/units/fan-red-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7854,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          66,
-          22,
-          188,
-          245
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:52:59.950601+00:00"
-      },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
-    },
-    "ultraBlue1": {
-      "id": "ultraBlue1",
-      "file": "ultra-blue-1.png",
-      "source": "game/public/icons/units/ultra-blue-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.8006,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          69,
-          54,
-          187,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:52:08.779801+00:00"
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
@@ -4886,78 +5090,6 @@
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
-    "ultraBlue5": {
-      "id": "ultraBlue5",
-      "file": "ultra-blue-5.png",
-      "source": "game/public/icons/units/ultra-blue-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7754,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          42,
-          54,
-          211,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.120424+00:00"
-      },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
-    },
-    "ultraGrey1": {
-      "id": "ultraGrey1",
-      "file": "ultra-grey-1.png",
-      "source": "game/public/icons/units/ultra-grey-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.8006,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          69,
-          54,
-          187,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.208774+00:00"
-      },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
-    },
     "ultraGrey2": {
       "id": "ultraGrey2",
       "file": "ultra-grey-2.png",
@@ -5063,78 +5195,6 @@
         "preserveAspectRequired": true,
         "reasons": [],
         "checkedAt": "2026-10-08T22:52:09.465443+00:00"
-      },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
-    },
-    "ultraGrey5": {
-      "id": "ultraGrey5",
-      "file": "ultra-grey-5.png",
-      "source": "game/public/icons/units/ultra-grey-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7754,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          42,
-          54,
-          211,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.550739+00:00"
-      },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
-    },
-    "ultraRed1": {
-      "id": "ultraRed1",
-      "file": "ultra-red-1.png",
-      "source": "game/public/icons/units/ultra-red-1.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.8006,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          69,
-          54,
-          187,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.635381+00:00"
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
@@ -5246,42 +5306,6 @@
       },
       "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
     },
-    "ultraRed5": {
-      "id": "ultraRed5",
-      "file": "ultra-red-5.png",
-      "source": "game/public/icons/units/ultra-red-5.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7754,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          42,
-          54,
-          211,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.978661+00:00"
-      },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
-    },
     "scoreboardMomentum": {
       "id": "scoreboardMomentum",
       "file": "scoreboard-momentum.png",
@@ -5339,7 +5363,7 @@
         },
         "aspectRatio": 2.049213,
         "alphaCoverage": 0.459,
-        "opaqueCornerRatio": 0.0,
+        "opaqueCornerRatio": 0,
         "contentBBox": [
           32,
           70,
@@ -5370,16 +5394,16 @@
     ]
   },
   "inventory": {
-    "pendingCount": 48,
-    "releasedCount": 95,
+    "pendingCount": 40,
+    "releasedCount": 103,
     "byCategory": {
       "ui": {
         "pending": 28,
         "released": 7
       },
       "persons": {
-        "pending": 20,
-        "released": 40
+        "pending": 12,
+        "released": 48
       },
       "buildings": {
         "pending": 0,
@@ -5390,7 +5414,7 @@
         "released": 3
       }
     },
-    "gatheredAt": "2026-10-08T22:57:00.814634+00:00",
+    "gatheredAt": "2026-10-09T07:27:44.206994+00:00",
     "canon": {
       "persons": "units/{fan|ordner|hooligan|ultra}-{grey|blue|red}-{1..5}.png (60)",
       "buildings": "stands/{bier|fanshop|ordner}-{grey|blue|red}-{1..5}.png (45) as stand*",

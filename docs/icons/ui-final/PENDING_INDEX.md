@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=48** · **released=95**
+**pending=40** · **released=103**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -10,24 +10,16 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
 1. `fanBlue1` — `fan-blue-1.png`
 6. `fanGrey1` — `fan-grey-1.png`
-10. `fanGrey5` — `fan-grey-5.png`
 11. `fanRed1` — `fan-red-1.png`
-15. `fanRed5` — `fan-red-5.png`
-46. `ultraBlue1` — `ultra-blue-1.png`
 47. `ultraBlue2` — `ultra-blue-2.png`
 48. `ultraBlue3` — `ultra-blue-3.png`
 49. `ultraBlue4` — `ultra-blue-4.png`
-50. `ultraBlue5` — `ultra-blue-5.png`
-51. `ultraGrey1` — `ultra-grey-1.png`
 52. `ultraGrey2` — `ultra-grey-2.png`
 53. `ultraGrey3` — `ultra-grey-3.png`
 54. `ultraGrey4` — `ultra-grey-4.png`
-55. `ultraGrey5` — `ultra-grey-5.png`
-56. `ultraRed1` — `ultra-red-1.png`
 57. `ultraRed2` — `ultra-red-2.png`
 58. `ultraRed3` — `ultra-red-3.png`
 59. `ultraRed4` — `ultra-red-4.png`
-60. `ultraRed5` — `ultra-red-5.png`
 ### ui
 
 108. `btnKaufenGreen` — `btn-kaufen-green.png`
@@ -61,5 +53,12 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
 ## Released (diese Runde)
 
-- **123** `scoreboard` — `scoreboard-top.png` — **Referenz Scoreboard**
+- **10** `fanGrey5` — `fan-grey-5.png`
+- **15** `fanRed5` — `fan-red-5.png`
+- **46** `ultraBlue1` — `ultra-blue-1.png`
+- **50** `ultraBlue5` — `ultra-blue-5.png`
+- **51** `ultraGrey1` — `ultra-grey-1.png`
+- **55** `ultraGrey5` — `ultra-grey-5.png`
+- **56** `ultraRed1` — `ultra-red-1.png`
+- **60** `ultraRed5` — `ultra-red-5.png`
 
