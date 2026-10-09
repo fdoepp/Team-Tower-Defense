@@ -105,16 +105,44 @@ function statChipHtml(
 
 /** Live Verb+Kosten über Button-Chrome (kein gebackenes Label). */
 function arCostBtnHtml(opts: {
-  kind: "bauen" | "kaufen" | "upgrade";
+  kind: "bauen" | "kaufen" | "upgrade" | "senden";
   full: string;
   short: string;
   amount: number | string;
   currencySrc?: string;
   payId?: string;
+  /** Echter Button (Personen-Rail); sonst dekoratives span (Build-Karten). */
+  asButton?: boolean;
+  btnId?: string;
+  btnAttrs?: string;
 }): string {
   const cur = opts.currencySrc ?? UI_ICONS.currencyGold;
   const payId = opts.payId ? ` id="${opts.payId}"` : "";
-  return `<span class="ar-cost-btn ${opts.kind}" aria-hidden="true"><span class="inner"><span class="txt"><span class="full">${opts.full}</span><span class="short">${opts.short}</span></span><span class="pay"${payId}><img src="${cur}" alt="">${opts.amount}</span></span></span>`;
+  const inner = `<span class="inner"><span class="txt"><span class="full">${opts.full}</span><span class="short">${opts.short}</span></span><span class="pay"${payId}><img src="${cur}" alt=""><span class="amt">${opts.amount}</span></span></span>`;
+  if (opts.asButton) {
+    const id = opts.btnId ? ` id="${opts.btnId}"` : "";
+    const attrs = opts.btnAttrs ? ` ${opts.btnAttrs}` : "";
+    return `<button type="button" class="ar-cost-btn ${opts.kind}"${id}${attrs}>${inner}</button>`;
+  }
+  return `<span class="ar-cost-btn ${opts.kind}" aria-hidden="true">${inner}</span>`;
+}
+
+/** Personen-Titel-Meta: "(Lvl.1, x5)" */
+function personMetaLabel(
+  m: Match,
+  kind: FanKind | "ordner",
+  count: number,
+): string {
+  const lo = m.minUnitLevel(kind);
+  const hi = m.maxUnitLevel(kind);
+  const lv =
+    hi <= 0 ? "1" : lo === hi ? String(lo) : `${lo}–${hi}`;
+  return `(Lvl.${lv}, x${count})`;
+}
+
+function setPayAmt(root: ParentNode, payId: string, amount: number | string): void {
+  const el = root.querySelector(`#${payId} .amt`) ?? root.querySelector(`#${payId}`);
+  if (el) el.textContent = String(amount);
 }
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
@@ -282,91 +310,135 @@ function renderMatchScreen(): void {
     <div class="match-shell matchday">
       <aside class="side-rail left-rail" aria-label="Personen">
         <header class="rail-banner">Personen</header>
-        <p class="freie-plaetze">Einheiten gesamt <b id="free-seats">0</b></p>
-        <div class="unit-rows">
-          <div class="ur-row" data-card-buy="normalos">
-            <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="normalos" src="${unitIconPath("normalos", tc, 1)}" alt="">
-              <div class="ur-meta">
-                <span class="ur-name">Fans <small class="ur-lv" data-unit-lv="normalos">Lv1</small></span>
-                <b class="ur-count" id="fb-n">0</b>
-                <p class="ur-cost">${BUY_COST.normalos.security} Sicherheit</p>
-              </div>
+        <div class="unit-rows person-cards">
+          <article class="person-card">
+            <div class="person-title">Fans <span class="meta" data-person-meta="normalos">(Lvl.1, x0)</span></div>
+            <div class="person-actions dual">
+              ${arCostBtnHtml({
+                kind: "kaufen",
+                full: "KAUFEN",
+                short: "KAUF",
+                amount: BUY_COST.normalos.security,
+                currencySrc: UI_ICONS.currencySicherheit,
+                asButton: true,
+                btnAttrs: 'data-quick-buy="normalos" title="Kaufen"',
+              })}
+              ${arCostBtnHtml({
+                kind: "upgrade",
+                full: "UPGRADE",
+                short: "UP",
+                amount: 22,
+                currencySrc: UI_ICONS.currencyGold,
+                payId: "up-pay-normalos",
+                asButton: true,
+                btnAttrs: 'data-unit-up="normalos" title="Upgrade"',
+              })}
             </div>
-            <div class="ur-actions ur-actions-dual">
-              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="normalos" title="Kaufen">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
-              <button type="button" class="ar-lv-btn" data-unit-up="normalos" title="Upgrade">▲</button>
+          </article>
+          <article class="person-card">
+            <div class="person-title">Ultras <span class="meta" data-person-meta="ultras">(Lvl.1, x0)</span></div>
+            <div class="person-actions triple">
+              ${arCostBtnHtml({
+                kind: "kaufen",
+                full: "KAUFEN",
+                short: "KAUF",
+                amount: BUY_COST.ultras.merch,
+                currencySrc: UI_ICONS.currencyFanartikel,
+                asButton: true,
+                btnAttrs: 'data-quick-buy="ultras" title="Kaufen"',
+              })}
+              ${arCostBtnHtml({
+                kind: "upgrade",
+                full: "UPGRADE",
+                short: "UP",
+                amount: 22,
+                currencySrc: UI_ICONS.currencyGold,
+                payId: "up-pay-ultras",
+                asButton: true,
+                btnAttrs: 'data-unit-up="ultras" title="Upgrade"',
+              })}
+              ${arCostBtnHtml({
+                kind: "senden",
+                full: "SENDEN",
+                short: "SEND",
+                amount: PYRO_FIGHT_MERCH,
+                currencySrc: UI_ICONS.currencyFanartikel,
+                asButton: true,
+                btnId: "btn-pyro-fight",
+                btnAttrs: 'title="Senden"',
+              })}
             </div>
-          </div>
-          <div class="ur-row" data-card-buy="ultras">
-            <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="ultras" src="${unitIconPath("ultras", tc, 1)}" alt="">
-              <div class="ur-meta">
-                <span class="ur-name">Ultras <small class="ur-lv" data-unit-lv="ultras">Lv1</small></span>
-                <b class="ur-count" id="fb-u">0</b>
-                <p class="ur-cost">${BUY_COST.ultras.merch} Fanartikel</p>
-              </div>
+          </article>
+          <article class="person-card">
+            <div class="person-title">Hooligans <span class="meta" data-person-meta="hooligans">(Lvl.1, x0)</span></div>
+            <div class="person-actions triple">
+              ${arCostBtnHtml({
+                kind: "kaufen",
+                full: "KAUFEN",
+                short: "KAUF",
+                amount: BUY_COST.hooligans.beer,
+                currencySrc: UI_ICONS.currencyBier,
+                asButton: true,
+                btnAttrs: 'data-quick-buy="hooligans" title="Kaufen"',
+              })}
+              ${arCostBtnHtml({
+                kind: "upgrade",
+                full: "UPGRADE",
+                short: "UP",
+                amount: 22,
+                currencySrc: UI_ICONS.currencyGold,
+                payId: "up-pay-hooligans",
+                asButton: true,
+                btnAttrs: 'data-unit-up="hooligans" title="Upgrade"',
+              })}
+              ${arCostBtnHtml({
+                kind: "senden",
+                full: "SENDEN",
+                short: "SEND",
+                amount: HOOLIGAN_ORDER_BEER,
+                currencySrc: UI_ICONS.currencyBier,
+                asButton: true,
+                btnId: "btn-hooligan",
+                btnAttrs: 'title="Senden"',
+              })}
             </div>
-            <div class="ur-actions ur-actions-triple">
-              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="ultras" title="Kaufen">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
-              <button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Senden">
-                <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
-                <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
-              </button>
-              <button type="button" class="ar-lv-btn" data-unit-up="ultras" title="Upgrade">▲</button>
+          </article>
+          <article class="person-card">
+            <div class="person-title">Ordner <span class="meta" data-person-meta="ordner">(Lvl.1, x0)</span></div>
+            <div class="person-actions dual">
+              ${arCostBtnHtml({
+                kind: "kaufen",
+                full: "KAUFEN",
+                short: "KAUF",
+                amount: STEWARD_HIRE_GOLD,
+                currencySrc: UI_ICONS.currencyGold,
+                asButton: true,
+                btnId: "btn-hire-ordner",
+                btnAttrs: 'title="Kaufen"',
+              })}
+              ${arCostBtnHtml({
+                kind: "upgrade",
+                full: "UPGRADE",
+                short: "UP",
+                amount: 22,
+                currencySrc: UI_ICONS.currencyGold,
+                payId: "up-pay-ordner",
+                asButton: true,
+                btnAttrs: 'data-unit-up="ordner" title="Upgrade"',
+              })}
             </div>
-          </div>
-          <div class="ur-row" data-card-buy="hooligans">
-            <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="hooligans" src="${unitIconPath("hooligans", tc, 1)}" alt="">
-              <div class="ur-meta">
-                <span class="ur-name">Hooligans <small class="ur-lv" data-unit-lv="hooligans">Lv1</small></span>
-                <b class="ur-count" id="fb-h">0</b>
-                <p class="ur-cost">${BUY_COST.hooligans.beer} Bier</p>
-              </div>
-            </div>
-            <div class="ur-actions ur-actions-triple">
-              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="hooligans" title="Kaufen">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
-              <button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Senden">
-                <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
-                <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
-              </button>
-              <button type="button" class="ar-lv-btn" data-unit-up="hooligans" title="Upgrade">▲</button>
-            </div>
-          </div>
-          <div class="ur-row ur-row-ordner" data-card-buy="ordner">
-            <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="ordner" src="${unitIconPath("ordner", tc, 1)}" alt="">
-              <div class="ur-meta">
-                <span class="ur-name">Ordner <small class="ur-lv" data-unit-lv="ordner">Lv1</small></span>
-                <b class="ur-count" id="fb-o">0</b>
-                <p class="ur-cost">${STEWARD_HIRE_GOLD} Gold</p>
-              </div>
-            </div>
-            <div class="ur-actions ur-actions-dual">
-              <button type="button" class="ar-icon-btn ar-kaufen" id="btn-hire-ordner" title="Kaufen">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
-              <button type="button" class="ar-lv-btn" data-unit-up="ordner" title="Upgrade">▲</button>
-            </div>
-          </div>
+          </article>
         </div>
-        <div class="fanbase-col gast" aria-label="Gegner">
+        <div class="fanbase-col gast sr-only" aria-label="Gegner">
           <span class="fb"><i>N</i><b id="fb-en">0</b></span>
           <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
           <span class="fb"><i>H</i><b id="fb-eh">0</b></span>
           <span class="fb"><i>O</i><b id="fb-eo">0</b></span>
         </div>
+        <span class="sr-only" id="fb-n">0</span>
+        <span class="sr-only" id="fb-u">0</span>
+        <span class="sr-only" id="fb-h">0</span>
+        <span class="sr-only" id="fb-o">0</span>
       </aside>
       <div id="game-wrap">
         <div class="top-hud" id="pitch-hud">
@@ -771,11 +843,6 @@ function renderMatchScreen(): void {
       plus.classList.toggle("ready", ok);
       plus.classList.toggle("cd", !ok);
     });
-    const freeEl = app.querySelector("#free-seats");
-    if (freeEl) {
-      const o = m.countTeamFans(m.playerTeam);
-      freeEl.textContent = String(o.normalos + o.ultras + o.hooligans + o.ordner);
-    }
     syncPendingBuildUi();
   };
 
@@ -792,44 +859,18 @@ function renderMatchScreen(): void {
     syncOverlay();
   });
   app.querySelectorAll<HTMLButtonElement>("[data-quick-buy]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
+    btn.addEventListener("click", () => {
       m.tryBuyFanQuick(btn.dataset.quickBuy as FanKind);
       syncOverlay();
     });
   });
   app.querySelectorAll<HTMLButtonElement>("[data-unit-up]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
+    btn.addEventListener("click", () => {
       const kind = btn.dataset.unitUp as FanKind | "ordner";
       m.tryUpgradeUnit(kind);
       syncOverlay();
     });
   });
-  // Whole brown card is a Kaufen hit-target (Bloons-style); Senden/Upgrade stay own buttons
-  app.querySelectorAll<HTMLElement>("[data-card-buy]").forEach((card) => {
-    card.addEventListener("click", (e) => {
-      const t = e.target as HTMLElement | null;
-      if (t?.closest(".ar-senden, .ar-kaufen, .ar-lv-btn, button")) return;
-      const kind = card.dataset.cardBuy;
-      if (kind === "ordner") {
-        m.tryHireStewardQuick();
-      } else if (kind === "normalos" || kind === "ultras" || kind === "hooligans") {
-        m.tryBuyFanQuick(kind);
-      }
-      syncOverlay();
-    });
-  });
-  app.querySelector("#btn-hooligan")?.addEventListener(
-    "click",
-    (e) => e.stopPropagation(),
-    true,
-  );
-  app.querySelector("#btn-pyro-fight")?.addEventListener(
-    "click",
-    (e) => e.stopPropagation(),
-    true,
-  );
   app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const kind = btn.dataset.pendingBuild as BuildingKind;
@@ -903,8 +944,12 @@ function renderMatchScreen(): void {
       setFb("#fb-en", foe.normalos);
       setFb("#fb-eh", foe.hooligans);
       setFb("#fb-eo", foe.ordner);
-      // Sidebar icons / level badges follow lowest living unit level per kind
-      const tcNow = teamColor(m.playerTeam);
+      const counts: Record<FanKind | "ordner", number> = {
+        normalos: own.normalos,
+        ultras: own.ultras,
+        hooligans: own.hooligans,
+        ordner: own.ordner,
+      };
       const kinds: (FanKind | "ordner")[] = [
         "normalos",
         "ultras",
@@ -913,17 +958,8 @@ function renderMatchScreen(): void {
       ];
       for (const kind of kinds) {
         const lvMin = m.minUnitLevel(kind);
-        const lvMax = m.maxUnitLevel(kind);
-        const img = app.querySelector<HTMLImageElement>(
-          `[data-unit-icon="${kind}"]`,
-        );
-        if (img) {
-          // Icon follows strongest unit so upgrades are visually obvious
-          const next = unitIconPath(kind, tcNow, Math.max(1, lvMax || 1));
-          if (img.getAttribute("src") !== next) img.src = next;
-        }
-        const lvEl = app.querySelector(`[data-unit-lv="${kind}"]`);
-        if (lvEl) lvEl.textContent = m.unitLevelLabel(kind);
+        const meta = app.querySelector(`[data-person-meta="${kind}"]`);
+        if (meta) meta.textContent = personMetaLabel(m, kind, counts[kind]);
         const upBtn = app.querySelector<HTMLButtonElement>(
           `[data-unit-up="${kind}"]`,
         );
@@ -933,7 +969,7 @@ function renderMatchScreen(): void {
           upBtn.disabled = !ok;
           upBtn.classList.toggle("ready", ok);
           upBtn.classList.toggle("cd", !ok);
-          upBtn.textContent = cost != null ? `▲${cost}` : "▲";
+          setPayAmt(app, `up-pay-${kind}`, cost != null ? cost : "—");
           upBtn.title =
             cost == null
               ? "Max. Stufe"
