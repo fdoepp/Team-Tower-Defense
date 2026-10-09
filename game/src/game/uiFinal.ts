@@ -37,6 +37,8 @@ export type UiFinalId =
   | "hooliganRed3"
   | "hooliganRed4"
   | "hooliganRed5"
+  | "menuRail"
+  | "menuRailTile"
   | "ordnerBlue1"
   | "ordnerBlue2"
   | "ordnerBlue3"
@@ -379,6 +381,22 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+  },
+  "menuRail": {
+    file: "menu-rail-brown.png",
+    path: "icons/ui-final/menu-rail-brown.png",
+    native: { w: 720, h: 1280 },
+    aspectRatio: 0.5625,
+    preserveAspect: true,
+    freigestellt: false,
+  },
+  "menuRailTile": {
+    file: "menu-rail-brown-tile.png",
+    path: "icons/ui-final/menu-rail-brown-tile.png",
+    native: { w: 504, h: 1024 },
+    aspectRatio: 0.492188,
+    preserveAspect: true,
+    freigestellt: false,
   },
   "ordnerBlue1": {
     file: "ordner-blue-1.png",

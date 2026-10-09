@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=37** · **released=106**
+**pending=35** · **released=108**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -30,8 +30,6 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 116. `currencyFanartikel` — `currency-fanartikel.png`
 117. `currencyGold` — `currency-gold.png`
 118. `currencySicherheit` — `currency-sicherheit.png`
-119. `menuRail` — `menu-rail-brown.png`
-120. `menuRailTile` — `menu-rail-brown-tile.png`
 124. `scoreboardMomentum` — `scoreboard-momentum.png`
 125. `scoreboardOrbGast` — `scoreboard-top-orb-gast.png`
 126. `scoreboardOrbHeim` — `scoreboard-top-orb-heim.png`
@@ -61,3 +59,5 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 - **121** `pennantKsc` — `pennant-ksc.png`
 - **122** `pennantVfb` — `pennant-vfb.png`
 - **143** `scoreboardChrome` — `scoreboard-chrome.png` — **Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)**
+- **119** `menuRail` — `menu-rail-brown.png`
+- **120** `menuRailTile` — `menu-rail-brown-tile.png`
