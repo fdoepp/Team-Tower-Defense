@@ -5062,22 +5062,22 @@
           "h": 256
         },
         "aspectRatio": 1.0,
-        "alphaCoverage": 0.7872,
+        "alphaCoverage": 0.7884,
         "opaqueCornerRatio": 0.0,
         "contentBBox": [
           65,
           54,
-          189,
+          190,
           247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T08:10:38.626421+00:00"
+        "checkedAt": "2026-10-09T08:25:57.139751+00:00"
       },
-      "notes": "Neu generiert: Kopf-Versatz behoben, Pyro-Rauch vollständig. Bitte erneut freigeben.",
-      "updatedAt": "2026-10-09T08:10:39.612815+00:00"
+      "notes": "Kopf nahtlos, Schuhe weiß ohne Blau, Pyro gut. Bitte erneut freigeben.",
+      "updatedAt": "2026-10-09T08:25:57.155239+00:00"
     },
     "ultraBlue3": {
       "id": "ultraBlue3",
