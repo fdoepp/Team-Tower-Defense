@@ -65,12 +65,6 @@ function buildingYieldCurrency(kind: BuildingKind): string {
   return UI_ICONS.currencySicherheit;
 }
 
-function buildingYieldUnit(kind: BuildingKind): string {
-  if (kind === "bier") return "Bier";
-  if (kind === "fanshop") return "Fanart.";
-  return "Sich.";
-}
-
 /** Tatsächliche Produktion / Sekunde (PROD_* × productionRate). */
 function buildingYieldPerSec(kind: BuildingKind, level: number): number {
   const base =
@@ -87,6 +81,7 @@ function formatHealRadius(level: number): string {
   return String(Math.round(stewardPostRadius(level) * 100));
 }
 
+/** Symbol + Betrag/s — Einheit steckt im Währungs-Icon. */
 function yieldChipHtml(
   kind: BuildingKind,
   perSec: number,
@@ -95,7 +90,7 @@ function yieldChipHtml(
   const sign = opts?.delta ? (perSec >= 0 ? "+" : "") : "";
   const id = opts?.id ? ` id="${opts.id}"` : "";
   const deltaCls = opts?.delta ? " yield-delta" : "";
-  return `<span class="yield-chip${deltaCls}"${id}><img src="${buildingYieldCurrency(kind)}" alt=""><span class="yield-amt">${sign}${formatYieldPerSec(perSec)} ${buildingYieldUnit(kind)}/s</span></span>`;
+  return `<span class="yield-chip${deltaCls}"${id}><img src="${buildingYieldCurrency(kind)}" alt=""><span class="yield-amt">${sign}${formatYieldPerSec(perSec)}/s</span></span>`;
 }
 
 function statChipHtml(
@@ -448,6 +443,19 @@ function renderMatchScreen(): void {
             </div>
             ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.fanshop })}
           </button>
+          <button type="button" class="build-card" data-pending-build="ordner">
+            <div class="build-top">
+              <img class="build-preview" src="icons/stands/ordner-${tc}-1.png" alt="">
+              <div class="build-info">
+                <span class="build-name">Ordnerposten</span>
+                ${yieldChipHtml("ordner", buildingYieldPerSec("ordner", 1))}
+                ${statChipHtml("HP", String(ordnerPostMaxHp(1)))}
+                ${statChipHtml("Radius", `${formatHealRadius(1)}%`)}
+                ${statChipHtml("Heilung", `${stewardHealPerSec(1)}/s`)}
+              </div>
+            </div>
+            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.ordner })}
+          </button>
         </div>
         <div class="build-rows hidden" id="build-upgrade-rows">
           <div class="upgrade-panel" id="upgrade-panel">
@@ -457,7 +465,7 @@ function renderMatchScreen(): void {
                 <img id="upgrade-from-img" src="" alt="">
                 <span class="up-lv" id="upgrade-from-lv">Lv1</span>
                 <div class="up-stats" id="upgrade-from-stats">
-                  <span class="yield-chip" id="upgrade-from-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">0.41 Bier/s</span></span>
+                  <span class="yield-chip" id="upgrade-from-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">0.41/s</span></span>
                 </div>
               </div>
               <div class="up-arrow" aria-hidden="true">→</div>
@@ -465,7 +473,7 @@ function renderMatchScreen(): void {
                 <img id="upgrade-to-img" src="" alt="">
                 <span class="up-lv" id="upgrade-to-lv">Lv2</span>
                 <div class="up-stats" id="upgrade-to-stats">
-                  <span class="yield-chip yield-delta" id="upgrade-to-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">+0.17 Bier/s</span></span>
+                  <span class="yield-chip yield-delta" id="upgrade-to-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">+0.17/s</span></span>
                 </div>
               </div>
             </div>
@@ -476,15 +484,6 @@ function renderMatchScreen(): void {
               </span>
             </button>
           </div>
-          <button type="button" class="build-card" id="rail-hire-ordner">
-            <div class="build-top">
-              <img class="build-preview" src="${unitIconPath("ordner", tc, 1)}" alt="">
-              <div class="build-info">
-                <span class="build-name">Ordner anheuern</span>
-              </div>
-            </div>
-            ${arCostBtnHtml({ kind: "kaufen", full: "KAUFEN", short: "KAUF", amount: STEWARD_HIRE_GOLD })}
-          </button>
         </div>
         <button type="button" class="rail-close" id="build-rail-close">Schließen</button>
       </aside>
@@ -633,12 +632,6 @@ function renderMatchScreen(): void {
         upBtn.classList.toggle("cd", broke);
         if (costEl) costEl.textContent = String(cost);
       }
-      const hireBtn = app.querySelector<HTMLButtonElement>("#rail-hire-ordner")!;
-      const canHire = !!(slot && m.canHireSteward(slot));
-      hireBtn.classList.toggle("hidden", slot?.building !== "ordner");
-      hireBtn.disabled = !canHire;
-      hireBtn.classList.toggle("cd", !canHire);
-      buildUpgradeRows.classList.toggle("hire-open", slot?.building === "ordner");
     }
   };
 
@@ -861,15 +854,6 @@ function renderMatchScreen(): void {
       m.tryUpgrade();
     }
     closeBuildRail();
-    syncOverlay();
-  });
-  app.querySelector("#rail-hire-ordner")?.addEventListener("click", () => {
-    if (state.buildTarget) {
-      m.buildMenu = state.buildTarget;
-      m.selectedSlot = state.buildTarget;
-      m.tryHireSteward();
-      openBuildRail("upgrade", state.buildTarget);
-    }
     syncOverlay();
   });
   btnHire.addEventListener("click", () => {

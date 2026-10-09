@@ -537,18 +537,21 @@ select {
   max-width: 100%;
   overflow: hidden;
   overflow-x: hidden;
+  justify-content: flex-start;
+  align-content: flex-start;
 }
 
-/* Build card: %-Abstände, Icon/Text/Button skalieren gemeinsam */
+/* Build card: %-Abstände; Anteil der Rail, nie über 40% Höhe */
 .match-shell.matchday .build-card {
   display: flex;
   flex-direction: column;
   gap: 4%;
-  flex: 1 1 0;
+  flex: 0 1 40%;
   min-height: 0;
   min-width: 0;
   width: 100%;
   max-width: 100%;
+  max-height: 40%;
   box-sizing: border-box;
   text-align: left;
   padding: var(--br-pad, 3%) calc(var(--br-pad, 3%) + 1%);
@@ -560,7 +563,7 @@ select {
     0 3px 0 rgba(60, 30, 10, 0.35);
   cursor: pointer;
   overflow: hidden;
-  container-type: size;
+  container-type: inline-size;
 }
 
 .match-shell.matchday .build-card .build-top {
@@ -607,7 +610,7 @@ select {
 .match-shell.matchday .build-info .build-name {
   font-family: var(--display);
   font-weight: 900;
-  font-size: clamp(0.65rem, 8cqh, 0.95rem);
+  font-size: clamp(0.65rem, 7cqw, 0.95rem);
   color: #1f140c;
   white-space: nowrap;
   overflow: hidden;
@@ -623,7 +626,7 @@ select {
   max-width: 100%;
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(0.48rem, 5.5cqh, 0.72rem);
+  font-size: clamp(0.5rem, 5.5cqw, 0.75rem);
   color: #5c3a1a;
   line-height: 1.1;
   white-space: nowrap;
@@ -655,7 +658,7 @@ select {
   max-width: 100%;
   font-family: var(--display);
   font-weight: 800;
-  font-size: clamp(0.5rem, 5.5cqh, 0.72rem);
+  font-size: clamp(0.48rem, 5cqw, 0.7rem);
   color: #5c3a1a;
   line-height: 1.15;
   white-space: nowrap;
@@ -690,14 +693,14 @@ select {
  * Overlay: Holz-Innenkante + 2% (Breite L/R, Höhe T/B).
  */
 .match-shell.matchday .ar-cost-btn {
-  /* Face beginnt ~2% innerhalb der Holz-Innenkante; Text nochmals +2% */
-  --wood-x: 8.28%;
-  --wood-y-top: 15.62%;
+  /* Face bündig zur Holz-Innenkante; Live-Text +2% Abstand */
+  --wood-x: 5.62%;
+  --wood-y-top: 8.33%;
   --wood-y-bot: 20.83%;
   --inset: 2%;
   position: relative;
   display: block;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   width: 100%;
   max-width: 100%;
   height: auto;
@@ -713,12 +716,10 @@ select {
   background-position: center;
   background-size: 100% 100%;
   overflow: hidden;
-  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.28));
   box-sizing: border-box;
   cursor: inherit;
   font: inherit;
   color: #fff;
-  flex: 0 1 auto;
 }
 .match-shell.matchday button.ar-cost-btn {
   cursor: pointer;
@@ -807,15 +808,16 @@ select {
   opacity: 0.55;
 }
 
-/* Upgrade panel — %-Abstände, Ertrag unter Symbolen, kein Blurb */
+/* Upgrade panel — max. 40% Rail-Höhe, nie volle Höhe */
 .match-shell.matchday .upgrade-panel {
   display: flex;
   flex-direction: column;
   gap: 4%;
-  flex: 1 1 auto;
+  flex: 0 1 40%;
   min-height: 0;
   min-width: 0;
   max-width: 100%;
+  max-height: 40%;
   width: 100%;
   box-sizing: border-box;
   padding: var(--br-pad, 3%) calc(var(--br-pad, 3%) + 1%);
@@ -827,25 +829,12 @@ select {
     0 3px 0 rgba(60, 30, 10, 0.35);
   overflow: hidden;
   overflow-x: hidden;
-  container-type: size;
+  container-type: inline-size;
 }
 
 .match-shell.matchday #build-upgrade-rows {
   gap: var(--br-gap, 2.5%);
-}
-
-.match-shell.matchday #build-upgrade-rows > .build-card {
-  flex: 0 1 34%;
-  min-height: 0;
-  max-height: none;
-}
-
-.match-shell.matchday #build-upgrade-rows:not(.hire-open) > .build-card {
-  display: none;
-}
-
-.match-shell.matchday #build-upgrade-rows:not(.hire-open) .upgrade-panel {
-  flex: 1 1 auto;
+  justify-content: flex-start;
 }
 
 .match-shell.matchday .upgrade-title {
@@ -853,7 +842,7 @@ select {
   margin: 0;
   font-family: var(--display);
   font-weight: 900;
-  font-size: clamp(0.7rem, 7cqh, 1rem);
+  font-size: clamp(0.7rem, 7cqw, 1rem);
   color: #1f140c;
   white-space: nowrap;
   overflow: hidden;
@@ -898,19 +887,19 @@ select {
 .match-shell.matchday .up-stage .up-lv {
   font-family: var(--display);
   font-weight: 900;
-  font-size: clamp(0.5rem, 5.5cqh, 0.72rem);
+  font-size: clamp(0.5rem, 5.5cqw, 0.72rem);
   color: #1d4ed8;
   line-height: 1;
   flex: 0 0 auto;
 }
 
 .match-shell.matchday .up-stage .yield-chip {
-  font-size: clamp(0.5rem, 5.5cqh, 0.75rem);
+  font-size: clamp(0.5rem, 5.5cqw, 0.75rem);
   flex: 0 0 auto;
 }
 
 .match-shell.matchday .up-arrow {
-  font-size: clamp(0.85rem, 8cqh, 1.15rem);
+  font-size: clamp(0.85rem, 8cqw, 1.15rem);
   font-weight: 900;
   color: #3b2412;
   flex: 0 0 auto;
