@@ -71,3 +71,18 @@ Runtime: `.build-rail .ar-cost-btn` — Holz + eine Face-Fläche; Live-Text Holz
 
 Nur Symbol-PNG; Zahl live im Wallet-Chip / Button-Pay-Zeile.
 
+## Match-Rahmenlogik
+
+Verbindliche %-Tokens für Rails, HUD, Tribünen, Gang:  
+`docs/icons/ui-final/MATCH_LAYOUT_TOKENS.json` (Mirror: `game/public/icons/ui-final/MATCH_LAYOUT_TOKENS.json`).
+
+| Bereich | Schlüssel | Wert |
+| --- | --- | --- |
+| Left / Right / Pitch | `rails.left_w` / `right_w` / `pitch_w` | 21% / 15% / 64% |
+| Scoreboard | `hud.scoreboard.max_w_of_pitch` · `h_of_screen` | 59,8% Pitch · 17,25% Bild (×1,15 vs. Baseline) |
+| Wallet | `hud.wallet.icon_h_of_screen` · `chip_h_of_screen` | ×1,15 vs. Baseline |
+| Tribünen | `scene.tribune_y0`–`y1` · `tribune_gap_of_pitch` | 30–50% · 0,5% Pitch |
+| Hintergrund | `background` | `stadium-floodlight-derby-bg.jpg` |
+
+Scoreboard-Live-Slots bleiben in `scoreboard-slots.json`.
+

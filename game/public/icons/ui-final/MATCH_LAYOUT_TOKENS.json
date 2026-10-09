@@ -1,0 +1,78 @@
+{
+  "id": "matchLayoutRahmen",
+  "status": "binding",
+  "refSize": {
+    "w": 1600,
+    "h": 900
+  },
+  "background": "game/public/assets/stadium-floodlight-derby-bg.jpg",
+  "notes": "Verbindliche Rahmenlogik für Match-Gesamtsicht. Alle Werte relativ (0–1) zur Bild- bzw. Pitch-Box. Scoreboard + Wallet je ×1.15 gegenüber Compose v6-Baseline.",
+  "rails": {
+    "left_w": 0.21,
+    "right_w": 0.15,
+    "pitch_w": 0.64
+  },
+  "hud": {
+    "top": 0.03,
+    "scoreboard": {
+      "max_w_of_pitch": 0.598,
+      "h_of_screen": 0.1725,
+      "align": "center",
+      "scale_vs_baseline": 1.15,
+      "slots": "docs/icons/ui-final/scoreboard-slots.json"
+    },
+    "wallet": {
+      "inset_x_of_pitch": 0.02,
+      "icon_h_of_screen": 0.02811,
+      "chip_h_of_screen": 0.03578,
+      "gap_of_pitch": 0.006,
+      "scale_vs_baseline": 1.15,
+      "currencies": [
+        "currencyGold",
+        "currencyBier",
+        "currencyFanartikel",
+        "currencySicherheit"
+      ]
+    }
+  },
+  "scene": {
+    "tribune_y0": 0.3,
+    "tribune_y1": 0.5,
+    "tribune_gap_of_pitch": 0.005,
+    "slot_top_y": 0.52,
+    "combat_y0": 0.64,
+    "combat_y1": 0.8,
+    "slot_bot_y": 0.84
+  },
+  "personCard": {
+    "dual": "3%·46%·2%·46%·3%",
+    "triple": "3%·30%·2%·30%·2%·30%·3%",
+    "liveTextInset": 0.02,
+    "wood": {
+      "x": 0.0641,
+      "yTop": 0.1354,
+      "yBot": 0.1875
+    }
+  },
+  "tokensFlat": {
+    "left_rail_w": 0.21,
+    "right_rail_w": 0.15,
+    "hud_top": 0.03,
+    "scoreboard_max_w_of_pitch": 0.598,
+    "scoreboard_h": 0.1725,
+    "scoreboard_scale": 1.15,
+    "wallet_inset_x": 0.02,
+    "wallet_icon_h": 0.02811,
+    "wallet_chip_h": 0.03578,
+    "wallet_scale": 1.15,
+    "wallet_gap": 0.006,
+    "tribune_y0": 0.3,
+    "tribune_y1": 0.5,
+    "tribune_gap": 0.005,
+    "slot_top_y": 0.52,
+    "combat_y0": 0.64,
+    "combat_y1": 0.8,
+    "slot_bot_y": 0.84,
+    "pitch_w": 0.64
+  }
+}
