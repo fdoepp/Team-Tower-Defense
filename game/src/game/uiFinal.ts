@@ -50,6 +50,7 @@ export type UiFinalId =
   | "ordnerRed3"
   | "ordnerRed4"
   | "ordnerRed5"
+  | "slotEmpty"
   | "standBierBlue1"
   | "standBierBlue2"
   | "standBierBlue3"
@@ -466,6 +467,14 @@ export const UI_FINAL_PATHS = {
   "ordnerRed5": {
     file: "ordner-red-5.png",
     path: "icons/ui-final/ordner-red-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "slotEmpty": {
+    file: "slot-empty.png",
+    path: "icons/ui-final/slot-empty.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
