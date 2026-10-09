@@ -5166,27 +5166,29 @@
       },
       "validation": {
         "ok": true,
+        "file": "ultra-blue-3.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7614,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7865,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          57,
           54,
-          203,
+          54,
+          200,
           247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:52:08.950463+00:00"
+        "checkedAt": "2026-10-09T09:04:43.114686+00:00"
       },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
+      "notes": "Neu: Kopf nahtlos, Schuhe ohne Blau, Props erhalten. Bitte freigeben, dann Grau/Rot ableiten.",
+      "updatedAt": "2026-10-09T09:05:01.014535+00:00"
     },
     "ultraBlue4": {
       "id": "ultraBlue4",
@@ -5202,27 +5204,29 @@
       },
       "validation": {
         "ok": true,
+        "file": "ultra-blue-4.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7603,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7855,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          55,
+          53,
           54,
-          205,
+          201,
           247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.035516+00:00"
+        "checkedAt": "2026-10-09T09:05:00.996845+00:00"
       },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
+      "notes": "Neu: Kopf nahtlos, Schuhe ohne Blau, Props erhalten. Bitte freigeben, dann Grau/Rot ableiten.",
+      "updatedAt": "2026-10-09T09:05:01.014535+00:00"
     },
     "ultraGrey3": {
       "id": "ultraGrey3",
