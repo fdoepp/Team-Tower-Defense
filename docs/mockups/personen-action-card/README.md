@@ -1,6 +1,6 @@
 # Personen-Action-Card — Vorschläge A & B
 
-**Status:** Vorschlag zur Freigabe  
+**Status:** Vorschlag A fertig — Chrome in UI Final abgelegt (`btn-kaufen/upgrade/senden-*`), Runtime = linke Rail  
 **Mocks:** [A — horizontal](./index.html) · [B — vertikal](./index-b.html) · [Vergleich](./compare.html)
 
 ## Ziel

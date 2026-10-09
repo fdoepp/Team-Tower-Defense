@@ -109,6 +109,10 @@
   }
 
   /* Einheitliches Grid auf allen Karten — Spalten bündig übereinander */
+  /*
+   * Triple: 3% | 30% Kauf | 2% | 30% Upgrade | 2% | 30% Send | 3%
+   * Dual:   3% | 46% Kauf | 2% | 46% Upgrade | 3%
+   */
   .actions {
     flex: 1 1 0;
     display: grid;
@@ -124,6 +128,11 @@
   .actions .cost-btn:nth-child(1) { grid-column: 2; }
   .actions .cost-btn:nth-child(2) { grid-column: 4; }
   .actions .cost-btn:nth-child(3) { grid-column: 6; }
+  .actions.dual {
+    grid-template-columns: 3% 46% 2% 46% 3%;
+  }
+  .actions.dual .cost-btn:nth-child(1) { grid-column: 2; }
+  .actions.dual .cost-btn:nth-child(2) { grid-column: 4; }
 
   /*
    * Chrome-PNG: nur Holzrahmen + eine saubere Farbfläche (kein gebackenes Label).
@@ -131,10 +140,11 @@
    * Holz-Rims müssen zu btn-*-chrome.png passen (siehe Generator).
    */
   .cost-btn {
-    /* Face bündig zur Holz-Innenkante; Live-Text +2% */
+    /* Gemessen am Chrome: Innenkante Holzrahmen → Face (eine Fläche, kein Label) */
     --wood-x: 6.41%;
     --wood-y-top: 13.54%;
     --wood-y-bot: 18.75%;
+    /* Live-Text: zusätzlich ~2% der Button-Breite/-Höhe zu allen Innenrändern */
     --inset: 2%;
     appearance: none;
     border: 0;
@@ -246,7 +256,7 @@
   <p class="note">
     Chrome ohne gebackenes Label — Verb/Kosten nur live. Eine Farbfläche + Holzrahmen
     (kein gestapeltes Overlay). Live-Text mit <code>2%</code> Abstand zu allen Innenkanten des Holzrahmens.
-    Grid <code>3%·30%·2%·30%·2%·30%·3%</code>, Verb oben / Kosten unten.
+    Button-Breiten dynamisch: Triple <code>3%·30%·2%·30%·2%·30%·3%</code>, Dual <code>3%·46%·2%·46%·3%</code>. Verb oben / Kosten unten.
   </p>
 
   <div class="stage">
@@ -256,7 +266,7 @@
         <div class="cards">
           <article class="card">
             <div class="title">Fans <span class="meta">(Lvl.1, x5)</span></div>
-            <div class="actions">
+            <div class="actions dual">
               <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-sec.png" alt="">12</span></span></button>
               <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
             </div>
@@ -279,7 +289,7 @@
           </article>
           <article class="card">
             <div class="title">Ordner <span class="meta">(Lvl.1, x1)</span></div>
-            <div class="actions">
+            <div class="actions dual">
               <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
               <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
             </div>

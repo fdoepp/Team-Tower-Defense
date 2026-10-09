@@ -35,7 +35,16 @@ Alles, was sich ändert (Score, Minute, Momentum-%, Kosten, Level), gehört **ni
 | `scoreboardMomentum`, `scoreboardOrbHeim/Gast` | Referenz-Demos | Nicht als Runtime-Default; Notes setzen |
 | `slotEmpty*` | Chrome (leer) | Freigabe OK wenn Optik stimmt |
 
-## Personen-Karten
+## Personen-Karten (linke Rail — fertig)
 
-Siehe Vorschlag: `docs/mockups/personen-action-card/`.  
-Kosten **im** Button (`KAUFEN` + Icon + Zahl) — keine Extra-Preiszeile. Vier Karten müssen im Handy-Querformat **ohne Scroll** in die linke Rail passen.
+**Quelle:** `docs/mockups/personen-action-card/` (Vorschlag A) + Chrome in `game/public/icons/ui-final/btn-{kaufen,upgrade,senden}-*.png` (byte-gleich zu Mockup `btn-*-chrome.png`).
+
+| Regel | Wert |
+| --- | --- |
+| Layout | Titel `Fans (Lvl.1, xN)` · keine Unit-Icons · KAUF → UP → SEND |
+| Dual-Grid | `3%·46%·2%·46%·3%` (Fans, Ordner) |
+| Triple-Grid | `3%·30%·2%·30%·2%·30%·3%` (Ultras, Hooligans) |
+| Chrome | Holz + eine Fläche; Live-Text Holz-Innen + **2%** |
+| Banner | Braun (`#6b4428`→`#4a2c18`), nicht blau |
+
+Runtime: `.left-rail .person-card` + `.ar-cost-btn` — **nicht** neu nachbauen; Abstände und Chrome aus dieser Ablage.
