@@ -60,3 +60,14 @@ Runtime: `.left-rail .person-card` + `.ar-cost-btn` — **nicht** neu nachbauen;
 
 Runtime: `.build-rail .ar-cost-btn` — Holz + eine Face-Fläche; Live-Text Holz-Innen + **2%**; kein gestapeltes Overlay.
 
+## Währungen (freigegeben 2026-10-09)
+
+| Asset | Motiv |
+| --- | --- |
+| `currencyGold` | Münze mit Krone |
+| `currencyBier` | Maßkrug |
+| `currencyFanartikel` | Trikot blau/weiß |
+| `currencySicherheit` | Schild mit Haken |
+
+Nur Symbol-PNG; Zahl live im Wallet-Chip / Button-Pay-Zeile.
+

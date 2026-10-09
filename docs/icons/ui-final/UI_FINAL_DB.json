@@ -4613,7 +4613,7 @@
       },
       "validation": {
         "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/currency-bier.png",
+        "file": "/workspace/game/public/icons/ui-final/currency-bier.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -4632,11 +4632,15 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T10:55:11.107252+00:00"
+        "checkedAt": "2026-10-09T18:51:55.342924+00:00"
       },
-      "approvedBy": "user",
-      "approvedAt": "2026-10-09T10:55:11.121Z",
-      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben."
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:51:55.139Z",
+      "notes": "Freigabe 2026-10-09: Währungssymbol + Wallet-Counter. Reines Icon ohne Zahl/Label; Zahl live im DOM/Chip.",
+      "chrome": false,
+      "bakedLabel": false,
+      "assetClass": "currency-icon",
+      "category": "ui"
     },
     "currencyGold": {
       "id": "currencyGold",
@@ -4650,7 +4654,7 @@
       },
       "validation": {
         "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/currency-gold.png",
+        "file": "/workspace/game/public/icons/ui-final/currency-gold.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -4669,11 +4673,15 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T10:55:11.266415+00:00"
+        "checkedAt": "2026-10-09T18:51:55.246067+00:00"
       },
-      "approvedBy": "user",
-      "approvedAt": "2026-10-09T10:55:11.280Z",
-      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben."
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:51:55.139Z",
+      "notes": "Freigabe 2026-10-09: Währungssymbol + Wallet-Counter. Reines Icon ohne Zahl/Label; Zahl live im DOM/Chip.",
+      "chrome": false,
+      "bakedLabel": false,
+      "assetClass": "currency-icon",
+      "category": "ui"
     },
     "currencySicherheit": {
       "id": "currencySicherheit",
@@ -4687,7 +4695,7 @@
       },
       "validation": {
         "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/currency-sicherheit.png",
+        "file": "/workspace/game/public/icons/ui-final/currency-sicherheit.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -4706,11 +4714,15 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T10:55:11.401569+00:00"
+        "checkedAt": "2026-10-09T18:51:55.537605+00:00"
       },
-      "approvedBy": "user",
-      "approvedAt": "2026-10-09T10:55:11.415Z",
-      "notes": "Reines Icon ohne Zahl/Label (für Wallet-Chips). Bitte freigeben."
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:51:55.139Z",
+      "notes": "Freigabe 2026-10-09: Währungssymbol + Wallet-Counter. Reines Icon ohne Zahl/Label; Zahl live im DOM/Chip.",
+      "chrome": false,
+      "bakedLabel": false,
+      "assetClass": "currency-icon",
+      "category": "ui"
     },
     "currencyFanartikel": {
       "id": "currencyFanartikel",
@@ -4724,7 +4736,7 @@
       },
       "validation": {
         "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/currency-fanartikel.png",
+        "file": "/workspace/game/public/icons/ui-final/currency-fanartikel.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -4743,11 +4755,15 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T11:41:22.913495+00:00"
+        "checkedAt": "2026-10-09T18:51:55.441542+00:00"
       },
-      "approvedBy": "user",
-      "approvedAt": "2026-10-09T11:41:22.926Z",
-      "notes": "Trikot (flächig) statt Schal — bewusst abweichend von currency-icons-clean-Schal. Bitte freigeben."
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:51:55.139Z",
+      "notes": "Freigabe 2026-10-09: Währungssymbol + Wallet-Counter. Reines Icon ohne Zahl/Label; Zahl live im DOM/Chip. Trikot (flächig).",
+      "chrome": false,
+      "bakedLabel": false,
+      "assetClass": "currency-icon",
+      "category": "ui"
     }
   },
   "pending": {
