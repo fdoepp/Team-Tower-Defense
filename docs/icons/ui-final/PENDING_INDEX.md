@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=29** · **released=114**
+**pending=27** · **released=116**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -8,8 +8,6 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
 ### persons
 
-48. `ultraBlue3` — `ultra-blue-3.png`
-49. `ultraBlue4` — `ultra-blue-4.png`
 53. `ultraGrey3` — `ultra-grey-3.png`
 54. `ultraGrey4` — `ultra-grey-4.png`
 58. `ultraRed3` — `ultra-red-3.png`
@@ -41,6 +39,8 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
 
 ## Released (diese Runde)
+- **48** `ultraBlue3` — `ultra-blue-3.png`
+- **49** `ultraBlue4` — `ultra-blue-4.png`
 - **52** `ultraGrey2` — `ultra-grey-2.png`
 - **57** `ultraRed2` — `ultra-red-2.png`
 - **47** `ultraBlue2` — `ultra-blue-2.png`

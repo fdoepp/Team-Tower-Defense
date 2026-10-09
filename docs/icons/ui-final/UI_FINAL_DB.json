@@ -4359,6 +4359,80 @@
       "approvedBy": "user",
       "approvedAt": "2026-10-09T09:00:46.683Z",
       "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen."
+    },
+    "ultraBlue3": {
+      "id": "ultraBlue3",
+      "file": "ultra-blue-3.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-blue-3.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7865,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          54,
+          54,
+          200,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:38:35.270255+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:38:35.288Z",
+      "notes": "Neu: Kopf nahtlos, Schuhe ohne Blau, Props erhalten. Bitte freigeben, dann Grau/Rot ableiten."
+    },
+    "ultraBlue4": {
+      "id": "ultraBlue4",
+      "file": "ultra-blue-4.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-blue-4.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7855,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          53,
+          54,
+          201,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:38:35.448700+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:38:35.462Z",
+      "notes": "Neu: Kopf nahtlos, Schuhe ohne Blau, Props erhalten. Bitte freigeben, dann Grau/Rot ableiten."
     }
   },
   "pending": {
@@ -5152,10 +5226,10 @@
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
       "category": "ui"
     },
-    "ultraBlue3": {
-      "id": "ultraBlue3",
-      "file": "ultra-blue-3.png",
-      "source": "game/public/icons/units/ultra-blue-3.png",
+    "ultraGrey3": {
+      "id": "ultraGrey3",
+      "file": "ultra-grey-3.png",
+      "source": "derived-from-ultraBlue3",
       "status": "pendingApproval",
       "role": "unit",
       "category": "persons",
@@ -5166,7 +5240,7 @@
       },
       "validation": {
         "ok": true,
-        "file": "ultra-blue-3.png",
+        "file": "ultra-grey-3.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -5185,15 +5259,15 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T09:04:43.114686+00:00"
+        "checkedAt": "2026-10-09T09:39:26.287620+00:00"
       },
-      "notes": "Neu: Kopf nahtlos, Schuhe ohne Blau, Props erhalten. Bitte freigeben, dann Grau/Rot ableiten.",
-      "updatedAt": "2026-10-09T09:05:01.014535+00:00"
+      "notes": "Aus freigegebenem ultraBlue3 eingefärbt. Bitte vor Freigabe prüfen.",
+      "updatedAt": "2026-10-09T09:39:26.175332+00:00"
     },
-    "ultraBlue4": {
-      "id": "ultraBlue4",
-      "file": "ultra-blue-4.png",
-      "source": "game/public/icons/units/ultra-blue-4.png",
+    "ultraGrey4": {
+      "id": "ultraGrey4",
+      "file": "ultra-grey-4.png",
+      "source": "derived-from-ultraBlue4",
       "status": "pendingApproval",
       "role": "unit",
       "category": "persons",
@@ -5204,7 +5278,7 @@
       },
       "validation": {
         "ok": true,
-        "file": "ultra-blue-4.png",
+        "file": "ultra-grey-4.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
@@ -5223,87 +5297,15 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T09:05:00.996845+00:00"
+        "checkedAt": "2026-10-09T09:39:26.511809+00:00"
       },
-      "notes": "Neu: Kopf nahtlos, Schuhe ohne Blau, Props erhalten. Bitte freigeben, dann Grau/Rot ableiten.",
-      "updatedAt": "2026-10-09T09:05:01.014535+00:00"
-    },
-    "ultraGrey3": {
-      "id": "ultraGrey3",
-      "file": "ultra-grey-3.png",
-      "source": "game/public/icons/units/ultra-grey-3.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7614,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          57,
-          54,
-          203,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.379850+00:00"
-      },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
-    },
-    "ultraGrey4": {
-      "id": "ultraGrey4",
-      "file": "ultra-grey-4.png",
-      "source": "game/public/icons/units/ultra-grey-4.png",
-      "status": "pendingApproval",
-      "role": "unit",
-      "category": "persons",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7603,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          55,
-          54,
-          205,
-          247
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.465443+00:00"
-      },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
+      "notes": "Aus freigegebenem ultraBlue4 eingefärbt. Bitte vor Freigabe prüfen.",
+      "updatedAt": "2026-10-09T09:39:26.175332+00:00"
     },
     "ultraRed3": {
       "id": "ultraRed3",
       "file": "ultra-red-3.png",
-      "source": "game/public/icons/units/ultra-red-3.png",
+      "source": "derived-from-ultraBlue3",
       "status": "pendingApproval",
       "role": "unit",
       "category": "persons",
@@ -5314,32 +5316,34 @@
       },
       "validation": {
         "ok": true,
+        "file": "ultra-red-3.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7622,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7865,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          57,
           54,
-          203,
+          54,
+          200,
           247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.805484+00:00"
+        "checkedAt": "2026-10-09T09:39:26.399380+00:00"
       },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
+      "notes": "Aus freigegebenem ultraBlue3 eingefärbt. Bitte vor Freigabe prüfen.",
+      "updatedAt": "2026-10-09T09:39:26.175332+00:00"
     },
     "ultraRed4": {
       "id": "ultraRed4",
       "file": "ultra-red-4.png",
-      "source": "game/public/icons/units/ultra-red-4.png",
+      "source": "derived-from-ultraBlue4",
       "status": "pendingApproval",
       "role": "unit",
       "category": "persons",
@@ -5350,27 +5354,29 @@
       },
       "validation": {
         "ok": true,
+        "file": "ultra-red-4.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7617,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.7855,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          55,
+          53,
           54,
-          205,
+          201,
           247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:52:09.892324+00:00"
+        "checkedAt": "2026-10-09T09:39:26.607270+00:00"
       },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
+      "notes": "Aus freigegebenem ultraBlue4 eingefärbt. Bitte vor Freigabe prüfen.",
+      "updatedAt": "2026-10-09T09:39:26.175332+00:00"
     },
     "scoreboardMomentum": {
       "id": "scoreboardMomentum",
