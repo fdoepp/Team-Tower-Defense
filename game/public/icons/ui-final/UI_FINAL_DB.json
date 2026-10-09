@@ -4982,23 +4982,23 @@
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.8143,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.824,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
-          72,
+          81,
           45,
-          183,
-          246
+          173,
+          247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T07:24:05.091156+00:00"
+        "checkedAt": "2026-10-09T08:05:54.089499+00:00"
       },
-      "notes": "Größe angepasst auf gleiche Content-Höhe wie fanBlue1/fanRed1 (1/11). Bitte erneut freigeben.",
-      "updatedAt": "2026-10-09T07:24:05.106648+00:00"
+      "notes": "Aus neuem fanBlue1 umgefärbt (grau wie Alt-Palette). Kopf sauber. Bitte erneut freigeben.",
+      "updatedAt": "2026-10-09T08:05:54.006602+00:00"
     },
     "fanRed1": {
       "id": "fanRed1",
@@ -5014,27 +5014,29 @@
       },
       "validation": {
         "ok": true,
+        "file": "fan-red-1.png",
         "mode": "RGBA",
         "native": {
           "w": 256,
           "h": 256
         },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.8318,
-        "opaqueCornerRatio": 0,
+        "aspectRatio": 1.0,
+        "alphaCoverage": 0.824,
+        "opaqueCornerRatio": 0.0,
         "contentBBox": [
           81,
           45,
-          174,
+          173,
           247
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-08T22:53:43.781501+00:00"
+        "checkedAt": "2026-10-09T08:05:54.189191+00:00"
       },
-      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra)."
+      "notes": "Aus neuem fanBlue1 umgefärbt (rot/maroon wie Alt-Palette). Kopf sauber. Bitte erneut freigeben.",
+      "updatedAt": "2026-10-09T08:05:54.006602+00:00"
     },
     "ultraBlue2": {
       "id": "ultraBlue2",
