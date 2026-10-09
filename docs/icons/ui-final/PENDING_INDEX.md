@@ -57,7 +57,7 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 137. `slotEmptyPersp` — `slot-empty-persp.png`
 138. `slotEmptyPerspBlue` — `slot-empty-persp-blue.png`
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
-143. `scoreboardChrome` — `scoreboard-chrome.png` — **Scoreboard Chrome (ohne Text/Balken/Orb)**
+143. `scoreboardChrome` — `scoreboard-chrome.png` — **Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)**
 
 ## Released (diese Runde)
 
