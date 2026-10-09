@@ -3277,7 +3277,7 @@
         "reasons": [],
         "checkedAt": "2026-10-09T16:19:41.176646+00:00"
       },
-      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
+      "notes": "Chrome 320×96: Holzrahmen (von btnKaufen) + eine Face-Fläche, ohne Label/Silberplatte/Loch im Rim. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.364101+00:00",
@@ -3318,7 +3318,7 @@
         "reasons": [],
         "checkedAt": "2026-10-09T16:19:41.266779+00:00"
       },
-      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
+      "notes": "Chrome 320×96: Holzrahmen (von btnKaufen) + eine Face-Fläche, ohne Label/Silberplatte/Loch im Rim. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
       "category": "ui",
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-08T22:57:00.455332+00:00",
