@@ -730,7 +730,7 @@ select {
   background-image: url("/icons/ui-final/btn-bauen-amber.png");
 }
 .match-shell.matchday .ar-cost-btn.kaufen {
-  background-image: url("/icons/ui/btn-kaufen-green.png");
+  background-image: url("/icons/ui-final/btn-kaufen-green.png");
 }
 .match-shell.matchday .ar-cost-btn.upgrade {
   background-image: url("/icons/ui-final/btn-upgrade-purple.png");
@@ -742,7 +742,7 @@ select {
 .match-shell.matchday .build-card.cd .ar-cost-btn.kaufen,
 .match-shell.matchday .ar-cost-btn.kaufen.cd,
 .match-shell.matchday .build-card:disabled .ar-cost-btn.kaufen {
-  background-image: url("/icons/ui/btn-kaufen-grey.png");
+  background-image: url("/icons/ui-final/btn-kaufen-grey.png");
 }
 .match-shell.matchday .ar-cost-btn.upgrade.cd,
 .match-shell.matchday .ar-cost-btn.upgrade:disabled {
