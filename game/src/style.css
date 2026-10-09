@@ -694,9 +694,9 @@ select {
  */
 .match-shell.matchday .ar-cost-btn {
   /* Face bündig zur Holz-Innenkante; Live-Text +2% Abstand */
-  --wood-x: 5.62%;
-  --wood-y-top: 8.33%;
-  --wood-y-bot: 20.83%;
+  --wood-x: 5.94%;
+  --wood-y-top: 15.62%;
+  --wood-y-bot: 12.50%;
   --inset: 2%;
   position: relative;
   display: block;
