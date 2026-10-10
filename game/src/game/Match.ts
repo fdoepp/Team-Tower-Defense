@@ -1999,8 +1999,8 @@ export class Match {
       ).length;
       if (neutralAlive >= NEUTRAL_STEWARD_CAP) continue;
       s.stewardCd -= dt;
-      // Allow up to 2 per post so both grey posts can fill toward the total of 4
-      if (aliveAtPost >= STEWARD_CAP) continue;
+      // One surviving grey post may fill the full total of 4
+      if (aliveAtPost >= NEUTRAL_STEWARD_CAP) continue;
       if (s.stewardCd > 0) continue;
       s.stewardCd = NEUTRAL_STEWARD_RESPAWN;
       this.fans.push(this.makeSteward("neutral", s));
