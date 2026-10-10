@@ -28,28 +28,27 @@ export const FLOOR_SIDE_MARGIN = 0.15;
  * Near-plane column ray anchors (x at yNear), 12 lines → 11 cells.
  * Span = [FLOOR_SIDE_MARGIN .. 1-FLOOR_SIDE_MARGIN] (15% free each side).
  *
- * Pattern per team group: plot · intra-gap · plot, then a wide inter-gutter:
- *   Heim [0,2] · inter [3] · Neutral [4,6] · inter [7] · Gäste [8,10]
- * Intra gaps [1,5,9] keep the two plots inside a block apart.
+ * Pattern: Heim [0,2] · inter [3] · Neutral [4,6] · inter [7] · Gäste [8,10].
+ * Intra gaps (esp. Neutral [5]) keep the block door exit corridor clear of plots.
  */
 export const FLOOR_COL_XS_NEAR = [
-  // Heim: plot · intra · plot
-  0.15, 0.205, 0.25, 0.305,
-  // inter-gutter → Neutral: plot · intra · plot
-  0.42, 0.475, 0.52, 0.575,
-  // inter-gutter → Gäste: plot · intra · plot
-  0.69, 0.745, 0.79, 0.85,
+  // Heim: both plots left of Heim door (~0.36) so the exit lane stays open
+  0.15, 0.185, 0.195, 0.235,
+  // inter → Neutral: plots flank mid door (~0.50), wide intra = exit lane
+  0.4, 0.455, 0.545, 0.6,
+  // inter → Gäste: both plots right of Gäste door (~0.64)
+  0.76, 0.8, 0.81, 0.85,
 ] as const;
 
 /** Depth of the near column anchors (normalized). */
 export const FLOOR_Y_NEAR = 0.985;
 
 /**
- * Row lines far → near (normalized). Bau bands share equal screen height
- * so far/near Bauplätze stay equally clickable; Gang stays between them.
- * Wider vertical separation between far/near Bau rows.
+ * Row lines far → near (normalized).
+ * Far Bau row sits ~10% screen-height below the block door (y≈0.50),
+ * so the exit drop from tribüne → gang stays free of Bauplätze.
  */
-export const FLOOR_ROW_YS = [0.54, 0.63, 0.88, 0.975] as const;
+export const FLOOR_ROW_YS = [0.64, 0.72, 0.86, 0.975] as const;
 
 /** Shrink plot chrome toward cell center (0 = full cell, 0.3 ≈ 70% footprint). */
 export const PLOT_DRAW_INSET = 0.3;
