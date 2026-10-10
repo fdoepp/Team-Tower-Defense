@@ -4,7 +4,6 @@ import {
   boothQuad,
   FLOOR_GRID_COUPLE,
   floorGangBand,
-  floorRowYs,
   quadCenter,
   quadPennantPos,
   quadToRect,
@@ -28,10 +27,15 @@ export const VISUAL_CROWD_SOFT_CAP = 20;
  * - bottom: gang with Baustellen
  */
 export const L = {
-  stadiumH: 0.32,
-  /** Stands sit in the middle third */
-  blockTop: 0.32,
-  blockBodyH: 0.3,
+  stadiumH: 0.3,
+  /**
+   * Tribünen-Band per MATCH_LAYOUT_TOKENS:
+   * von Bildmitte 20% nach oben → y0=0.30 … y1=0.50 (Höhe = 20%).
+   */
+  blockTop: 0.3,
+  blockBodyH: 0.2,
+  /** 0.5% der Pitch-Breite zwischen Tribünen (sichtbare Kanten). */
+  tribuneGap: 0.005,
   gangPadTop: 0.01,
   /** Gang is the bottom ~third — not half the screen */
   gangH: 0.34,
@@ -81,34 +85,26 @@ export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack
 
   const edge = L.blocksLeft;
   const avail = Math.max(0.2, 1 - edge * 2);
-  const shelfTop = 0.16;
-  const shelfBottom = FLOOR_GRID_COUPLE
-    ? Math.max(shelfTop + 0.2, floorRowYs()[0]! - 0.025)
-    : L.blockTop + L.blockBodyH;
-  const maxH = Math.max(0.18, shelfBottom - shelfTop);
+  // Füße auf 50%-Linie; Bandhöhe hart auf 20% (nicht die volle Shelf bis Gang)
+  const shelfBottom = L.blockTop + L.blockBodyH; // 0.50
+  const maxH = L.blockBodyH; // 0.20 — warum vorher zu hoch: Shelf ging bis Floor-Row (~0.4+)
 
-  const packAt = (hNorm: number) => {
-    const ws = TRIBUNE_NATIVE.map((t) => (t.w / t.h) * (hNorm / aspect));
-    const xs = [0, 0, 0];
-    const contentRight = (i: number, x: number, w: number) =>
-      x + w * (1 - TRIBUNE_NATIVE[i]!.faceR / TRIBUNE_NATIVE[i]!.w);
-    const contentLeft = (i: number, x: number, w: number) =>
-      x + w * (TRIBUNE_NATIVE[i]!.faceL / TRIBUNE_NATIVE[i]!.w);
-
-    xs[0] = 0;
-    const bcr = contentRight(0, xs[0], ws[0]!);
-    xs[1] = bcr - ws[1]! * (TRIBUNE_NATIVE[1]!.faceL / TRIBUNE_NATIVE[1]!.w);
-    const gcr = contentRight(1, xs[1], ws[1]!);
-    xs[2] = gcr - ws[2]! * (TRIBUNE_NATIVE[2]!.faceL / TRIBUNE_NATIVE[2]!.w);
-
-    const leftC = contentLeft(0, xs[0], ws[0]!);
-    const rightC = contentRight(2, xs[2], ws[2]!);
-    return { xs, ws, leftC, rightC, span: rightC - leftC };
+  const packAt = (_hNorm: number) => {
+    const gap = L.tribuneGap;
+    // Equal visual cells with 0.5% gaps; stretch widths to fill pitch
+    const cell = (avail - 2 * gap) / 3;
+    const ws = [cell, cell, cell];
+    const xs = [edge, edge + cell + gap, edge + 2 * (cell + gap)];
+    return {
+      xs,
+      ws,
+      leftC: xs[0]!,
+      rightC: xs[2]! + ws[2]!,
+      span: avail,
+    };
   };
 
-  const unit = packAt(1);
-  const hForWidth = avail / Math.max(1e-6, unit.span);
-  const hNorm = Math.min(maxH, hForWidth);
+  const hNorm = maxH;
   const packed = packAt(hNorm);
 
   const greyCx = packed.xs[1]! + packed.ws[1]! / 2;

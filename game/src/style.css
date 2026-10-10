@@ -262,7 +262,10 @@ select {
   min-height: 0;
   height: 100%;
   max-height: 100%;
-  padding: 6px 7px max(6px, env(safe-area-inset-bottom));
+  /* Rahmenlogik: schmaler Innenrand ~1–2% der Railbreite */
+  --rail-inset: 1.5%;
+  padding: var(--rail-inset);
+  padding-bottom: max(var(--rail-inset), env(safe-area-inset-bottom));
   overflow: hidden;
   overflow-x: hidden;
   pointer-events: auto;
@@ -279,28 +282,30 @@ select {
 
 /* Personen-Rail = fertige Card-A (Mockup + abgelegtes ui-final Chrome) */
 .match-shell.matchday .left-rail {
-  padding: 4px max(3px, env(safe-area-inset-left)) 4px 3px;
+  padding: var(--rail-inset);
+  padding-left: max(var(--rail-inset), env(safe-area-inset-left));
   gap: 3px;
   border-right-width: 4px;
 }
 
 .match-shell.matchday .right-rail,
 .match-shell.matchday .build-rail {
-  padding-right: max(10px, env(safe-area-inset-right));
+  padding-right: max(var(--rail-inset), env(safe-area-inset-right));
   border-left-width: 4px;
 }
 
 .match-shell.matchday .build-rail {
-  --br-gap: 2.5%;
-  --br-pad: 3%;
+  --br-gap: 2%;
+  --br-pad: 1.5%;
   --br-icon: 26%;
   position: relative;
   z-index: 8;
   min-width: 0;
   container-type: size;
   gap: 2%;
-  /* %-Abstand der Karten zum Holz-Innenrand der Rail */
-  padding: 2.5% max(2.5%, env(safe-area-inset-right)) 2.5% 2.5%;
+  /* Karten fast volle Railbreite — Innenrand ~1.5% */
+  padding: var(--rail-inset);
+  padding-right: max(var(--rail-inset), env(safe-area-inset-right));
   animation: build-rail-in 0.22s ease-out;
 }
 
@@ -439,7 +444,7 @@ select {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0 3%;
+  padding: 0 1.5%;
   color: #1c120a;
 }
 
@@ -460,8 +465,9 @@ select {
   gap: 0;
 }
 
+/* Button-Gutter ~1.5% Card-Breite (Rahmenlogik: schmaler Innenrand) */
 .match-shell.matchday .person-actions.dual {
-  grid-template-columns: 3% 46% 2% 46% 3%;
+  grid-template-columns: 1.5% 47% 3% 47% 1.5%;
 }
 .match-shell.matchday .person-actions.dual .ar-cost-btn:nth-child(1) {
   grid-column: 2;
@@ -471,7 +477,7 @@ select {
 }
 
 .match-shell.matchday .person-actions.triple {
-  grid-template-columns: 3% 30% 2% 30% 2% 30% 3%;
+  grid-template-columns: 1.5% 31% 2% 31% 2% 31% 1.5%;
 }
 .match-shell.matchday .person-actions.triple .ar-cost-btn:nth-child(1) {
   grid-column: 2;
@@ -563,7 +569,7 @@ select {
   max-height: 40%;
   box-sizing: border-box;
   text-align: left;
-  padding: var(--br-pad, 3%) calc(var(--br-pad, 3%) + 1%);
+  padding: var(--br-pad, 1.5%);
   border-radius: 14px;
   border: 2px solid #7a4a22;
   background: linear-gradient(180deg, #fffaf0, #f3e2c4);
@@ -873,7 +879,7 @@ select {
   max-height: 40%;
   width: 100%;
   box-sizing: border-box;
-  padding: var(--br-pad, 3%) calc(var(--br-pad, 3%) + 1%);
+  padding: var(--br-pad, 1.5%);
   border-radius: 14px;
   border: 2px solid #7a4a22;
   background: linear-gradient(180deg, #fffaf0, #f3e2c4);
@@ -993,18 +999,21 @@ select {
   top: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 4px;
-  padding: 6px 8px;
-  padding-top: max(6px, env(safe-area-inset-top));
+  padding: 3% 2% 0;
+  padding-top: max(3%, env(safe-area-inset-top));
   pointer-events: none;
-  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.45), transparent 85%);
+  background: transparent;
   overflow: visible;
   height: auto;
 }
 
+/* Wallet: oben links im Pitch (nicht zentriert) — MATCH_LAYOUT_TOKENS */
 .match-shell.matchday .wallet-row {
-  justify-content: center;
+  align-self: flex-start;
+  justify-content: flex-start;
+  margin-left: 2%;
   pointer-events: none;
 }
 

@@ -31,7 +31,6 @@ import {
   SCENE_ASSETS,
   UI_ICONS,
   drawIcon,
-  drawIconQuad,
   drawToyIcon,
   drawToyProp,
   getIcon,
@@ -236,7 +235,6 @@ function drawBlocks(
   h: number,
 ): void {
   syncTribuneLayout(w, h);
-  const labels = ["Heim", "Neutral", "Gäste"];
 
   for (const b of BLOCK_META) {
     const tr = tribuneRect(b.id);
@@ -285,27 +283,7 @@ function drawBlocks(
       roundRect(ctx, left, top, bw, bh, 18);
       ctx.fill();
     }
-
-    const label = labels[b.id] ?? "Block";
-    const chipW = Math.max(54, bw * 0.48);
-    const chipH = Math.max(18, h * 0.024);
-    const chipY = top + 4;
-    ctx.fillStyle = "rgba(255,255,255,0.94)";
-    roundRect(ctx, cx - chipW / 2, chipY, chipW, chipH, 9);
-    ctx.fill();
-    if (owner === "ksc" || owner === "vfb") {
-      drawClubCrest(ctx, cx - chipW * 0.28, chipY + chipH / 2, chipH * 0.38, owner);
-    }
-    ctx.fillStyle = "#0f172a";
-    ctx.font = `800 ${Math.floor(chipH * 0.55)}px Outfit, Manrope, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(
-      label,
-      cx + (owner === "ksc" || owner === "vfb" ? 6 : 0),
-      chipY + chipH / 2 + 0.5,
-    );
-    ctx.textBaseline = "alphabetic";
+    // Keine Heim/Neutral/Gäste-Überschriften auf den Tribünen
 
     const d = doorPos(b.id);
     const doorW = bw * L.doorFrac * 0.85;
@@ -338,20 +316,27 @@ function drawSeats(
   }
 }
 
-/** Center scoreboard + momentum strip (Matchday Comic / mockup)
- *  Sizes from MATCH_LAYOUT_TOKENS (scoreboard ×1.15 vs prior baseline). */
+/** Scoreboard slots — scoreboard-slots.json (0–1 on chrome box). */
+const SB_SLOTS = {
+  logoHeim: { x: 0.08, y: 0.28, w: 0.18, h: 0.44 },
+  logoGast: { x: 0.74, y: 0.28, w: 0.18, h: 0.44 },
+  score: { x: 0.32, y: 0.3, w: 0.36, h: 0.36 },
+  clock: { x: 0.45, y: 0.17, w: 0.1, h: 0.14 },
+  momentumTrack: { x: 0.1, y: 0.78, w: 0.8, h: 0.14 },
+} as const;
+
+/** Empty chrome + live overlays (STORAGE_CANON). Sizes: MATCH_LAYOUT_TOKENS. */
 function drawScoreboard(
   ctx: CanvasRenderingContext2D,
   m: Match,
   w: number,
   h: number,
 ): void {
-  // Rahmenlogik: max 59.8% pitch width, ~17.25% screen height
   const boardW = Math.min(w * 0.598, h * 0.48);
   const boardH = Math.min(boardW * (508 / 1041), h * 0.1725);
   const bx = (w - boardW) / 2;
   const by = h * 0.03;
-  // Soft stadium glow behind board
+
   const glow = ctx.createRadialGradient(
     w * 0.5,
     by + boardH * 0.55,
@@ -365,58 +350,72 @@ function drawScoreboard(
   ctx.fillStyle = glow;
   ctx.fillRect(bx - 20, by - 8, boardW + 40, boardH + 24);
 
-  const drew = drawIcon(ctx, UI_ICONS.scoreboard, bx, by, boardW, boardH, 0.02);
+  const drew = drawIcon(ctx, UI_ICONS.scoreboardChrome, bx, by, boardW, boardH, 0.02);
   if (!drew) {
-    // fallback panel
     ctx.fillStyle = "rgba(15,23,42,0.88)";
     roundRect(ctx, bx, by, boardW, boardH * 0.62, 10);
     ctx.fill();
   }
 
-  // Live score + minute overlaid on board face
-  const faceY = by + boardH * 0.22;
-  const faceH = boardH * 0.38;
+  const slot = (key: keyof typeof SB_SLOTS) => {
+    const s = SB_SLOTS[key];
+    return {
+      x: bx + s.x * boardW,
+      y: by + s.y * boardH,
+      w: s.w * boardW,
+      h: s.h * boardH,
+    };
+  };
+
+  // Live logos in chrome mulden
+  {
+    const lh = slot("logoHeim");
+    const lg = slot("logoGast");
+    drawIcon(ctx, UI_ICONS.pennantKsc, lh.x, lh.y, lh.w, lh.h, 0.02);
+    drawIcon(ctx, UI_ICONS.pennantVfb, lg.x, lg.y, lg.w, lg.h, 0.02);
+  }
+
   ctx.save();
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  const sc = slot("score");
   ctx.fillStyle = "#f8fafc";
-  ctx.font = `900 ${Math.max(16, Math.floor(faceH * 0.72))}px Outfit, Manrope, sans-serif`;
-  ctx.shadowColor = "rgba(0,0,0,0.65)";
-  ctx.shadowBlur = 6;
-  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w * 0.5, faceY + faceH * 0.42);
+  ctx.font = `900 ${Math.max(16, Math.floor(sc.h * 0.62))}px Outfit, Manrope, sans-serif`;
+  ctx.shadowColor = "rgba(0,0,0,0.55)";
+  ctx.shadowBlur = 5;
+  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, sc.x + sc.w / 2, sc.y + sc.h / 2);
   ctx.shadowBlur = 0;
-  ctx.font = `800 ${Math.max(10, Math.floor(faceH * 0.32))}px Outfit, Manrope, sans-serif`;
-  ctx.fillStyle = "#e2e8f0";
-  const min = Math.floor(m.minute ?? 0);
-  ctx.fillText(`${min}′`, w * 0.5 + boardW * 0.38, by + boardH * 0.12);
 
-  // Momentum strip: who scores next (single % pair — no conflicting Torchance %)
-  const barY = by + boardH * 0.78;
-  const barH = Math.max(14, boardH * 0.16);
-  const barX = bx + boardW * 0.08;
-  const barW = boardW * 0.84;
+  const ck = slot("clock");
+  const min = Math.floor(m.minute ?? 0);
+  ctx.fillStyle = "#0f2310";
+  ctx.font = `800 ${Math.max(10, Math.floor(ck.h * 0.55))}px Outfit, Manrope, sans-serif`;
+  ctx.fillText(`${min}′`, ck.x + ck.w / 2, ck.y + ck.h / 2);
+
+  // Momentum in track slot
+  const mt = slot("momentumTrack");
   const ch = m.goalChance();
   const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
-  roundRect(ctx, barX, barY, barW, barH, 6);
+  roundRect(ctx, mt.x, mt.y, mt.w, mt.h, 6);
   ctx.fillStyle = "rgba(15,23,42,0.75)";
   ctx.fill();
-  const split = barX + barW * heimPct;
+  const split = mt.x + mt.w * heimPct;
   ctx.fillStyle = "#2563eb";
-  roundRect(ctx, barX, barY, Math.max(4, split - barX), barH, 6);
+  roundRect(ctx, mt.x, mt.y, Math.max(4, split - mt.x), mt.h, 6);
   ctx.fill();
   ctx.fillStyle = "#dc2626";
-  roundRect(ctx, split, barY, Math.max(4, barX + barW - split), barH, 6);
+  roundRect(ctx, split, mt.y, Math.max(4, mt.x + mt.w - split), mt.h, 6);
   ctx.fill();
   ctx.fillStyle = "#f8fafc";
-  ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.55))}px Outfit, Manrope, sans-serif`;
+  ctx.font = `800 ${Math.max(9, Math.floor(mt.h * 0.45))}px Outfit, Manrope, sans-serif`;
   ctx.textAlign = "left";
-  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, barX + 6, barY + barH / 2 + 0.5);
+  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 6, mt.y + mt.h / 2);
   ctx.textAlign = "right";
-  ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, barX + barW - 6, barY + barH / 2 + 0.5);
+  ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, mt.x + mt.w - 6, mt.y + mt.h / 2);
   ctx.textAlign = "center";
   ctx.fillStyle = "#e2e8f0";
-  ctx.font = `700 ${Math.max(8, Math.floor(barH * 0.42))}px Outfit, Manrope, sans-serif`;
-  ctx.fillText("nächstes Tor", w * 0.5, barY + barH / 2 + 0.5);
+  ctx.font = `700 ${Math.max(8, Math.floor(mt.h * 0.38))}px Outfit, Manrope, sans-serif`;
+  ctx.fillText("nächstes Tor", w * 0.5, mt.y + mt.h / 2);
   ctx.restore();
 }
 
@@ -641,11 +640,16 @@ function drawBaustelle(
   s: BuildSlot,
 ): void {
   const control = slotControlForPlot(m, s);
-  const src = slotEmptyIconPath(control, undefined, FLOOR_GRID_COUPLE);
+  // Freigegebene Perspektive — kein Ortho-Warp (wirkte quadratisch)
+  const src = slotEmptyIconPath(control, "persp", false);
   let drew = false;
   if (FLOOR_GRID_COUPLE) {
     const q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
+    const minX = Math.min(q.tl.x, q.tr.x, q.br.x, q.bl.x);
+    const maxX = Math.max(q.tl.x, q.tr.x, q.br.x, q.bl.x);
+    const minY = Math.min(q.tl.y, q.tr.y, q.br.y, q.bl.y);
+    const maxY = Math.max(q.tl.y, q.tr.y, q.br.y, q.bl.y);
+    drew = drawIcon(ctx, src, minX, minY, maxX - minX, maxY - minY, 0.02);
     if (sel) {
       ctx.strokeStyle = "#22c55e";
       ctx.lineWidth = 3.5;
@@ -848,39 +852,6 @@ function drawBuilding(
     ctx.fillStyle = "#fde68a";
     ctx.fillRect(x + 6, y + bh - 10, (bw - 12) * (s.beer / s.capacity), 4);
   }
-}
-
-/** Vereinswappen on captured stands / stormed blocks */
-function drawClubCrest(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  s: number,
-  team: "ksc" | "vfb",
-): void {
-  ctx.save();
-  ctx.translate(x, y);
-  // shield
-  ctx.beginPath();
-  ctx.moveTo(0, -s * 0.55);
-  ctx.lineTo(s * 0.45, -s * 0.25);
-  ctx.lineTo(s * 0.4, s * 0.25);
-  ctx.lineTo(0, s * 0.55);
-  ctx.lineTo(-s * 0.4, s * 0.25);
-  ctx.lineTo(-s * 0.45, -s * 0.25);
-  ctx.closePath();
-  ctx.fillStyle = team === "ksc" ? "#1d4ed8" : "#b91c1c";
-  ctx.fill();
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = Math.max(1.2, s * 0.08);
-  ctx.stroke();
-  // monogram
-  ctx.fillStyle = "#fff";
-  ctx.font = `800 ${Math.max(8, Math.floor(s * 0.55))}px Outfit, Manrope, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(team === "ksc" ? "K" : "V", 0, s * 0.02);
-  ctx.restore();
 }
 
 export function slotPos(

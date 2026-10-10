@@ -45,9 +45,9 @@ export function unitIconPath(
 }
 
 export type SlotControl = "blue" | "red" | "grey";
-export type SlotEmptyOrientation = "parallel" | "iso";
-/** Preview orientation when FLOOR_GRID_COUPLE is off. */
-export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "parallel";
+export type SlotEmptyOrientation = "parallel" | "iso" | "persp";
+/** Deploy-Default: Stadionboden-Perspektive (nicht Ortho/Quadrat). */
+export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "persp";
 
 export const SCENE_ASSETS = {
   tribuneBlue: uiPath("tribuneBlue", "assets/tribune-block-blue.png"),
@@ -84,6 +84,9 @@ export const UI_ICONS = {
   slotEmptyOrtho: uiPath("slotEmptyOrtho", "icons/ui/slot-empty-ortho.png"),
   slotEmptyOrthoBlue: uiPath("slotEmptyOrthoBlue", "icons/ui/slot-empty-ortho-blue.png"),
   slotEmptyOrthoRed: uiPath("slotEmptyOrthoRed", "icons/ui/slot-empty-ortho-red.png"),
+  slotEmptyPersp: uiPath("slotEmptyPersp", "icons/ui/slot-empty-persp.png"),
+  slotEmptyPerspBlue: uiPath("slotEmptyPerspBlue", "icons/ui/slot-empty-persp-blue.png"),
+  slotEmptyPerspRed: uiPath("slotEmptyPerspRed", "icons/ui/slot-empty-persp-red.png"),
   currencyGold: uiPath("currencyGold", "icons/ui/currency-gold.png"),
   currencyBier: uiPath("currencyBier", "icons/ui/currency-bier.png"),
   currencyFanartikel: uiPath("currencyFanartikel", "icons/ui/currency-fanartikel.png"),
@@ -100,13 +103,15 @@ export const UI_ICONS = {
   pennantKsc: uiPath("pennantKsc", "icons/ui/pennant-ksc.png"),
   pennantVfb: uiPath("pennantVfb", "icons/ui/pennant-vfb.png"),
   menuRail: uiPath("menuRail", "icons/ui/menu-rail-brown.png"),
+  /** Referenz-Demo — nicht Runtime-Default */
   scoreboard: uiPath("scoreboard", "icons/ui/scoreboard-momentum.png"),
+  /** Leeres Chrome — Runtime-Default (STORAGE_CANON) */
+  scoreboardChrome: uiPath("scoreboardChrome", "icons/ui-final/scoreboard-chrome.png"),
 } as const;
 
 /**
- * Leerer Bauplatz je Kontrolle.
- * When `orthoSource` is true (floor-grid couple), return axis-aligned flagless
- * source PNGs (team color via ground tint) — warped into the cell.
+ * Leerer Bauplatz je Kontrolle — Deploy-Default = Perspektive (nicht Ortho).
+ * `orthoSource` bleibt für Archiv-Warps, Runtime nutzt Persp-PNGs.
  */
 export function slotEmptyIconPath(
   control: SlotControl | TeamId | "neutral" | null | undefined,
@@ -129,9 +134,10 @@ export function slotEmptyIconPath(
     if (c === "red") return UI_ICONS.slotEmptyIsoRed;
     return UI_ICONS.slotEmptyIso;
   }
-  if (c === "blue") return UI_ICONS.slotEmptyParallelBlue;
-  if (c === "red") return UI_ICONS.slotEmptyParallelRed;
-  return UI_ICONS.slotEmptyParallel;
+  // persp (default) + parallel-alias → Stadionboden-Perspektive
+  if (c === "blue") return UI_ICONS.slotEmptyPerspBlue;
+  if (c === "red") return UI_ICONS.slotEmptyPerspRed;
+  return UI_ICONS.slotEmptyPersp;
 }
 
 function loadOne(src: string): Promise<HTMLImageElement> {

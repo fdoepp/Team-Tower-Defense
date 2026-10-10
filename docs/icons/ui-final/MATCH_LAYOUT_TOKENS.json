@@ -45,14 +45,21 @@
     "slot_bot_y": 0.84
   },
   "personCard": {
-    "dual": "3%·46%·2%·46%·3%",
-    "triple": "3%·30%·2%·30%·2%·30%·3%",
+    "railInset": 0.015,
+    "dual": "1.5%·47%·3%·47%·1.5%",
+    "triple": "1.5%·31%·2%·31%·2%·31%·1.5%",
     "liveTextInset": 0.02,
     "wood": {
       "x": 0.0641,
       "yTop": 0.1354,
       "yBot": 0.1875
     }
+  },
+  "runtime": {
+    "scoreboardAsset": "scoreboardChrome",
+    "slotEmptyOrientation": "persp",
+    "tribuneLabels": false,
+    "walletAlign": "top-left"
   },
   "tokensFlat": {
     "left_rail_w": 0.21,
