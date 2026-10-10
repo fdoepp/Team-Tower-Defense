@@ -1486,5 +1486,7 @@ if (new URLSearchParams(location.search).has("demoStands")) {
       s.structHp = 120;
     }
   }
+  // QA / playtest hook (same as setup→start path)
+  (window as unknown as { __match?: Match }).__match = m;
   go("match");
 }
