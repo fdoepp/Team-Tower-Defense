@@ -1,6 +1,6 @@
 # Personen-Rail ohne Senden + Quadrat-Icon-Buttons
 
-**Status:** Vorschlag C — wartet auf Freigabe  
+**Status:** Vorschlag C — Icon-Buttons freigegeben (Rail-Layout noch Runtime-offen)  
 **Mock:** [index.html](./index.html)
 
 ## 1. Personen-Rail ohne „Senden“

@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=25** · **released=136**
+**pending=18** · **released=143**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -33,17 +33,15 @@ Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../
 138. `slotEmptyPerspBlue` — `slot-empty-persp-blue.png`
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
 
-### square-icon-buttons + Angriff (Freigabe offen)
-
-156. `btnIconUltraBlue` — `btn-icon-ultra-blue.png` — Quadrat blau · Ultra Lv5
-157. `btnIconBierAmber` — `btn-icon-bier-amber.png` — Quadrat Bau-Farbe · Bierstand Lv5
-158. `btnIconAngriffRed` — `btn-icon-angriff-red.png` — Quadrat rot · Angriff/Blocksturm
-159. `btnIconSquareRed` — `btn-icon-square-red.png` — Quadrat rot Chrome (leer)
-160. `btnIconSquareBlue` — `btn-icon-square-blue.png` — Quadrat blau Chrome (leer)
-161. `btnIconSquareAmber` — `btn-icon-square-amber.png` — Quadrat amber Chrome (leer)
-162. `iconAngriffBlocksturm` — `icon-angriff-blocksturm.png` — Symbol freigestellt
-
 ## Released (diese Runde)
+
+- **156** `btnIconUltraBlue` — `btn-icon-ultra-blue.png` — **Quadrat blau · Ultra Lv5 freigegeben**
+- **157** `btnIconBierAmber` — `btn-icon-bier-amber.png` — **Quadrat Bau-Farbe · Bierstand Lv5 freigegeben**
+- **158** `btnIconAngriffRed` — `btn-icon-angriff-red.png` — **Quadrat rot · Angriff/Blocksturm freigegeben**
+- **159** `btnIconSquareRed` — `btn-icon-square-red.png` — **Quadrat rot Chrome freigegeben**
+- **160** `btnIconSquareBlue` — `btn-icon-square-blue.png` — **Quadrat blau Chrome freigegeben**
+- **161** `btnIconSquareAmber` — `btn-icon-square-amber.png` — **Quadrat amber Chrome freigegeben**
+- **162** `iconAngriffBlocksturm` — `icon-angriff-blocksturm.png` — **Angriff/Blocksturm-Symbol freigegeben**
 - **117** `currencyGold` — `currency-gold.png` — **Währung + Counter freigegeben**
 - **115** `currencyBier` — `currency-bier.png` — **Währung + Counter freigegeben**
 - **116** `currencyFanartikel` — `currency-fanartikel.png` — **Währung + Counter freigegeben**

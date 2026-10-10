@@ -5208,6 +5208,265 @@
       "approvedBy": "user",
       "approvedAt": "2026-10-10T06:33:29.001Z",
       "notes": "Live-FX: Wutsmiley bei langer Wartezeit (stark). Freigestellt 256²."
+    },
+    "btnIconUltraBlue": {
+      "id": "btnIconUltraBlue",
+      "file": "btn-icon-ultra-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-ultra-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:54.719685+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:54.734Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconBierAmber": {
+      "id": "btnIconBierAmber",
+      "file": "btn-icon-bier-amber.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-bier-amber.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:54.906946+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:54.922Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconAngriffRed": {
+      "id": "btnIconAngriffRed",
+      "file": "btn-icon-angriff-red.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-angriff-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:55.051983+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:55.066Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconSquareRed": {
+      "id": "btnIconSquareRed",
+      "file": "btn-icon-square-red.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-square-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:55.194549+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:55.210Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconSquareBlue": {
+      "id": "btnIconSquareBlue",
+      "file": "btn-icon-square-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-square-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:55.336503+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:55.351Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconSquareAmber": {
+      "id": "btnIconSquareAmber",
+      "file": "btn-icon-square-amber.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-square-amber.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:55.480536+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:55.495Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "iconAngriffBlocksturm": {
+      "id": "iconAngriffBlocksturm",
+      "file": "icon-angriff-blocksturm.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/icon-angriff-blocksturm.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6183,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          25,
+          20,
+          229,
+          235
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:55.623346+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:55.639Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "pending": {
@@ -5901,258 +6160,6 @@
       "notes": "REFERENZ-DEMO (Broadcast-Tech) — nicht Runtime-Default. Runtime = scoreboardChrome + scoreboard-slots.json + Live-Overlays.",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "reference-demo"
-    },
-    "btnIconUltraBlue": {
-      "id": "btnIconUltraBlue",
-      "file": "btn-icon-ultra-blue.png",
-      "source": "docs/icons/ui-final/pending/btn-icon-ultra-blue.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-ultra-blue.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.0329,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          1,
-          1,
-          255,
-          255
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T08:37:47.017091+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "btnIconBierAmber": {
-      "id": "btnIconBierAmber",
-      "file": "btn-icon-bier-amber.png",
-      "source": "docs/icons/ui-final/pending/btn-icon-bier-amber.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-bier-amber.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.0329,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          1,
-          1,
-          255,
-          255
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T08:37:47.149774+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "btnIconAngriffRed": {
-      "id": "btnIconAngriffRed",
-      "file": "btn-icon-angriff-red.png",
-      "source": "docs/icons/ui-final/pending/btn-icon-angriff-red.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-angriff-red.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.0329,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          1,
-          1,
-          255,
-          255
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T08:37:47.275818+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "btnIconSquareRed": {
-      "id": "btnIconSquareRed",
-      "file": "btn-icon-square-red.png",
-      "source": "docs/icons/ui-final/pending/btn-icon-square-red.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-square-red.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.0329,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          1,
-          1,
-          255,
-          255
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T08:37:47.394217+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "btnIconSquareBlue": {
-      "id": "btnIconSquareBlue",
-      "file": "btn-icon-square-blue.png",
-      "source": "docs/icons/ui-final/pending/btn-icon-square-blue.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-square-blue.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.0329,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          1,
-          1,
-          255,
-          255
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T08:37:47.509763+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "btnIconSquareAmber": {
-      "id": "btnIconSquareAmber",
-      "file": "btn-icon-square-amber.png",
-      "source": "docs/icons/ui-final/pending/btn-icon-square-amber.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-square-amber.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.0329,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          1,
-          1,
-          255,
-          255
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T08:37:47.625454+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "iconAngriffBlocksturm": {
-      "id": "iconAngriffBlocksturm",
-      "file": "icon-angriff-blocksturm.png",
-      "source": "docs/icons/ui-final/pending/icon-angriff-blocksturm.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/icon-angriff-blocksturm.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.6183,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          25,
-          20,
-          229,
-          235
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T08:37:47.743037+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "runtimeBinding": {

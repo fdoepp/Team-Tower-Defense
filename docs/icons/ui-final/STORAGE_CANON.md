@@ -61,9 +61,9 @@ Runtime: `.left-rail .person-card` + `.ar-cost-btn` — **nicht** neu nachbauen;
 | Triple-Grid | entfällt |
 | Angriff | separater Quadrat-Icon-Button (`btnIconAngriffRed`) |
 
-### Quadrat-Icon-Buttons (pending Freigabe)
+### Quadrat-Icon-Buttons (freigegeben)
 
-Holzrand + eine Face-Farbe, 256×256 AR 1:1, freigestellt. Icon füllt ~72–78 % der Face; Holz ~7,5 % der Kante.
+Holzrand + eine Face-Farbe, 256×256 AR 1:1, freigestellt. Icon füllt ~72–78 % der Face; Holz ~7,5 % der Kante. Runtime: `UI_ICONS.btnIcon*` / `iconAngriffBlocksturm`.
 
 | ID | Motiv |
 | --- | --- |
