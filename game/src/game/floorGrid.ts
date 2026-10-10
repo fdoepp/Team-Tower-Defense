@@ -19,60 +19,54 @@ export type QuadNorm = {
 export const FLOOR_VP = { x: 0.5027, y: 0.0897 } as const;
 
 /**
- * Near-plane column ray anchors (x at yNear), 7 lines → 6 cells.
- * Grouped as Heim [0,1] · Neutral [2,3] · Gäste [4,5].
+ * Side rails reserve — keep this band free on both edges.
+ * Future left/right rails toggle in/out inside this margin.
+ */
+export const FLOOR_SIDE_MARGIN = 0.15;
+
+/**
+ * Near-plane column ray anchors (x at yNear) — 6 equal cells across
+ * [FLOOR_SIDE_MARGIN .. 1-FLOOR_SIDE_MARGIN] (step = 0.70/6 ≈ 0.1167).
+ * Kept for floorCellQuad helpers; boothQuad places via EXIT_BANDS pockets.
  */
 export const FLOOR_COL_XS_NEAR = [
-  0.1, 0.233333, 0.366667, 0.5, 0.633333, 0.766667, 0.9,
+  0.15,
+  0.2667,
+  0.3833,
+  0.5,
+  0.6167,
+  0.7333,
+  0.85,
 ] as const;
 
 /** Depth of the near column anchors (normalized). */
 export const FLOOR_Y_NEAR = 0.985;
 
 /**
- * Row lines far → near (normalized), 4 lines → 2 Bau rows + Gang:
- *   [0..1] far Bau row · [1..2] fight Gang · [2..3] near Bau row
- * Anchors are tuned in inv-depth so the middle band stays wider than a cell
- * (room for fights) while plots stay packed toward the bottom edge.
+ * Row lines far → near (normalized): [farTop, gangTop, gangBot, nearBot].
+ * Far Bau starts ~8–10% below the block door (y≈0.50).
+ * Plots stay clear of the gang by GANG_PLOT_BUFFER on both edges.
  */
-/**
- * Row lines far → near (normalized). Bau bands share equal screen height
- * so far/near Bauplätze stay equally clickable; Gang stays between them.
- * Tuned toward MATCH_LAYOUT_TOKENS scene.slot_* / combat_*.
- */
-export const FLOOR_ROW_YS = [0.58, 0.695, 0.86, 0.975] as const;
+export const FLOOR_ROW_YS = [0.58, 0.7, 0.84, 0.975] as const;
 
-/** Bau-row r ∈ {0,1} → starting index into FLOOR_ROW_YS (skips the Gang). */
-const BAU_ROW_LINE = [0, 2] as const;
+/**
+ * Minimum clear space between Bau plots and the fight gang (normalized height).
+ * Far plots end at gangTop − buffer; near plots start at gangBot + buffer.
+ */
+export const GANG_PLOT_BUFFER = 0.05;
+
+/** Shrink plot chrome toward cell center (0 = full cell, 0.3 ≈ 70% footprint). */
+export const PLOT_DRAW_INSET = 0.3;
 
 /** When true, empty plots are drawn warped into floor-grid quads. */
 export const FLOOR_GRID_COUPLE = true;
 
-function invDepth(y: number): number {
-  return 1 / (y - FLOOR_VP.y);
-}
-
-function yFromInv(id: number): number {
-  return FLOOR_VP.y + 1 / id;
-}
-
 /**
- * Rebuild row ys: equal inv-depth steps inside each Bau band, keep the
- * middle Gang band's relative inv-depth width from FLOOR_ROW_YS.
+ * Layout anchors: farTop · gangTop · gangBot · nearBot.
+ * Kept literal so the gang buffer is not collapsed by inv-depth averaging.
  */
 export function floorRowYs(): readonly number[] {
-  const raw = FLOOR_ROW_YS;
-  const id = raw.map(invDepth);
-  const cellFar = id[0]! - id[1]!;
-  const gang = id[1]! - id[2]!;
-  const cellNear = id[2]! - id[3]!;
-  // Average the two Bau cell depths so far/near rows feel equal on the ground.
-  const cell = (cellFar + cellNear) / 2;
-  const idNear = id[3]!;
-  const idNearTop = idNear + cell;
-  const idFarBot = idNearTop + gang;
-  const idFarTop = idFarBot + cell;
-  return [yFromInv(idFarTop), yFromInv(idFarBot), yFromInv(idNearTop), yFromInv(idNear)];
+  return FLOOR_ROW_YS;
 }
 
 /** Fight corridor between the two Bau rows (normalized y). */
@@ -83,6 +77,22 @@ export function floorGangBand(): { y0: number; y1: number; mid: number; h: numbe
   return { y0, y1, mid: (y0 + y1) / 2, h: y1 - y0 };
 }
 
+/** Bau band edges with gang buffer applied (r=0 far, r=1 near). */
+export function floorBauBand(r: number): { yTop: number; yBot: number } {
+  const rows = floorRowYs();
+  const gangTop = rows[1]!;
+  const gangBot = rows[2]!;
+  const buf = GANG_PLOT_BUFFER;
+  if ((r | 0) === 0) {
+    const yTop = rows[0]!;
+    const yBot = Math.max(yTop + 0.035, gangTop - buf);
+    return { yTop, yBot };
+  }
+  const yBot = rows[3]!;
+  const yTop = Math.min(yBot - 0.035, gangBot + buf);
+  return { yTop, yBot };
+}
+
 function xAtDepth(xNear: number, y: number): number {
   return (
     FLOOR_VP.x +
@@ -90,14 +100,13 @@ function xAtDepth(xNear: number, y: number): number {
   );
 }
 
-/** Cell (c,r) with c∈0..5, r∈0..1 → perspective quad (skips Gang line). */
+/** Cell (c,r) with c∈0..7, r∈0..1 → perspective quad (skips Gang + buffer). */
 export function floorCellQuad(c: number, r: number): QuadNorm {
-  const rows = floorRowYs();
-  const li = BAU_ROW_LINE[Math.max(0, Math.min(1, r | 0))]!;
-  const yTop = rows[li]!;
-  const yBot = rows[li + 1]!;
-  const xlN = FLOOR_COL_XS_NEAR[c]!;
-  const xrN = FLOOR_COL_XS_NEAR[c + 1]!;
+  const { yTop, yBot } = floorBauBand(r);
+  const maxC = FLOOR_COL_XS_NEAR.length - 2;
+  const cc = Math.max(0, Math.min(maxC, c | 0));
+  const xlN = FLOOR_COL_XS_NEAR[cc]!;
+  const xrN = FLOOR_COL_XS_NEAR[cc + 1]!;
   return {
     tl: { x: xAtDepth(xlN, yTop), y: yTop },
     tr: { x: xAtDepth(xrN, yTop), y: yTop },
@@ -107,18 +116,111 @@ export function floorCellQuad(c: number, r: number): QuadNorm {
 }
 
 /**
- * Plot assignment matching prior scatter order:
- * per block → (c0,r0), (c1,r0), (c0,r1), (c1,r1).
+ * Vertical dark Ausgangskorridore visible on the derby floor (screen x):
+ * inter-block aisle shadows + neutral center lane. Heim/Gäste center doors
+ * sit inside the outer pockets' right/left edges and stay clear via pad.
  */
-const BLOCK_COL0 = [0, 2, 4] as const;
+const EXIT_BANDS = [
+  { L: 0.4, R: 0.45 }, // aisle Heim ↔ Neutral
+  { L: 0.48, R: 0.52 }, // Neutral center corridor
+  { L: 0.55, R: 0.6 }, // aisle Neutral ↔ Gäste
+] as const;
+
+/** Inset a floor quad toward its centroid (visual breathing room). */
+export function insetQuad(q: QuadNorm, inset: number): QuadNorm {
+  const t = Math.max(0, Math.min(0.45, inset));
+  const cx = (q.tl.x + q.tr.x + q.br.x + q.bl.x) / 4;
+  const cy = (q.tl.y + q.tr.y + q.br.y + q.bl.y) / 4;
+  const map = (p: { x: number; y: number }) => ({
+    x: cx + (p.x - cx) * (1 - t),
+    y: cy + (p.y - cy) * (1 - t),
+  });
+  return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
+}
+
+type Seg = { L: number; R: number };
+
+/** Usable band minus Ausgangsbänder → free pockets (side margins reserved). */
+function freePockets(xMin: number, xMax: number): Seg[] {
+  let free: Seg[] = [{ L: xMin, R: xMax }];
+  for (const d of EXIT_BANDS) {
+    const next: Seg[] = [];
+    for (const s of free) {
+      if (d.R <= s.L || d.L >= s.R) {
+        next.push(s);
+        continue;
+      }
+      if (d.L > s.L) next.push({ L: s.L, R: Math.min(s.R, d.L) });
+      if (d.R < s.R) next.push({ L: Math.max(s.L, d.R), R: s.R });
+    }
+    free = next.filter((s) => s.R - s.L > 0.018);
+  }
+  return free;
+}
+
+/**
+ * Six centers across [xMin,xMax]: 2·1·1·2 in the free pockets around the
+ * three dark corridors. Even fill of each pocket → pairs span the full
+ * side-margin band without sitting in an Ausgang.
+ */
+function pocketCenters(xMin: number, xMax: number, plotHalf: number): number[] {
+  const pockets = freePockets(xMin, xMax);
+  const counts =
+    pockets.length === 4
+      ? [2, 1, 1, 2]
+      : pockets.map(() => Math.max(1, Math.ceil(6 / Math.max(1, pockets.length))));
+  const pad = plotHalf * 1.12;
+  const centers: number[] = [];
+  for (let i = 0; i < pockets.length && centers.length < 6; i++) {
+    const p = pockets[i]!;
+    const n = Math.min(counts[i] ?? 1, 6 - centers.length);
+    const L = p.L + pad;
+    const R = p.R - pad;
+    if (R <= L) {
+      for (let k = 0; k < n; k++) centers.push((p.L + p.R) / 2);
+      continue;
+    }
+    for (let k = 0; k < n; k++) {
+      centers.push(L + ((k + 0.5) / n) * (R - L));
+    }
+  }
+  while (centers.length < 6) centers.push((xMin + xMax) / 2);
+  return centers.slice(0, 6);
+}
+
+/** Screen-space bau quad for a global slot 0..5 at row r (0=far, 1=near). */
+function evenSlotQuad(slot: number, r: number): QuadNorm {
+  const { yTop, yBot } = floorBauBand(r);
+  // Use the side-margin band in screen x for both rows (not VP-compressed
+  // far margins) so six pockets span the full usable width evenly.
+  const xMin = FLOOR_SIDE_MARGIN;
+  const xMax = 1 - FLOOR_SIDE_MARGIN;
+  const span = xMax - xMin;
+  const pockets = freePockets(xMin, xMax);
+  const minPocket = pockets.reduce((m, p) => Math.min(m, p.R - p.L), span);
+  const maxW = r === 0 ? 0.042 : 0.055;
+  // Outer pockets are wide; don't shrink every plot to the tiny mid gaps.
+  const plotW = Math.min(maxW, (span / 6) * 0.48, Math.max(0.028, minPocket * 0.7));
+  const half = plotW / 2;
+  const centers = pocketCenters(xMin, xMax, half * 1.05);
+  const s = Math.max(0, Math.min(5, slot | 0));
+  const cx = centers[s]!;
+  const topHalf = half * (r === 0 ? 0.9 : 0.95);
+  const botHalf = half * (r === 0 ? 1.06 : 1.03);
+  return {
+    tl: { x: cx - topHalf, y: yTop },
+    tr: { x: cx + topHalf, y: yTop },
+    br: { x: cx + botHalf, y: yBot },
+    bl: { x: cx - botHalf, y: yBot },
+  };
+}
 
 export function boothQuad(blockId: number, index: number): QuadNorm {
   const b = Math.max(0, Math.min(2, blockId | 0));
   const i = Math.max(0, Math.min(3, index | 0));
-  const c0 = BLOCK_COL0[b]!;
-  const dc = i % 2;
   const r = i < 2 ? 0 : 1;
-  return floorCellQuad(c0 + dc, r);
+  const slot = b * 2 + (i % 2);
+  return evenSlotQuad(slot, r);
 }
 
 export function quadToRect(q: QuadNorm): {

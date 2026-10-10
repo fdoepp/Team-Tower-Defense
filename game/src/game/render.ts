@@ -17,13 +17,11 @@ import {
   blockCenterX,
   blocksLeftNorm,
   blocksRightNorm,
-  boothCenter,
   boothQuad,
   boothRect,
   doorPos,
   gangHeight,
   gangY,
-  pennantPos,
   seatPos,
   syncTribuneLayout,
   tribuneRect,
@@ -44,7 +42,13 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
-import { boothFacadeQuad, scaleQuad, type ScreenQuad } from "./floorGrid";
+import {
+  PLOT_DRAW_INSET,
+  boothFacadeQuad,
+  insetQuad,
+  scaleQuad,
+  type ScreenQuad,
+} from "./floorGrid";
 
 export { SEATS_PER_BLOCK } from "./layout";
 export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
@@ -64,7 +68,7 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawGang(ctx, m, w, h);
   drawFrontStandards(ctx, m, w, h);
   drawSlots(ctx, m, w, h);
-  drawTerritoryPennants(ctx, m, w, h);
+  // Plot/building pennants intentionally omitted — floor reads clearer without wimpel clutter.
   drawFans(ctx, m, w, h);
   drawPyroShots(ctx, m, w, h);
   drawConfetti(ctx, m, w, h);
@@ -216,15 +220,6 @@ function drawStadiumAtmosphere(
   for (let i = 0; i < 28; i++) {
     ctx.fillRect(0, floorY + (i / 28) * (h - floorY), w, 1);
   }
-  // soft lane arrows on gang
-  ctx.strokeStyle = "rgba(255,255,255,0.1)";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([8, 12]);
-  ctx.beginPath();
-  ctx.moveTo(w * blocksLeftNorm(), floorY + h * gangHeight() * 0.55);
-  ctx.lineTo(w * blocksRightNorm(), floorY + h * gangHeight() * 0.55);
-  ctx.stroke();
-  ctx.setLineDash([]);
 }
 
 /**
@@ -417,33 +412,12 @@ function drawScoreboard(
 }
 
 function drawGang(
-  ctx: CanvasRenderingContext2D,
-  m: Match,
-  w: number,
-  h: number,
+  _ctx: CanvasRenderingContext2D,
+  _m: Match,
+  _w: number,
+  _h: number,
 ): void {
-  const y = h * gangY();
-  const gh = h * gangHeight();
-  const left = w * blocksLeftNorm();
-  const span = w * (blocksRightNorm() - blocksLeftNorm());
-  const px = left + span * m.linePlayer;
-  const ax = left + span * m.lineAi;
-
-  // Front lines mark territory — no gang color wash
-  ctx.save();
-  ctx.setLineDash([7, 5]);
-  ctx.lineWidth = 3.5;
-  ctx.strokeStyle = "rgba(59,130,246,0.95)";
-  ctx.beginPath();
-  ctx.moveTo(px, y + 4);
-  ctx.lineTo(px, y + gh - 4);
-  ctx.stroke();
-  ctx.strokeStyle = "rgba(239,68,68,0.95)";
-  ctx.beginPath();
-  ctx.moveTo(ax, y + 4);
-  ctx.lineTo(ax, y + gh - 4);
-  ctx.stroke();
-  ctx.restore();
+  // Territory is marked by front standards only — no colored helper lines in the gang.
 }
 
 /** Big flag standards planted at each team's frontmost battle line */
@@ -544,61 +518,6 @@ function slotControlForPlot(m: Match, s: BuildSlot): SlotControl {
   return "grey";
 }
 
-/**
- * Separate Standarten nur auf gebauten Buden.
- * Leere Plots: fahnenloses Slot-Icon mit Bodenton (kein Wimpel im Warp).
- */
-function plotPennantTeam(
-  m: Match,
-  s: BuildSlot,
-): "ksc" | "vfb" | null {
-  void m;
-  if (s.building && !s.greyNeutral && (s.owner === "ksc" || s.owner === "vfb")) {
-    return s.owner;
-  }
-  return null;
-}
-
-/**
- * Standarten as viewer-facing upright billboards (same rule as built stands):
- * foot on the plot ground, size from VP facade math, no icon warp/yaw.
- */
-function drawTerritoryPennants(
-  ctx: CanvasRenderingContext2D,
-  m: Match,
-  w: number,
-  h: number,
-): void {
-  for (const s of m.slots) {
-    const team = plotPennantTeam(m, s);
-    if (!team) continue;
-    const src = team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
-    const bob = Math.sin(m.realElapsed * 3.2 + s.blockId + s.index) * 1.5;
-    if (FLOOR_GRID_COUPLE) {
-      const pq = scaleQuad(boothQuad(s.blockId, s.index), w, h);
-      const facade = boothFacadeQuad(s.blockId, s.index, w, h, {
-        widthScale: 0.38,
-        heightScale: 1.05,
-        taper: 0.28,
-      });
-      const footX = pq.bl.x * 0.72 + pq.tl.x * 0.28;
-      const footY = pq.bl.y * 0.88 + pq.tl.y * 0.12;
-      const baseW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
-      const facadeH = Math.max(
-        1,
-        (facade.bl.y + facade.br.y) / 2 - (facade.tl.y + facade.tr.y) / 2,
-      );
-      const size = Math.max(26, Math.min(baseW * 0.62, facadeH * 0.72, h * 0.09));
-      drawPennantUpright(ctx, src, footX, footY + bob, size);
-      continue;
-    }
-    const p = pennantPos(s.blockId, s.index);
-    const pw = Math.min(w * 0.045, h * 0.055);
-    const ph = pw * 1.15;
-    drawIcon(ctx, src, p.x * w - pw * 0.15, p.y * h - ph * 0.35 + bob, pw, ph, 0.02);
-  }
-}
-
 /** Foot-anchored upright blit — pole reads screen-vertical in the VP floor. */
 function drawPennantUpright(
   ctx: CanvasRenderingContext2D,
@@ -617,7 +536,7 @@ function drawPennantUpright(
   drawIcon(ctx, src, footX - size * 0.5, footY - size * 0.92, size, size, 0.02);
 }
 
-/** Baustelle — Slot-Icon, Auto-Swap mit Kontrolle; bei Floor-Grid in Zellen-Trapez. */
+/** Baustelle — inset floor chrome, depth-fade far row, + only when selected. */
 function drawBaustelle(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -629,18 +548,18 @@ function drawBaustelle(
   s: BuildSlot,
 ): void {
   const control = slotControlForPlot(m, s);
-  // Freigegebene Perspektive — kein Ortho-Warp (wirkte quadratisch)
   const src = slotEmptyIconPath(control, "persp", false);
+  const farRow = s.index < 2;
   let drew = false;
+  ctx.save();
+  // Far row quieter so the near band and gang stay readable.
+  ctx.globalAlpha = sel ? 1 : farRow ? 0.52 : 0.78;
   if (FLOOR_GRID_COUPLE) {
-    let q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    // Far Bau-row: taller for clicks, but ≥0.5% total-width gaps (no overlap)
-    if (s.index < 2) {
-      q = fitFarSlotQuad(q, m, s);
-    }
-    // Warp persp chrome into floor trapezoid (equal ground cells, readable depth)
+    const cell = boothQuad(s.blockId, s.index);
+    const q = scaleQuad(insetQuad(cell, PLOT_DRAW_INSET), m.width, m.height);
     drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
     if (sel) {
+      ctx.globalAlpha = 1;
       ctx.strokeStyle = "#22c55e";
       ctx.lineWidth = 3.5;
       ctx.beginPath();
@@ -653,10 +572,23 @@ function drawBaustelle(
       ctx.strokeStyle = "rgba(34,197,94,0.35)";
       ctx.lineWidth = 6;
       ctx.stroke();
+    } else if (drew) {
+      // Soft footprint ring instead of loud always-on +
+      const cx = (q.tl.x + q.tr.x + q.br.x + q.bl.x) / 4;
+      const cy = (q.tl.y + q.tr.y + q.br.y + q.bl.y) / 4;
+      ctx.globalAlpha = farRow ? 0.22 : 0.35;
+      ctx.strokeStyle = "rgba(248,250,252,0.85)";
+      ctx.lineWidth = Math.max(1.2, Math.min(m.width, m.height) * 0.0022);
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, Math.max(6, bw * 0.12), Math.max(4, bh * 0.1), 0, 0, Math.PI * 2);
+      ctx.stroke();
     }
   } else {
-    drew = drawIcon(ctx, src, x, y, bw, bh, 0.02);
+    const padX = bw * PLOT_DRAW_INSET * 0.5;
+    const padY = bh * PLOT_DRAW_INSET * 0.5;
+    drew = drawIcon(ctx, src, x + padX, y + padY, bw - padX * 2, bh - padY * 2, 0.02);
     if (sel) {
+      ctx.globalAlpha = 1;
       ctx.strokeStyle = "#22c55e";
       ctx.lineWidth = 3.5;
       roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 10);
@@ -667,20 +599,28 @@ function drawBaustelle(
       ctx.stroke();
     }
   }
+  ctx.restore();
   if (!drew) {
     const r = Math.min(10, Math.min(bw, bh) * 0.12);
-    ctx.fillStyle = "#4b5563";
+    ctx.fillStyle = "rgba(75,85,99,0.55)";
     roundRect(ctx, x + 4, y + 4, bw - 8, bh - 8, r);
     ctx.fill();
-    ctx.strokeStyle = "#eab308";
-    ctx.lineWidth = 3;
-    roundRect(ctx, x + 6, y + 6, bw - 12, bh - 12, r - 2);
-    ctx.stroke();
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.font = `800 ${Math.max(16, Math.floor(bh * 0.28))}px Outfit, Manrope, sans-serif`;
+    if (sel) {
+      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      ctx.font = `800 ${Math.max(14, Math.floor(bh * 0.22))}px Outfit, Manrope, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("+", x + bw / 2, y + bh / 2);
+      ctx.textBaseline = "alphabetic";
+    }
+  } else if (sel) {
+    const cx = x + bw / 2;
+    const cy = y + bh / 2;
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.font = `800 ${Math.max(14, Math.floor(bh * 0.2))}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("+", x + bw / 2, y + bh / 2);
+    ctx.fillText("+", cx, cy);
     ctx.textBaseline = "alphabetic";
   }
 }
@@ -1677,51 +1617,6 @@ function drawMoodParticles(
   ctx.globalAlpha = 1;
 }
 
-/** Min gap between far-row empty slots as fraction of total canvas width. */
-const FAR_SLOT_GAP_FRAC = 0.005;
-
-/**
- * Enlarge far-row slots for clicks, but keep ≥0.5% total-width gaps
- * so neighboring Leerplätze don't overlap.
- */
-function fitFarSlotQuad(q: ScreenQuad, m: Match, s: BuildSlot): ScreenQuad {
-  let th = 0;
-  let n = 0;
-  for (const slot of m.slots) {
-    if (slot.index < 2) continue;
-    const r = boothRect(slot.blockId, slot.index);
-    th += r.h * m.height;
-    n++;
-  }
-  const targetH = n > 0 ? th / n : (Math.max(q.br.y, q.bl.y) - Math.min(q.tl.y, q.tr.y));
-
-  const cx = (q.bl.x + q.br.x) / 2;
-  const cy = (q.bl.y + q.br.y) / 2;
-  const curW = Math.max(1, Math.max(q.tr.x, q.br.x) - Math.min(q.tl.x, q.bl.x));
-  const curH = Math.max(1, Math.max(q.br.y, q.bl.y) - Math.min(q.tl.y, q.tr.y));
-
-  // Nearest far-row neighbor center → max half-width with gap
-  const gapPx = FAR_SLOT_GAP_FRAC * m.width;
-  let nearest = Infinity;
-  for (const o of m.slots) {
-    if (o.index >= 2) continue;
-    if (o.blockId === s.blockId && o.index === s.index) continue;
-    const oc = boothCenter(o.blockId, o.index);
-    const d = Math.abs(oc.x * m.width - cx);
-    if (d > 1 && d < nearest) nearest = d;
-  }
-  const maxW =
-    nearest < Infinity ? Math.max(curW, nearest - gapPx) : curW * 1.35;
-
-  const scaleY = Math.max(1, Math.min(2.0, targetH / curH));
-  const scaleX = Math.max(1, Math.min(maxW / curW, scaleY * 1.15));
-  const map = (p: { x: number; y: number }) => ({
-    x: cx + (p.x - cx) * scaleX,
-    y: cy + (p.y - cy) * scaleY,
-  });
-  return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
-}
-
 function pointInQuad(q: ScreenQuad, mx: number, my: number): boolean {
   const pts = [q.tl, q.tr, q.br, q.bl];
   let inside = false;
@@ -1766,8 +1661,8 @@ export function hitSlot(
     }
     let hit = mx >= x0 && mx <= x1 && my >= y0 && my <= y1;
     if (FLOOR_GRID_COUPLE) {
-      let q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-      if (s.index < 2) q = fitFarSlotQuad(q, m, s);
+      // Hit full cell (not inset chrome) so smaller visuals stay easy to click.
+      const q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
       if (pointInQuad(q, mx, my)) hit = true;
     }
     if (hit) {
