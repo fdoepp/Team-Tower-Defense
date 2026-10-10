@@ -513,62 +513,113 @@ select {
   font-size: clamp(9px, 12cqw, 14px);
 }
 
-/* Kauf/UP: Icon links (2–3% Face-Innenrand) + Kosten/Ertrag daneben */
+/*
+ * Action-Card Alt D (skalierbar, %-Tokens der Face):
+ *  left inset 2.5% · unit-col 36% · gap 4% · pay flex · right inset 2%
+ *  Figur oben in unit-col, Ertrag darunter; Kosten groß rechts.
+ */
 .match-shell.matchday .person-card .ar-cost-btn.person-action .inner.person-btn-inner {
-  left: calc(var(--wood-x) + 2.5%);
-  right: calc(var(--wood-x) + var(--inset));
-  top: calc(var(--wood-y-top) + var(--inset));
-  bottom: calc(var(--wood-y-bot) + var(--inset));
+  --face-left: 2.5%;
+  --face-right: 2%;
+  --face-top: 2%;
+  --face-bot: 2%;
+  --unit-w: 36%;
+  --col-gap: 4%;
+  --yield-gap: 4%;
+  --pay-gap: 0.2em;
+  left: calc(var(--wood-x) + var(--face-left));
+  right: calc(var(--wood-x) + var(--face-right));
+  top: calc(var(--wood-y-top) + var(--face-top));
+  bottom: calc(var(--wood-y-bot) + var(--face-bot));
+  display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  gap: 4%;
+  gap: var(--col-gap);
   font-size: clamp(8px, 11cqw, 13px);
+}
+.match-shell.matchday .person-card .ar-cost-btn.person-action .unit-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--yield-gap);
+  width: var(--unit-w);
+  max-width: var(--unit-w);
+  min-width: 0;
+  height: 100%;
+  flex: 0 0 var(--unit-w);
+  overflow: hidden;
 }
 .match-shell.matchday .person-card .ar-cost-btn.person-action .unit-ico {
   display: block;
-  height: 92%;
-  width: auto;
-  max-width: 42%;
+  width: 100%;
+  height: auto;
+  max-height: 68%;
   aspect-ratio: 1;
   object-fit: contain;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   pointer-events: none;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
-.match-shell.matchday .person-card .ar-cost-btn.person-action .person-stats {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 0.2em;
-  min-width: 0;
-  flex: 1 1 auto;
-  overflow: hidden;
-}
-.match-shell.matchday .person-card .ar-cost-btn.person-action .person-stats .pay,
-.match-shell.matchday .person-card .ar-cost-btn.person-action .person-stats .yield-chip {
-  font-size: 1em;
-  line-height: 1;
-}
-.match-shell.matchday .person-card .ar-cost-btn.person-action .yield-chip {
+.match-shell.matchday .person-card .ar-cost-btn.person-action .unit-col .yield-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.2em;
+  justify-content: center;
+  gap: 0.15em;
+  max-width: 100%;
   background: transparent;
   padding: 0;
   box-shadow: none;
   border: 0;
   color: #fff;
+  font-size: clamp(7px, 9.5cqw, 11px);
+  line-height: 1;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+  white-space: nowrap;
 }
-.match-shell.matchday .person-card .ar-cost-btn.person-action .yield-chip img {
-  width: 1.1em;
-  height: 1.1em;
+.match-shell.matchday .person-card .ar-cost-btn.person-action .unit-col .yield-chip img {
+  width: 1em;
+  height: 1em;
   object-fit: contain;
+  flex: 0 0 auto;
 }
-.match-shell.matchday .person-card .ar-cost-btn.person-action .yield-chip.yield-delta .yield-amt {
+.match-shell.matchday .person-card .ar-cost-btn.person-action .unit-col .yield-chip.yield-delta .yield-amt {
   color: #bbf7d0;
+}
+/* Kosten deutlich größer, rechts neben der Figur */
+.match-shell.matchday .person-card .ar-cost-btn.person-action .pay.pay-lg {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pay-gap);
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  font-size: clamp(14px, 22cqw, 28px);
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  overflow: hidden;
+}
+.match-shell.matchday .person-card .ar-cost-btn.person-action .pay.pay-lg img {
+  width: 0.95em;
+  height: 0.95em;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+.match-shell.matchday .person-card .ar-cost-btn.person-action .pay.pay-lg .amt {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Personen-Rail: Schließen analog Baumenu (.rail-close) */
+.match-shell.matchday .left-rail .rail-close {
+  flex: 0 0 auto;
+  width: 100%;
+  margin-top: 2px;
 }
 
 .match-shell.matchday .ar-icon-btn {

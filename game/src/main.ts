@@ -166,7 +166,11 @@ function personYieldChipHtml(
   return `<span class="yield-chip${deltaCls}"${id}><img src="${personYieldCurrency(kind)}" alt=""><span class="yield-amt">${sign}${formatYieldPerSec(perSec)}/s</span></span>`;
 }
 
-/** Personen Kauf/UP: Unit-Icon links + Kosten + Ertrag (kein Verb-Text). */
+/**
+ * Personen Kauf/UP (Alt D):
+ * Figur links, Ertrag darunter; Kosten groß rechts daneben.
+ * Abstände %-relativ zur Button-Face (skalierbar).
+ */
 function personActionBtnHtml(opts: {
   kind: "kaufen" | "upgrade";
   unitSrc: string;
@@ -181,7 +185,7 @@ function personActionBtnHtml(opts: {
 }): string {
   const payId = opts.payId ? ` id="${opts.payId}"` : "";
   const unitId = opts.unitId ? ` id="${opts.unitId}"` : "";
-  const inner = `<span class="inner person-btn-inner"><img class="unit-ico"${unitId} src="${opts.unitSrc}" alt=""><span class="person-stats"><span class="pay"${payId}><img src="${opts.currencySrc}" alt=""><span class="amt">${opts.amount}</span></span>${opts.yieldHtml}</span></span>`;
+  const inner = `<span class="inner person-btn-inner"><span class="unit-col"><img class="unit-ico"${unitId} src="${opts.unitSrc}" alt="">${opts.yieldHtml}</span><span class="pay pay-lg"${payId}><img src="${opts.currencySrc}" alt=""><span class="amt">${opts.amount}</span></span></span>`;
   if (opts.asButton !== false) {
     const id = opts.btnId ? ` id="${opts.btnId}"` : "";
     const attrs = opts.btnAttrs ? ` ${opts.btnAttrs}` : "";
@@ -445,34 +449,14 @@ function renderMatchScreen(): void {
           </article>
           <article class="person-card">
             <div class="person-title">Ultras <span class="meta" data-person-meta="ultras">(Lvl.1, x0)</span></div>
-            <div class="person-actions triple">
+            <div class="person-actions dual">
               ${personBuyUpHtml(m, "ultras", tc)}
-              ${arCostBtnHtml({
-                kind: "senden",
-                full: "SENDEN",
-                short: "SEND",
-                amount: PYRO_FIGHT_MERCH,
-                currencySrc: UI_ICONS.currencyFanartikel,
-                asButton: true,
-                btnId: "btn-pyro-fight",
-                btnAttrs: 'title="Senden"',
-              })}
             </div>
           </article>
           <article class="person-card">
             <div class="person-title">Hooligans <span class="meta" data-person-meta="hooligans">(Lvl.1, x0)</span></div>
-            <div class="person-actions triple">
+            <div class="person-actions dual">
               ${personBuyUpHtml(m, "hooligans", tc)}
-              ${arCostBtnHtml({
-                kind: "senden",
-                full: "SENDEN",
-                short: "SEND",
-                amount: HOOLIGAN_ORDER_BEER,
-                currencySrc: UI_ICONS.currencyBier,
-                asButton: true,
-                btnId: "btn-hooligan",
-                btnAttrs: 'title="Senden"',
-              })}
             </div>
           </article>
           <article class="person-card">
@@ -482,6 +466,10 @@ function renderMatchScreen(): void {
             </div>
           </article>
         </div>
+        <button type="button" class="rail-close" id="person-rail-close">Schließen</button>
+        <!-- Hidden send controls — still wired for combat orders, not shown in rail -->
+        <button type="button" class="sr-only" id="btn-pyro-fight" tabindex="-1" aria-hidden="true">Senden Ultra</button>
+        <button type="button" class="sr-only" id="btn-hooligan" tabindex="-1" aria-hidden="true">Senden Hool</button>
         <div class="fanbase-col gast sr-only" aria-label="Gegner">
           <span class="fb"><i>N</i><b id="fb-en">0</b></span>
           <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
@@ -963,6 +951,10 @@ function renderMatchScreen(): void {
   app.querySelector("#build-cancel")!.addEventListener("click", hideMenus);
   app.querySelector("#build-rail-close")?.addEventListener("click", () => {
     closeBuildRail();
+    syncOverlay();
+  });
+  app.querySelector("#person-rail-close")?.addEventListener("click", () => {
+    hideMenus();
     syncOverlay();
   });
 

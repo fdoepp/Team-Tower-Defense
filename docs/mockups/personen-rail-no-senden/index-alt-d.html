@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Personen Action Cards — Alt D (Ertrag unter Icon, große Kosten)</title>
+<style>
+  :root {
+    --wood-deep: #3d2414;
+    --ink: #1c120a;
+    --btn-blue: #3184ca;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #1a1a1a;
+    color: #f5f5f5;
+    padding: 16px;
+  }
+  h1 { font-size: 1.15rem; margin: 0 0 6px; }
+  .note { color: #bbb; font-size: 0.85rem; max-width: 1100px; margin-bottom: 14px; line-height: 1.45; }
+  .nav a { color: #fde68a; margin-right: 14px; font-size: 0.85rem; }
+  code { color: #fde68a; }
+
+  .phone {
+    width: 844px;
+    height: 470px;
+    border-radius: 18px;
+    border: 3px solid #333;
+    box-shadow: 0 12px 40px rgba(0,0,0,.55);
+    display: grid;
+    grid-template-columns: 25.41% 1fr;
+    overflow: hidden;
+  }
+  .pitch-fake {
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(255,250,220,.15), transparent 50%),
+      repeating-linear-gradient(90deg, #2f6b2f 0 40px, #2a622a 40px 80px);
+  }
+
+  .rail {
+    --rail-inset: 1%;
+    background: url("rail-tile.png") center / cover;
+    padding: var(--rail-inset);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    min-height: 0;
+  }
+  .banner {
+    flex: 0 0 auto;
+    background: linear-gradient(180deg, #4a9be0, #3184ca 55%, #2769a8);
+    color: #fff;
+    font-weight: 900;
+    font-size: 12px;
+    text-align: center;
+    border-radius: 7px;
+    padding: 4px 6px;
+    border: 2px solid var(--wood-deep);
+    text-shadow: 0 1px 1px rgba(0,0,0,.35);
+  }
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .card {
+    flex: 1 1 0;
+    min-height: 0;
+    background: linear-gradient(180deg, #f7ebcf, #e5cf9f);
+    border: 2px solid var(--wood-deep);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 4px 0 5px;
+    color: var(--ink);
+    overflow: hidden;
+  }
+  .title {
+    flex: 0 0 auto;
+    font-weight: 900;
+    font-size: 12px;
+    padding: 0 1.5%;
+  }
+  .title .meta { font-weight: 700; color: #6b4e2e; }
+
+  /* Dual only — kein Senden */
+  .actions {
+    flex: 1 1 0;
+    display: grid;
+    grid-template-columns: 1% 48% 2% 48% 1%;
+    align-items: stretch;
+    min-height: 0;
+    width: 100%;
+  }
+  .actions .cost-btn:nth-child(1) { grid-column: 2; }
+  .actions .cost-btn:nth-child(2) { grid-column: 4; }
+
+  .cost-btn {
+    --wood-x: 6.41%;
+    --wood-y-top: 13.54%;
+    --wood-y-bot: 18.75%;
+    --face-left: 2.5%;
+    --face-right: 2%;
+    --face-top: 2%;
+    --face-bot: 2%;
+    --unit-w: 36%;
+    --col-gap: 4%;
+    --yield-gap: 4%;
+    appearance: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    border-radius: 8px;
+    background: transparent center / 100% 100% no-repeat;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    container-type: inline-size;
+  }
+  .cost-btn.kaufen { background-image: url("btn-kaufen-chrome.png"); }
+  .cost-btn.upgrade { background-image: url("btn-upgrade-chrome.png"); }
+
+  .inner {
+    position: absolute;
+    left: calc(var(--wood-x) + var(--face-left));
+    right: calc(var(--wood-x) + var(--face-right));
+    top: calc(var(--wood-y-top) + var(--face-top));
+    bottom: calc(var(--wood-y-bot) + var(--face-bot));
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--col-gap);
+    color: #fff;
+    font-weight: 900;
+    text-shadow: 0 1px 1px rgba(0,0,0,.55);
+  }
+  .unit-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--yield-gap);
+    width: var(--unit-w);
+    flex: 0 0 var(--unit-w);
+    height: 100%;
+    min-width: 0;
+  }
+  .unit-col img.unit {
+    width: 100%;
+    max-height: 68%;
+    aspect-ratio: 1;
+    object-fit: contain;
+  }
+  .yield {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15em;
+    font-size: clamp(7px, 9.5cqw, 11px);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .yield img { width: 1em; height: 1em; object-fit: contain; }
+  .yield.delta { color: #bbf7d0; }
+  .pay {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2em;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    font-size: clamp(14px, 22cqw, 28px);
+    line-height: 1;
+  }
+  .pay img { width: 0.95em; height: 0.95em; object-fit: contain; }
+
+  .rail-close {
+    flex: 0 0 auto;
+    width: 100%;
+    margin-top: 2px;
+    border: 2px solid #7a4a22;
+    border-radius: 10px;
+    padding: 5px 8px;
+    font-weight: 800;
+    font-size: 0.68rem;
+    color: #3b2412;
+    background: linear-gradient(180deg, #fffaf0, #e8d0a8);
+    box-shadow: 0 2px 0 rgba(60, 30, 10, 0.35);
+    cursor: pointer;
+  }
+
+  .tokens {
+    margin-top: 16px;
+    max-width: 720px;
+    font-size: 0.82rem;
+    color: #ccc;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+  <h1>Action Cards — Alternative D</h1>
+  <p class="nav">
+    <a href="index.html">← Vorschlag C</a>
+  </p>
+  <p class="note">
+    Ertrag unter dem Icon · Kosten deutlich größer rechts · kein Senden ·
+    Schließen unten wie Baumenu. Alle Abstände %-relativ zur Button-Face.
+  </p>
+
+  <div class="phone">
+    <aside class="rail">
+      <div class="banner">Personen</div>
+      <div class="cards">
+        <article class="card">
+          <div class="title">Fans <span class="meta">(Lvl.1, x5)</span></div>
+          <div class="actions">
+            <button class="cost-btn kaufen" type="button">
+              <span class="inner">
+                <span class="unit-col">
+                  <img class="unit" src="../../../game/public/icons/ui-final/fan-blue-1.png" alt="">
+                  <span class="yield"><img src="cur-gold.png" alt="">0.27/s</span>
+                </span>
+                <span class="pay"><img src="cur-sec.png" alt="">12</span>
+              </span>
+            </button>
+            <button class="cost-btn upgrade" type="button">
+              <span class="inner">
+                <span class="unit-col">
+                  <img class="unit" src="../../../game/public/icons/ui-final/fan-blue-2.png" alt="">
+                  <span class="yield delta"><img src="cur-gold.png" alt="">+0.04/s</span>
+                </span>
+                <span class="pay"><img src="cur-gold.png" alt="">22</span>
+              </span>
+            </button>
+          </div>
+        </article>
+        <article class="card">
+          <div class="title">Ultras <span class="meta">(Lvl.1, x3)</span></div>
+          <div class="actions">
+            <button class="cost-btn kaufen" type="button">
+              <span class="inner">
+                <span class="unit-col">
+                  <img class="unit" src="../../../game/public/icons/ui-final/ultra-blue-1.png" alt="">
+                  <span class="yield"><img src="cur-gold.png" alt="">0.37/s</span>
+                </span>
+                <span class="pay"><img src="cur-merch.png" alt="">12</span>
+              </span>
+            </button>
+            <button class="cost-btn upgrade" type="button">
+              <span class="inner">
+                <span class="unit-col">
+                  <img class="unit" src="../../../game/public/icons/ui-final/ultra-blue-2.png" alt="">
+                  <span class="yield delta"><img src="cur-gold.png" alt="">+0.05/s</span>
+                </span>
+                <span class="pay"><img src="cur-gold.png" alt="">22</span>
+              </span>
+            </button>
+          </div>
+        </article>
+        <article class="card">
+          <div class="title">Hooligans <span class="meta">(Lvl.1, x2)</span></div>
+          <div class="actions">
+            <button class="cost-btn kaufen" type="button">
+              <span class="inner">
+                <span class="unit-col">
+                  <img class="unit" src="../../../game/public/icons/ui-final/hooligan-blue-1.png" alt="">
+                  <span class="yield"><img src="cur-gold.png" alt="">0.38/s</span>
+                </span>
+                <span class="pay"><img src="cur-bier.png" alt="">12</span>
+              </span>
+            </button>
+            <button class="cost-btn upgrade" type="button">
+              <span class="inner">
+                <span class="unit-col">
+                  <img class="unit" src="../../../game/public/icons/ui-final/hooligan-blue-2.png" alt="">
+                  <span class="yield delta"><img src="cur-gold.png" alt="">+0.05/s</span>
+                </span>
+                <span class="pay"><img src="cur-gold.png" alt="">22</span>
+              </span>
+            </button>
+          </div>
+        </article>
+        <article class="card">
+          <div class="title">Ordner <span class="meta">(Lvl.1, x1)</span></div>
+          <div class="actions">
+            <button class="cost-btn kaufen" type="button">
+              <span class="inner">
+                <span class="unit-col">
+                  <img class="unit" src="../../../game/public/icons/ui-final/ordner-blue-1.png" alt="">
+                  <span class="yield"><img src="cur-sec.png" alt="">10.00/s</span>
+                </span>
+                <span class="pay"><img src="cur-gold.png" alt="">22</span>
+              </span>
+            </button>
+            <button class="cost-btn upgrade" type="button">
+              <span class="inner">
+                <span class="unit-col">
+                  <img class="unit" src="../../../game/public/icons/ui-final/ordner-blue-2.png" alt="">
+                  <span class="yield delta"><img src="cur-sec.png" alt="">+2.00/s</span>
+                </span>
+                <span class="pay"><img src="cur-gold.png" alt="">22</span>
+              </span>
+            </button>
+          </div>
+        </article>
+      </div>
+      <button class="rail-close" type="button">Schließen</button>
+    </aside>
+    <div class="pitch-fake"></div>
+  </div>
+
+  <div class="tokens">
+    <strong>Face-Tokens (Button-Innenfläche):</strong><br>
+    <code>--face-left: 2.5%</code> ·
+    <code>--face-right: 2%</code> ·
+    <code>--unit-w: 36%</code> ·
+    <code>--col-gap: 4%</code> ·
+    <code>--yield-gap: 4%</code><br>
+    Dual-Grid Karte: <code>1% · 48% · 2% · 48% · 1%</code> · kein Triple/Senden<br>
+    Schließen: gleiche Farbe/Chrome wie Baumenu <code>.rail-close</code>
+  </div>
+</body>
+</html>

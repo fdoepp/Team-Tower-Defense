@@ -1,19 +1,21 @@
 # Personen-Rail ohne Senden + Quadrat-Icon-Buttons
 
-**Status:** Vorschlag C — Icon-Buttons freigegeben (Rail-Layout noch Runtime-offen)  
-**Mock:** [index.html](./index.html)
+**Status:** Runtime Alt D live · Icon-Buttons freigegeben  
+**Mocks:** [index.html](./index.html) (C) · [index-alt-d.html](./index-alt-d.html) (D — Ertrag unter Icon, große Kosten)
 
-## 1. Personen-Rail ohne „Senden“
+## 1. Personen-Rail ohne „Senden“ (Alt D)
 
 Alle Karten (Fans, Ultras, Hooligans, Ordner) nur noch:
 
 | Aktion | Chrome |
 | --- | --- |
-| KAUFEN | `btn-kaufen-*` |
-| UPGRADE | `btn-upgrade-*` |
+| KAUFEN | Unit-Icon + Ertrag darunter · Kosten groß rechts |
+| UPGRADE | nächste Stufe + Yield-Delta darunter · Kosten groß rechts |
 
 - Dual-Grid überall: `1% · 48% · 2% · 48% · 1%`
 - Kein Triple-Grid / kein SENDEN in der linken Rail
+- Unten: `Schließen` (`.rail-close`, gleiche Farbe wie Baumenu)
+- Face-Tokens (%): `--face-left 2.5%` · `--unit-w 36%` · `--col-gap 4%` · `--yield-gap 4%`
 - Angriff/Blocksturm → eigener Quadrat-Button (rot)
 
 ## 2. Quadrat-Icon-Buttons (Holzrand)
@@ -40,8 +42,5 @@ Generator: `scripts/ui-final/make-square-icon-btns.py`
 
 ## Freigabe
 
-Pending in `docs/icons/ui-final/pending/`. Approve einzeln mit:
-
-```bash
-node scripts/ui-final/approve.mjs <id> --by <name>
-```
+Quadrat-Icon-Buttons + Angriff-Symbol: **freigegeben** (`game/public/icons/ui-final/`, `UI_ICONS`).  
+Personen-Rail Alt D (ohne Senden, Ertrag unter Icon, große Kosten, Schließen): **live in Runtime**.
