@@ -116,14 +116,14 @@ export function floorCellQuad(c: number, r: number): QuadNorm {
 }
 
 /**
- * Vertical Ausgangskorridore (screen x) — centers match doorPos / block
- * centers; half-width ≈ blockW·doorFrac/2 + small pad so plots stay out of
- * the dark exit shadows without eating the whole floor band.
+ * Vertical dark Ausgangskorridore visible on the derby floor (screen x):
+ * inter-block aisle shadows + neutral center lane. Heim/Gäste center doors
+ * sit inside the outer pockets' right/left edges and stay clear via pad.
  */
-const DOOR_CLEAR_LANES = [
-  { L: 0.345, R: 0.381 }, // Heim  cx≈0.363
-  { L: 0.482, R: 0.518 }, // Neutral cx=0.500
-  { L: 0.620, R: 0.656 }, // Gäste cx≈0.638
+const EXIT_BANDS = [
+  { L: 0.4, R: 0.45 }, // aisle Heim ↔ Neutral
+  { L: 0.48, R: 0.52 }, // Neutral center corridor
+  { L: 0.55, R: 0.6 }, // aisle Neutral ↔ Gäste
 ] as const;
 
 /** Inset a floor quad toward its centroid (visual breathing room). */
@@ -138,81 +138,75 @@ export function insetQuad(q: QuadNorm, inset: number): QuadNorm {
   return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
 }
 
-/** Nudge one center clear of every door lane (even→left lip, odd→right). */
-function clearDoors(
-  cx: number,
-  slot: number,
-  clearHalf: number,
-  xMin: number,
-  xMax: number,
-): number {
-  let x = cx;
-  for (const d of DOOR_CLEAR_LANES) {
-    const left = x - clearHalf;
-    const right = x + clearHalf;
-    if (right <= d.L || left >= d.R) continue;
-    x = slot % 2 === 0 ? d.L - clearHalf : d.R + clearHalf;
+type Seg = { L: number; R: number };
+
+/** Usable band minus Ausgangsbänder → free pockets (side margins reserved). */
+function freePockets(xMin: number, xMax: number): Seg[] {
+  let free: Seg[] = [{ L: xMin, R: xMax }];
+  for (const d of EXIT_BANDS) {
+    const next: Seg[] = [];
+    for (const s of free) {
+      if (d.R <= s.L || d.L >= s.R) {
+        next.push(s);
+        continue;
+      }
+      if (d.L > s.L) next.push({ L: s.L, R: Math.min(s.R, d.L) });
+      if (d.R < s.R) next.push({ L: Math.max(s.L, d.R), R: s.R });
+    }
+    free = next.filter((s) => s.R - s.L > 0.018);
   }
-  return Math.max(xMin + clearHalf, Math.min(xMax - clearHalf, x));
+  return free;
 }
 
 /**
- * Six equal centers across [xMin,xMax] (full width minus side rails).
- * Door-overlapping footprints are nudged to the corridor lips (even slots
- * left, odd right) so a color pair flanks its exit instead of sitting in it.
+ * Six centers across [xMin,xMax]: 2·1·1·2 in the free pockets around the
+ * three dark corridors. Even fill of each pocket → pairs span the full
+ * side-margin band without sitting in an Ausgang.
  */
-function evenPlotCenters(
-  xMin: number,
-  xMax: number,
-  plotHalf: number,
-): number[] {
-  const n = 6;
-  const span = xMax - xMin;
-  // Clearance uses bottom taper (~1.05×) so the visible footprint stays out.
-  const clearHalf = plotHalf * 1.06;
+function pocketCenters(xMin: number, xMax: number, plotHalf: number): number[] {
+  const pockets = freePockets(xMin, xMax);
+  const counts =
+    pockets.length === 4
+      ? [2, 1, 1, 2]
+      : pockets.map(() => Math.max(1, Math.ceil(6 / Math.max(1, pockets.length))));
+  const pad = plotHalf * 1.12;
   const centers: number[] = [];
-  for (let i = 0; i < n; i++) {
-    const ideal = xMin + ((i + 0.5) / n) * span;
-    centers.push(clearDoors(ideal, i, clearHalf, xMin, xMax));
-  }
-
-  // Keep monotonic order with a minimum gap, then re-clear doors (gap pass
-  // can push a neighbor back into an Ausgangskorridor).
-  const minGap = clearHalf * 2.05;
-  for (let pass = 0; pass < 3; pass++) {
-    for (let i = 1; i < n; i++) {
-      if (centers[i]! < centers[i - 1]! + minGap) {
-        centers[i] = centers[i - 1]! + minGap;
-      }
+  for (let i = 0; i < pockets.length && centers.length < 6; i++) {
+    const p = pockets[i]!;
+    const n = Math.min(counts[i] ?? 1, 6 - centers.length);
+    const L = p.L + pad;
+    const R = p.R - pad;
+    if (R <= L) {
+      for (let k = 0; k < n; k++) centers.push((p.L + p.R) / 2);
+      continue;
     }
-    for (let i = n - 2; i >= 0; i--) {
-      if (centers[i]! > centers[i + 1]! - minGap) {
-        centers[i] = centers[i + 1]! - minGap;
-      }
-    }
-    for (let i = 0; i < n; i++) {
-      centers[i] = clearDoors(centers[i]!, i, clearHalf, xMin, xMax);
+    for (let k = 0; k < n; k++) {
+      centers.push(L + ((k + 0.5) / n) * (R - L));
     }
   }
-  return centers;
+  while (centers.length < 6) centers.push((xMin + xMax) / 2);
+  return centers.slice(0, 6);
 }
 
 /** Screen-space bau quad for a global slot 0..5 at row r (0=far, 1=near). */
 function evenSlotQuad(slot: number, r: number): QuadNorm {
   const { yTop, yBot } = floorBauBand(r);
-  const yMid = (yTop + yBot) / 2;
-  const xMin = xAtDepth(FLOOR_SIDE_MARGIN, yMid);
-  const xMax = xAtDepth(1 - FLOOR_SIDE_MARGIN, yMid);
-  const span = Math.max(0.05, xMax - xMin);
-  // ~48% of an equal cell — gaps between plots + room to clear door lips.
-  const maxW = r === 0 ? 0.05 : 0.07;
-  const plotW = Math.min(maxW, (span / 6) * 0.48);
+  // Use the side-margin band in screen x for both rows (not VP-compressed
+  // far margins) so six pockets span the full usable width evenly.
+  const xMin = FLOOR_SIDE_MARGIN;
+  const xMax = 1 - FLOOR_SIDE_MARGIN;
+  const span = xMax - xMin;
+  const pockets = freePockets(xMin, xMax);
+  const minPocket = pockets.reduce((m, p) => Math.min(m, p.R - p.L), span);
+  const maxW = r === 0 ? 0.042 : 0.055;
+  // Outer pockets are wide; don't shrink every plot to the tiny mid gaps.
+  const plotW = Math.min(maxW, (span / 6) * 0.48, Math.max(0.028, minPocket * 0.7));
   const half = plotW / 2;
-  const centers = evenPlotCenters(xMin, xMax, half);
+  const centers = pocketCenters(xMin, xMax, half * 1.05);
   const s = Math.max(0, Math.min(5, slot | 0));
   const cx = centers[s]!;
-  const topHalf = half * (r === 0 ? 0.92 : 0.96);
-  const botHalf = half * (r === 0 ? 1.05 : 1.02);
+  const topHalf = half * (r === 0 ? 0.9 : 0.95);
+  const botHalf = half * (r === 0 ? 1.06 : 1.03);
   return {
     tl: { x: cx - topHalf, y: yTop },
     tr: { x: cx + topHalf, y: yTop },

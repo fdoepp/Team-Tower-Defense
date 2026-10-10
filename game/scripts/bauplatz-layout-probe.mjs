@@ -1,8 +1,6 @@
-/** Probe boothQuad centers vs door clear lanes. */
-import { createRequire } from "module";
-import { pathToFileURL } from "url";
+/** Probe boothQuad vs drawn door corridors + report arch proximity. */
 import { build } from "esbuild";
-import { mkdirSync, writeFileSync } from "fs";
+import { pathToFileURL } from "url";
 
 const outfile = "/tmp/floorGrid-probe.mjs";
 await build({
@@ -16,11 +14,12 @@ await build({
 const mod = await import(pathToFileURL(outfile).href);
 const { boothQuad, FLOOR_SIDE_MARGIN, floorBauBand } = mod;
 
-const DOOR = [
-  { L: 0.345, R: 0.381, n: "Heim" },
-  { L: 0.482, R: 0.518, n: "Neutral" },
-  { L: 0.620, R: 0.656, n: "Gäste" },
+const DOORS = [
+  { L: 0.4, R: 0.45, n: "AisleHN" },
+  { L: 0.48, R: 0.52, n: "Neutral" },
+  { L: 0.55, R: 0.6, n: "AisleNG" },
 ];
+
 const names = ["Heim", "Neutral", "Gäste"];
 let doorHits = 0;
 const rows = { far: [], near: [] };
@@ -31,10 +30,11 @@ for (let b = 0; b < 3; b++) {
     const left = Math.min(q.tl.x, q.bl.x);
     const right = Math.max(q.tr.x, q.br.x);
     const row = i < 2 ? "far" : "near";
-    const hits = DOOR.filter((d) => !(right <= d.L || left >= d.R)).map((d) => d.n);
-    if (hits.length) doorHits++;
-    const line = `${names[b]} i${i} ${row} cx=${cx.toFixed(3)} [${left.toFixed(3)}..${right.toFixed(3)}] ${hits.length ? "DOOR:" + hits.join(",") : "ok"}`;
-    console.log(line);
+    const hit = DOORS.filter((d) => !(right <= d.L || left >= d.R)).map((d) => d.n);
+    if (hit.length) doorHits++;
+    console.log(
+      `${names[b]} i${i} ${row} cx=${cx.toFixed(3)} [${left.toFixed(3)}..${right.toFixed(3)}] ${hit.length ? "DOOR:" + hit.join(",") : "ok"}`,
+    );
     rows[row].push(cx);
   }
 }
@@ -43,6 +43,5 @@ console.log("far centers:", rows.far.map((x) => x.toFixed(3)).join("  "));
 console.log("near centers:", rows.near.map((x) => x.toFixed(3)).join("  "));
 console.log("doorHits:", doorHits);
 console.log("side margin:", FLOOR_SIDE_MARGIN);
-console.log("far band:", floorBauBand(0));
-console.log("near band:", floorBauBand(1));
+console.log("bands", floorBauBand(0), floorBauBand(1));
 process.exit(doorHits ? 1 : 0);
