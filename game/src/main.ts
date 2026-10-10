@@ -627,19 +627,21 @@ function renderMatchScreen(): void {
         </aside>
         <aside class="side-rail right-rail attack-rail" id="attack-rail" aria-label="Angriff" hidden>
           <header class="rail-banner">Angriff</header>
-          <div class="unit-rows person-cards attack-cards">
-            <article class="person-card attack-card">
-              <div class="person-title">Pyro Wurf <span class="meta" data-attack-meta="ultras">(x0 bereit)</span></div>
-              <div class="person-actions dual">
-                ${attackSendPairHtml(m, "ultras", tc)}
-              </div>
-            </article>
-            <article class="person-card attack-card">
-              <div class="person-title">Nahkampf <span class="meta" data-attack-meta="hooligans">(x0 bereit)</span></div>
-              <div class="person-actions dual">
-                ${attackSendPairHtml(m, "hooligans", tc)}
-              </div>
-            </article>
+          <div class="attack-body">
+            <div class="unit-rows person-cards attack-cards">
+              <article class="person-card attack-card">
+                <div class="person-title">Pyro Wurf <span class="meta" data-attack-meta="ultras">(x0 bereit)</span></div>
+                <div class="person-actions dual">
+                  ${attackSendPairHtml(m, "ultras", tc)}
+                </div>
+              </article>
+              <article class="person-card attack-card">
+                <div class="person-title">Nahkampf <span class="meta" data-attack-meta="hooligans">(x0 bereit)</span></div>
+                <div class="person-actions dual">
+                  ${attackSendPairHtml(m, "hooligans", tc)}
+                </div>
+              </article>
+            </div>
           </div>
           <button type="button" class="rail-close" id="attack-rail-close">Schließen</button>
         </aside>

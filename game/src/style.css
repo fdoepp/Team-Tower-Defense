@@ -451,28 +451,38 @@ select {
   min-height: 0;
 }
 
-/* Angriff: 2 Karten ≤ 66% Rail-Höhe, 1 Karte ≤ 33% */
-.match-shell.matchday .attack-rail .attack-cards {
-  --attack-cards-budget: 66cqh;
-  --attack-card-h: calc((var(--attack-cards-budget) - var(--person-gap, 0.75cqh)) / 2);
-  flex: 0 1 auto;
+/* Angriff: verfügbare Höhe = Fläche zwischen Banner und Schließen */
+.match-shell.matchday .attack-rail .attack-body {
+  flex: 1 1 0;
   min-height: 0;
-  max-height: var(--attack-cards-budget);
+  display: flex;
+  flex-direction: column;
   justify-content: flex-start;
-  align-content: flex-start;
+  overflow: hidden;
+}
+
+/* 2 Karten ≤ 66% der verfügbaren Höhe, 1 Karte ≤ 33% */
+.match-shell.matchday .attack-rail .attack-cards {
+  flex: 0 0 66%;
+  width: 100%;
+  min-height: 0;
+  height: 66%;
+  max-height: 66%;
+  justify-content: flex-start;
+  align-content: stretch;
   overflow: hidden;
 }
 
 .match-shell.matchday .attack-rail .attack-cards:has(> .attack-card:only-child) {
-  --attack-cards-budget: 33cqh;
-  --attack-card-h: 33cqh;
+  flex-basis: 33%;
+  height: 33%;
+  max-height: 33%;
 }
 
 .match-shell.matchday .attack-rail .attack-card {
-  flex: 0 0 var(--attack-card-h);
-  height: var(--attack-card-h);
-  max-height: var(--attack-card-h);
+  flex: 1 1 0;
   min-height: 0;
+  max-height: none;
 }
 
 .match-shell.matchday .rail-close {
