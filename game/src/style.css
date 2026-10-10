@@ -453,21 +453,26 @@ select {
 
 /* Angriff: 2 Karten ≤ 66% Rail-Höhe, 1 Karte ≤ 33% */
 .match-shell.matchday .attack-rail .attack-cards {
+  --attack-cards-budget: 66cqh;
+  --attack-card-h: calc((var(--attack-cards-budget) - var(--person-gap, 0.75cqh)) / 2);
   flex: 0 1 auto;
   min-height: 0;
-  max-height: 66cqh;
+  max-height: var(--attack-cards-budget);
   justify-content: flex-start;
   align-content: flex-start;
+  overflow: hidden;
 }
 
 .match-shell.matchday .attack-rail .attack-cards:has(> .attack-card:only-child) {
-  max-height: 33cqh;
+  --attack-cards-budget: 33cqh;
+  --attack-card-h: 33cqh;
 }
 
 .match-shell.matchday .attack-rail .attack-card {
-  flex: 1 1 0;
+  flex: 0 0 var(--attack-card-h);
+  height: var(--attack-card-h);
+  max-height: var(--attack-card-h);
   min-height: 0;
-  max-height: 33cqh;
 }
 
 .match-shell.matchday .rail-close {
