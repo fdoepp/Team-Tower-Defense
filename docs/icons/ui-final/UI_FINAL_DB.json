@@ -6160,6 +6160,114 @@
       "notes": "REFERENZ-DEMO (Broadcast-Tech) — nicht Runtime-Default. Runtime = scoreboardChrome + scoreboard-slots.json + Live-Overlays.",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "reference-demo"
+    },
+    "btnIconUpgradePerson": {
+      "id": "btnIconUpgradePerson",
+      "file": "btn-icon-upgrade-person.png",
+      "source": "docs/icons/ui-final/pending/btn-icon-upgrade-person.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-upgrade-person.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T09:14:30.091274+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconUpgradeBuilding": {
+      "id": "btnIconUpgradeBuilding",
+      "file": "btn-icon-upgrade-building.png",
+      "source": "docs/icons/ui-final/pending/btn-icon-upgrade-building.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-upgrade-building.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T09:14:30.295938+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "iconUpgradeArrow": {
+      "id": "iconUpgradeArrow",
+      "file": "icon-upgrade-arrow.png",
+      "source": "docs/icons/ui-final/pending/icon-upgrade-arrow.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/icon-upgrade-arrow.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7665,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          30,
+          35,
+          230,
+          228
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T09:14:30.496470+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "runtimeBinding": {
