@@ -1478,15 +1478,9 @@ function drawFloats(
     const y = f.y * h;
     const icon = floatCurrencyIcon(f.text, f.good);
     if (icon) {
-      const ih = fontPx * 1.15;
-      const tw = ctx.measureText(f.text).width;
-      const gap = 4;
-      const total = ih + gap + tw;
-      const ix = x - total / 2;
-      drawIcon(ctx, icon, ix, y - ih / 2, ih, ih, 0.02);
-      const tx = ix + ih + gap + tw / 2;
-      ctx.strokeText(f.text, tx, y);
-      ctx.fillText(f.text, tx, y);
+      // Currency / mood deltas: change icon only — no amount/label text.
+      const ih = fontPx * 1.55;
+      drawIcon(ctx, icon, x - ih / 2, y - ih / 2, ih, ih, 0.02);
     } else {
       ctx.strokeText(f.text, x, y);
       ctx.fillText(f.text, x, y);
