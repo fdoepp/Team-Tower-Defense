@@ -46,6 +46,8 @@ import {
   stewardPostRadius,
   MOMENTUM_APPROACH,
   MOMENTUM_EPS,
+  MOMENTUM_KILL_POST,
+  MOMENTUM_KILL_UNIT,
   MOMENTUM_WEIGHT,
   MOOD_FROM_POWER,
   PROD_BEER,
@@ -256,9 +258,9 @@ export class Match {
   captureAcc: Record<string, number> = {};
   aiGold = START_GOLD + AI_START_GOLD_BONUS;
   aiBuildRot = 0;
-  /** soft AI combat resources (not shared with player wallet) */
-  aiMerch = 40;
-  aiBeer = 40;
+  /** soft AI combat resources (same start as player; regen still applies) */
+  aiMerch = 0;
+  aiBeer = 0;
   aiSecurity = START_SECURITY;
   /** Penalty: whose kick is next (alternating) */
   pensNext: TeamId = "ksc";
@@ -616,6 +618,13 @@ export class Match {
     s.prodFlash = 1;
     if (s.structHp <= 0) {
       this.destroyOrdnerPost(s);
+      const killer =
+        at.team === this.playerTeam || at.team === this.aiTeam
+          ? (at.team as TeamId)
+          : (this.fans.find((f) => f.id === at.id)?.team as TeamId | undefined);
+      if (killer === this.playerTeam || killer === this.aiTeam) {
+        this.applyKillMomentum(killer, MOMENTUM_KILL_POST);
+      }
       return;
     }
     const nextBand = this.postDamageBand(s);
@@ -838,32 +847,33 @@ export class Match {
     return Math.floor(this.currency[key]);
   }
 
+  /** Ultras + Hooligans counting toward Blocksturm / invade pressure */
+  private countBlockInvaders(team: TeamId, blockId: number): number {
+    return this.fans.filter(
+      (f) =>
+        f.hp > 0 &&
+        !f.isSteward &&
+        f.team === team &&
+        (f.kind === "ultras" || f.kind === "hooligans") &&
+        f.blockId === blockId &&
+        (f.invading || f.state === "block"),
+    ).length;
+  }
+
   /** Short status for combat banner */
   combatStatus(): string | null {
-    const pInv = this.fans.filter(
-      (f) =>
-        f.hp > 0 &&
-        f.team === this.playerTeam &&
-        f.kind === "ultras" &&
-        f.blockId === GAST_BLOCK &&
-        (f.invading || f.state === "block"),
-    ).length;
-    const aInv = this.fans.filter(
-      (f) =>
-        f.hp > 0 &&
-        f.team === this.aiTeam &&
-        f.kind === "ultras" &&
-        f.blockId === HEIM_BLOCK &&
-        (f.invading || f.state === "block"),
-    ).length;
+    const pInv = this.countBlockInvaders(this.playerTeam, GAST_BLOCK);
+    const aInv = this.countBlockInvaders(this.aiTeam, HEIM_BLOCK);
     if (this.stormAccPlayer > 0) {
-      return `BLOCKSTURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccPlayer)}s · ${pInv}/${BLOCK_STORM_COUNT} Ultras`;
+      return `BLOCKSTURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccPlayer)}s · ${pInv}/${BLOCK_STORM_COUNT} Angreifer`;
     }
     if (this.stormAccAi > 0) {
       return `GEGEN-STURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccAi)}s · ${aInv}/${BLOCK_STORM_COUNT}`;
     }
-    if (pInv > 0) return `ANGRIFF im Gästeblock · ${pInv} Ultra${pInv > 1 ? "s" : ""} — Verteidigung!`;
-    if (aInv > 0) return `VERTEIDIGUNG · ${aInv} Feind-Ultra${aInv > 1 ? "s" : ""} im Heimblock`;
+    if (pInv > 0)
+      return `ANGRIFF im Gästeblock · ${pInv} Angreifer — Verteidigung!`;
+    if (aInv > 0)
+      return `VERTEIDIGUNG · ${aInv} Feind-Angreifer im Heimblock`;
     return null;
   }
 
@@ -3494,6 +3504,15 @@ export class Match {
     }
   }
 
+  /** Small momentum bump for the killer's team (player +, AI −). */
+  private applyKillMomentum(killerTeam: TeamId, amount: number): void {
+    if (killerTeam === this.playerTeam) {
+      this.momentum = clamp(this.momentum + amount, -1, 1);
+    } else if (killerTeam === this.aiTeam) {
+      this.momentum = clamp(this.momentum - amount, -1, 1);
+    }
+  }
+
   private applyHit(attacker: FanUnit, target: FanUnit): void {
     let atkMul = 1;
     let defMul = 1;
@@ -3511,7 +3530,12 @@ export class Match {
         (HIT_DAMAGE * HIT_DAMAGE_SCALE * rangedMul * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
         Math.max(0.35, this.defenseOf(target) * defMul);
       target.hp -= dmg * 0.55;
-      if (target.hp <= 0) target.hp = 0;
+      if (target.hp <= 0) {
+        target.hp = 0;
+        if (attacker.team === this.playerTeam || attacker.team === this.aiTeam) {
+          this.applyKillMomentum(attacker.team as TeamId, MOMENTUM_KILL_UNIT);
+        }
+      }
       return;
     }
     const dmg =
@@ -3526,6 +3550,9 @@ export class Match {
     }
     if (target.hp <= 0) {
       target.hp = 0;
+      if (attacker.team === this.playerTeam || attacker.team === this.aiTeam) {
+        this.applyKillMomentum(attacker.team as TeamId, MOMENTUM_KILL_UNIT);
+      }
       if (target.isSteward) {
         this.onStewardDefeated(target);
         this.toast("Ordner besiegt");
@@ -3640,17 +3667,7 @@ export class Match {
   }
 
   private tickBlockStorm(dt: number): void {
-    const countInv = (team: TeamId, blockId: number) =>
-      this.fans.filter(
-        (f) =>
-          f.hp > 0 &&
-          f.team === team &&
-          f.kind === "ultras" &&
-          f.blockId === blockId &&
-          (f.state === "block" || f.invading),
-      ).length;
-
-    const pN = countInv(this.playerTeam, GAST_BLOCK);
+    const pN = this.countBlockInvaders(this.playerTeam, GAST_BLOCK);
     if (pN >= BLOCK_STORM_COUNT) {
       this.stormAccPlayer += dt;
       if (this.stormAccPlayer >= BLOCK_STORM_SEC) {
@@ -3666,7 +3683,7 @@ export class Match {
       this.stormAccPlayer = 0;
     }
 
-    const aN = countInv(this.aiTeam, HEIM_BLOCK);
+    const aN = this.countBlockInvaders(this.aiTeam, HEIM_BLOCK);
     if (aN >= BLOCK_STORM_COUNT) {
       this.stormAccAi += dt;
       if (this.stormAccAi >= BLOCK_STORM_SEC) {
