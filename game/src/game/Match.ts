@@ -63,6 +63,7 @@ import {
   START_GOLD,
   START_SECURITY,
   STEWARD_CAP,
+  NEUTRAL_STEWARD_CAP,
   STEWARD_GOLD_PER_SEC,
   STEWARD_HIRE_GOLD,
   STEWARD_STATS,
@@ -585,21 +586,6 @@ export class Match {
       return dir > 0 ? ga - gb : gb - ga;
     });
     return out;
-  }
-
-  private nearestHostileOrdnerPost(f: FanUnit): BuildSlot | null {
-    const dir = f.team === this.playerTeam ? 1 : -1;
-    let best: BuildSlot | null = null;
-    let bestDx = 99;
-    for (const s of this.slots) {
-      if (!this.isHostileOrdnerPost(s, f.team as TeamId)) continue;
-      const gx = this.postGangX(s);
-      const dx = (gx - f.gangX) * dir;
-      if (dx < -0.02 || dx > bestDx) continue;
-      bestDx = dx;
-      best = s;
-    }
-    return best;
   }
 
   private destroyOrdnerPost(s: BuildSlot): void {
@@ -1191,26 +1177,74 @@ export class Match {
   }
 
   private tickOrdnerPostCombat(dt: number): void {
+    // Post damage is handled in tickCombat (nearest unit-or-building target).
     void dt;
-    for (const a of this.fans) {
-      if (a.hp <= 0 || a.kind !== "ultras" && a.kind !== "hooligans") continue;
-      if (a.state !== "gang" && !a.invading) continue;
-      const post = this.nearestHostileOrdnerPost(a);
-      if (!post || a.attackCd > 0) continue;
-      const pos = this.ordnerPostGangPos(post);
-      const d = dist(a.x, a.y, pos.x, pos.y);
-      const reach = a.rangedPyro ? RANGED_RANGE : MELEE_RANGE;
-      if (d > reach) continue;
-      a.armSwing = 1;
-      a.attackCd = HIT_CD / Math.max(0.4, this.attackOf(a));
-      const dmg = this.ordnerPostDamageFrom(a);
-      const key = slotKey(post.blockId, post.index);
-      if (a.rangedPyro) {
-        this.spawnPyroShot(a, pos.x, pos.y, dmg, null, key);
-      } else {
-        this.damageOrdnerPost(post, dmg, a);
+  }
+
+  /** Nearest hostile unit or Ordnerpost for offense targeting. */
+  private nearestHostileEngage(
+    a: FanUnit,
+  ):
+    | { kind: "unit"; unit: FanUnit; dist: number }
+    | { kind: "post"; post: BuildSlot; dist: number }
+    | null {
+    const reach = a.rangedPyro ? RANGED_RANGE : MELEE_RANGE;
+    let bestUnit: FanUnit | null = null;
+    let bestUnitD = Number.POSITIVE_INFINITY;
+    for (const b of this.fans) {
+      if (!this.isHostileUnit(a, b)) continue;
+      const sameBlockFight =
+        a.blockId === b.blockId &&
+        (a.state === "block" || a.invading) &&
+        (b.state === "block" || b.invading || b.isSteward);
+      const midY = gangMidY();
+      const aOnCorridor =
+        a.state === "gang" ||
+        a.isSteward ||
+        a.state === "stand" ||
+        a.invading ||
+        (a.state === "moving" && Math.abs(a.y - midY) < 0.12);
+      const bOnCorridor =
+        b.state === "gang" ||
+        b.isSteward ||
+        b.state === "stand" ||
+        (b.state === "moving" && Math.abs(b.y - midY) < 0.12);
+      if (!sameBlockFight && !(aOnCorridor && bOnCorridor)) continue;
+      const d = dist(a.x, a.y, b.x, b.y);
+      if (d < bestUnitD) {
+        bestUnitD = d;
+        bestUnit = b;
       }
     }
+
+    let bestPost: BuildSlot | null = null;
+    let bestPostD = Number.POSITIVE_INFINITY;
+    if (
+      a.team !== "neutral" &&
+      (a.kind === "ultras" || a.kind === "hooligans" || a.isSteward) &&
+      (a.state === "gang" || a.invading || a.state === "moving")
+    ) {
+      for (const s of this.slots) {
+        if (!this.isHostileOrdnerPost(s, a.team as TeamId)) continue;
+        const pos = this.ordnerPostGangPos(s);
+        const d = dist(a.x, a.y, pos.x, pos.y);
+        // Prefer posts ahead / nearby; ignore far behind
+        const dir = a.team === this.playerTeam ? 1 : -1;
+        const ahead = (pos.x - a.x) * dir;
+        if (ahead < -reach * 0.35) continue;
+        if (d < bestPostD) {
+          bestPostD = d;
+          bestPost = s;
+        }
+      }
+    }
+
+    if (bestUnit && bestUnitD <= (bestPost ? bestPostD : Infinity)) {
+      return { kind: "unit", unit: bestUnit, dist: bestUnitD };
+    }
+    if (bestPost) return { kind: "post", post: bestPost, dist: bestPostD };
+    if (bestUnit) return { kind: "unit", unit: bestUnit, dist: bestUnitD };
+    return null;
   }
 
   /** Spieler-Einheiten einer Art, die im Block bereit zum Angriff sind. */
@@ -1921,22 +1955,12 @@ export class Match {
     return true;
   }
 
-  /** Grey Ordner only make sense while the booth sits between both battle lines */
-  private isContestedGangZone(blockId: number): boolean {
-    const mid = blockIdToGangX(blockId);
-    // Contested = Heim front has not clearly passed AND Gast front has not clearly passed
-    return this.linePlayer < mid + 0.04 && this.lineAi > mid - 0.04;
-  }
-
   /**
-   * Neutral mid Ordnerposts slowly level while still contested (cap soft).
-   * Freezes once a side has pushed the zone clear — no late concrete wall.
+   * Neutral mid Ordnerposts slowly level over time (cap soft).
    */
   private tickNeutralPostAutoLevel(dt: number): void {
-    if (!this.isContestedGangZone(NEUTRAL_BLOCK)) return;
     for (const s of this.slots) {
       if (
-        s.blockId !== NEUTRAL_BLOCK ||
         s.building !== "ordner" ||
         s.owner !== "neutral" ||
         s.structHp <= 0
@@ -1962,13 +1986,10 @@ export class Match {
   }
 
   private tickStewards(dt: number): void {
-    // Neutral posts: slow respawn ONLY while still in contested (grey) territory
+    // Neutral posts: keep producing Ordner up to NEUTRAL_STEWARD_CAP total
     for (const s of this.slots) {
-      if (s.building !== "ordner" || s.owner !== "neutral" || s.greyNeutral) continue;
-      if (!this.isContestedGangZone(s.blockId)) {
-        // Freeze timer while deep in blue/red land — no grey reinforcements
-        continue;
-      }
+      if (s.building !== "ordner" || s.owner !== "neutral") continue;
+      if (s.structHp <= 0) continue;
       const key = slotKey(s.blockId, s.index);
       const aliveAtPost = this.fans.filter(
         (f) => f.hp > 0 && f.isSteward && f.homeStandKey === key,
@@ -1976,13 +1997,14 @@ export class Match {
       const neutralAlive = this.fans.filter(
         (f) => f.hp > 0 && f.isSteward && f.team === "neutral",
       ).length;
-      if (neutralAlive >= STEWARD_CAP) continue;
+      if (neutralAlive >= NEUTRAL_STEWARD_CAP) continue;
       s.stewardCd -= dt;
-      if (aliveAtPost >= STEWARD_CAP) continue;
+      // One surviving grey post may fill the full total of 4
+      if (aliveAtPost >= NEUTRAL_STEWARD_CAP) continue;
       if (s.stewardCd > 0) continue;
       s.stewardCd = NEUTRAL_STEWARD_RESPAWN;
       this.fans.push(this.makeSteward("neutral", s));
-      this.toast("Neutraler Ordner kehrt zurück");
+      this.toast("Neutraler Ordner");
     }
 
     for (const f of this.fans) {
@@ -2943,8 +2965,8 @@ export class Match {
     const laneY = gangLaneYForUnit(f.id);
     const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
 
-    // Angreifer (onOffense) pushen immer vorwärts. Nur echte Heim-Verteidiger
-    // laufen zurück, wenn Feinde am Heimblock sind.
+    // Angreifer (onOffense) pushen immer vorwärts bis 0 HP oder Blocksturm.
+    // Nur echte Heim-Verteidiger laufen zurück, wenn Feinde am Heimblock sind.
     const team = f.team as TeamId;
     const homeGx = blockIdToGangX(
       team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK,
@@ -2967,13 +2989,23 @@ export class Match {
     if (pressingCement) {
       f.hp = Math.max(0, f.hp - CEMENT_DOT_PER_SEC * dt);
     }
-    const blocker = this.blockerAhead(f, moveDir);
-    const gapToBlocker = blocker ? (blocker.x - f.x) * moveDir : 999;
-    // Offense always marches; only halt in true contact range (melee / short pyro hold)
-    const haltGap = f.rangedPyro ? RANGED_RANGE * 0.32 : MELEE_RANGE * 0.55;
-    const inHalt = blocker != null && gapToBlocker <= haltGap;
 
-    if (inHalt && blocker && !f.onOffense) {
+    const blocker = this.blockerAhead(f, moveDir);
+    const frontPost = ordPosts[0] ?? null;
+    const postPos = frontPost ? this.ordnerPostGangPos(frontPost) : null;
+    const gapToBlocker = blocker ? (blocker.x - f.x) * moveDir : 999;
+    const gapToPost = postPos ? (postPos.x - f.x) * moveDir : 999;
+    const haltGap = f.rangedPyro ? RANGED_RANGE * 0.55 : MELEE_RANGE * 0.7;
+    const engageUnit = blocker != null && gapToBlocker <= haltGap;
+    const engagePost = postPos != null && gapToPost <= haltGap && gapToPost >= -0.02;
+    const engage =
+      engageUnit || engagePost
+        ? engageUnit && (!engagePost || gapToBlocker <= gapToPost)
+          ? ("unit" as const)
+          : ("post" as const)
+        : null;
+
+    if (engage === "unit" && blocker && !f.onOffense) {
       if (f.rangedPyro) {
         const desired = blocker.x - moveDir * (RANGED_RANGE * 0.4);
         f.x += (desired - f.x) * Math.min(1, 5 * dt);
@@ -2988,21 +3020,30 @@ export class Match {
         f.y += (blocker.y - f.y) * Math.min(1, 10 * dt);
       }
       this.syncGangFromWorld(f);
-    } else if (inHalt && blocker && f.onOffense) {
-      // Stick to the front Ordner / foe — fight until cleared, no walk-past
-      const targetGap = f.rangedPyro ? RANGED_RANGE * 0.35 : MELEE_RANGE * 0.22;
-      if (gapToBlocker > targetGap) {
-        f.x += moveDir * Math.min(gapToBlocker - targetGap, moveSpeed * 1.4 * dt);
-      } else {
-        f.x += (blocker.x - moveDir * targetGap - f.x) * Math.min(1, 6 * dt);
+    } else if (engage && f.onOffense) {
+      // Fight nearest unit/post in range, then keep marching when clear
+      const targetGap = f.rangedPyro ? RANGED_RANGE * 0.4 : MELEE_RANGE * 0.25;
+      if (engage === "unit" && blocker) {
+        if (gapToBlocker > targetGap) {
+          f.x += moveDir * Math.min(gapToBlocker - targetGap, moveSpeed * 1.6 * dt);
+        } else {
+          f.x += (blocker.x - moveDir * targetGap - f.x) * Math.min(1, 6 * dt);
+        }
+        f.y += ((blocker.y + laneY) * 0.5 - f.y) * Math.min(1, 8 * dt);
+      } else if (postPos) {
+        if (gapToPost > targetGap) {
+          f.x += moveDir * Math.min(gapToPost - targetGap, moveSpeed * 1.6 * dt);
+        } else {
+          f.x += (postPos.x - moveDir * targetGap - f.x) * Math.min(1, 6 * dt);
+        }
+        f.y += ((postPos.y + laneY) * 0.5 - f.y) * Math.min(1, 8 * dt);
       }
-      f.y += ((blocker.y + laneY) * 0.5 - f.y) * Math.min(1, 8 * dt);
       this.syncGangFromWorld(f);
       if (f.aggro < 80) f.aggro = 40;
     } else {
+      // No engageable target — always walk the gang toward the goal
       f.gangX = clamp(f.gangX + moveDir * moveSpeed * dt, 0, 1);
       f.x = gangXToWorld(f.gangX);
-      // Personal lane in middle 80% + tiny bob (not all on one mid line)
       f.y = laneY + Math.sin(this.realElapsed * 3 + f.id) * 0.006;
     }
 
@@ -3013,8 +3054,16 @@ export class Match {
       else f.gangX = Math.max(f.gangX, hardCap);
       f.x = gangXToWorld(f.gangX);
     }
-    if (ordPosts.length && (f.kind === "hooligans" || f.kind === "ultras")) {
-      const capGx = blockIdToGangX(ordPosts[0].blockId) - dir * 0.028;
+    // Soft approach to next Ordnerpost — hold only at fight range, never freeze mid-gang
+    if (
+      frontPost &&
+      postPos &&
+      (f.kind === "hooligans" || f.kind === "ultras") &&
+      !engage
+    ) {
+      const approachGap = f.rangedPyro ? RANGED_RANGE * 0.45 : MELEE_RANGE * 0.3;
+      const postGx = this.postGangX(frontPost);
+      const capGx = postGx - dir * Math.max(0.01, approachGap * 0.15);
       if (dir > 0) f.gangX = Math.min(f.gangX, capGx);
       else f.gangX = Math.max(f.gangX, capGx);
       f.x = gangXToWorld(f.gangX);
@@ -3028,7 +3077,9 @@ export class Match {
     const pastCement =
       dir > 0 ? foeCement < f.gangX - 0.01 : foeCement > f.gangX + 0.01;
     const canInvade =
-      !inHalt && ordPosts.length === 0 && (cementWall == null || pastCement);
+      !engage &&
+      ordPosts.length === 0 &&
+      (cementWall == null || pastCement);
     const reached =
       f.team === this.playerTeam
         ? f.gangX >= goalGx - 0.02
@@ -3322,28 +3373,27 @@ export class Match {
       }
     }
 
-    // Invading ultras hunt nearest living defender in block (no idle standing)
+    // Invaders keep hunting nearest hostile unit / Ordnerpost (no idle standstill)
     for (const inv of this.fans) {
       if (!inv.invading || inv.hp <= 0) continue;
-      const foes = this.fans.filter(
-        (d) =>
-          d.hp > 0 &&
-          d.team !== inv.team &&
-          d.team !== "neutral" &&
-          d.blockId === inv.blockId &&
-          d.state === "block" &&
-          !d.invading &&
-          d.kind !== "hooligans",
-      );
-      if (!foes.length) continue;
-      foes.sort((a, b) => dist(inv.x, inv.y, a.x, a.y) - dist(inv.x, inv.y, b.x, b.y));
-      const t = foes[0];
-      // Close to melee range before fighting
-      const d = dist(inv.x, inv.y, t.x, t.y);
-      if (d > MELEE_RANGE * 0.85) {
-        const step = Math.min(1, 0.35);
-        inv.x += (t.x - inv.x) * step;
-        inv.y += (t.y - inv.y) * step;
+      if (inv.aggro < 40) inv.aggro = 40;
+      inv.onOffense = true;
+      const target = this.nearestHostileEngage(inv);
+      if (!target) continue;
+      const tx =
+        target.kind === "unit"
+          ? target.unit.x
+          : this.ordnerPostGangPos(target.post).x;
+      const ty =
+        target.kind === "unit"
+          ? target.unit.y
+          : this.ordnerPostGangPos(target.post).y;
+      const d = dist(inv.x, inv.y, tx, ty);
+      const hold = inv.rangedPyro ? RANGED_RANGE * 0.45 : MELEE_RANGE * 0.85;
+      if (d > hold) {
+        const step = Math.min(1, 0.4);
+        inv.x += (tx - inv.x) * step;
+        inv.y += (ty - inv.y) * step;
       }
     }
   }
@@ -3354,7 +3404,12 @@ export class Match {
       if (a.hp <= 0) continue;
       if (a.team === "neutral" && !a.isSteward) continue;
 
-      const home = a.team === this.playerTeam ? HEIM_BLOCK : a.team === this.aiTeam ? GAST_BLOCK : -1;
+      const home =
+        a.team === this.playerTeam
+          ? HEIM_BLOCK
+          : a.team === this.aiTeam
+            ? GAST_BLOCK
+            : -1;
       const blockInvaded =
         home >= 0 && this.enemyUltraInBlock(home, a.team as TeamId);
 
@@ -3384,59 +3439,33 @@ export class Match {
       )
         continue;
 
-      let best: FanUnit | null = null;
       const reach = a.rangedPyro ? RANGED_RANGE : MELEE_RANGE;
-      let bestD = reach;
-
-      for (const b of this.fans) {
-        if (b.hp <= 0 || b === a) continue;
-        const hostile =
-          b.team !== a.team && (b.team !== "neutral" || b.isSteward);
-        if (!hostile) continue;
-
-        const sameBlockFight =
-          a.blockId === b.blockId &&
-          (a.state === "block" || a.invading) &&
-          (b.state === "block" || b.invading) &&
-          a.kind !== "normalos" &&
-          b.kind !== "normalos";
-
-        const midY = gangMidY();
-        const aOnCorridor =
-          a.state === "gang" ||
-          a.isSteward ||
-          a.state === "stand" ||
-          (a.state === "moving" && Math.abs(a.y - midY) < 0.1);
-        const bOnCorridor =
-          b.state === "gang" ||
-          b.isSteward ||
-          b.state === "stand" ||
-          (b.state === "moving" && Math.abs(b.y - midY) < 0.1);
-        const sameLane =
-          sameBlockFight || (aOnCorridor && bOnCorridor);
-
-        if (!sameLane) continue;
-        const d = dist(a.x, a.y, b.x, b.y);
-        if (d < bestD) {
-          bestD = d;
-          best = b;
-        }
-      }
-      if (a.state === "gang" && (a.kind === "ultras" || a.kind === "hooligans")) {
-        const post = this.nearestHostileOrdnerPost(a);
-        if (post) {
-          const pos = this.ordnerPostGangPos(post);
-          const reachPost = a.rangedPyro ? RANGED_RANGE : MELEE_RANGE;
-          if (dist(a.x, a.y, pos.x, pos.y) <= reachPost * 1.05) continue;
-        }
-      }
-
-      if (!best || a.attackCd > 0) continue;
+      const target = this.nearestHostileEngage(a);
+      if (!target || target.dist > reach * 1.08 || a.attackCd > 0) continue;
 
       a.armSwing = 1;
       a.attackCd = HIT_CD / Math.max(0.4, this.attackOf(a));
 
-      if (a.rangedPyro && (a.state === "gang" || a.state === "moving" || a.isSteward)) {
+      if (target.kind === "post") {
+        const pos = this.ordnerPostGangPos(target.post);
+        const dmg = this.ordnerPostDamageFrom(a);
+        const key = slotKey(target.post.blockId, target.post.index);
+        if (
+          a.rangedPyro &&
+          (a.state === "gang" || a.state === "moving" || a.invading || a.isSteward)
+        ) {
+          this.spawnPyroShot(a, pos.x, pos.y, dmg, null, key);
+        } else {
+          this.damageOrdnerPost(target.post, dmg, a);
+        }
+        continue;
+      }
+
+      const best = target.unit;
+      if (
+        a.rangedPyro &&
+        (a.state === "gang" || a.state === "moving" || a.invading || a.isSteward)
+      ) {
         const dmg =
           (HIT_DAMAGE *
             HIT_DAMAGE_SCALE *
@@ -3449,10 +3478,10 @@ export class Match {
         this.applyHit(a, best);
       }
 
-      // Counter-hit only in melee reach — ranged pyro must not eat free Ordner punches
-      // from halfway across the gang.
+      // Counter-hit only in melee reach
       if (best.hp > 0 && best.kind !== "hooligans") {
-        const counterReach = best.isSteward || a.isSteward ? MELEE_RANGE * 1.15 : MELEE_RANGE;
+        const counterReach =
+          best.isSteward || a.isSteward ? MELEE_RANGE * 1.15 : MELEE_RANGE;
         if (dist(a.x, a.y, best.x, best.y) <= counterReach) {
           const stewardFight = a.isSteward || best.isSteward;
           if (stewardFight || best.attackCd <= 0) {
@@ -3519,110 +3548,17 @@ export class Match {
     }
   }
 
-  /** Neutral capture: spatial wave from battle-line pressure + nearby converted fans */
+  /**
+   * Grey fans stay permanently grey at their starting count —
+   * no conversion, no refill, no capture rings.
+   */
   private tickNeutralCapture(dt: number): void {
-    this.defectAcc += dt;
-    for (const f of this.fans) {
-      if (f.team !== "neutral" || f.hp <= 0 || f.isSteward) continue;
-      if (f.state !== "block") continue;
-      if (f.blockId !== 1 && f.blockId !== 2) continue;
-
-      const rect = blockCrowdRect(f.blockId);
-      // 0 = heimward (left), 1 = gastward (right) from live position
-      const sideT = clamp((f.x - rect.left) / Math.max(0.01, rect.width), 0, 1);
-      const blockGx = blockIdToGangX(f.blockId);
-      // How far each front has entered this block's zone (−1..1-ish)
-      const playerDepth = clamp((this.linePlayer - (blockGx - 0.18)) / 0.36, 0, 1);
-      const aiDepth = clamp(((blockGx + 0.18) - this.lineAi) / 0.36, 0, 1);
-
-      // Spatial: heim pressure hits left side first, gast hits right first
-      const colHeimBias = 1 - sideT;
-      const colGastBias = sideT;
-      let pull =
-        playerDepth * (0.35 + 0.55 * colHeimBias) -
-        aiDepth * (0.35 + 0.55 * colGastBias);
-
-      // Nearby converted fans (by position, not seat index) push further
-      let nearHeim = 0;
-      let nearGast = 0;
-      for (const o of this.fans) {
-        if (o.hp <= 0 || o.isSteward || o.blockId !== f.blockId) continue;
-        if (o.state !== "block") continue;
-        if (Math.hypot(o.x - f.x, o.y - f.y) > 0.08) continue;
-        if (o.team === this.playerTeam) nearHeim++;
-        if (o.team === this.aiTeam) nearGast++;
-      }
-      pull += nearHeim * 0.22 - nearGast * 0.22;
-      pull += this.momentum * 0.12;
-
-      const ultraP = this.fans.some(
-        (o) =>
-          o.hp > 0 &&
-          o.team === this.playerTeam &&
-          o.kind === "ultras" &&
-          (o.blockId === f.blockId ||
-            (o.state === "gang" && Math.abs(o.gangX - blockGx) < 0.12)),
-      );
-      const ultraA = this.fans.some(
-        (o) =>
-          o.hp > 0 &&
-          o.team === this.aiTeam &&
-          o.kind === "ultras" &&
-          (o.blockId === f.blockId ||
-            (o.state === "gang" && Math.abs(o.gangX - blockGx) < 0.12)),
-      );
-      if (ultraP) pull += 0.5 * colHeimBias + 0.15;
-      if (ultraA) pull -= 0.5 * colGastBias + 0.15;
-
-      f.lean = clamp(f.lean + pull * dt * 0.045, -1, 1);
-      const pressure = Math.abs(pull);
-      // Slower seat-by-seat convert — clearly visible per person
-      const rate = 0.01 + pressure * 0.022 + (ultraP || ultraA ? 0.015 : 0);
-      if (f.lean > 0.35) f.captureProg = clamp(f.captureProg + rate * dt, 0, 1);
-      else if (f.lean < -0.35)
-        f.captureProg = clamp(f.captureProg - rate * dt, -1, 0);
-      else f.captureProg *= 1 - 0.06 * dt;
-
-      if (f.captureProg >= 1) {
-        f.team = this.playerTeam;
-        f.homeBlockId = f.blockId;
-        f.lean = 1;
-        f.captureProg = 0;
-        this.toast(`Sitz → ${teamLabel(this.playerTeam)}`);
-        this.floatAt(f.x, f.y, "✓ Heim", true);
-      } else if (f.captureProg <= -1) {
-        f.team = this.aiTeam;
-        f.homeBlockId = f.blockId;
-        f.lean = -1;
-        f.captureProg = 0;
-        this.toast(`Sitz → ${teamLabel(this.aiTeam)}`);
-        this.floatAt(f.x, f.y, "✓ Gäste", false);
-      }
-    }
-
-    this.refillNeutralSeats(dt);
-  }
-
-  private refillNeutralSeats(dt: number): void {
-    if (this.defectAcc < 4.5) return;
-    this.defectAcc = 0;
-    for (const blockId of [NEUTRAL_BLOCK]) {
-      if (this.blockOwner[blockId] !== "neutral") continue;
-      const seated = this.fans.filter(
-        (f) =>
-          f.hp > 0 &&
-          !f.isSteward &&
-          f.team === "neutral" &&
-          f.blockId === blockId &&
-          f.state === "block" &&
-          f.seatIndex != null,
-      ).length;
-      const target = 20; // grey starter crowd — Fans only
-      if (seated >= target) continue;
-      const seat = this.freeSeat(blockId);
-      this.fans.push(this.makeFan("normalos", "neutral", blockId, seat));
-    }
     void dt;
+    for (const f of this.fans) {
+      if (f.team !== "neutral" || f.isSteward) continue;
+      f.lean = 0;
+      f.captureProg = 0;
+    }
   }
 
   /**

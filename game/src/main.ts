@@ -860,12 +860,20 @@ function renderMatchScreen(): void {
     else syncBuildingRailUi();
   };
 
-  /** Plot gewählt → Gebäude-Rail öffnen + Target setzen. */
+  /** Plot gewählt → Gebäude-Rail öffnen + Target setzen (kein Toggle-Zu). */
   const openBuildRail = (_mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
     state.buildTarget = target;
     m.selectedSlot = target;
     m.buildMenu = target;
-    setOpenRail("build");
+    if (openRail !== "build") {
+      openRail = "build";
+      personRail.hidden = true;
+      buildRail.hidden = false;
+      attackRail.hidden = true;
+      railSlot.hidden = false;
+      shell.classList.add("rail-open", "build-open");
+      syncToolActive();
+    }
     syncBuildingRailUi();
   };
 

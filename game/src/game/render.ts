@@ -564,36 +564,10 @@ function drawBaustelle(
     footX = (q.tl.x + q.tr.x + q.br.x + q.bl.x) / 4;
     footY = (q.tl.y + q.tr.y + q.br.y + q.bl.y) / 4;
     drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
-    if (sel) {
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = "#22c55e";
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      ctx.moveTo(q.tl.x, q.tl.y);
-      ctx.lineTo(q.tr.x, q.tr.y);
-      ctx.lineTo(q.br.x, q.br.y);
-      ctx.lineTo(q.bl.x, q.bl.y);
-      ctx.closePath();
-      ctx.stroke();
-      ctx.strokeStyle = "rgba(34,197,94,0.35)";
-      ctx.lineWidth = 6;
-      ctx.stroke();
-    }
   } else {
     const padX = bw * PLOT_DRAW_INSET * 0.5;
     const padY = bh * PLOT_DRAW_INSET * 0.5;
     drew = drawIcon(ctx, src, x + padX, y + padY, bw - padX * 2, bh - padY * 2, 0.02);
-    if (sel) {
-      ctx.globalAlpha = 1;
-      ctx.strokeStyle = "#22c55e";
-      ctx.lineWidth = 3.5;
-      roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 10);
-      ctx.stroke();
-      ctx.strokeStyle = "rgba(34,197,94,0.35)";
-      ctx.lineWidth = 6;
-      roundRect(ctx, x - 1, y - 1, bw + 2, bh + 2, 12);
-      ctx.stroke();
-    }
   }
   ctx.restore();
 
@@ -644,8 +618,8 @@ function drawBuilding(
   // sets foot position + size from the VP facade math — no icon warp/yaw.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
-  // Gebäude ×0.9 vs prior ×1.2 (−25% Darstellung)
-  const BUILD_SCALE = 0.9;
+  // Gebäude ×1.125 vs prior ×0.9 (+25% Darstellung)
+  const BUILD_SCALE = 1.125;
   let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
@@ -671,7 +645,7 @@ function drawBuilding(
     const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
     const topY = (facade.tl.y + facade.tr.y) / 2;
     const facadeH = Math.max(1, footY - topY);
-    size = Math.max(30, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
+    size = Math.max(34, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
     ctx.fillStyle = "rgba(15,23,42,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
@@ -768,12 +742,7 @@ function drawBuilding(
     }
   }
 
-  if (sel) {
-    ctx.strokeStyle = "#22c55e";
-    ctx.lineWidth = 3;
-    roundRect(ctx, x + 1, y + 1, bw - 2, bh - 2, r);
-    ctx.stroke();
-  }
+  void sel;
 
   if (s.building === "bier" && !grey) {
     ctx.fillStyle = "rgba(0,0,0,0.45)";
@@ -807,23 +776,6 @@ function drawFans(
   for (const f of sorted) {
     const x = f.x * w;
     const y = f.y * h;
-    // Capture ring follows the person (not a fixed seat cell)
-    if (
-      f.team === "neutral" &&
-      !f.isSteward &&
-      f.state === "block" &&
-      Math.abs(f.captureProg) > 0.08
-    ) {
-      const prog = Math.abs(f.captureProg);
-      ctx.strokeStyle =
-        f.captureProg > 0
-          ? `rgba(59,130,246,${0.4 + prog * 0.5})`
-          : `rgba(239,68,68,${0.4 + prog * 0.5})`;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(x, y, 11, -Math.PI / 2, -Math.PI / 2 + prog * Math.PI * 2);
-      ctx.stroke();
-    }
     drawMannchen(ctx, m, f, x, y, h);
   }
 }
@@ -831,30 +783,8 @@ function drawFans(
 function teamJersey(f: FanUnit): string {
   if (f.team === "ksc") return "#1f6feb";
   if (f.team === "vfb") return "#dc2626";
-  // Neutral leaning toward a side — slow color shift before full convert
-  const lean = f.lean || 0;
-  const prog = f.captureProg || 0;
-  const t = Math.max(Math.abs(lean) * 0.45, Math.abs(prog) * 0.7);
-  if (t < 0.08) return "#9ca3af";
-  const towardHeim = lean > 0 || prog > 0;
-  return towardHeim
-    ? lerpHex("#9ca3af", "#1f6feb", Math.min(1, t))
-    : lerpHex("#9ca3af", "#dc2626", Math.min(1, t));
-}
-
-function lerpHex(a: string, b: string, t: number): string {
-  const pa = parseInt(a.slice(1), 16);
-  const pb = parseInt(b.slice(1), 16);
-  const ar = (pa >> 16) & 255,
-    ag = (pa >> 8) & 255,
-    ab = pa & 255;
-  const br = (pb >> 16) & 255,
-    bg = (pb >> 8) & 255,
-    bb = pb & 255;
-  const r = Math.round(ar + (br - ar) * t);
-  const g = Math.round(ag + (bg - ag) * t);
-  const bl = Math.round(ab + (bb - ab) * t);
-  return `#${((1 << 24) + (r << 16) + (g << 8) + bl).toString(16).slice(1)}`;
+  // Grey fans stay permanently grey (no lean / capture tint)
+  return "#9ca3af";
 }
 
 function unitVisualLevel(f: FanUnit): number {
@@ -985,23 +915,6 @@ function drawMannchen(
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing = fanFacing(f);
   const anim = personAnimMode(m, f);
-
-  if (Math.abs(f.captureProg) > 0.12 && f.team === "neutral") {
-    ctx.strokeStyle =
-      f.captureProg > 0
-        ? `rgba(59,130,246,${0.35 + Math.abs(f.captureProg) * 0.55})`
-        : `rgba(239,68,68,${0.35 + Math.abs(f.captureProg) * 0.55})`;
-    ctx.lineWidth = Math.max(2, size * 0.04);
-    ctx.beginPath();
-    ctx.arc(
-      x,
-      y - size * 0.35,
-      size * 0.55,
-      -Math.PI / 2,
-      -Math.PI / 2 + Math.abs(f.captureProg) * Math.PI * 2,
-    );
-    ctx.stroke();
-  }
 
   const drew = drawToyIcon(ctx, src, x, y, size, {
     t: m.realElapsed,
