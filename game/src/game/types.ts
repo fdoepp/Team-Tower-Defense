@@ -229,14 +229,16 @@ export const BANNER_POST_STANDOFF = 0.035;
 
 export const STEWARD_HIRE_GOLD = 22;
 export const STEWARD_CAP = 2;
+/** Max living grey/neutral Ordner on the field at once */
+export const NEUTRAL_STEWARD_CAP = 4;
 export const NEUTRAL_STEWARD_RESPAWN = 32;
 /**
  * CANONICAL neutral mid layout (keep across versions):
  * outer Ordnerposts + empty center; no grey Bier/Shop seed.
- * Auto-level only while contested; soft cap keeps late mid crackable.
+ * Auto-level over time; produce Ordner up to NEUTRAL_STEWARD_CAP.
  */
 export const NEUTRAL_POST_AUTO_LEVEL_CAP = 3;
-/** Real seconds of contested time between auto-levels */
+/** Real seconds between auto-levels on grey Ordnerposts */
 export const NEUTRAL_POST_AUTO_LEVEL_SEC = 60;
 /** Heim-facing (blue/left) starting Ordnerpost index in the neutral block */
 export const NEUTRAL_POST_HEIM_INDEX = 0;
