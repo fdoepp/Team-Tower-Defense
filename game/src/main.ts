@@ -32,10 +32,8 @@ import {
   UPGRADE_COST,
   UPGRADE_MAX,
   canVisit,
-  ordnerPostMaxHp,
   productionRate,
   stewardHealPerSec,
-  stewardPostRadius,
   visitGoldPayout,
   visitInterval,
   type BuildingKind,
@@ -56,12 +54,6 @@ import {
 
 void preloadIcons();
 
-const BUILD_NAME: Record<BuildingKind, string> = {
-  bier: "Bierstand",
-  fanshop: "Fanshop",
-  ordner: "Ordnerposten",
-};
-
 function buildingYieldCurrency(kind: BuildingKind): string {
   if (kind === "bier") return UI_ICONS.currencyBier;
   if (kind === "fanshop") return UI_ICONS.currencyFanartikel;
@@ -79,11 +71,6 @@ function formatYieldPerSec(n: number): string {
   return n.toFixed(2);
 }
 
-/** Heilradius als % der Gang-Breite (gangX×100). */
-function formatHealRadius(level: number): string {
-  return String(Math.round(stewardPostRadius(level) * 100));
-}
-
 /** Symbol + Betrag/s — Einheit steckt im Währungs-Icon. */
 function yieldChipHtml(
   kind: BuildingKind,
@@ -94,40 +81,6 @@ function yieldChipHtml(
   const id = opts?.id ? ` id="${opts.id}"` : "";
   const deltaCls = opts?.delta ? " yield-delta" : "";
   return `<span class="yield-chip${deltaCls}"${id}><img src="${buildingYieldCurrency(kind)}" alt=""><span class="yield-amt">${sign}${formatYieldPerSec(perSec)}/s</span></span>`;
-}
-
-function statChipHtml(
-  label: string,
-  value: string,
-  opts?: { delta?: boolean; id?: string },
-): string {
-  const id = opts?.id ? ` id="${opts.id}"` : "";
-  const deltaCls = opts?.delta ? " yield-delta" : "";
-  return `<span class="stat-chip${deltaCls}"${id}><span class="stat-label">${label}</span><span class="stat-amt">${value}</span></span>`;
-}
-
-/** Live Verb+Kosten über Button-Chrome (kein gebackenes Label). */
-function arCostBtnHtml(opts: {
-  kind: "bauen" | "kaufen" | "upgrade" | "senden";
-  full: string;
-  short: string;
-  amount: number | string;
-  currencySrc?: string;
-  payId?: string;
-  /** Echter Button (Personen-Rail); sonst dekoratives span (Build-Karten). */
-  asButton?: boolean;
-  btnId?: string;
-  btnAttrs?: string;
-}): string {
-  const cur = opts.currencySrc ?? UI_ICONS.currencyGold;
-  const payId = opts.payId ? ` id="${opts.payId}"` : "";
-  const inner = `<span class="inner"><span class="txt"><span class="full">${opts.full}</span><span class="short">${opts.short}</span></span><span class="pay"${payId}><img src="${cur}" alt=""><span class="amt">${opts.amount}</span></span></span>`;
-  if (opts.asButton) {
-    const id = opts.btnId ? ` id="${opts.btnId}"` : "";
-    const attrs = opts.btnAttrs ? ` ${opts.btnAttrs}` : "";
-    return `<button type="button" class="ar-cost-btn ${opts.kind}"${id}${attrs}>${inner}</button>`;
-  }
-  return `<span class="ar-cost-btn ${opts.kind}" aria-hidden="true">${inner}</span>`;
 }
 
 /**
@@ -167,12 +120,12 @@ function personYieldChipHtml(
 }
 
 /**
- * Personen Kauf/UP (Alt D):
- * Figur links, Ertrag darunter; Kosten groß rechts daneben.
+ * Rail Kauf/Bau/UP (Alt D):
+ * Icon links, Ertrag darunter; Kosten groß rechts daneben.
  * Abstände %-relativ zur Button-Face (skalierbar).
  */
-function personActionBtnHtml(opts: {
-  kind: "kaufen" | "upgrade";
+function railActionBtnHtml(opts: {
+  kind: "kaufen" | "bauen" | "upgrade";
   unitSrc: string;
   unitId: string;
   amount: number | string;
@@ -189,9 +142,9 @@ function personActionBtnHtml(opts: {
   if (opts.asButton !== false) {
     const id = opts.btnId ? ` id="${opts.btnId}"` : "";
     const attrs = opts.btnAttrs ? ` ${opts.btnAttrs}` : "";
-    return `<button type="button" class="ar-cost-btn ${opts.kind} person-action"${id}${attrs}>${inner}</button>`;
+    return `<button type="button" class="ar-cost-btn ${opts.kind} rail-action"${id}${attrs}>${inner}</button>`;
   }
-  return `<span class="ar-cost-btn ${opts.kind} person-action" aria-hidden="true">${inner}</span>`;
+  return `<span class="ar-cost-btn ${opts.kind} rail-action" aria-hidden="true">${inner}</span>`;
 }
 
 function personBuyCost(
@@ -234,7 +187,7 @@ function personBuyUpHtml(
       : `data-quick-buy="${kind}" title="Kaufen"`;
   const buyBtnId = kind === "ordner" ? opts?.hireBtnId ?? "btn-hire-ordner" : undefined;
   return (
-    personActionBtnHtml({
+    railActionBtnHtml({
       kind: "kaufen",
       unitSrc: buyIcon,
       unitId: `buy-ico-${kind}`,
@@ -245,7 +198,7 @@ function personBuyUpHtml(
       btnId: buyBtnId,
       btnAttrs: buyAttrs,
     }) +
-    personActionBtnHtml({
+    railActionBtnHtml({
       kind: "upgrade",
       unitSrc: upIcon,
       unitId: `up-ico-${kind}`,
@@ -268,6 +221,96 @@ function personMetaLabel(
   count: number,
 ): string {
   return `(Lvl.${m.unitTechLevel(kind)}, x${count})`;
+}
+
+function ownedBuildingSlots(m: Match, kind: BuildingKind) {
+  return m.slots.filter(
+    (s) =>
+      s.building === kind &&
+      s.owner === m.playerTeam &&
+      !s.greyNeutral,
+  );
+}
+
+/** Niedrigste Upgrade-fähige eigene Bude dieser Art (optional Preferenz). */
+function pickBuildingUpgradeSlot(
+  m: Match,
+  kind: BuildingKind,
+  preferred?: { blockId: number; index: number } | null,
+) {
+  const owned = ownedBuildingSlots(m, kind);
+  if (preferred) {
+    const hit = owned.find(
+      (s) =>
+        s.blockId === preferred.blockId &&
+        s.index === preferred.index &&
+        s.level < UPGRADE_MAX,
+    );
+    if (hit) return hit;
+  }
+  let best: (typeof owned)[number] | null = null;
+  for (const s of owned) {
+    if (s.level >= UPGRADE_MAX) continue;
+    if (!best || s.level < best.level) best = s;
+  }
+  return best;
+}
+
+function buildingMetaLabel(m: Match, kind: BuildingKind): string {
+  const owned = ownedBuildingSlots(m, kind);
+  const lv = owned.length
+    ? Math.min(...owned.map((s) => s.level || 1))
+    : 1;
+  return `(Lvl.${lv}, x${owned.length})`;
+}
+
+/** Bau + UP (Icon/Kosten/Ertrag) — gleiche Alt-D-Logik wie Personen. */
+function buildingBuyUpHtml(
+  m: Match,
+  kind: BuildingKind,
+  color: ReturnType<typeof teamColor>,
+): string {
+  const owned = ownedBuildingSlots(m, kind);
+  const refLv = owned.length
+    ? Math.min(...owned.map((s) => s.level || 1))
+    : 1;
+  const next = Math.min(UPGRADE_MAX, refLv + 1);
+  const buyYield = buildingYieldPerSec(kind, 1);
+  const upDelta =
+    refLv < UPGRADE_MAX
+      ? buildingYieldPerSec(kind, next) - buildingYieldPerSec(kind, refLv)
+      : 0;
+  const upCost =
+    owned.length > 0 && refLv < UPGRADE_MAX
+      ? (UPGRADE_COST[next] ?? null)
+      : null;
+  const buyIcon = standIconPath(kind, color, 1);
+  const upIcon = standIconPath(kind, color, next);
+  return (
+    railActionBtnHtml({
+      kind: "bauen",
+      unitSrc: buyIcon,
+      unitId: `build-ico-${kind}`,
+      amount: BUILD_COST[kind],
+      currencySrc: UI_ICONS.currencyGold,
+      payId: `build-pay-${kind}`,
+      yieldHtml: yieldChipHtml(kind, buyYield, { id: `build-yield-${kind}` }),
+      btnAttrs: `data-build-bau="${kind}" title="Bauen"`,
+    }) +
+    railActionBtnHtml({
+      kind: "upgrade",
+      unitSrc: upIcon,
+      unitId: `build-up-ico-${kind}`,
+      amount: upCost != null ? upCost : "—",
+      currencySrc: UI_ICONS.currencyGold,
+      payId: `build-up-pay-${kind}`,
+      yieldHtml: yieldChipHtml(kind, upDelta, {
+        delta: true,
+        id: `build-up-yield-${kind}`,
+      }),
+      btnAttrs: `data-build-up="${kind}" title="Upgrade"`,
+    })
+  );
 }
 
 function setPayAmt(root: ParentNode, payId: string, amount: number | string): void {
@@ -533,71 +576,30 @@ function renderMatchScreen(): void {
           </div>
         </div>
       </div>
-      <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
-        <header class="rail-banner" id="build-rail-title">Bauen</header>
-        <div class="build-rows" id="build-place-rows">
-          <button type="button" class="build-card" data-pending-build="bier">
-            <div class="build-top">
-              <img class="build-preview" src="icons/stands/bier-${tc}-1.png" alt="">
-              <div class="build-info">
-                <span class="build-name">Bierstand</span>
-                ${yieldChipHtml("bier", buildingYieldPerSec("bier", 1))}
-              </div>
+      <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude">
+        <header class="rail-banner" id="build-rail-title">Gebäude</header>
+        <div class="unit-rows person-cards building-cards" id="build-place-rows">
+          <article class="person-card building-card">
+            <div class="person-title">Bierstand <span class="meta" data-build-meta="bier">(Lvl.1, x0)</span></div>
+            <div class="person-actions dual">
+              ${buildingBuyUpHtml(m, "bier", tc)}
             </div>
-            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.bier })}
-          </button>
-          <button type="button" class="build-card" data-pending-build="fanshop">
-            <div class="build-top">
-              <img class="build-preview" src="icons/stands/fanshop-${tc}-1.png" alt="">
-              <div class="build-info">
-                <span class="build-name">Fanshop</span>
-                ${yieldChipHtml("fanshop", buildingYieldPerSec("fanshop", 1))}
-              </div>
+          </article>
+          <article class="person-card building-card">
+            <div class="person-title">Fanshop <span class="meta" data-build-meta="fanshop">(Lvl.1, x0)</span></div>
+            <div class="person-actions dual">
+              ${buildingBuyUpHtml(m, "fanshop", tc)}
             </div>
-            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.fanshop })}
-          </button>
-          <button type="button" class="build-card" data-pending-build="ordner">
-            <div class="build-top">
-              <img class="build-preview" src="icons/stands/ordner-${tc}-1.png" alt="">
-              <div class="build-info">
-                <span class="build-name">Ordnerposten</span>
-                ${yieldChipHtml("ordner", buildingYieldPerSec("ordner", 1))}
-                ${statChipHtml("HP", String(ordnerPostMaxHp(1)))}
-                ${statChipHtml("Radius", `${formatHealRadius(1)}%`)}
-                ${statChipHtml("Heilung", `${stewardHealPerSec(1)}/s`)}
-              </div>
+          </article>
+          <article class="person-card building-card">
+            <div class="person-title">Ordnerposten <span class="meta" data-build-meta="ordner">(Lvl.1, x0)</span></div>
+            <div class="person-actions dual">
+              ${buildingBuyUpHtml(m, "ordner", tc)}
             </div>
-            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.ordner })}
-          </button>
+          </article>
         </div>
-        <div class="build-rows hidden" id="build-upgrade-rows">
-          <div class="upgrade-panel" id="upgrade-panel">
-            <p class="upgrade-title" id="upgrade-title">Gebäude</p>
-            <div class="upgrade-preview">
-              <div class="up-stage">
-                <img id="upgrade-from-img" src="" alt="">
-                <span class="up-lv" id="upgrade-from-lv">Lv1</span>
-                <div class="up-stats" id="upgrade-from-stats">
-                  <span class="yield-chip" id="upgrade-from-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">0.41/s</span></span>
-                </div>
-              </div>
-              <div class="up-arrow" aria-hidden="true">→</div>
-              <div class="up-stage up-stage-next">
-                <img id="upgrade-to-img" src="" alt="">
-                <span class="up-lv" id="upgrade-to-lv">Lv2</span>
-                <div class="up-stats" id="upgrade-to-stats">
-                  <span class="yield-chip yield-delta" id="upgrade-to-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">+0.17/s</span></span>
-                </div>
-              </div>
-            </div>
-            <button type="button" class="ar-cost-btn upgrade" id="rail-upgrade">
-              <span class="inner">
-                <span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span>
-                <span class="pay" id="rail-upgrade-pay"><img src="${UI_ICONS.currencyGold}" alt=""><span id="rail-upgrade-cost">—</span></span>
-              </span>
-            </button>
-          </div>
-        </div>
+        <!-- Legacy hooks kept for sync helpers; panel UI removed (Alt D cards). -->
+        <div class="build-rows hidden" id="build-upgrade-rows" aria-hidden="true"></div>
         <button type="button" class="rail-close" id="build-rail-close">Schließen</button>
       </aside>
     </div>`;
@@ -611,9 +613,11 @@ function renderMatchScreen(): void {
   const fsGate = app.querySelector<HTMLDivElement>("#fs-gate")!;
   const pitchHud = app.querySelector<HTMLDivElement>("#pitch-hud")!;
   const buildRail = app.querySelector<HTMLElement>("#build-rail")!;
-  const buildPlaceRows = app.querySelector<HTMLElement>("#build-place-rows")!;
-  const buildUpgradeRows = app.querySelector<HTMLElement>("#build-upgrade-rows")!;
   const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
+  // Gebäude-Rail immer sichtbar (Spiegel zur Personen-Rail)
+  buildRail.hidden = false;
+  buildRail.classList.add("open");
+  shell.classList.add("build-open");
 
   const layoutHud = () => {
     const rect = wrap.getBoundingClientRect();
@@ -628,134 +632,128 @@ function renderMatchScreen(): void {
     state.pendingBuild = null;
     state.buildTarget = null;
     m.buildMenu = null;
-    buildRail.hidden = true;
-    buildRail.classList.remove("open");
-    shell.classList.remove("build-open");
+    m.selectedSlot = null;
     wrap.classList.remove("placing");
-    buildPlaceRows.classList.remove("hidden");
-    buildUpgradeRows.classList.add("hidden");
+    syncBuildingRailUi();
   };
 
-  const fillUpgradeStats = (
-    host: Element | null,
-    kind: BuildingKind,
-    level: number,
-    deltaFrom: number | null,
-  ) => {
-    if (!host) return;
-    const isDelta = deltaFrom != null;
-    const lv = isDelta ? level : level;
-    const parts: string[] = [];
-    if (kind === "ordner") {
-      const hp = ordnerPostMaxHp(lv);
-      const radius = formatHealRadius(lv);
-      const heal = stewardHealPerSec(lv);
-      if (isDelta) {
-        const dHp = hp - ordnerPostMaxHp(deltaFrom!);
-        const dR = Math.round(stewardPostRadius(lv) * 100) - Math.round(stewardPostRadius(deltaFrom!) * 100);
-        const dHeal = heal - stewardHealPerSec(deltaFrom!);
-        parts.push(statChipHtml("HP", `${dHp >= 0 ? "+" : ""}${dHp}`, { delta: true }));
-        parts.push(statChipHtml("Radius", `${dR >= 0 ? "+" : ""}${dR}%`, { delta: true }));
-        parts.push(statChipHtml("Heilung", `${dHeal >= 0 ? "+" : ""}${dHeal}/s`, { delta: true }));
-      } else {
-        parts.push(statChipHtml("HP", String(hp)));
-        parts.push(statChipHtml("Radius", `${radius}%`));
-        parts.push(statChipHtml("Heilung", `${heal}/s`));
-      }
-      // Sicherheit-Ertrag zusätzlich
-      const y = buildingYieldPerSec(kind, lv);
-      if (isDelta) {
-        const dY = y - buildingYieldPerSec(kind, deltaFrom!);
-        parts.push(yieldChipHtml(kind, dY, { delta: true }));
-      } else {
-        parts.push(yieldChipHtml(kind, y));
-      }
-    } else {
-      const y = buildingYieldPerSec(kind, lv);
-      if (isDelta) {
-        parts.push(yieldChipHtml(kind, y - buildingYieldPerSec(kind, deltaFrom!), { delta: true }));
-      } else {
-        parts.push(yieldChipHtml(kind, y));
-      }
-    }
-    host.innerHTML = parts.join("");
-  };
-
-  const openBuildRail = (mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
+  /** Plot gewählt → Target setzen; Rail bleibt immer offen. */
+  const openBuildRail = (_mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
     state.buildTarget = target;
     m.selectedSlot = target;
     m.buildMenu = target;
     buildRail.hidden = false;
     buildRail.classList.add("open");
     shell.classList.add("build-open");
-    const title = app.querySelector("#build-rail-title");
-    if (mode === "place") {
-      buildPlaceRows.classList.remove("hidden");
-      buildUpgradeRows.classList.add("hidden");
-      if (title) title.textContent = "Bauen";
-      syncPendingBuildUi();
-    } else {
-      buildPlaceRows.classList.add("hidden");
-      buildUpgradeRows.classList.remove("hidden");
-      if (title) title.textContent = "Upgrade";
-      const slot = m.slots.find(
-        (s) => s.blockId === target.blockId && s.index === target.index,
+    syncBuildingRailUi();
+  };
+
+  const syncBuildingRailUi = () => {
+    const kinds: BuildingKind[] = ["bier", "fanshop", "ordner"];
+    for (const kind of kinds) {
+      const owned = ownedBuildingSlots(m, kind);
+      const meta = app.querySelector(`[data-build-meta="${kind}"]`);
+      if (meta) meta.textContent = buildingMetaLabel(m, kind);
+
+      const refLv = owned.length
+        ? Math.min(...owned.map((s) => s.level || 1))
+        : 1;
+      const next = Math.min(UPGRADE_MAX, refLv + 1);
+
+      const bauIco = app.querySelector<HTMLImageElement>(`#build-ico-${kind}`);
+      if (bauIco) {
+        const src = standIconPath(kind, tc, 1);
+        bauIco.src = src.startsWith("/") ? src : `/${src}`;
+      }
+      const upIco = app.querySelector<HTMLImageElement>(`#build-up-ico-${kind}`);
+      if (upIco) {
+        const src = standIconPath(kind, tc, next);
+        upIco.src = src.startsWith("/") ? src : `/${src}`;
+      }
+
+      setPayAmt(app, `build-pay-${kind}`, BUILD_COST[kind]);
+      const bauPayImg = app.querySelector<HTMLImageElement>(`#build-pay-${kind} img`);
+      if (bauPayImg) bauPayImg.src = UI_ICONS.currencyGold;
+
+      const bauYieldImg = app.querySelector<HTMLImageElement>(`#build-yield-${kind} img`);
+      if (bauYieldImg) bauYieldImg.src = buildingYieldCurrency(kind);
+      const bauYield = app.querySelector(`#build-yield-${kind} .yield-amt`);
+      if (bauYield) {
+        bauYield.textContent = `${formatYieldPerSec(buildingYieldPerSec(kind, 1))}/s`;
+      }
+
+      const upDelta =
+        refLv < UPGRADE_MAX
+          ? buildingYieldPerSec(kind, next) - buildingYieldPerSec(kind, refLv)
+          : 0;
+      const upYieldImg = app.querySelector<HTMLImageElement>(`#build-up-yield-${kind} img`);
+      if (upYieldImg) upYieldImg.src = buildingYieldCurrency(kind);
+      const upYield = app.querySelector(`#build-up-yield-${kind} .yield-amt`);
+      if (upYield) {
+        upYield.textContent =
+          owned.length > 0 && refLv < UPGRADE_MAX
+            ? `+${formatYieldPerSec(upDelta)}/s`
+            : owned.length > 0
+              ? "—"
+              : `+${formatYieldPerSec(buildingYieldPerSec(kind, 2) - buildingYieldPerSec(kind, 1))}/s`;
+      }
+
+      const slot = pickBuildingUpgradeSlot(m, kind, state.buildTarget);
+      const upCost =
+        slot != null ? m.upgradeCost(slot) : null;
+      setPayAmt(app, `build-up-pay-${kind}`, upCost != null ? upCost : "—");
+
+      const bauBtn = app.querySelector<HTMLButtonElement>(
+        `[data-build-bau="${kind}"]`,
       );
-      const lv = slot?.level ?? 1;
-      const next = lv + 1;
-      const cost = slot ? (UPGRADE_COST as readonly number[])[next] : null;
-      const upBtn = app.querySelector<HTMLButtonElement>("#rail-upgrade")!;
-      const costEl = app.querySelector("#rail-upgrade-cost");
-      const fromImg = app.querySelector<HTMLImageElement>("#upgrade-from-img");
-      const toImg = app.querySelector<HTMLImageElement>("#upgrade-to-img");
-      const fromLv = app.querySelector("#upgrade-from-lv");
-      const toLv = app.querySelector("#upgrade-to-lv");
-      const fromStats = app.querySelector("#upgrade-from-stats");
-      const toStats = app.querySelector("#upgrade-to-stats");
-      const upTitle = app.querySelector("#upgrade-title");
-      const kind = slot?.building;
-      const name = kind ? BUILD_NAME[kind] : "Gebäude";
-      if (upTitle) upTitle.textContent = name;
-      if (kind && fromImg && toImg) {
-        const fromSrc = standIconPath(kind, tc, lv);
-        const toSrc = standIconPath(kind, tc, Math.min(UPGRADE_MAX, next));
-        fromImg.src = fromSrc.startsWith("/") ? fromSrc : `/${fromSrc}`;
-        toImg.src = toSrc.startsWith("/") ? toSrc : `/${toSrc}`;
-        fromImg.alt = `${name} Lv${lv}`;
-        toImg.alt = `${name} Lv${Math.min(UPGRADE_MAX, next)}`;
+      if (bauBtn) {
+        const canBau =
+          !!state.buildTarget &&
+          m.gold >= BUILD_COST[kind] &&
+          (() => {
+            const t = state.buildTarget!;
+            const s = m.slots.find(
+              (x) => x.blockId === t.blockId && x.index === t.index,
+            );
+            return (
+              !!s &&
+              (!s.building || s.greyNeutral || s.owner === "neutral") &&
+              m.inPlayerTerritory(t.blockId, t.index)
+            );
+          })();
+        bauBtn.disabled = !canBau;
+        bauBtn.classList.toggle("ready", canBau);
+        bauBtn.classList.toggle("cd", !canBau);
+        bauBtn.classList.toggle(
+          "selected",
+          state.pendingBuild === kind,
+        );
+        bauBtn.title = canBau
+          ? `Bauen · ${BUILD_COST[kind]}€`
+          : state.buildTarget
+            ? `Bauen · braucht ${BUILD_COST[kind]}€`
+            : "Zuerst freien Plot tippen";
       }
-      if (fromLv) fromLv.textContent = `Lv${lv}`;
-      const atMax = !!(slot && slot.level >= UPGRADE_MAX);
-      if (toLv) toLv.textContent = atMax ? "Max" : `Lv${next}`;
-      if (kind) {
-        fillUpgradeStats(fromStats, kind, lv, null);
-        if (atMax) {
-          if (toStats) toStats.innerHTML = "";
-        } else {
-          fillUpgradeStats(toStats, kind, next, lv);
-        }
-      }
-      if (cost == null || !slot || atMax) {
-        upBtn.disabled = true;
-        upBtn.classList.add("cd");
-        if (costEl) costEl.textContent = "—";
-      } else {
-        const broke = m.gold < cost;
-        upBtn.disabled = broke;
-        upBtn.classList.toggle("cd", broke);
-        if (costEl) costEl.textContent = String(cost);
+
+      const upBtn = app.querySelector<HTMLButtonElement>(
+        `[data-build-up="${kind}"]`,
+      );
+      if (upBtn) {
+        const ok = slot != null && upCost != null && m.gold >= upCost;
+        upBtn.disabled = !ok;
+        upBtn.classList.toggle("ready", ok);
+        upBtn.classList.toggle("cd", !ok);
+        upBtn.title =
+          slot == null
+            ? owned.length
+              ? "Max. Stufe"
+              : "Zuerst Gebäude bauen"
+            : `Upgrade → Lv${(slot.level || 1) + 1} · ${upCost}€`;
       }
     }
   };
 
-  const syncPendingBuildUi = () => {
-    app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
-      const kind = btn.dataset.pendingBuild as BuildingKind;
-      const on = state.pendingBuild === kind;
-      btn.classList.toggle("selected", on);
-      btn.classList.toggle("cd", m.gold < BUILD_COST[kind]);
-    });
-  };
+  const syncPendingBuildUi = () => syncBuildingRailUi();
 
   const resize = () => {
     const vv = window.visualViewport;
@@ -827,6 +825,7 @@ function renderMatchScreen(): void {
       slot.owner === m.playerTeam &&
       !slot.greyNeutral;
     if (owned) {
+      state.pendingBuild = null;
       openBuildRail("upgrade", { blockId, index });
       return;
     }
@@ -837,6 +836,18 @@ function renderMatchScreen(): void {
         return;
       }
       openBuildRail("place", { blockId, index });
+      // Pending Bau-Typ + Plot → sofort bauen
+      if (state.pendingBuild) {
+        const kind = state.pendingBuild;
+        m.buildMenu = { blockId, index };
+        m.selectedSlot = m.buildMenu;
+        if (m.tryBuild(kind)) {
+          state.pendingBuild = null;
+          state.buildTarget = null;
+          m.buildMenu = null;
+        }
+        syncBuildingRailUi();
+      }
       return;
     }
     closeBuildRail();
@@ -912,31 +923,48 @@ function renderMatchScreen(): void {
       syncOverlay();
     });
   });
-  app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
+  app.querySelectorAll<HTMLButtonElement>("[data-build-bau]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const kind = btn.dataset.pendingBuild as BuildingKind;
+      const kind = btn.dataset.buildBau as BuildingKind;
       if (!state.buildTarget) {
+        state.pendingBuild = kind;
         m.toast("Zuerst einen freien Plot tippen");
+        syncBuildingRailUi();
+        syncOverlay();
         return;
       }
       m.buildMenu = state.buildTarget;
       m.selectedSlot = state.buildTarget;
       const ok = m.tryBuild(kind);
       if (ok) {
-        closeBuildRail();
-      } else {
-        syncPendingBuildUi();
+        state.pendingBuild = null;
+        state.buildTarget = null;
+        m.buildMenu = null;
       }
+      syncBuildingRailUi();
       syncOverlay();
     });
   });
-  app.querySelector("#rail-upgrade")?.addEventListener("click", () => {
-    if (state.buildTarget) {
-      m.buildMenu = state.buildTarget;
+  app.querySelectorAll<HTMLButtonElement>("[data-build-up]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const kind = btn.dataset.buildUp as BuildingKind;
+      const slot = pickBuildingUpgradeSlot(m, kind, state.buildTarget);
+      if (!slot) {
+        m.toast(
+          ownedBuildingSlots(m, kind).length
+            ? "Max. Stufe"
+            : "Zuerst Gebäude bauen",
+        );
+        syncBuildingRailUi();
+        return;
+      }
+      m.buildMenu = { blockId: slot.blockId, index: slot.index };
+      m.selectedSlot = m.buildMenu;
+      state.buildTarget = m.buildMenu;
       m.tryUpgrade();
-    }
-    closeBuildRail();
-    syncOverlay();
+      syncBuildingRailUi();
+      syncOverlay();
+    });
   });
   btnHire.addEventListener("click", () => {
     m.tryHireSteward();
@@ -958,6 +986,7 @@ function renderMatchScreen(): void {
     syncOverlay();
   });
 
+  syncBuildingRailUi();
   syncOverlay();
   state.last = performance.now();
   const loop = (now: number) => {

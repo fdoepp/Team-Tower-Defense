@@ -227,9 +227,9 @@ select {
 /* Matchday Comic — Rahmenlogik MATCH_LAYOUT_TOKENS.json
    left 21% · pitch 64% · right 15% (build-open). */
 .match-shell.matchday {
-  /* +10% left / +30% right vs 21%/15% Rahmen-Baseline */
+  /* Personen- + Gebäude-Rail immer sichtbar (Spiegel) */
   --rail-left-w: 25.41%;
-  --rail-right-w: 29.25%;
+  --rail-right-w: 25.41%;
   --rail-w: var(--rail-left-w);
   --rail-btn-h: clamp(42px, 10vh, 54px);
   --rail-icon: clamp(40px, 7vh, 52px);
@@ -240,7 +240,7 @@ select {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
+  grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
   grid-template-rows: 1fr;
   gap: 0;
   position: relative;
@@ -309,33 +309,56 @@ select {
 }
 
 .match-shell.matchday .build-rail {
+  /* Gleiche relativen Tokens wie Personen-Rail */
+  container-type: size;
+  --person-gap: 0.75cqh;
+  --person-card-pad-y: 1.05cqh;
+  --person-card-radius: 3.6cqw;
+  --person-title-size: clamp(9px, 5.4cqw, 13px);
+  --person-banner-size: clamp(9px, 5.2cqw, 13px);
+  --person-banner-pad-y: 0.9cqh;
+  --person-banner-pad-x: 2.4cqw;
+  --person-close-gap: 0.55cqh;
   --br-gap: 2%;
   --br-pad: 1%;
   --br-icon: 26%;
   position: relative;
   z-index: 8;
   min-width: 0;
-  container-type: size;
-  gap: 2%;
-  /* Karten fast volle Railbreite — Innenrand 1% */
+  gap: var(--person-gap);
   padding: var(--rail-inset);
   padding-right: var(--rail-inset);
-  animation: build-rail-in 0.22s ease-out;
 }
 
-.match-shell.matchday .build-rail[hidden] {
-  display: none !important;
+/* Gebäude-Banner — Bau-Amber (#e08f22) statt Personen-Blau */
+.match-shell.matchday .build-rail .rail-banner {
+  padding: var(--person-banner-pad-y) var(--person-banner-pad-x);
+  border-radius: calc(var(--person-card-radius) * 0.7);
+  background: linear-gradient(180deg, #f0a94a, #e08f22 55%, #c47818);
+  border: 2px solid #3d2414;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+  color: #fff;
+  font-size: var(--person-banner-size);
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
 }
 
-@keyframes build-rail-in {
-  from {
-    opacity: 0;
-    transform: translateX(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.match-shell.matchday .build-rail .rail-close {
+  flex: 0 0 auto;
+  width: 100%;
+  margin-top: var(--person-close-gap, 0.55cqh);
+  font-size: clamp(9px, 4.8cqw, 12px);
+  padding: 0.85cqh 2.5cqw;
+  border-radius: calc(var(--person-card-radius, 3.6cqw) * 0.9);
+}
+
+.match-shell.matchday .build-rail .building-cards {
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .match-shell.matchday .rail-close {
@@ -523,11 +546,11 @@ select {
 }
 
 /*
- * Action-Card Alt D (skalierbar, %-Tokens der Face):
+ * Action-Card Alt D (Personen + Gebäude, skalierbar, %-Tokens der Face):
  *  left inset 2.5% · unit-col 36% · gap 4% · pay flex · right inset 2%
- *  Figur oben in unit-col, Ertrag darunter; Kosten groß rechts.
+ *  Icon oben in unit-col, Ertrag darunter; Kosten groß rechts.
  */
-.match-shell.matchday .person-card .ar-cost-btn.person-action .inner.person-btn-inner {
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .inner.person-btn-inner {
   --face-left: 2.5%;
   --face-right: 2%;
   --face-top: 2%;
@@ -547,7 +570,7 @@ select {
   gap: var(--col-gap);
   font-size: clamp(8px, 11cqw, 13px);
 }
-.match-shell.matchday .person-card .ar-cost-btn.person-action .unit-col {
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-col {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -560,7 +583,7 @@ select {
   flex: 0 0 var(--unit-w);
   overflow: hidden;
 }
-.match-shell.matchday .person-card .ar-cost-btn.person-action .unit-ico {
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-ico {
   display: block;
   width: 100%;
   height: auto;
@@ -571,7 +594,7 @@ select {
   pointer-events: none;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
-.match-shell.matchday .person-card .ar-cost-btn.person-action .unit-col .yield-chip {
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-col .yield-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -587,17 +610,17 @@ select {
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
   white-space: nowrap;
 }
-.match-shell.matchday .person-card .ar-cost-btn.person-action .unit-col .yield-chip img {
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-col .yield-chip img {
   width: 1em;
   height: 1em;
   object-fit: contain;
   flex: 0 0 auto;
 }
-.match-shell.matchday .person-card .ar-cost-btn.person-action .unit-col .yield-chip.yield-delta .yield-amt {
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-col .yield-chip.yield-delta .yield-amt {
   color: #bbf7d0;
 }
-/* Kosten deutlich größer, rechts neben der Figur */
-.match-shell.matchday .person-card .ar-cost-btn.person-action .pay.pay-lg {
+/* Kosten deutlich größer, rechts neben dem Icon */
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .pay.pay-lg {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
@@ -612,16 +635,22 @@ select {
   line-height: 1;
   overflow: hidden;
 }
-.match-shell.matchday .person-card .ar-cost-btn.person-action .pay.pay-lg img {
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .pay.pay-lg img {
   width: 0.95em;
   height: 0.95em;
   object-fit: contain;
   flex: 0 0 auto;
 }
-.match-shell.matchday .person-card .ar-cost-btn.person-action .pay.pay-lg .amt {
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .pay.pay-lg .amt {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Gebäude Bau-Button: selected-Ring wenn pending */
+.match-shell.matchday .building-card .ar-cost-btn.bauen.selected {
+  outline: 2px solid #fbbf24;
+  outline-offset: -2px;
 }
 
 /* Personen-Rail: Schließen analog Baumenu (.rail-close) */
@@ -1198,7 +1227,7 @@ select {
   .match-shell.matchday {
     --rail-btn-h: clamp(40px, 11vh, 52px);
     --rail-icon: clamp(36px, 8vh, 48px);
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
   }
   .match-shell.matchday.build-open {
     grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
@@ -2099,7 +2128,7 @@ select {
   }
   .match-shell.matchday {
     display: grid !important;
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
     pointer-events: auto;
   }
   .match-shell.matchday.build-open {

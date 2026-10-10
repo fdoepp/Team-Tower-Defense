@@ -44,4 +44,5 @@ Generator: `scripts/ui-final/make-square-icon-btns.py`
 
 Quadrat-Icon-Buttons + Angriff-Symbol: **freigegeben** (`game/public/icons/ui-final/`, `UI_ICONS`).  
 Upgrade-Buttons + Pfeil (`btnIconUpgradePerson` / `btnIconUpgradeBuilding` / `iconUpgradeArrow`): **freigegeben**.  
-Personen-Rail Alt D: **freigegeben** — Abstände/Größen relativ (`cqw`/`cqh`/%-Tokens der Rail/Face); Texte live (Lvl, Anzahl, Icons, Ertrag `/s`, Kauf-/Upgradekosten, ready/cd).
+Personen-Rail Alt D: **freigegeben** — Abstände/Größen relativ (`cqw`/`cqh`/%-Tokens der Rail/Face); Texte live (Lvl, Anzahl, Icons, Ertrag `/s`, Kauf-/Upgradekosten, ready/cd).  
+Gebäude-Rail Alt D: **Spiegel** (Banner Amber) — gleiche Dual-Karten Bau/UP, relative Tokens, live Texte; immer sichtbar.
