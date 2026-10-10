@@ -956,14 +956,13 @@ function renderMatchScreen(): void {
             }),
             btnAttrs: `data-build-up-focus="${kind}" title="Upgrade"`,
             extraClass: ok ? "ready" : "cd",
-          }).replace(
-            'class="ar-cost-btn upgrade',
-            `class="ar-cost-btn upgrade${ok ? " ready" : " cd"}`,
-          )}
+          })}
         </div>`;
       const focusBtn = upRows.querySelector<HTMLButtonElement>("[data-build-up-focus]");
       if (focusBtn) {
         focusBtn.disabled = !ok;
+        focusBtn.classList.toggle("ready", ok);
+        focusBtn.classList.toggle("cd", !ok);
         focusBtn.onclick = () => {
           m.buildMenu = state.buildTarget;
           m.selectedSlot = state.buildTarget;
