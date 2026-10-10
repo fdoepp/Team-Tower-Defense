@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=21** · **released=146**
+**pending=18** · **released=149**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -13,10 +13,6 @@ Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../
 ### persons
 
 ### ui
-
-166. `baustelleSchildKsc` — `baustelle-schild-ksc.png` — Presslufthammer-Schild Heim (blau, freigestellt 256²)
-167. `baustelleSchildVfb` — `baustelle-schild-vfb.png` — Presslufthammer-Schild Gäste (rot, freigestellt 256²)
-168. `baustelleSchildNeutral` — `baustelle-schild-neutral.png` — Presslufthammer-Schild Neutral (gelb, freigestellt 256²)
 
 108. `btnKaufenGreen` — `btn-kaufen-green.png` — Chrome (eine Fläche, kein Label)
 109. `btnKaufenGrey` — `btn-kaufen-grey.png` — Chrome (eine Fläche, kein Label)
@@ -40,6 +36,9 @@ Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../
 
 ## Released (diese Runde)
 
+- **166** `baustelleSchildKsc` — `baustelle-schild-ksc.png` — **Presslufthammer-Schild Heim (blau) freigegeben**
+- **167** `baustelleSchildVfb` — `baustelle-schild-vfb.png` — **Presslufthammer-Schild Gäste (rot) freigegeben**
+- **168** `baustelleSchildNeutral` — `baustelle-schild-neutral.png` — **Presslufthammer-Schild Neutral (grau) freigegeben**
 - **163** `btnIconUpgradePerson` — `btn-icon-upgrade-person.png` — **Quadrat blau · Ultra + Upgrade-Pfeil freigegeben**
 - **164** `btnIconUpgradeBuilding` — `btn-icon-upgrade-building.png` — **Quadrat Bau-Amber · Bier + Upgrade-Pfeil freigegeben**
 - **165** `iconUpgradeArrow` — `icon-upgrade-arrow.png` — **Upgrade-Pfeil freigestellt freigegeben**

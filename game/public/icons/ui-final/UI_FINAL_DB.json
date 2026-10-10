@@ -5578,6 +5578,117 @@
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-10T09:52:00.325Z",
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "baustelleSchildKsc": {
+      "id": "baustelleSchildKsc",
+      "file": "baustelle-schild-ksc.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/baustelle-schild-ksc.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.875,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          15,
+          178,
+          240
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T13:02:30.969973+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-10T12:57:50.725Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "baustelleSchildVfb": {
+      "id": "baustelleSchildVfb",
+      "file": "baustelle-schild-vfb.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/baustelle-schild-vfb.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8747,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          15,
+          178,
+          240
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T13:02:31.062601+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-10T12:57:50.923Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "baustelleSchildNeutral": {
+      "id": "baustelleSchildNeutral",
+      "file": "baustelle-schild-neutral.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/baustelle-schild-neutral.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.875,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          15,
+          178,
+          240
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T13:02:31.156357+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-10T12:57:51.138Z",
+      "notes": "Presslufthammer-Schild Neutral grau — freigegeben"
     }
   },
   "pending": {
@@ -6271,114 +6382,6 @@
       "notes": "REFERENZ-DEMO (Broadcast-Tech) — nicht Runtime-Default. Runtime = scoreboardChrome + scoreboard-slots.json + Live-Overlays.",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "reference-demo"
-    },
-    "baustelleSchildKsc": {
-      "id": "baustelleSchildKsc",
-      "file": "baustelle-schild-ksc.png",
-      "source": "../tmp/baustelle-schild-ksc.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/baustelle-schild-ksc.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.8807,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          15,
-          15,
-          240,
-          240
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T12:52:09.153249+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "baustelleSchildVfb": {
-      "id": "baustelleSchildVfb",
-      "file": "baustelle-schild-vfb.png",
-      "source": "../tmp/baustelle-schild-vfb.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/baustelle-schild-vfb.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.8833,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          16,
-          15,
-          239,
-          240
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T12:52:09.276215+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
-    },
-    "baustelleSchildNeutral": {
-      "id": "baustelleSchildNeutral",
-      "file": "baustelle-schild-neutral.png",
-      "source": "../tmp/baustelle-schild-neutral.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/baustelle-schild-neutral.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.9035,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          77,
-          15,
-          178,
-          240
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T12:52:09.395328+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "runtimeBinding": {
