@@ -964,6 +964,13 @@ function personAnimMode(m: Match, f: FanUnit): {
   };
 }
 
+/** Draw size by location only — same place ⇒ same size for every unit kind. */
+function personDrawSize(f: FanUnit, h: number): number {
+  const onGang = f.state === "gang" || f.invading;
+  const moving = f.state === "moving" || onGang;
+  return Math.max(26, h * (moving ? 0.085 : 0.068));
+}
+
 function drawMannchen(
   ctx: CanvasRenderingContext2D,
   m: Match,
@@ -977,10 +984,7 @@ function drawMannchen(
     return;
   }
   const onGang = f.state === "gang" || f.invading;
-  const moving = f.state === "moving" || onGang;
-  const sizeMul =
-    f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
-  const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
+  const size = personDrawSize(f, h);
   const color = teamColor(f.team);
   const lv = unitVisualLevel(f);
   const src = unitIconPath(f.kind, color, lv);
@@ -1329,10 +1333,10 @@ function drawSteward(
   y: number,
   h: number,
 ): void {
-  const s = 10 * Math.max(1, h * 0.028 / 10);
+  const size = personDrawSize(f, h);
+  const s = size / 2.85;
   const neutral = f.team === "neutral";
   const hpCol = neutral ? "#a8a29e" : "#facc15";
-  const size = Math.max(24, h * 0.07);
   const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(f));
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing =
