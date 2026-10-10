@@ -3731,7 +3731,7 @@ export class Match {
 
   /**
    * Tor-Jubel im eigenen Block:
-   * Fans → Konfetti weiß/Vereinsfarbe 50/50 · Ultras → Rauch 50/50 ·
+   * Fans → Konfetti weiß/Vereinsfarbe 50/50 · Ultras → Rauch + Pyro in der Hand ·
    * Hooligans → Bierkrug 50% / Feuerwerksrakete 50%.
    */
   private startGoalCelebration(team: TeamId): void {
@@ -3753,6 +3753,9 @@ export class Match {
         this.burstFanConfetti(f, col);
       } else if (f.kind === "ultras") {
         const col = ultraI++ % 2 === 0 ? white : club;
+        // Raise pyro prop in hand while smoke show plays
+        f.throwT = Math.max(f.throwT, 1.2);
+        f.armSwing = 0.85;
         this.burstUltraSmoke(f, col);
       } else if (f.kind === "hooligans") {
         if (hoolI++ % 2 === 0) this.burstBeerMug(f);

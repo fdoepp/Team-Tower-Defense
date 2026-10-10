@@ -36,6 +36,13 @@ Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../
 
 ## Released (diese Runde)
 
+- **169** `fxFistBlue` — `fx-fist-blue.png` — **Nahkampf Faust blau freigegeben**
+- **170** `fxFistRed` — `fx-fist-red.png` — **Nahkampf Faust rot freigegeben**
+- **171** `fxFistGrey` — `fx-fist-grey.png` — **Nahkampf Faust grau freigegeben**
+- **172** `fxHeal` — `fx-heal.png` — **Heilungssymbol freigegeben**
+- **173** `fxPyroShotBlue` — `fx-pyro-shot-blue.png` — **Pyro blauer Rauch freigegeben**
+- **174** `fxPyroShotRed` — `fx-pyro-shot-red.png` — **Pyro roter Rauch freigegeben**
+- **175** `fxPyroShotGrey` — `fx-pyro-shot-grey.png` — **Pyro grauer Rauch freigegeben**
 - **166** `baustelleSchildKsc` — `baustelle-schild-ksc.png` — **Presslufthammer-Schild Heim (blau) freigegeben**
 - **167** `baustelleSchildVfb` — `baustelle-schild-vfb.png` — **Presslufthammer-Schild Gäste (rot) freigegeben**
 - **168** `baustelleSchildNeutral` — `baustelle-schild-neutral.png` — **Presslufthammer-Schild Neutral (grau) freigegeben**
