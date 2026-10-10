@@ -19,12 +19,26 @@ export type QuadNorm = {
 export const FLOOR_VP = { x: 0.5027, y: 0.0897 } as const;
 
 /**
- * Near-plane column ray anchors (x at yNear), 9 lines → 8 cells.
- * Plot cells: Heim [0,1] · gutter [2] · Neutral [3,4] · gutter [5] · Gäste [6,7].
- * Gutters are unused columns so block groups read with air between them.
+ * Side rails reserve — keep this band free on both edges.
+ * Future left/right rails toggle in/out inside this margin.
+ */
+export const FLOOR_SIDE_MARGIN = 0.15;
+
+/**
+ * Near-plane column ray anchors (x at yNear), 12 lines → 11 cells.
+ * Span = [FLOOR_SIDE_MARGIN .. 1-FLOOR_SIDE_MARGIN] (15% free each side).
+ *
+ * Pattern per team group: plot · intra-gap · plot, then a wide inter-gutter:
+ *   Heim [0,2] · inter [3] · Neutral [4,6] · inter [7] · Gäste [8,10]
+ * Intra gaps [1,5,9] keep the two plots inside a block apart.
  */
 export const FLOOR_COL_XS_NEAR = [
-  0.08, 0.19, 0.3, 0.36, 0.47, 0.58, 0.64, 0.75, 0.86,
+  // Heim: plot · intra · plot
+  0.15, 0.205, 0.25, 0.305,
+  // inter-gutter → Neutral: plot · intra · plot
+  0.42, 0.475, 0.52, 0.575,
+  // inter-gutter → Gäste: plot · intra · plot
+  0.69, 0.745, 0.79, 0.85,
 ] as const;
 
 /** Depth of the near column anchors (normalized). */
@@ -33,12 +47,12 @@ export const FLOOR_Y_NEAR = 0.985;
 /**
  * Row lines far → near (normalized). Bau bands share equal screen height
  * so far/near Bauplätze stay equally clickable; Gang stays between them.
- * Trial: slightly tighter Bau bands + wider Gang for less mat-street feel.
+ * Wider vertical separation between far/near Bau rows.
  */
-export const FLOOR_ROW_YS = [0.56, 0.66, 0.875, 0.975] as const;
+export const FLOOR_ROW_YS = [0.54, 0.63, 0.88, 0.975] as const;
 
-/** Shrink plot chrome toward cell center (0 = full cell, 0.25 = 75% footprint). */
-export const PLOT_DRAW_INSET = 0.22;
+/** Shrink plot chrome toward cell center (0 = full cell, 0.3 ≈ 70% footprint). */
+export const PLOT_DRAW_INSET = 0.3;
 
 /** Bau-row r ∈ {0,1} → starting index into FLOOR_ROW_YS (skips the Gang). */
 const BAU_ROW_LINE = [0, 2] as const;
@@ -107,10 +121,10 @@ export function floorCellQuad(c: number, r: number): QuadNorm {
 }
 
 /**
- * Plot assignment: per block → (c0,r0), (c1,r0), (c0,r1), (c1,r1).
- * Column bases skip gutter cells (2 and 5).
+ * Plot assignment: per block → (c0,r0), (c0+2,r0), (c0,r1), (c0+2,r1).
+ * +2 skips the intra-gap column between the pair.
  */
-const BLOCK_COL0 = [0, 3, 6] as const;
+const BLOCK_COL0 = [0, 4, 8] as const;
 
 /** Inset a floor quad toward its centroid (visual breathing room). */
 export function insetQuad(q: QuadNorm, inset: number): QuadNorm {
@@ -128,7 +142,8 @@ export function boothQuad(blockId: number, index: number): QuadNorm {
   const b = Math.max(0, Math.min(2, blockId | 0));
   const i = Math.max(0, Math.min(3, index | 0));
   const c0 = BLOCK_COL0[b]!;
-  const dc = i % 2;
+  // Skip intra-gap column between the two plots of a block.
+  const dc = (i % 2) * 2;
   const r = i < 2 ? 0 : 1;
   return floorCellQuad(c0 + dc, r);
 }
