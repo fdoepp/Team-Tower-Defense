@@ -6,11 +6,11 @@
     "h": 900
   },
   "background": "game/public/assets/stadium-floodlight-derby-bg.jpg",
-  "notes": "Verbindliche Rahmenlogik für Match-Gesamtsicht. Alle Werte relativ (0–1) zur Bild- bzw. Pitch-Box. Scoreboard + Wallet je ×1.15 gegenüber Compose v6-Baseline. Scoreboard: keine Live-Wimpel (Logos im Chrome). Personen-Lvl = Tech-Stufe. Währungs-±-Buttons fehlen in UI Final — nur Symbol-Icons.",
+  "notes": "Verbindliche Rahmenlogik. Rails: left +10% / right +30% vs 21%/15%. Scoreboard ohne Live-Wimpel. Far-slots ≥0.5% Gap. Gebäude ×1.5. Gang: mittlere 80% gestaffelt. Stand-Wait-Radius. Tor-FX: Fans Konfetti / Ultras Rauch / Hools Bier|Rakete.",
   "rails": {
-    "left_w": 0.21,
-    "right_w": 0.15,
-    "pitch_w": 0.64
+    "left_w": 0.231,
+    "right_w": 0.195,
+    "pitch_w": 0.574
   },
   "hud": {
     "top": 0.03,
@@ -44,7 +44,11 @@
     "slot_top_y": 0.58,
     "combat_y0": 0.695,
     "combat_y1": 0.86,
-    "slot_bot_y": 0.975
+    "slot_bot_y": 0.975,
+    "far_slot_gap_of_width": 0.005,
+    "building_scale": 1.5,
+    "gang_lane_use": 0.8,
+    "stand_wait_radius": 0.032
   },
   "personCard": {
     "railInset": 0.01,
@@ -65,8 +69,8 @@
     "unitTechLevelChrome": true
   },
   "tokensFlat": {
-    "left_rail_w": 0.21,
-    "right_rail_w": 0.15,
+    "left_rail_w": 0.231,
+    "right_rail_w": 0.195,
     "hud_top": 0.03,
     "scoreboard_max_w_of_pitch": 0.598,
     "scoreboard_h": 0.1725,
@@ -83,7 +87,9 @@
     "combat_y0": 0.695,
     "combat_y1": 0.86,
     "slot_bot_y": 0.975,
-    "pitch_w": 0.64,
-    "rail_inset": 0.01
+    "pitch_w": 0.574,
+    "rail_inset": 0.01,
+    "far_slot_gap": 0.005,
+    "building_scale": 1.5
   }
 }

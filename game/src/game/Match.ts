@@ -104,11 +104,13 @@ import {
   boothCenter,
   crowdHomePos,
   doorPos,
-  gangLanePos,
+  gangLanePosForUnit,
+  gangLaneYForUnit,
   gangMidY,
   gangXToWorld,
   plotGangX,
   slotIndicesForBlock,
+  STAND_WAIT_RADIUS,
   syncTribuneLayout,
   worldXToGangX,
 } from "./layout";
@@ -184,7 +186,7 @@ export type PyroProjectile = {
 };
 
 export type MoodParticle = {
-  kind: "note" | "smoke" | "spark" | "flare";
+  kind: "note" | "smoke" | "spark" | "flare" | "mug" | "rocket";
   x: number;
   y: number;
   vx: number;
@@ -1096,7 +1098,7 @@ export class Match {
 
   private sendToGang(f: FanUnit): void {
     const door = doorPos(f.blockId);
-    const lane = gangLanePos(f.blockId);
+    const lane = gangLanePosForUnit(f.blockId, f.id);
     // Keep seatIndex reserved while alive on gang
     f._homeSeat = f.seatIndex;
     f.state = "moving";
@@ -1104,7 +1106,7 @@ export class Match {
     f.invading = false;
     f.onOffense = true;
     f.aggro = 40; // offense — keep pushing, don't auto-sit
-    // Always leave via center aisle → tunnel door → gang
+    // Always leave via center aisle → tunnel door → gang (personal lane Y)
     const path: { x: number; y: number }[] = [];
     if (f.y < door.y - 0.015 && Math.abs(f.x - door.x) > 0.018) {
       path.push({ x: door.x, y: f.y });
@@ -2058,8 +2060,11 @@ export class Match {
       } else if (f.state === "moving") {
         this.followPath(f, dt);
       } else if (f.state === "stand") {
-        // Hold drink / shop pose before resolving the visit
-        if (f.drinkT > 0 || f.shopT > 0) continue;
+        // Wait freely in stand radius while buying, then go home
+        if (f.drinkT > 0 || f.shopT > 0) {
+          this.tickStandWaitWander(f, dt);
+          continue;
+        }
         this.finishStandVisit(f);
       } else if (f.state === "gang") {
         this.tickGangMove(f, dt);
@@ -2178,13 +2183,65 @@ export class Match {
     }
 
     const stand = pick === "beer" ? bier! : shop!;
-    const sp = this.standWorld(stand);
+    const wait = this.standWaitPos(stand, f.id);
     this.startPath(
       f,
-      this.pathViaDoors(f, stand.blockId, sp),
+      this.pathViaDoors(f, stand.blockId, wait),
       pick === "beer" ? "stand" : "shop",
     );
     f.standKey = slotKey(stand.blockId, stand.index);
+    f._wanderTx = wait.x;
+    f._wanderTy = wait.y;
+  }
+
+  /** Random point inside the Bier/Fanshop wait radius. */
+  private standWaitPos(
+    stand: BuildSlot,
+    unitId: number,
+  ): { x: number; y: number } {
+    const sp = this.standWorld(stand);
+    const ang = (unitId * 2.399 + this.realElapsed * 0.7) % (Math.PI * 2);
+    const r = STAND_WAIT_RADIUS * (0.35 + ((unitId * 17) % 100) / 100 * 0.65);
+    return {
+      x: sp.x + Math.cos(ang) * r,
+      y: sp.y + Math.sin(ang) * r * 0.72,
+    };
+  }
+
+  /** Idle mill inside stand wait radius until drink/shop timer ends. */
+  private tickStandWaitWander(f: FanUnit, dt: number): void {
+    const stand = this.slots.find(
+      (s) => slotKey(s.blockId, s.index) === f.standKey,
+    );
+    if (!stand) return;
+    const sp = this.standWorld(stand);
+    if (f._wanderTx == null || f._wanderTy == null || (f._wanderCd ?? 0) <= 0) {
+      const ang = Math.random() * Math.PI * 2;
+      const r = STAND_WAIT_RADIUS * (0.2 + Math.random() * 0.8);
+      f._wanderTx = sp.x + Math.cos(ang) * r;
+      f._wanderTy = sp.y + Math.sin(ang) * r * 0.72;
+      f._wanderCd = 0.35 + Math.random() * 0.55;
+    } else {
+      f._wanderCd = (f._wanderCd ?? 0) - dt;
+    }
+    const tx = f._wanderTx!;
+    const ty = f._wanderTy!;
+    const speed = 0.07;
+    const d = dist(f.x, f.y, tx, ty);
+    if (d > 0.004) {
+      const step = Math.min(1, (speed * dt) / d);
+      f.x += (tx - f.x) * step;
+      f.y += (ty - f.y) * step;
+    }
+    // Soft clamp into radius
+    const dx = f.x - sp.x;
+    const dy = f.y - sp.y;
+    const rad = Math.hypot(dx, dy / 0.72);
+    if (rad > STAND_WAIT_RADIUS) {
+      const s = STAND_WAIT_RADIUS / rad;
+      f.x = sp.x + dx * s;
+      f.y = sp.y + dy * s;
+    }
   }
 
   private payVisitGold(stand: BuildSlot, amount: number): void {
@@ -2270,7 +2327,7 @@ export class Match {
     const fromBlock = f.blockId;
     const fromDoor = doorPos(fromBlock);
     const toDoor = doorPos(toBlock);
-    const midY = gangMidY();
+    const laneY = gangLaneYForUnit(f.id);
     const path: { x: number; y: number }[] = [];
 
     // Leave current stand via center aisle → tunnel
@@ -2282,11 +2339,11 @@ export class Match {
     }
 
     if (fromBlock !== toBlock) {
-      path.push(gangLanePos(fromBlock));
-      path.push(gangLanePos(toBlock));
+      path.push(gangLanePosForUnit(fromBlock, f.id));
+      path.push(gangLanePosForUnit(toBlock, f.id));
     } else if (end.y >= fromDoor.y - 0.01) {
-      // Same block, gang-level target (Bier/Shop): down the tunnel onto the gang
-      path.push({ x: fromDoor.x, y: midY });
+      // Same block, gang-level target (Bier/Shop): personal lane Y
+      path.push({ x: fromDoor.x, y: laneY });
     }
 
     // Enter destination stand up through its center door
@@ -2310,8 +2367,13 @@ export class Match {
       return;
     }
     const t = f.path[f.pathI];
+    const laneY = gangLaneYForUnit(f.id);
     const midY = gangMidY();
-    const onGangCorridor = Math.abs(f.y - midY) < 0.09 || Math.abs(t.y - midY) < 0.09;
+    const onGangCorridor =
+      Math.abs(f.y - midY) < 0.14 ||
+      Math.abs(f.y - laneY) < 0.12 ||
+      Math.abs(t.y - midY) < 0.14 ||
+      Math.abs(t.y - laneY) < 0.12;
 
     // Cannot walk past hostile units (to beer stand / home / invade)
     if (onGangCorridor && f.team !== "neutral") {
@@ -2322,12 +2384,12 @@ export class Match {
       if (blocker) {
         // Offense units: leave path-follow and enter gang combat so they
         // keep pushing / shooting instead of freezing mid-route.
-        if (f.onOffense && Math.abs(f.y - midY) < 0.1) {
+        if (f.onOffense && Math.abs(f.y - midY) < 0.14) {
           f.state = "gang";
           f.path = [];
           f.pathI = 0;
           this.setAfter(f, "");
-          f.y = midY;
+          f.y = laneY;
           this.syncGangFromWorld(f);
           if (f.aggro < 80) f.aggro = 40;
           return;
@@ -2338,7 +2400,7 @@ export class Match {
           const step = Math.min(gap - reach, 0.14 * dt);
           f.x += moveDir * step;
         }
-        f.y += (midY - f.y) * Math.min(1, 8 * dt);
+        f.y += (laneY - f.y) * Math.min(1, 8 * dt);
         this.syncGangFromWorld(f);
         // Don't promote attackers to "defender" mid-path — keeps Angriff pushing
         if (!f.onOffense) f.aggro = 100;
@@ -2359,7 +2421,7 @@ export class Match {
     const step = Math.min(1, (speed * dt) / d);
     f.x += (t.x - f.x) * step;
     f.y += (t.y - f.y) * step;
-    if (Math.abs(f.y - midY) < 0.06) {
+    if (Math.abs(f.y - laneY) < 0.08 || Math.abs(f.y - midY) < 0.08) {
       this.syncGangFromWorld(f);
     }
   }
@@ -2371,7 +2433,7 @@ export class Match {
     if (after === "gang") {
       f.state = "gang";
       f.gangX = blockIdToGangX(f.blockId);
-      f.y = gangMidY();
+      f.y = gangLaneYForUnit(f.id);
       f.x = gangXToWorld(f.gangX);
       // seat stays reserved
     } else if (after === "steward") {
@@ -2395,6 +2457,17 @@ export class Match {
       if (f.standKey) {
         const [b] = f.standKey.split(":").map(Number);
         f.blockId = b;
+        const stand = this.slots.find(
+          (s) => slotKey(s.blockId, s.index) === f.standKey,
+        );
+        if (stand) {
+          const w = this.standWaitPos(stand, f.id);
+          f.x = w.x;
+          f.y = w.y;
+          f._wanderTx = w.x;
+          f._wanderTy = w.y;
+          f._wanderCd = 0.2;
+        }
       }
     } else if (after === "shop") {
       f.state = "stand";
@@ -2403,6 +2476,17 @@ export class Match {
       if (f.standKey) {
         const [b] = f.standKey.split(":").map(Number);
         f.blockId = b;
+        const stand = this.slots.find(
+          (s) => slotKey(s.blockId, s.index) === f.standKey,
+        );
+        if (stand) {
+          const w = this.standWaitPos(stand, f.id);
+          f.x = w.x;
+          f.y = w.y;
+          f._wanderTx = w.x;
+          f._wanderTy = w.y;
+          f._wanderCd = 0.2;
+        }
       }
     } else if (after === "home") {
       f.state = "block";
@@ -2503,7 +2587,7 @@ export class Match {
     if (f.isSteward) return;
     const dir = f.team === this.playerTeam ? 1 : -1;
     const speed = 0.065 * FAN_STATS[f.kind].fight;
-    const midY = gangMidY();
+    const laneY = gangLaneYForUnit(f.id);
     const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
 
     // Angreifer (onOffense) pushen immer vorwärts. Nur echte Heim-Verteidiger
@@ -2540,7 +2624,7 @@ export class Match {
       if (f.rangedPyro) {
         const desired = blocker.x - moveDir * (RANGED_RANGE * 0.4);
         f.x += (desired - f.x) * Math.min(1, 5 * dt);
-        f.y += (midY - f.y) * Math.min(1, 8 * dt);
+        f.y += (laneY - f.y) * Math.min(1, 8 * dt);
       } else {
         const targetGap = MELEE_RANGE * 0.2;
         if (gapToBlocker > targetGap) {
@@ -2559,13 +2643,14 @@ export class Match {
       } else {
         f.x += (blocker.x - moveDir * targetGap - f.x) * Math.min(1, 6 * dt);
       }
-      f.y += (blocker.y - f.y) * Math.min(1, 8 * dt);
+      f.y += ((blocker.y + laneY) * 0.5 - f.y) * Math.min(1, 8 * dt);
       this.syncGangFromWorld(f);
       if (f.aggro < 80) f.aggro = 40;
     } else {
       f.gangX = clamp(f.gangX + moveDir * moveSpeed * dt, 0, 1);
       f.x = gangXToWorld(f.gangX);
-      f.y = midY + Math.sin(this.realElapsed * 3 + f.id) * 0.008;
+      // Personal lane in middle 80% + tiny bob (not all on one mid line)
+      f.y = laneY + Math.sin(this.realElapsed * 3 + f.id) * 0.006;
     }
 
     // Cement: soft damage/slow gate — creep up to breakthrough, not a hard wall
@@ -2599,7 +2684,7 @@ export class Match {
       const door = doorPos(goalBlock);
       f.blockId = goalBlock;
       f.path = [
-        { x: gangLanePos(goalBlock).x, y: gangLanePos(goalBlock).y },
+        gangLanePosForUnit(goalBlock, f.id),
         { x: door.x, y: door.y },
         { x: door.x, y: door.y + 0.05 },
       ];
@@ -3317,44 +3402,114 @@ export class Match {
   }
 
   /**
-   * Scoring side's seated home crowd rushes the Bierstand to celebrate.
-   * They leave the block briefly → block power (and momentum) dips;
-   * beer buys still pay gold into the till.
+   * Tor-Jubel im eigenen Block:
+   * Fans → Konfetti weiß/Vereinsfarbe 50/50 · Ultras → Rauch 50/50 ·
+   * Hooligans → Bierkrug 50% / Feuerwerksrakete 50%.
    */
   private startGoalCelebration(team: TeamId): void {
     const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
-    const bier = this.nearestBierStand(team, home);
+    const white = "#f8fafc";
+    const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
+    let fanI = 0;
+    let ultraI = 0;
+    let hoolI = 0;
     let n = 0;
     for (const f of this.fans) {
       if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
-      if (f.onOffense) continue;
-      if (f.state !== "block" || f.blockId !== home) continue;
-      f.cheerT = 2.8;
-      if (!bier) continue;
-      const sp = this.standWorld(bier);
-      this.startPath(
-        f,
-        this.pathViaDoors(f, bier.blockId, sp),
-        "stand",
-      );
-      f.standKey = slotKey(bier.blockId, bier.index);
+      if (f.blockId !== home) continue;
+      if (f.state !== "block" && f.state !== "stand") continue;
+      f.cheerT = 3.2;
       n++;
+      if (f.kind === "normalos") {
+        const col = fanI++ % 2 === 0 ? white : club;
+        this.burstFanConfetti(f, col);
+      } else if (f.kind === "ultras") {
+        const col = ultraI++ % 2 === 0 ? white : club;
+        this.burstUltraSmoke(f, col);
+      } else if (f.kind === "hooligans") {
+        if (hoolI++ % 2 === 0) this.burstBeerMug(f);
+        else this.burstFireworkRocket(f, club);
+      }
     }
-    this.floatAt(
-      blockCenterX(home),
-      blockTopY(home) + 0.08,
-      bier && n > 0 ? "Kurve leer — Bierrunde" : "Jubel!",
-      true,
-    );
-    if (bier && n > 0) {
-      bier.beer = Math.min(bier.capacity, Math.max(bier.beer, n));
-      this.toast("Jubel — Bierrunde!", 4.2);
-      const p = this.standWorld(bier);
-      this.floatAt(p.x, p.y - 0.06, "Bierrunde!", true);
-    } else if (!bier) {
-      this.toast("Jubel! (noch kein Bierstand)", 3.5);
-    } else {
-      this.toast("Jubel!", 3.0);
+    this.floatAt(blockCenterX(home), blockTopY(home) + 0.08, "TOR-JUBEL!", true);
+    this.toast(n > 0 ? "Kurve feiert!" : "TOR!", 3.5);
+  }
+
+  private burstFanConfetti(f: FanUnit, color: string): void {
+    for (let i = 0; i < 10; i++) {
+      this.confetti.push({
+        x: f.x + (Math.random() - 0.5) * 0.04,
+        y: f.y - 0.02 - Math.random() * 0.03,
+        vx: (Math.random() - 0.5) * 0.22,
+        vy: -0.02 + Math.random() * 0.1,
+        rot: Math.random() * Math.PI * 2,
+        vr: (Math.random() - 0.5) * 10,
+        color,
+        t: 0,
+        life: 1.2 + Math.random() * 0.7,
+      });
+    }
+  }
+
+  private burstUltraSmoke(f: FanUnit, color: string): void {
+    for (let i = 0; i < 5; i++) {
+      this.moodFx.push({
+        kind: "smoke",
+        x: f.x + (Math.random() - 0.5) * 0.03,
+        y: f.y - 0.02,
+        vx: (Math.random() - 0.5) * 0.04,
+        vy: -0.06 - Math.random() * 0.05,
+        color,
+        t: 0,
+        life: 1.4 + Math.random() * 0.6,
+        size: 0.028 + Math.random() * 0.02,
+      });
+    }
+  }
+
+  private burstBeerMug(f: FanUnit): void {
+    f.throwT = Math.max(f.throwT, 0.55);
+    f.armSwing = 0.9;
+    this.moodFx.push({
+      kind: "mug",
+      x: f.x,
+      y: f.y - 0.02,
+      vx: (Math.random() - 0.5) * 0.12,
+      vy: -0.14 - Math.random() * 0.08,
+      color: "#b45309",
+      t: 0,
+      life: 1.1,
+      size: 0.018,
+    });
+  }
+
+  private burstFireworkRocket(f: FanUnit, club: string): void {
+    f.throwT = Math.max(f.throwT, 0.65);
+    f.armSwing = 1;
+    this.moodFx.push({
+      kind: "rocket",
+      x: f.x,
+      y: f.y - 0.02,
+      vx: (Math.random() - 0.5) * 0.06,
+      vy: -0.28 - Math.random() * 0.12,
+      color: club,
+      t: 0,
+      life: 1.35,
+      size: 0.016,
+    });
+    // Spark trail
+    for (let i = 0; i < 4; i++) {
+      this.moodFx.push({
+        kind: "spark",
+        x: f.x + (Math.random() - 0.5) * 0.02,
+        y: f.y - 0.01,
+        vx: (Math.random() - 0.5) * 0.05,
+        vy: -0.1 - Math.random() * 0.08,
+        color: Math.random() < 0.5 ? "#fde68a" : club,
+        t: 0,
+        life: 0.7 + Math.random() * 0.4,
+        size: 0.008,
+      });
     }
   }
 
@@ -3362,11 +3517,9 @@ export class Match {
     const blockId = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
     const cx = blockCenterX(blockId);
     const top = blockTopY(blockId);
-    const colors =
-      team === "ksc"
-        ? ["#1d4ed8", "#60a5fa", "#f3f0e7", "#93c5fd"]
-        : ["#b91c1c", "#f87171", "#f3f0e7", "#fecaca"];
-    for (let i = 0; i < 48; i++) {
+    const white = "#f8fafc";
+    const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
+    for (let i = 0; i < 36; i++) {
       this.confetti.push({
         x: cx + (Math.random() - 0.5) * blockWidthNorm(blockId) * 0.85,
         y: top + 0.02 + Math.random() * 0.04,
@@ -3374,7 +3527,7 @@ export class Match {
         vy: 0.04 + Math.random() * 0.12,
         rot: Math.random() * Math.PI * 2,
         vr: (Math.random() - 0.5) * 8,
-        color: colors[i % colors.length],
+        color: i % 2 === 0 ? white : club,
         t: 0,
         life: 1.4 + Math.random() * 0.8,
       });
@@ -3400,9 +3553,12 @@ export class Match {
       if (p.kind === "smoke") {
         p.vy -= 0.02 * dt;
         p.size += 0.012 * dt;
-      } else if (p.kind === "flare") {
-        p.vy -= 0.04 * dt;
-        p.vx *= 1 - dt * 0.15;
+      } else if (p.kind === "flare" || p.kind === "rocket") {
+        p.vy -= 0.05 * dt;
+        p.vx *= 1 - dt * 0.12;
+      } else if (p.kind === "mug") {
+        p.vy += 0.28 * dt; // arc down after throw
+        p.vx *= 1 - dt * 0.08;
       }
     }
     this.moodFx = this.moodFx.filter((p) => p.t < p.life);

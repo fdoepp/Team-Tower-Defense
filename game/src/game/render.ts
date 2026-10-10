@@ -17,6 +17,7 @@ import {
   blockCenterX,
   blocksLeftNorm,
   blocksRightNorm,
+  boothCenter,
   boothQuad,
   boothRect,
   doorPos,
@@ -641,9 +642,9 @@ function drawBaustelle(
   let drew = false;
   if (FLOOR_GRID_COUPLE) {
     let q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    // Far Bau-row (index 0–1) was tiny — scale up to near-row screen size
+    // Far Bau-row: taller for clicks, but ≥0.5% total-width gaps (no overlap)
     if (s.index < 2) {
-      q = enlargeQuadToNearSlot(q, m);
+      q = fitFarSlotQuad(q, m, s);
     }
     // Warp persp chrome into floor trapezoid (equal ground cells, readable depth)
     drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
@@ -717,12 +718,17 @@ function drawBuilding(
   // sets foot position + size from the VP facade math — no icon warp/yaw.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
-  let size = Math.min(bw, bh) * 0.98;
+  let size = Math.min(bw, bh) * 0.98 * 1.5;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height);
+    // Gebäude ×1.5 — besser klickbar/erkennbar
+    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, {
+      widthScale: 1.35,
+      heightScale: 1.92,
+      taper: 0.32,
+    });
   }
 
   const color = teamColor(
@@ -738,8 +744,8 @@ function drawBuilding(
     const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
     const topY = (facade.tl.y + facade.tr.y) / 2;
     const facadeH = Math.max(1, footY - topY);
-    // Facade math drives size (far slots smaller); blit stays upright to viewer.
-    size = Math.max(32, Math.min(baseW * 1.05, facadeH));
+    // Facade math drives size; ×1.5 vs prior baseline
+    size = Math.max(48, Math.min(baseW * 1.05, facadeH) * 1.5);
     ctx.fillStyle = "rgba(15,23,42,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
@@ -1596,7 +1602,7 @@ function drawMoodParticles(
       ctx.beginPath();
       ctx.arc(px, py, rad, 0, Math.PI * 2);
       ctx.fill();
-    } else if (p.kind === "flare") {
+    } else if (p.kind === "flare" || p.kind === "rocket") {
       ctx.strokeStyle = p.color;
       ctx.lineWidth = Math.max(2, p.size * h * 2);
       ctx.lineCap = "round";
@@ -1612,6 +1618,9 @@ function drawMoodParticles(
       ctx.beginPath();
       ctx.arc(px, py, 6, 0, Math.PI * 2);
       ctx.fill();
+    } else if (p.kind === "mug") {
+      const ih = Math.max(10, p.size * h * 2.2);
+      drawIcon(ctx, UI_ICONS.currencyBier, px - ih / 2, py - ih / 2, ih, ih, 0.02);
     } else {
       ctx.fillStyle = p.color;
       ctx.beginPath();
@@ -1623,37 +1632,47 @@ function drawMoodParticles(
   ctx.globalAlpha = 1;
 }
 
-/** Scale a far-row floor quad up to the average near-row screen size. */
-function enlargeQuadToNearSlot(q: ScreenQuad, m: Match): ScreenQuad {
-  let tw = 0;
+/** Min gap between far-row empty slots as fraction of total canvas width. */
+const FAR_SLOT_GAP_FRAC = 0.005;
+
+/**
+ * Enlarge far-row slots for clicks, but keep ≥0.5% total-width gaps
+ * so neighboring Leerplätze don't overlap.
+ */
+function fitFarSlotQuad(q: ScreenQuad, m: Match, s: BuildSlot): ScreenQuad {
   let th = 0;
   let n = 0;
-  for (const s of m.slots) {
-    if (s.index < 2) continue;
-    const r = boothRect(s.blockId, s.index);
-    tw += r.w * m.width;
+  for (const slot of m.slots) {
+    if (slot.index < 2) continue;
+    const r = boothRect(slot.blockId, slot.index);
     th += r.h * m.height;
     n++;
   }
-  if (n < 1) return q;
-  tw /= n;
-  th /= n;
-  const xs = [q.tl.x, q.tr.x, q.br.x, q.bl.x];
-  const ys = [q.tl.y, q.tr.y, q.br.y, q.bl.y];
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
-  const curW = Math.max(1, maxX - minX);
-  const curH = Math.max(1, maxY - minY);
-  const scale = Math.max(1, Math.min(2.2, Math.max(tw / curW, th / curH)));
-  if (scale <= 1.05) return q;
-  // Grow from bottom-center so the plot stays planted on the floor
+  const targetH = n > 0 ? th / n : (Math.max(q.br.y, q.bl.y) - Math.min(q.tl.y, q.tr.y));
+
   const cx = (q.bl.x + q.br.x) / 2;
   const cy = (q.bl.y + q.br.y) / 2;
+  const curW = Math.max(1, Math.max(q.tr.x, q.br.x) - Math.min(q.tl.x, q.bl.x));
+  const curH = Math.max(1, Math.max(q.br.y, q.bl.y) - Math.min(q.tl.y, q.tr.y));
+
+  // Nearest far-row neighbor center → max half-width with gap
+  const gapPx = FAR_SLOT_GAP_FRAC * m.width;
+  let nearest = Infinity;
+  for (const o of m.slots) {
+    if (o.index >= 2) continue;
+    if (o.blockId === s.blockId && o.index === s.index) continue;
+    const oc = boothCenter(o.blockId, o.index);
+    const d = Math.abs(oc.x * m.width - cx);
+    if (d > 1 && d < nearest) nearest = d;
+  }
+  const maxW =
+    nearest < Infinity ? Math.max(curW, nearest - gapPx) : curW * 1.35;
+
+  const scaleY = Math.max(1, Math.min(2.0, targetH / curH));
+  const scaleX = Math.max(1, Math.min(maxW / curW, scaleY * 1.15));
   const map = (p: { x: number; y: number }) => ({
-    x: cx + (p.x - cx) * scale,
-    y: cy + (p.y - cy) * scale,
+    x: cx + (p.x - cx) * scaleX,
+    y: cy + (p.y - cy) * scaleY,
   });
   return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
 }
@@ -1703,7 +1722,7 @@ export function hitSlot(
     let hit = mx >= x0 && mx <= x1 && my >= y0 && my <= y1;
     if (FLOOR_GRID_COUPLE) {
       let q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-      if (s.index < 2) q = enlargeQuadToNearSlot(q, m);
+      if (s.index < 2) q = fitFarSlotQuad(q, m, s);
       if (pointInQuad(q, mx, my)) hit = true;
     }
     if (hit) {

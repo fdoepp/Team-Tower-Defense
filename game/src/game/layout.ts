@@ -362,6 +362,36 @@ export function gangLanePos(blockId: number): { x: number; y: number } {
   };
 }
 
+/** Stable 0..1 hash from unit id (for lane stagger). */
+function unitLaneHash(unitId: number): number {
+  const x = Math.sin((unitId + 1) * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/**
+ * Personal gang Y in the middle 80% of the fight corridor (not exact mid).
+ * Slight stagger so stacked units stay readable.
+ */
+export function gangLaneYForUnit(unitId: number): number {
+  const y0 = gangY();
+  const h = Math.max(0.02, gangHeight());
+  const u = unitLaneHash(unitId);
+  return y0 + h * (0.1 + u * 0.8);
+}
+
+export function gangLanePosForUnit(
+  blockId: number,
+  unitId: number,
+): { x: number; y: number } {
+  return {
+    x: blockCenterX(blockId),
+    y: gangLaneYForUnit(unitId),
+  };
+}
+
+/** Wait / queue radius around Bier- & Fanshop-Ständen (normalized). */
+export const STAND_WAIT_RADIUS = 0.032;
+
 export function slotIndicesForBlock(_blockId: number): readonly number[] {
   return BUILDABLE_INDICES;
 }
