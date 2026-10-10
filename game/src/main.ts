@@ -135,16 +135,60 @@ function railActionBtnHtml(opts: {
   asButton?: boolean;
   btnId?: string;
   btnAttrs?: string;
+  extraClass?: string;
 }): string {
   const payId = opts.payId ? ` id="${opts.payId}"` : "";
   const unitId = opts.unitId ? ` id="${opts.unitId}"` : "";
+  const cls = `ar-cost-btn ${opts.kind} rail-action${opts.extraClass ? ` ${opts.extraClass}` : ""}`;
   const inner = `<span class="inner person-btn-inner"><span class="unit-col"><img class="unit-ico"${unitId} src="${opts.unitSrc}" alt="">${opts.yieldHtml}</span><span class="pay pay-lg"${payId}><img src="${opts.currencySrc}" alt=""><span class="amt">${opts.amount}</span></span></span>`;
   if (opts.asButton !== false) {
     const id = opts.btnId ? ` id="${opts.btnId}"` : "";
     const attrs = opts.btnAttrs ? ` ${opts.btnAttrs}` : "";
-    return `<button type="button" class="ar-cost-btn ${opts.kind} rail-action"${id}${attrs}>${inner}</button>`;
+    return `<button type="button" class="${cls}"${id}${attrs}>${inner}</button>`;
   }
-  return `<span class="ar-cost-btn ${opts.kind} rail-action" aria-hidden="true">${inner}</span>`;
+  return `<span class="${cls}" aria-hidden="true">${inner}</span>`;
+}
+
+/** Angriff: 1× senden | alle senden (Kosten skaliert). */
+function attackSendPairHtml(
+  m: Match,
+  kind: "ultras" | "hooligans",
+  color: ReturnType<typeof teamColor>,
+): string {
+  const unitCost = kind === "ultras" ? PYRO_FIGHT_MERCH : HOOLIGAN_ORDER_BEER;
+  const currencySrc =
+    kind === "ultras" ? UI_ICONS.currencyFanartikel : UI_ICONS.currencyBier;
+  const src = unitIconPath(kind, color, m.unitTechLevel(kind));
+  const effect = kind === "ultras" ? "Fernkampf" : "Nahkampf";
+  const prefix = kind === "ultras" ? "ultra" : "hool";
+  const oneId = kind === "ultras" ? "btn-pyro-fight" : "btn-hooligan";
+  const allId = kind === "ultras" ? "btn-pyro-fight-all" : "btn-hooligan-all";
+  return (
+    railActionBtnHtml({
+      kind: "senden",
+      extraClass: "senden-red",
+      unitSrc: src,
+      unitId: `atk-ico-${prefix}-one`,
+      amount: unitCost,
+      currencySrc,
+      payId: `atk-pay-${prefix}-one`,
+      yieldHtml: `<span class="yield-chip" id="atk-yield-${prefix}-one"><span class="yield-amt">1×</span></span>`,
+      btnId: oneId,
+      btnAttrs: `data-attack-kind="${kind}" data-attack-count="1" title="1× ${effect}"`,
+    }) +
+    railActionBtnHtml({
+      kind: "senden",
+      extraClass: "senden-red",
+      unitSrc: src,
+      unitId: `atk-ico-${prefix}-all`,
+      amount: unitCost,
+      currencySrc,
+      payId: `atk-pay-${prefix}-all`,
+      yieldHtml: `<span class="yield-chip" id="atk-yield-${prefix}-all"><span class="yield-amt">alle</span></span>`,
+      btnId: allId,
+      btnAttrs: `data-attack-kind="${kind}" data-attack-count="all" title="Alle · ${effect}"`,
+    })
+  );
 }
 
 function personBuyCost(
@@ -542,34 +586,14 @@ function renderMatchScreen(): void {
           <div class="unit-rows person-cards attack-cards">
             <article class="person-card attack-card">
               <div class="person-title">Pyro Wurf <span class="meta" data-attack-meta="ultras">(x0 bereit)</span></div>
-              <div class="person-actions single">
-                ${railActionBtnHtml({
-                  kind: "senden",
-                  unitSrc: unitIconPath("ultras", tc, m.unitTechLevel("ultras")),
-                  unitId: "atk-ico-ultra",
-                  amount: PYRO_FIGHT_MERCH,
-                  currencySrc: UI_ICONS.currencyFanartikel,
-                  payId: "atk-pay-ultra",
-                  yieldHtml: `<span class="yield-chip" id="atk-yield-ultra"><span class="yield-amt">Fernkampf</span></span>`,
-                  btnId: "btn-pyro-fight",
-                  btnAttrs: 'title="Ultra → Pyro Wurf"',
-                })}
+              <div class="person-actions dual">
+                ${attackSendPairHtml(m, "ultras", tc)}
               </div>
             </article>
             <article class="person-card attack-card">
               <div class="person-title">Nahkampf <span class="meta" data-attack-meta="hooligans">(x0 bereit)</span></div>
-              <div class="person-actions single">
-                ${railActionBtnHtml({
-                  kind: "senden",
-                  unitSrc: unitIconPath("hooligans", tc, m.unitTechLevel("hooligans")),
-                  unitId: "atk-ico-hool",
-                  amount: HOOLIGAN_ORDER_BEER,
-                  currencySrc: UI_ICONS.currencyBier,
-                  payId: "atk-pay-hool",
-                  yieldHtml: `<span class="yield-chip" id="atk-yield-hool"><span class="yield-amt">Nahkampf</span></span>`,
-                  btnId: "btn-hooligan",
-                  btnAttrs: 'title="Hooligan → Nahkampf"',
-                })}
+              <div class="person-actions dual">
+                ${attackSendPairHtml(m, "hooligans", tc)}
               </div>
             </article>
           </div>
@@ -682,27 +706,58 @@ function renderMatchScreen(): void {
     });
   };
 
-  const attackReadyCount = (kind: "ultras" | "hooligans") =>
-    m.fans.filter(
-      (f) =>
-        f.team === m.playerTeam &&
-        f.kind === kind &&
-        f.hp > 0 &&
-        f.state === "block",
-    ).length;
-
   const syncAttackRailUi = () => {
     for (const kind of ["ultras", "hooligans"] as const) {
+      const ready = m.attackReadyCount(kind);
+      const unitCost = kind === "ultras" ? PYRO_FIGHT_MERCH : HOOLIGAN_ORDER_BEER;
+      const effect = kind === "ultras" ? "Fernkampf" : "Nahkampf";
+      const prefix = kind === "ultras" ? "ultra" : "hool";
       const meta = app.querySelector(`[data-attack-meta="${kind}"]`);
-      if (meta) meta.textContent = `(x${attackReadyCount(kind)} bereit)`;
-    }
-    const ultraIco = app.querySelector<HTMLImageElement>("#atk-ico-ultra");
-    if (ultraIco) {
-      ultraIco.src = unitIconPath("ultras", tc, m.unitTechLevel("ultras"));
-    }
-    const hoolIco = app.querySelector<HTMLImageElement>("#atk-ico-hool");
-    if (hoolIco) {
-      hoolIco.src = unitIconPath("hooligans", tc, m.unitTechLevel("hooligans"));
+      if (meta) meta.textContent = `(x${ready} bereit)`;
+
+      const src = unitIconPath(kind, tc, m.unitTechLevel(kind));
+      for (const suffix of ["one", "all"] as const) {
+        const ico = app.querySelector<HTMLImageElement>(`#atk-ico-${prefix}-${suffix}`);
+        if (ico) ico.src = src;
+      }
+
+      const payOne = app.querySelector(`#atk-pay-${prefix}-one .amt`);
+      if (payOne) payOne.textContent = String(unitCost);
+      const payAll = app.querySelector(`#atk-pay-${prefix}-all .amt`);
+      if (payAll) payAll.textContent = String(unitCost * Math.max(1, ready));
+
+      const yOne = app.querySelector(`#atk-yield-${prefix}-one .yield-amt`);
+      if (yOne) yOne.textContent = "1×";
+      const yAll = app.querySelector(`#atk-yield-${prefix}-all .yield-amt`);
+      if (yAll) yAll.textContent = ready > 1 ? `${ready}×` : "alle";
+
+      const oneReady =
+        kind === "ultras" ? m.pyroFightReady(1) : m.hooliganOrderReady(1);
+      const allReady =
+        kind === "ultras" ? m.pyroFightReady("all") : m.hooliganOrderReady("all");
+      const btnOne = app.querySelector<HTMLButtonElement>(
+        kind === "ultras" ? "#btn-pyro-fight" : "#btn-hooligan",
+      );
+      const btnAll = app.querySelector<HTMLButtonElement>(
+        kind === "ultras" ? "#btn-pyro-fight-all" : "#btn-hooligan-all",
+      );
+      if (btnOne) {
+        btnOne.disabled = !oneReady;
+        btnOne.classList.toggle("ready", oneReady);
+        btnOne.classList.toggle("cd", !oneReady);
+        btnOne.title = oneReady
+          ? `1× ${effect} · ${unitCost}`
+          : `1× braucht ${unitCost}`;
+      }
+      if (btnAll) {
+        btnAll.disabled = !allReady;
+        btnAll.classList.toggle("ready", allReady);
+        btnAll.classList.toggle("cd", !allReady);
+        const allCost = unitCost * Math.max(1, ready);
+        btnAll.title = allReady
+          ? `${ready}× ${effect} · ${allCost}`
+          : `${ready || 0}× braucht ${allCost}`;
+      }
     }
   };
 
@@ -979,22 +1034,6 @@ function renderMatchScreen(): void {
   });
 
   const syncOverlay = () => {
-    const hb = app.querySelector<HTMLButtonElement>("#btn-hooligan")!;
-    const hready = m.hooliganOrderReady();
-    hb.classList.toggle("ready", hready);
-    hb.classList.toggle("cd", !hready);
-    hb.disabled = !hready;
-    hb.title = hready
-      ? `Senden · ${HOOLIGAN_ORDER_BEER} Bier`
-      : `Senden · braucht ${HOOLIGAN_ORDER_BEER} Bier`;
-    const pf = app.querySelector<HTMLButtonElement>("#btn-pyro-fight")!;
-    const pready = m.pyroFightReady();
-    pf.classList.toggle("ready", pready);
-    pf.classList.toggle("cd", !pready);
-    pf.disabled = !pready;
-    pf.title = pready
-      ? `Senden · ${PYRO_FIGHT_MERCH} Fanartikel`
-      : `Senden · braucht ${PYRO_FIGHT_MERCH} Fanartikel`;
     (["ultras", "normalos", "hooligans"] as FanKind[]).forEach((kind) => {
       const plus = app.querySelector<HTMLButtonElement>(
         `[data-quick-buy="${kind}"]`,
@@ -1006,16 +1045,17 @@ function renderMatchScreen(): void {
       plus.classList.toggle("cd", !ok);
     });
     syncPendingBuildUi();
-    if (openRail === "attack") syncAttackRailUi();
+    syncAttackRailUi();
   };
 
-  app.querySelector("#btn-hooligan")!.addEventListener("click", () => {
-    m.tryHooliganOrder();
-    syncOverlay();
-  });
-  app.querySelector("#btn-pyro-fight")!.addEventListener("click", () => {
-    m.tryPyroFight();
-    syncOverlay();
+  attackRail.querySelectorAll<HTMLButtonElement>("[data-attack-kind]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const kind = btn.dataset.attackKind as "ultras" | "hooligans";
+      const count = btn.dataset.attackCount === "all" ? "all" : 1;
+      if (kind === "ultras") m.tryPyroFight(count);
+      else m.tryHooliganOrder(count);
+      syncOverlay();
+    });
   });
   app.querySelector("#btn-hire-ordner")?.addEventListener("click", () => {
     m.tryHireStewardQuick();

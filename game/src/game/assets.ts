@@ -139,6 +139,7 @@ export const UI_ICONS = {
   btnSendenGrey: uiPath("btnSendenGrey", "icons/ui/btn-senden-grey.png"),
   btnSendenGreen: uiPath("btnSendenGreen", "icons/ui/btn-senden-green.png"),
   btnSendenBlue: uiPath("btnSendenBlue", "icons/ui/btn-senden-blue.png"),
+  btnSendenRed: uiPath("btnSendenRed", "icons/ui-final/btn-senden-red.png"),
   btnBauenAmber: uiPath("btnBauenAmber", "icons/ui/btn-bauen-amber.png"),
   btnBauenGrey: uiPath("btnBauenGrey", "icons/ui/btn-bauen-grey.png"),
   btnUpgradePurple: uiPath("btnUpgradePurple", "icons/ui/btn-upgrade-purple.png"),

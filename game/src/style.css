@@ -1038,6 +1038,11 @@ select {
 .match-shell.matchday .ar-cost-btn.senden {
   background-image: url("/icons/ui-final/btn-senden-blue.png");
 }
+/* Angriff-Rail: rote Senden-Fläche (statt Blau) */
+.match-shell.matchday .attack-rail .ar-cost-btn.senden,
+.match-shell.matchday .ar-cost-btn.senden.senden-red {
+  background-image: url("/icons/ui-final/btn-senden-red.png");
+}
 .match-shell.matchday .build-card.cd .ar-cost-btn.bauen,
 .match-shell.matchday .ar-cost-btn.bauen.cd {
   background-image: url("/icons/ui-final/btn-bauen-grey.png");
@@ -1053,7 +1058,11 @@ select {
   background-image: url("/icons/ui-final/btn-upgrade-grey.png");
 }
 .match-shell.matchday .ar-cost-btn.senden.cd,
-.match-shell.matchday .ar-cost-btn.senden:disabled {
+.match-shell.matchday .ar-cost-btn.senden:disabled,
+.match-shell.matchday .attack-rail .ar-cost-btn.senden.cd,
+.match-shell.matchday .attack-rail .ar-cost-btn.senden:disabled,
+.match-shell.matchday .ar-cost-btn.senden.senden-red.cd,
+.match-shell.matchday .ar-cost-btn.senden.senden-red:disabled {
   background-image: url("/icons/ui-final/btn-senden-grey.png");
 }
 .match-shell.matchday .ar-cost-btn .inner {
