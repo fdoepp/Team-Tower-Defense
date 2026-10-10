@@ -328,10 +328,14 @@ export const GOAL_P_TOR_MOMENTUM = 0.22;
 export const GOAL_P_TOR_MIN = 0.08;
 export const GOAL_P_TOR_MAX = 0.55;
 
-/** AI start gold bonus over START_GOLD */
-export const AI_START_GOLD_BONUS = 5;
+/** AI start gold bonus over START_GOLD (0 = same wallet as player) */
+export const AI_START_GOLD_BONUS = 0;
 /** Soft AI beer/merch regen per second */
 export const AI_SOFT_REGEN = 0.48;
+/** Tiny momentum nudge when a team scores a combat kill (unit) */
+export const MOMENTUM_KILL_UNIT = 0.035;
+/** Tiny momentum nudge when a team destroys an Ordnerpost */
+export const MOMENTUM_KILL_POST = 0.05;
 
 export const FAN_STATS: Record<
   FanKind,
