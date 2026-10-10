@@ -628,8 +628,8 @@ function drawBuilding(
   // sets foot position + size from the VP facade math — no icon warp/yaw.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
-  // Gebäude ×1.125 vs prior ×0.9 (+25% Darstellung)
-  const BUILD_SCALE = 1.125;
+  // Gebäude ×1.40625 vs prior ×1.125 (+25% Darstellung)
+  const BUILD_SCALE = 1.40625;
   let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
