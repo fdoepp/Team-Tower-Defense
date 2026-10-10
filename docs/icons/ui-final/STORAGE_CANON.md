@@ -72,7 +72,7 @@ Runtime: `.build-rail .ar-cost-btn` — Holz + eine Face-Fläche; Live-Text Holz
 
 Nur Symbol-PNG; Zahl live im Wallet-Chip / Button-Pay-Zeile.
 
-**Keine `+`/`−` Live-Währungsbuttons** in der finalen DB — weder als Chrome noch als Overlay-Asset. Floats bei Erzeugen/Verbrauch nutzen Symbol-Icon + Text (`+1 Bier`). Neue ±-Button-Assets wären Pending/Freigabe.
+**Live-FX ± (pending Freigabe):** `currency*Plus` / `currency*Minus` je Währung, plus `moodPlus`/`moodMinus` und `waitAnger`/`waitAngerHot`. Nach Freigabe: Floats bei Erzeugen/Verbrauch nutzen diese Icons (statt nur Text). Bis Freigabe bleiben Floats Symbol+Text.
 
 ## Match-Rahmenlogik
 
