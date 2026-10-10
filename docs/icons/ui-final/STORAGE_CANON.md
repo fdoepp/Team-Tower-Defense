@@ -42,8 +42,9 @@ Alles, was sich ändert (Score, Minute, Momentum-%, Kosten, Level), gehört **ni
 | Regel | Wert |
 | --- | --- |
 | Layout | Titel `Fans (Lvl.1, xN)` · keine Unit-Icons · KAUF → UP → SEND |
-| Dual-Grid | `3%·46%·2%·46%·3%` (Fans, Ordner) |
-| Triple-Grid | `3%·30%·2%·30%·2%·30%·3%` (Ultras, Hooligans) |
+| Dual-Grid | `1%·48%·2%·48%·1%` (Fans, Ordner) |
+| Triple-Grid | `1%·32%·1%·32%·1%·32%·1%` (Ultras, Hooligans) |
+| Rail-Inset | `1%` der Rail-Innenbreite (safe-area weitet die Rail, nicht den Inset) |
 | Chrome | Holz + eine Fläche; Live-Text Holz-Innen + **2%** |
 | Banner | Braun (`#6b4428`→`#4a2c18`), nicht blau |
 
@@ -70,4 +71,21 @@ Runtime: `.build-rail .ar-cost-btn` — Holz + eine Face-Fläche; Live-Text Holz
 | `currencySicherheit` | Schild mit Haken |
 
 Nur Symbol-PNG; Zahl live im Wallet-Chip / Button-Pay-Zeile.
+
+**Live-FX ± (pending Freigabe):** `currency*Plus` / `currency*Minus` je Währung, plus `moodPlus`/`moodMinus` und `waitAnger`/`waitAngerHot`. Nach Freigabe: Floats bei Erzeugen/Verbrauch nutzen diese Icons (statt nur Text). Bis Freigabe bleiben Floats Symbol+Text.
+
+## Match-Rahmenlogik
+
+Verbindliche %-Tokens für Rails, HUD, Tribünen, Gang:  
+`docs/icons/ui-final/MATCH_LAYOUT_TOKENS.json` (Mirror: `game/public/icons/ui-final/MATCH_LAYOUT_TOKENS.json`).
+
+| Bereich | Schlüssel | Wert |
+| --- | --- | --- |
+| Left / Right / Pitch | `rails.left_w` / `right_w` / `pitch_w` | 21% / 15% / 64% |
+| Scoreboard | `hud.scoreboard.max_w_of_pitch` · `h_of_screen` | 59,8% Pitch · 17,25% Bild (×1,15 vs. Baseline) |
+| Wallet | `hud.wallet.icon_h_of_screen` · `chip_h_of_screen` | ×1,15 vs. Baseline |
+| Tribünen | `scene.tribune_y0`–`y1` · `tribune_gap_of_pitch` | 30–50% · 0,5% Pitch |
+| Hintergrund | `background` | `stadium-floodlight-derby-bg.jpg` |
+
+Scoreboard-Live-Slots bleiben in `scoreboard-slots.json`.
 

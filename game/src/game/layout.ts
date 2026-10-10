@@ -4,7 +4,6 @@ import {
   boothQuad,
   FLOOR_GRID_COUPLE,
   floorGangBand,
-  floorRowYs,
   quadCenter,
   quadPennantPos,
   quadToRect,
@@ -28,10 +27,18 @@ export const VISUAL_CROWD_SOFT_CAP = 20;
  * - bottom: gang with Baustellen
  */
 export const L = {
-  stadiumH: 0.32,
-  /** Stands sit in the middle third */
-  blockTop: 0.32,
-  blockBodyH: 0.3,
+  stadiumH: 0.3,
+  /**
+   * Tribünen-Band per MATCH_LAYOUT_TOKENS:
+   * von Bildmitte 20% nach oben → y0=0.30 … y1=0.50 (Höhe = 20%).
+   */
+  blockTop: 0.3,
+  blockBodyH: 0.2,
+  /**
+   * Ziel ~0.5% sichtbarer Abstand zwischen opaken Plattformkanten.
+   * Etwas unter 0.5%, weil Glow/Schatten der PNG-Kanten optisch addieren.
+   */
+  tribuneGap: 0.002,
   gangPadTop: 0.01,
   /** Gang is the bottom ~third — not half the screen */
   gangH: 0.34,
@@ -49,13 +56,13 @@ export const L = {
 };
 
 /**
- * Native tribune PNG sizes + floor-face transparent pads (px).
- * Facing pads are overlapped so platform floors meet flush.
+ * Native tribune PNG sizes + opaque floor-face pads (px, measured).
+ * Transparent side pads are overlapped so visible platforms sit 0.5% apart.
  */
 export const TRIBUNE_NATIVE = [
-  { w: 426, h: 309, faceL: 6, faceR: 48 }, // Heim blue
-  { w: 386, h: 308, faceL: 14, faceR: 14 }, // Neutral grey
-  { w: 426, h: 309, faceL: 48, faceR: 6 }, // Gäste red
+  { w: 426, h: 309, faceL: 6, faceR: 29 }, // Heim blue
+  { w: 386, h: 308, faceL: 6, faceR: 6 }, // Neutral grey
+  { w: 426, h: 309, faceL: 28, faceR: 6 }, // Gäste red
 ] as const;
 
 export type TribuneRectNorm = { x: number; y: number; w: number; h: number };
@@ -73,44 +80,44 @@ let _pack: TribunePack | null = null;
 
 /**
  * Recompute flush tribune strip for the current canvas aspect (W/H).
- * Grey is centered; blue/red abut it; uniform scale per PNG (no distort).
+ * Native aspect per PNG (no distort); opaque faces spaced by tribuneGap (0.5%).
  */
 export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack {
   const aspect = canvasW / Math.max(1, canvasH);
   if (_pack && Math.abs(_pack.aspect - aspect) < 1e-5) return _pack;
 
   const edge = L.blocksLeft;
-  const avail = Math.max(0.2, 1 - edge * 2);
-  const shelfTop = 0.16;
-  const shelfBottom = FLOOR_GRID_COUPLE
-    ? Math.max(shelfTop + 0.2, floorRowYs()[0]! - 0.025)
-    : L.blockTop + L.blockBodyH;
-  const maxH = Math.max(0.18, shelfBottom - shelfTop);
+  const shelfBottom = L.blockTop + L.blockBodyH; // 0.50
+  const maxH = L.blockBodyH; // 0.20
+  const gap = L.tribuneGap;
 
   const packAt = (hNorm: number) => {
-    const ws = TRIBUNE_NATIVE.map((t) => (t.w / t.h) * (hNorm / aspect));
+    const ws = TRIBUNE_NATIVE.map(
+      (n) => (hNorm * (n.w / n.h)) / Math.max(1e-6, aspect),
+    );
+    const faceL = TRIBUNE_NATIVE.map((n, i) => (n.faceL / n.w) * ws[i]!);
+    const faceR = TRIBUNE_NATIVE.map((n, i) => (n.faceR / n.w) * ws[i]!);
     const xs = [0, 0, 0];
-    const contentRight = (i: number, x: number, w: number) =>
-      x + w * (1 - TRIBUNE_NATIVE[i]!.faceR / TRIBUNE_NATIVE[i]!.w);
-    const contentLeft = (i: number, x: number, w: number) =>
-      x + w * (TRIBUNE_NATIVE[i]!.faceL / TRIBUNE_NATIVE[i]!.w);
-
+    // Place so opaque content edges are exactly `gap` apart
     xs[0] = 0;
-    const bcr = contentRight(0, xs[0], ws[0]!);
-    xs[1] = bcr - ws[1]! * (TRIBUNE_NATIVE[1]!.faceL / TRIBUNE_NATIVE[1]!.w);
-    const gcr = contentRight(1, xs[1], ws[1]!);
-    xs[2] = gcr - ws[2]! * (TRIBUNE_NATIVE[2]!.faceL / TRIBUNE_NATIVE[2]!.w);
-
-    const leftC = contentLeft(0, xs[0], ws[0]!);
-    const rightC = contentRight(2, xs[2], ws[2]!);
+    const contentR0 = xs[0]! + ws[0]! - faceR[0]!;
+    xs[1] = contentR0 + gap - faceL[1]!;
+    const contentR1 = xs[1]! + ws[1]! - faceR[1]!;
+    xs[2] = contentR1 + gap - faceL[2]!;
+    const leftC = xs[0]!;
+    const rightC = xs[2]! + ws[2]!;
     return { xs, ws, leftC, rightC, span: rightC - leftC };
   };
 
-  const unit = packAt(1);
-  const hForWidth = avail / Math.max(1e-6, unit.span);
-  const hNorm = Math.min(maxH, hForWidth);
-  const packed = packAt(hNorm);
+  let hNorm = maxH;
+  let packed = packAt(hNorm);
+  const maxSpan = Math.max(0.2, 1 - edge * 2);
+  if (packed.span > maxSpan) {
+    hNorm *= maxSpan / packed.span;
+    packed = packAt(hNorm);
+  }
 
+  // Center grey; keep strip inside pitch edges
   const greyCx = packed.xs[1]! + packed.ws[1]! / 2;
   let shift = 0.5 - greyCx;
   if (packed.leftC + shift < edge) shift = edge - packed.leftC;
@@ -354,6 +361,36 @@ export function gangLanePos(blockId: number): { x: number; y: number } {
     y: gangMidY(),
   };
 }
+
+/** Stable 0..1 hash from unit id (for lane stagger). */
+function unitLaneHash(unitId: number): number {
+  const x = Math.sin((unitId + 1) * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/**
+ * Personal gang Y in the middle 80% of the fight corridor (not exact mid).
+ * Slight stagger so stacked units stay readable.
+ */
+export function gangLaneYForUnit(unitId: number): number {
+  const y0 = gangY();
+  const h = Math.max(0.02, gangHeight());
+  const u = unitLaneHash(unitId);
+  return y0 + h * (0.1 + u * 0.8);
+}
+
+export function gangLanePosForUnit(
+  blockId: number,
+  unitId: number,
+): { x: number; y: number } {
+  return {
+    x: blockCenterX(blockId),
+    y: gangLaneYForUnit(unitId),
+  };
+}
+
+/** Wait / queue radius around Bier- & Fanshop-Ständen (normalized). */
+export const STAND_WAIT_RADIUS = 0.032;
 
 export function slotIndicesForBlock(_blockId: number): readonly number[] {
   return BUILDABLE_INDICES;

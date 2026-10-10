@@ -4764,6 +4764,450 @@
       "bakedLabel": false,
       "assetClass": "currency-icon",
       "category": "ui"
+    },
+    "currencyGoldPlus": {
+      "id": "currencyGoldPlus",
+      "file": "currency-gold-plus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-gold-plus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.536,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          29,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:27.592720+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:27.606Z",
+      "notes": "Live-FX: Gold erzeugt. Freigestellt 256². Badge grün +."
+    },
+    "currencyGoldMinus": {
+      "id": "currencyGoldMinus",
+      "file": "currency-gold-minus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-gold-minus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.536,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          29,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:27.720690+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:27.734Z",
+      "notes": "Live-FX: Gold verbraucht. Freigestellt 256². Badge rot −."
+    },
+    "currencyBierPlus": {
+      "id": "currencyBierPlus",
+      "file": "currency-bier-plus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-bier-plus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6122,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          44,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:27.847388+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:27.860Z",
+      "notes": "Live-FX: Bier erzeugt. Freigestellt 256². Badge grün +."
+    },
+    "currencyBierMinus": {
+      "id": "currencyBierMinus",
+      "file": "currency-bier-minus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-bier-minus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6122,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          44,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:27.980562+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:27.996Z",
+      "notes": "Live-FX: Bier verbraucht. Freigestellt 256². Badge rot −."
+    },
+    "currencyFanartikelPlus": {
+      "id": "currencyFanartikelPlus",
+      "file": "currency-fanartikel-plus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-fanartikel-plus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.594,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          25,
+          29,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.107367+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.120Z",
+      "notes": "Live-FX: Fanartikel erzeugt. Freigestellt 256². Badge grün +."
+    },
+    "currencyFanartikelMinus": {
+      "id": "currencyFanartikelMinus",
+      "file": "currency-fanartikel-minus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-fanartikel-minus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.594,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          25,
+          29,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.231815+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.246Z",
+      "notes": "Live-FX: Fanartikel verbraucht. Freigestellt 256². Badge rot −."
+    },
+    "currencySicherheitPlus": {
+      "id": "currencySicherheitPlus",
+      "file": "currency-sicherheit-plus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-sicherheit-plus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5982,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.361067+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.375Z",
+      "notes": "Live-FX: Sicherheit erzeugt. Freigestellt 256². Badge grün +."
+    },
+    "currencySicherheitMinus": {
+      "id": "currencySicherheitMinus",
+      "file": "currency-sicherheit-minus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-sicherheit-minus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5982,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.483956+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.497Z",
+      "notes": "Live-FX: Sicherheit verbraucht. Freigestellt 256². Badge rot −."
+    },
+    "moodPlus": {
+      "id": "moodPlus",
+      "file": "mood-plus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/mood-plus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5976,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          29,
+          27,
+          226,
+          227
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.608499+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.621Z",
+      "notes": "Live-FX: Stimmung/Momentum steigt. Freigestellt 256²."
+    },
+    "moodMinus": {
+      "id": "moodMinus",
+      "file": "mood-minus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/mood-minus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5985,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          26,
+          28,
+          228,
+          227
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.732732+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.745Z",
+      "notes": "Live-FX: Stimmung/Momentum sinkt. Freigestellt 256²."
+    },
+    "waitAnger": {
+      "id": "waitAnger",
+      "file": "wait-anger.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/wait-anger.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6919,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          40,
+          24,
+          214,
+          230
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.859007+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.872Z",
+      "notes": "Live-FX: Wutsmiley bei Wartezeit (mild). Freigestellt 256²."
+    },
+    "waitAngerHot": {
+      "id": "waitAngerHot",
+      "file": "wait-anger-hot.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/wait-anger-hot.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6533,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          18,
+          35,
+          237,
+          221
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.987894+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:29.001Z",
+      "notes": "Live-FX: Wutsmiley bei langer Wartezeit (stark). Freigestellt 256²."
     }
   },
   "pending": {

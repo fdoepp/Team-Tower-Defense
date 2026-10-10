@@ -17,6 +17,7 @@ import {
   blockCenterX,
   blocksLeftNorm,
   blocksRightNorm,
+  boothCenter,
   boothQuad,
   boothRect,
   doorPos,
@@ -28,11 +29,13 @@ import {
   tribuneRect,
 } from "./layout";
 import {
+  SCENE_ASSETS,
   UI_ICONS,
   drawIcon,
   drawIconQuad,
   drawToyIcon,
   drawToyProp,
+  getIcon,
   type ToyAnimMode,
   slotEmptyIconPath,
   standIconPath,
@@ -41,7 +44,7 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
-import { boothFacadeQuad, scaleQuad } from "./floorGrid";
+import { boothFacadeQuad, scaleQuad, type ScreenQuad } from "./floorGrid";
 
 export { SEATS_PER_BLOCK } from "./layout";
 export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
@@ -69,6 +72,23 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawFloats(ctx, m, w, h);
 }
 
+/** Cover-draw stadium-floodlight-derby-bg when available (Rahmenlogik). */
+function drawStadiumBackdrop(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+): boolean {
+  const img = getIcon(SCENE_ASSETS.stadiumFloodlightDerby);
+  if (!img?.complete || !img.naturalWidth) return false;
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  const s = Math.max(w / iw, h / ih);
+  const dw = iw * s;
+  const dh = ih * s;
+  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  return true;
+}
+
 /** Night stadium bowl + floodlights behind the stands (Matchday Comic) */
 function drawStadiumAtmosphere(
   ctx: CanvasRenderingContext2D,
@@ -76,6 +96,17 @@ function drawStadiumAtmosphere(
   w: number,
   h: number,
 ): void {
+  if (drawStadiumBackdrop(ctx, w, h)) {
+    // Soft asphalt veil so gang sprites stay readable over photo BG
+    const floorY = h * gangY();
+    const veil = ctx.createLinearGradient(0, floorY - h * 0.02, 0, h);
+    veil.addColorStop(0, "rgba(55, 58, 64, 0.15)");
+    veil.addColorStop(1, "rgba(40, 42, 48, 0.35)");
+    ctx.fillStyle = veil;
+    ctx.fillRect(0, floorY - h * 0.02, w, h - floorY + h * 0.02);
+    return;
+  }
+
   const skyH = h * (L.blockTop + L.blockBodyH * 0.55);
   const sky = ctx.createLinearGradient(0, 0, 0, skyH);
   sky.addColorStop(0, "#04070f");
@@ -206,7 +237,6 @@ function drawBlocks(
   h: number,
 ): void {
   syncTribuneLayout(w, h);
-  const labels = ["Heim", "Neutral", "Gäste"];
 
   for (const b of BLOCK_META) {
     const tr = tribuneRect(b.id);
@@ -248,6 +278,7 @@ function drawBlocks(
     ctx.fill();
 
     const tribSrc = tribuneIconPath(b.id);
+    // Cell already native-aspect packed — pad 0 so faces stay 0.5% apart
     const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
     if (!drew) {
       ctx.fillStyle =
@@ -255,27 +286,7 @@ function drawBlocks(
       roundRect(ctx, left, top, bw, bh, 18);
       ctx.fill();
     }
-
-    const label = labels[b.id] ?? "Block";
-    const chipW = Math.max(54, bw * 0.48);
-    const chipH = Math.max(18, h * 0.024);
-    const chipY = top + 4;
-    ctx.fillStyle = "rgba(255,255,255,0.94)";
-    roundRect(ctx, cx - chipW / 2, chipY, chipW, chipH, 9);
-    ctx.fill();
-    if (owner === "ksc" || owner === "vfb") {
-      drawClubCrest(ctx, cx - chipW * 0.28, chipY + chipH / 2, chipH * 0.38, owner);
-    }
-    ctx.fillStyle = "#0f172a";
-    ctx.font = `800 ${Math.floor(chipH * 0.55)}px Outfit, Manrope, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(
-      label,
-      cx + (owner === "ksc" || owner === "vfb" ? 6 : 0),
-      chipY + chipH / 2 + 0.5,
-    );
-    ctx.textBaseline = "alphabetic";
+    // Keine Heim/Neutral/Gäste-Überschriften auf den Tribünen
 
     const d = doorPos(b.id);
     const doorW = bw * L.doorFrac * 0.85;
@@ -308,19 +319,27 @@ function drawSeats(
   }
 }
 
-/** Center scoreboard + momentum strip (Matchday Comic / mockup) */
+/** Scoreboard slots — scoreboard-slots.json (0–1 on chrome box). */
+const SB_SLOTS = {
+  logoHeim: { x: 0.08, y: 0.28, w: 0.18, h: 0.44 },
+  logoGast: { x: 0.74, y: 0.28, w: 0.18, h: 0.44 },
+  score: { x: 0.32, y: 0.3, w: 0.36, h: 0.36 },
+  clock: { x: 0.45, y: 0.17, w: 0.1, h: 0.14 },
+  momentumTrack: { x: 0.1, y: 0.78, w: 0.8, h: 0.14 },
+} as const;
+
+/** Empty chrome + live overlays (STORAGE_CANON). Sizes: MATCH_LAYOUT_TOKENS. */
 function drawScoreboard(
   ctx: CanvasRenderingContext2D,
   m: Match,
   w: number,
   h: number,
 ): void {
-  // Keep scoreboard inside the top third (above the stands)
-  const boardW = Math.min(w * 0.38, h * 0.42);
-  const boardH = Math.min(boardW * (720 / 1280) * 0.68, h * 0.22);
+  const boardW = Math.min(w * 0.598, h * 0.48);
+  const boardH = Math.min(boardW * (508 / 1041), h * 0.1725);
   const bx = (w - boardW) / 2;
-  const by = h * 0.008;
-  // Soft stadium glow behind board
+  const by = h * 0.03;
+
   const glow = ctx.createRadialGradient(
     w * 0.5,
     by + boardH * 0.55,
@@ -334,58 +353,66 @@ function drawScoreboard(
   ctx.fillStyle = glow;
   ctx.fillRect(bx - 20, by - 8, boardW + 40, boardH + 24);
 
-  const drew = drawIcon(ctx, UI_ICONS.scoreboard, bx, by, boardW, boardH, 0.02);
+  const drew = drawIcon(ctx, UI_ICONS.scoreboardChrome, bx, by, boardW, boardH, 0.02);
   if (!drew) {
-    // fallback panel
     ctx.fillStyle = "rgba(15,23,42,0.88)";
     roundRect(ctx, bx, by, boardW, boardH * 0.62, 10);
     ctx.fill();
   }
 
-  // Live score + minute overlaid on board face
-  const faceY = by + boardH * 0.22;
-  const faceH = boardH * 0.38;
+  const slot = (key: keyof typeof SB_SLOTS) => {
+    const s = SB_SLOTS[key];
+    return {
+      x: bx + s.x * boardW,
+      y: by + s.y * boardH,
+      w: s.w * boardW,
+      h: s.h * boardH,
+    };
+  };
+
+  // Logos are baked into scoreboardChrome — no live Wimpel overlays
+
   ctx.save();
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  const sc = slot("score");
   ctx.fillStyle = "#f8fafc";
-  ctx.font = `900 ${Math.max(16, Math.floor(faceH * 0.72))}px Outfit, Manrope, sans-serif`;
-  ctx.shadowColor = "rgba(0,0,0,0.65)";
-  ctx.shadowBlur = 6;
-  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w * 0.5, faceY + faceH * 0.42);
+  ctx.font = `900 ${Math.max(16, Math.floor(sc.h * 0.62))}px Outfit, Manrope, sans-serif`;
+  ctx.shadowColor = "rgba(0,0,0,0.55)";
+  ctx.shadowBlur = 5;
+  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, sc.x + sc.w / 2, sc.y + sc.h / 2);
   ctx.shadowBlur = 0;
-  ctx.font = `800 ${Math.max(10, Math.floor(faceH * 0.32))}px Outfit, Manrope, sans-serif`;
-  ctx.fillStyle = "#e2e8f0";
-  const min = Math.floor(m.minute ?? 0);
-  ctx.fillText(`${min}′`, w * 0.5 + boardW * 0.38, by + boardH * 0.12);
 
-  // Momentum strip: who scores next (single % pair — no conflicting Torchance %)
-  const barY = by + boardH * 0.78;
-  const barH = Math.max(14, boardH * 0.16);
-  const barX = bx + boardW * 0.08;
-  const barW = boardW * 0.84;
+  const ck = slot("clock");
+  const min = Math.floor(m.minute ?? 0);
+  ctx.fillStyle = "#0f2310";
+  ctx.font = `800 ${Math.max(10, Math.floor(ck.h * 0.55))}px Outfit, Manrope, sans-serif`;
+  ctx.fillText(`${min}′`, ck.x + ck.w / 2, ck.y + ck.h / 2);
+
+  // Momentum in track slot
+  const mt = slot("momentumTrack");
   const ch = m.goalChance();
   const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
-  roundRect(ctx, barX, barY, barW, barH, 6);
+  roundRect(ctx, mt.x, mt.y, mt.w, mt.h, 6);
   ctx.fillStyle = "rgba(15,23,42,0.75)";
   ctx.fill();
-  const split = barX + barW * heimPct;
+  const split = mt.x + mt.w * heimPct;
   ctx.fillStyle = "#2563eb";
-  roundRect(ctx, barX, barY, Math.max(4, split - barX), barH, 6);
+  roundRect(ctx, mt.x, mt.y, Math.max(4, split - mt.x), mt.h, 6);
   ctx.fill();
   ctx.fillStyle = "#dc2626";
-  roundRect(ctx, split, barY, Math.max(4, barX + barW - split), barH, 6);
+  roundRect(ctx, split, mt.y, Math.max(4, mt.x + mt.w - split), mt.h, 6);
   ctx.fill();
   ctx.fillStyle = "#f8fafc";
-  ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.55))}px Outfit, Manrope, sans-serif`;
+  ctx.font = `800 ${Math.max(9, Math.floor(mt.h * 0.45))}px Outfit, Manrope, sans-serif`;
   ctx.textAlign = "left";
-  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, barX + 6, barY + barH / 2 + 0.5);
+  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 6, mt.y + mt.h / 2);
   ctx.textAlign = "right";
-  ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, barX + barW - 6, barY + barH / 2 + 0.5);
+  ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, mt.x + mt.w - 6, mt.y + mt.h / 2);
   ctx.textAlign = "center";
   ctx.fillStyle = "#e2e8f0";
-  ctx.font = `700 ${Math.max(8, Math.floor(barH * 0.42))}px Outfit, Manrope, sans-serif`;
-  ctx.fillText("nächstes Tor", w * 0.5, barY + barH / 2 + 0.5);
+  ctx.font = `700 ${Math.max(8, Math.floor(mt.h * 0.38))}px Outfit, Manrope, sans-serif`;
+  ctx.fillText("nächstes Tor", w * 0.5, mt.y + mt.h / 2);
   ctx.restore();
 }
 
@@ -402,15 +429,7 @@ function drawGang(
   const px = left + span * m.linePlayer;
   const ax = left + span * m.lineAi;
 
-  // Soft open concourse — light territory wash only
-  const pEdge = Math.min(px, ax);
-  const aEdge = Math.max(px, ax);
-  ctx.fillStyle = "rgba(59,130,246,0.18)";
-  ctx.fillRect(left, y, Math.max(0, pEdge - left), gh);
-  ctx.fillStyle = "rgba(239,68,68,0.18)";
-  ctx.fillRect(aEdge, y, left + span - aEdge, gh);
-
-  // Front lines (thicker so territory edge is obvious)
+  // Front lines mark territory — no gang color wash
   ctx.save();
   ctx.setLineDash([7, 5]);
   ctx.lineWidth = 3.5;
@@ -610,10 +629,16 @@ function drawBaustelle(
   s: BuildSlot,
 ): void {
   const control = slotControlForPlot(m, s);
-  const src = slotEmptyIconPath(control, undefined, FLOOR_GRID_COUPLE);
+  // Freigegebene Perspektive — kein Ortho-Warp (wirkte quadratisch)
+  const src = slotEmptyIconPath(control, "persp", false);
   let drew = false;
   if (FLOOR_GRID_COUPLE) {
-    const q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+    let q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+    // Far Bau-row: taller for clicks, but ≥0.5% total-width gaps (no overlap)
+    if (s.index < 2) {
+      q = fitFarSlotQuad(q, m, s);
+    }
+    // Warp persp chrome into floor trapezoid (equal ground cells, readable depth)
     drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
     if (sel) {
       ctx.strokeStyle = "#22c55e";
@@ -685,12 +710,18 @@ function drawBuilding(
   // sets foot position + size from the VP facade math — no icon warp/yaw.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
-  let size = Math.min(bw, bh) * 0.98;
+  // Gebäude ×1.2 vs baseline (20% smaller than prior ×1.5)
+  const BUILD_SCALE = 1.2;
+  let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height);
+    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, {
+      widthScale: 1.35,
+      heightScale: 1.92,
+      taper: 0.32,
+    });
   }
 
   const color = teamColor(
@@ -706,16 +737,15 @@ function drawBuilding(
     const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
     const topY = (facade.tl.y + facade.tr.y) / 2;
     const facadeH = Math.max(1, footY - topY);
-    // Facade math drives size (far slots smaller); blit stays upright to viewer.
-    size = Math.max(32, Math.min(baseW * 1.05, facadeH));
+    size = Math.max(40, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
     ctx.fillStyle = "rgba(15,23,42,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
     ctx.fill();
     drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
-      t: m.realElapsed,
-      phase: s.blockId * 1.7 + s.index * 0.9,
-      mode: "idle",
+      t: 0,
+      phase: 0,
+      mode: "planted",
       facing: 1,
       hop: 0,
     });
@@ -726,9 +756,9 @@ function drawBuilding(
     ctx.ellipse(cx, footY + size * 0.04, size * 0.3, size * 0.075, 0, 0, Math.PI * 2);
     ctx.fill();
     drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
-      t: m.realElapsed,
-      phase: s.blockId * 1.7 + s.index * 0.9,
-      mode: "idle",
+      t: 0,
+      phase: 0,
+      mode: "planted",
       facing: 1,
       hop: 0,
     });
@@ -817,39 +847,6 @@ function drawBuilding(
     ctx.fillStyle = "#fde68a";
     ctx.fillRect(x + 6, y + bh - 10, (bw - 12) * (s.beer / s.capacity), 4);
   }
-}
-
-/** Vereinswappen on captured stands / stormed blocks */
-function drawClubCrest(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  s: number,
-  team: "ksc" | "vfb",
-): void {
-  ctx.save();
-  ctx.translate(x, y);
-  // shield
-  ctx.beginPath();
-  ctx.moveTo(0, -s * 0.55);
-  ctx.lineTo(s * 0.45, -s * 0.25);
-  ctx.lineTo(s * 0.4, s * 0.25);
-  ctx.lineTo(0, s * 0.55);
-  ctx.lineTo(-s * 0.4, s * 0.25);
-  ctx.lineTo(-s * 0.45, -s * 0.25);
-  ctx.closePath();
-  ctx.fillStyle = team === "ksc" ? "#1d4ed8" : "#b91c1c";
-  ctx.fill();
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = Math.max(1.2, s * 0.08);
-  ctx.stroke();
-  // monogram
-  ctx.fillStyle = "#fff";
-  ctx.font = `800 ${Math.max(8, Math.floor(s * 0.55))}px Outfit, Manrope, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(team === "ksc" ? "K" : "V", 0, s * 0.02);
-  ctx.restore();
 }
 
 export function slotPos(
@@ -1045,7 +1042,7 @@ function drawMannchen(
     f.kind === "ultras" ? 1.22 : f.kind === "hooligans" ? 1.12 : 1;
   const size = Math.max(26, h * (moving ? 0.085 : 0.068) * sizeMul);
   const color = teamColor(f.team);
-  const lv = unitVisualLevel(m, f.team);
+  const lv = unitVisualLevel(f);
   const src = unitIconPath(f.kind, color, lv);
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
   const facing = fanFacing(f);
@@ -1398,7 +1395,6 @@ function drawSteward(
   const size = Math.max(24, h * 0.07);
   const src = unitIconPath("ordner", teamColor(f.team), unitVisualLevel(f));
   const phase = (typeof f.id === "number" ? f.id : 0) * 0.73;
-  const onGang = f.state === "gang" || f.state === "moving";
   const facing =
     f.state === "moving" || f.path.length > f.pathI
       ? fanFacing(f)
@@ -1501,6 +1497,29 @@ function drawSteward(
   ctx.fillRect(x - bw / 2, y + s * 1.25, bw * Math.max(0, f.hp / f.maxHp), 3);
 }
 
+/** Map float labels → freigestellte Zuwachs/Abnahme-Icons. */
+function floatCurrencyIcon(text: string, good: boolean): string | null {
+  const t = text.toLowerCase();
+  if (t.includes("bier") || t.includes("fass")) {
+    return good ? UI_ICONS.currencyBierPlus : UI_ICONS.currencyBierMinus;
+  }
+  if (t.includes("sicherheit") || t.includes("sec")) {
+    return good ? UI_ICONS.currencySicherheitPlus : UI_ICONS.currencySicherheitMinus;
+  }
+  if (t.includes("fanartikel") || t.includes("merch") || t.includes("shop")) {
+    return good
+      ? UI_ICONS.currencyFanartikelPlus
+      : UI_ICONS.currencyFanartikelMinus;
+  }
+  if (t.includes("€") || t.includes("gold")) {
+    return good ? UI_ICONS.currencyGoldPlus : UI_ICONS.currencyGoldMinus;
+  }
+  if (t.includes("stimmung") || t.includes("mood") || t.includes("momentum")) {
+    return good ? UI_ICONS.moodPlus : UI_ICONS.moodMinus;
+  }
+  return null;
+}
+
 function drawFloats(
   ctx: CanvasRenderingContext2D,
   m: Match,
@@ -1510,17 +1529,33 @@ function drawFloats(
   for (const f of m.floats) {
     const alpha = Math.min(1, f.t / 0.35);
     ctx.globalAlpha = alpha;
-    ctx.font = `700 ${Math.floor(h * 0.026)}px Manrope, sans-serif`;
+    const fontPx = Math.max(12, Math.floor(h * 0.026));
+    ctx.font = `700 ${fontPx}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(0,0,0,0.55)";
     ctx.fillStyle = f.good ? "#6bcb77" : "#f87171";
     const x = f.x * w;
     const y = f.y * h;
-    ctx.strokeText(f.text, x, y);
-    ctx.fillText(f.text, x, y);
+    const icon = floatCurrencyIcon(f.text, f.good);
+    if (icon) {
+      const ih = fontPx * 1.15;
+      const tw = ctx.measureText(f.text).width;
+      const gap = 4;
+      const total = ih + gap + tw;
+      const ix = x - total / 2;
+      drawIcon(ctx, icon, ix, y - ih / 2, ih, ih, 0.02);
+      const tx = ix + ih + gap + tw / 2;
+      ctx.strokeText(f.text, tx, y);
+      ctx.fillText(f.text, tx, y);
+    } else {
+      ctx.strokeText(f.text, x, y);
+      ctx.fillText(f.text, x, y);
+    }
   }
   ctx.globalAlpha = 1;
+  ctx.textBaseline = "alphabetic";
 }
 
 function drawConfetti(
@@ -1570,7 +1605,7 @@ function drawMoodParticles(
       ctx.beginPath();
       ctx.arc(px, py, rad, 0, Math.PI * 2);
       ctx.fill();
-    } else if (p.kind === "flare") {
+    } else if (p.kind === "flare" || p.kind === "rocket") {
       ctx.strokeStyle = p.color;
       ctx.lineWidth = Math.max(2, p.size * h * 2);
       ctx.lineCap = "round";
@@ -1586,6 +1621,25 @@ function drawMoodParticles(
       ctx.beginPath();
       ctx.arc(px, py, 6, 0, Math.PI * 2);
       ctx.fill();
+    } else if (p.kind === "mug") {
+      const ih = Math.max(10, p.size * h * 2.2);
+      drawIcon(ctx, UI_ICONS.currencyBier, px - ih / 2, py - ih / 2, ih, ih, 0.02);
+    } else if (
+      p.kind === "waitAnger" ||
+      p.kind === "waitAngerHot" ||
+      p.kind === "moodPlus" ||
+      p.kind === "moodMinus"
+    ) {
+      const src =
+        p.kind === "waitAnger"
+          ? UI_ICONS.waitAnger
+          : p.kind === "waitAngerHot"
+            ? UI_ICONS.waitAngerHot
+            : p.kind === "moodPlus"
+              ? UI_ICONS.moodPlus
+              : UI_ICONS.moodMinus;
+      const ih = Math.max(14, p.size * h * 2.4);
+      drawIcon(ctx, src, px - ih / 2, py - ih / 2, ih, ih, 0.02);
     } else {
       ctx.fillStyle = p.color;
       ctx.beginPath();
@@ -1597,23 +1651,100 @@ function drawMoodParticles(
   ctx.globalAlpha = 1;
 }
 
+/** Min gap between far-row empty slots as fraction of total canvas width. */
+const FAR_SLOT_GAP_FRAC = 0.005;
+
+/**
+ * Enlarge far-row slots for clicks, but keep ≥0.5% total-width gaps
+ * so neighboring Leerplätze don't overlap.
+ */
+function fitFarSlotQuad(q: ScreenQuad, m: Match, s: BuildSlot): ScreenQuad {
+  let th = 0;
+  let n = 0;
+  for (const slot of m.slots) {
+    if (slot.index < 2) continue;
+    const r = boothRect(slot.blockId, slot.index);
+    th += r.h * m.height;
+    n++;
+  }
+  const targetH = n > 0 ? th / n : (Math.max(q.br.y, q.bl.y) - Math.min(q.tl.y, q.tr.y));
+
+  const cx = (q.bl.x + q.br.x) / 2;
+  const cy = (q.bl.y + q.br.y) / 2;
+  const curW = Math.max(1, Math.max(q.tr.x, q.br.x) - Math.min(q.tl.x, q.bl.x));
+  const curH = Math.max(1, Math.max(q.br.y, q.bl.y) - Math.min(q.tl.y, q.tr.y));
+
+  // Nearest far-row neighbor center → max half-width with gap
+  const gapPx = FAR_SLOT_GAP_FRAC * m.width;
+  let nearest = Infinity;
+  for (const o of m.slots) {
+    if (o.index >= 2) continue;
+    if (o.blockId === s.blockId && o.index === s.index) continue;
+    const oc = boothCenter(o.blockId, o.index);
+    const d = Math.abs(oc.x * m.width - cx);
+    if (d > 1 && d < nearest) nearest = d;
+  }
+  const maxW =
+    nearest < Infinity ? Math.max(curW, nearest - gapPx) : curW * 1.35;
+
+  const scaleY = Math.max(1, Math.min(2.0, targetH / curH));
+  const scaleX = Math.max(1, Math.min(maxW / curW, scaleY * 1.15));
+  const map = (p: { x: number; y: number }) => ({
+    x: cx + (p.x - cx) * scaleX,
+    y: cy + (p.y - cy) * scaleY,
+  });
+  return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
+}
+
+function pointInQuad(q: ScreenQuad, mx: number, my: number): boolean {
+  const pts = [q.tl, q.tr, q.br, q.bl];
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const yi = pts[i]!.y;
+    const yj = pts[j]!.y;
+    const xi = pts[i]!.x;
+    const xj = pts[j]!.x;
+    const intersect =
+      yi > my !== yj > my &&
+      mx < ((xj - xi) * (my - yi)) / (yj - yi + 1e-9) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
 export function hitSlot(
   m: Match,
   mx: number,
   my: number,
 ): { blockId: number; index: number } | null {
   let best: { blockId: number; index: number; d: number } | null = null;
+  /** Minimum touch target — far row was tiny with AABB-only hits */
+  const minPad = Math.max(18, Math.min(m.width, m.height) * 0.028);
   for (const s of m.slots) {
     // AI home plots are not clickable for the player
     if (s.blockId === GAST_BLOCK && s.owner === m.aiTeam && s.building) continue;
     const r = boothRect(s.blockId, s.index);
-    const x0 = r.x * m.width;
-    const y0 = r.y * m.height;
-    const x1 = (r.x + r.w) * m.width;
-    const y1 = (r.y + r.h) * m.height;
-    if (mx >= x0 && mx <= x1 && my >= y0 && my <= y1) {
-      const cx = (x0 + x1) / 2;
-      const cy = (y0 + y1) / 2;
+    let x0 = r.x * m.width;
+    let y0 = r.y * m.height;
+    let x1 = (r.x + r.w) * m.width;
+    let y1 = (r.y + r.h) * m.height;
+    const cx = (x0 + x1) / 2;
+    const cy = (y0 + y1) / 2;
+    if (x1 - x0 < minPad * 2) {
+      x0 = cx - minPad;
+      x1 = cx + minPad;
+    }
+    if (y1 - y0 < minPad * 2) {
+      y0 = cy - minPad;
+      y1 = cy + minPad;
+    }
+    let hit = mx >= x0 && mx <= x1 && my >= y0 && my <= y1;
+    if (FLOOR_GRID_COUPLE) {
+      let q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+      if (s.index < 2) q = fitFarSlotQuad(q, m, s);
+      if (pointInQuad(q, mx, my)) hit = true;
+    }
+    if (hit) {
       const d = Math.hypot(mx - cx, my - cy);
       if (!best || d < best.d) best = { blockId: s.blockId, index: s.index, d };
     }

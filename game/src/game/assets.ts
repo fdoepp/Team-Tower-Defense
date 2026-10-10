@@ -45,14 +45,16 @@ export function unitIconPath(
 }
 
 export type SlotControl = "blue" | "red" | "grey";
-export type SlotEmptyOrientation = "parallel" | "iso";
-/** Preview orientation when FLOOR_GRID_COUPLE is off. */
-export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "parallel";
+export type SlotEmptyOrientation = "parallel" | "iso" | "persp";
+/** Deploy-Default: Stadionboden-Perspektive (nicht Ortho/Quadrat). */
+export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "persp";
 
 export const SCENE_ASSETS = {
   tribuneBlue: uiPath("tribuneBlue", "assets/tribune-block-blue.png"),
   tribuneGrey: uiPath("tribuneGrey", "assets/tribune-block-grey.png"),
   tribuneRed: uiPath("tribuneRed", "assets/tribune-block-red.png"),
+  /** Binding match backdrop — see MATCH_LAYOUT_TOKENS.json / stadium-background rule */
+  stadiumFloodlightDerby: "assets/stadium-floodlight-derby-bg.jpg",
 } as const;
 
 export function tribuneIconPath(blockId: number): string {
@@ -82,10 +84,37 @@ export const UI_ICONS = {
   slotEmptyOrtho: uiPath("slotEmptyOrtho", "icons/ui/slot-empty-ortho.png"),
   slotEmptyOrthoBlue: uiPath("slotEmptyOrthoBlue", "icons/ui/slot-empty-ortho-blue.png"),
   slotEmptyOrthoRed: uiPath("slotEmptyOrthoRed", "icons/ui/slot-empty-ortho-red.png"),
+  slotEmptyPersp: uiPath("slotEmptyPersp", "icons/ui/slot-empty-persp.png"),
+  slotEmptyPerspBlue: uiPath("slotEmptyPerspBlue", "icons/ui/slot-empty-persp-blue.png"),
+  slotEmptyPerspRed: uiPath("slotEmptyPerspRed", "icons/ui/slot-empty-persp-red.png"),
   currencyGold: uiPath("currencyGold", "icons/ui/currency-gold.png"),
+  currencyGoldPlus: uiPath("currencyGoldPlus", "icons/ui-final/currency-gold-plus.png"),
+  currencyGoldMinus: uiPath("currencyGoldMinus", "icons/ui-final/currency-gold-minus.png"),
   currencyBier: uiPath("currencyBier", "icons/ui/currency-bier.png"),
+  currencyBierPlus: uiPath("currencyBierPlus", "icons/ui-final/currency-bier-plus.png"),
+  currencyBierMinus: uiPath("currencyBierMinus", "icons/ui-final/currency-bier-minus.png"),
   currencyFanartikel: uiPath("currencyFanartikel", "icons/ui/currency-fanartikel.png"),
+  currencyFanartikelPlus: uiPath(
+    "currencyFanartikelPlus",
+    "icons/ui-final/currency-fanartikel-plus.png",
+  ),
+  currencyFanartikelMinus: uiPath(
+    "currencyFanartikelMinus",
+    "icons/ui-final/currency-fanartikel-minus.png",
+  ),
   currencySicherheit: uiPath("currencySicherheit", "icons/ui/currency-sicherheit.png"),
+  currencySicherheitPlus: uiPath(
+    "currencySicherheitPlus",
+    "icons/ui-final/currency-sicherheit-plus.png",
+  ),
+  currencySicherheitMinus: uiPath(
+    "currencySicherheitMinus",
+    "icons/ui-final/currency-sicherheit-minus.png",
+  ),
+  moodPlus: uiPath("moodPlus", "icons/ui-final/mood-plus.png"),
+  moodMinus: uiPath("moodMinus", "icons/ui-final/mood-minus.png"),
+  waitAnger: uiPath("waitAnger", "icons/ui-final/wait-anger.png"),
+  waitAngerHot: uiPath("waitAngerHot", "icons/ui-final/wait-anger-hot.png"),
   btnKaufenGrey: uiPath("btnKaufenGrey", "icons/ui/btn-kaufen-grey.png"),
   btnKaufenGreen: uiPath("btnKaufenGreen", "icons/ui/btn-kaufen-green.png"),
   btnSendenGrey: uiPath("btnSendenGrey", "icons/ui/btn-senden-grey.png"),
@@ -98,13 +127,15 @@ export const UI_ICONS = {
   pennantKsc: uiPath("pennantKsc", "icons/ui/pennant-ksc.png"),
   pennantVfb: uiPath("pennantVfb", "icons/ui/pennant-vfb.png"),
   menuRail: uiPath("menuRail", "icons/ui/menu-rail-brown.png"),
+  /** Referenz-Demo — nicht Runtime-Default */
   scoreboard: uiPath("scoreboard", "icons/ui/scoreboard-momentum.png"),
+  /** Leeres Chrome — Runtime-Default (STORAGE_CANON) */
+  scoreboardChrome: uiPath("scoreboardChrome", "icons/ui-final/scoreboard-chrome.png"),
 } as const;
 
 /**
- * Leerer Bauplatz je Kontrolle.
- * When `orthoSource` is true (floor-grid couple), return axis-aligned flagless
- * source PNGs (team color via ground tint) — warped into the cell.
+ * Leerer Bauplatz je Kontrolle — Deploy-Default = Perspektive (nicht Ortho).
+ * `orthoSource` bleibt für Archiv-Warps, Runtime nutzt Persp-PNGs.
  */
 export function slotEmptyIconPath(
   control: SlotControl | TeamId | "neutral" | null | undefined,
@@ -127,9 +158,10 @@ export function slotEmptyIconPath(
     if (c === "red") return UI_ICONS.slotEmptyIsoRed;
     return UI_ICONS.slotEmptyIso;
   }
-  if (c === "blue") return UI_ICONS.slotEmptyParallelBlue;
-  if (c === "red") return UI_ICONS.slotEmptyParallelRed;
-  return UI_ICONS.slotEmptyParallel;
+  // persp (default) + parallel-alias → Stadionboden-Perspektive
+  if (c === "blue") return UI_ICONS.slotEmptyPerspBlue;
+  if (c === "red") return UI_ICONS.slotEmptyPerspRed;
+  return UI_ICONS.slotEmptyPersp;
 }
 
 function loadOne(src: string): Promise<HTMLImageElement> {
@@ -291,6 +323,7 @@ export function drawIcon(
 
 export type ToyAnimMode =
   | "idle"
+  | "planted"
   | "walk"
   | "cheer"
   | "fight"
@@ -354,66 +387,74 @@ export function drawToyIcon(
   const shopBob = Math.sin(t * 6 + ph) * size * 0.035;
 
   const bob =
-    mode === "cheer"
-      ? cheerBob
-      : mode === "fight"
-        ? fightBob
-        : mode === "drink"
-          ? drinkBob
-          : mode === "throw"
-            ? throwBob
-            : mode === "shop"
-              ? shopBob
-              : mode === "walk" || mode === "exit"
-                ? -walkBob
-                : idleBob;
+    mode === "planted"
+      ? 0
+      : mode === "cheer"
+        ? cheerBob
+        : mode === "fight"
+          ? fightBob
+          : mode === "drink"
+            ? drinkBob
+            : mode === "throw"
+              ? throwBob
+              : mode === "shop"
+                ? shopBob
+                : mode === "walk" || mode === "exit"
+                  ? -walkBob
+                  : idleBob;
 
   const squashY =
-    mode === "walk" || mode === "exit"
-      ? 1 - stepAbs * 0.12 * hop
-      : mode === "fight"
-        ? 1 - strike * 0.14 + Math.sin(t * 14 + ph) * 0.03
-        : mode === "cheer"
-          ? 1 + Math.sin(t * 10.5 + ph) * 0.07
-          : mode === "drink"
-            ? 1 - 0.06 * ap
-            : mode === "throw"
-              ? 1 - (ap < 0.45 ? 0.04 : 0.1 * ((ap - 0.45) / 0.55))
-              : mode === "shop"
-                ? 1 + Math.sin(t * 6 + ph) * 0.03
-                : 1 + Math.sin(t * 5.4 + ph) * 0.025;
+    mode === "planted"
+      ? 1
+      : mode === "walk" || mode === "exit"
+        ? 1 - stepAbs * 0.12 * hop
+        : mode === "fight"
+          ? 1 - strike * 0.14 + Math.sin(t * 14 + ph) * 0.03
+          : mode === "cheer"
+            ? 1 + Math.sin(t * 10.5 + ph) * 0.07
+            : mode === "drink"
+              ? 1 - 0.06 * ap
+              : mode === "throw"
+                ? 1 - (ap < 0.45 ? 0.04 : 0.1 * ((ap - 0.45) / 0.55))
+                : mode === "shop"
+                  ? 1 + Math.sin(t * 6 + ph) * 0.03
+                  : 1 + Math.sin(t * 5.4 + ph) * 0.025;
   const squashX = 2 - squashY;
 
   const sway =
-    mode === "cheer"
-      ? Math.sin(t * 6.2 + ph) * 0.16
-      : mode === "fight"
-        ? Math.sin(t * 16 + ph) * 0.2 + strike * 0.28 * facing
-        : mode === "drink"
-          ? -0.12 * ap * facing + Math.sin(t * 5 + ph) * 0.03
-          : mode === "throw"
-            ? (ap < 0.45 ? -0.22 * (ap / 0.45) : 0.32 * ((ap - 0.45) / 0.55)) *
-              facing
-            : mode === "shop"
-              ? Math.sin(t * 4.5 + ph) * 0.08
-              : mode === "exit"
-                ? 0.18 * facing + step * 0.06
-                : mode === "walk"
-                  ? step * 0.12 * hop
-                  : Math.sin(t * 2.3 + ph) * 0.04;
+    mode === "planted"
+      ? 0
+      : mode === "cheer"
+        ? Math.sin(t * 6.2 + ph) * 0.16
+        : mode === "fight"
+          ? Math.sin(t * 16 + ph) * 0.2 + strike * 0.28 * facing
+          : mode === "drink"
+            ? -0.12 * ap * facing + Math.sin(t * 5 + ph) * 0.03
+            : mode === "throw"
+              ? (ap < 0.45 ? -0.22 * (ap / 0.45) : 0.32 * ((ap - 0.45) / 0.55)) *
+                facing
+              : mode === "shop"
+                ? Math.sin(t * 4.5 + ph) * 0.08
+                : mode === "exit"
+                  ? 0.18 * facing + step * 0.06
+                  : mode === "walk"
+                    ? step * 0.12 * hop
+                    : Math.sin(t * 2.3 + ph) * 0.04;
 
   const shear =
-    mode === "walk" || mode === "exit"
-      ? step * 0.2 * hop * facing
-      : mode === "fight"
-        ? strike * 0.32 * facing
-        : mode === "drink"
-          ? 0.08 * ap * facing
-          : mode === "throw"
-            ? (ap < 0.45 ? -0.15 : 0.35) * facing * Math.min(1, ap * 1.4)
-            : mode === "shop"
-              ? Math.sin(t * 5 + ph) * 0.06 * facing
-              : 0;
+    mode === "planted"
+      ? 0
+      : mode === "walk" || mode === "exit"
+        ? step * 0.2 * hop * facing
+        : mode === "fight"
+          ? strike * 0.32 * facing
+          : mode === "drink"
+            ? 0.08 * ap * facing
+            : mode === "throw"
+              ? (ap < 0.45 ? -0.15 : 0.35) * facing * Math.min(1, ap * 1.4)
+              : mode === "shop"
+                ? Math.sin(t * 5 + ph) * 0.06 * facing
+                : 0;
 
   const lean =
     mode === "exit"
