@@ -21,19 +21,23 @@ import {
 import {
   BUILD_COST,
   BUY_COST,
+  FAN_STATS,
   HOOLIGAN_ORDER_BEER,
   MIX_MAX,
   MIX_MIN,
   PROD_BEER,
   PROD_MERCH,
   PROD_SECURITY,
+  PYRO_FIGHT_HP_MUL,
   PYRO_FIGHT_MERCH,
+  RANGED_DAMAGE_SCALE,
   STEWARD_HIRE_GOLD,
   UPGRADE_COST,
   UPGRADE_MAX,
   canVisit,
   productionRate,
   stewardHealPerSec,
+  unitLevelMul,
   visitGoldPayout,
   visitInterval,
   type BuildingKind,
@@ -149,6 +153,44 @@ function railActionBtnHtml(opts: {
   return `<span class="${cls}" aria-hidden="true">${inner}</span>`;
 }
 
+/** Combat stats for Angriff buttons (count scales HP/ATK totals). */
+function attackCombatStats(
+  kind: "ultras" | "hooligans",
+  level: number,
+  count: number,
+): { count: number; hp: number; atk: number; atkIcon: string } {
+  const n = Math.max(0, Math.floor(count));
+  const mul = unitLevelMul(level);
+  const ranged = kind === "ultras";
+  let hpEach = FAN_STATS[kind].maxHp * mul;
+  if (ranged) hpEach *= PYRO_FIGHT_HP_MUL;
+  hpEach = Math.max(40, Math.floor(hpEach));
+  const atkEach = Math.round(
+    FAN_STATS[kind].attack * mul * (ranged ? RANGED_DAMAGE_SCALE : 1) * 10,
+  );
+  return {
+    count: n,
+    hp: hpEach * n,
+    atk: atkEach * n,
+    atkIcon: ranged ? UI_ICONS.iconAngriffPyro : UI_ICONS.iconAngriffFaust,
+  };
+}
+
+function attackStatsHtml(
+  kind: "ultras" | "hooligans",
+  level: number,
+  count: number,
+  idPrefix: string,
+): string {
+  const s = attackCombatStats(kind, level, count);
+  const nLabel = s.count > 0 ? `x${s.count}` : "x0";
+  return `<span class="atk-stats" id="${idPrefix}">` +
+    `<span class="atk-stat atk-count"><span class="yield-amt">${nLabel}</span></span>` +
+    `<span class="atk-stat atk-hp"><span class="atk-lbl">HP</span><span class="yield-amt">${s.hp}</span></span>` +
+    `<span class="atk-stat atk-dmg"><img src="${s.atkIcon}" alt=""><span class="yield-amt">${s.atk}</span></span>` +
+    `</span>`;
+}
+
 /** Angriff: 1× senden | alle senden (Kosten skaliert). */
 function attackSendPairHtml(
   m: Match,
@@ -158,11 +200,13 @@ function attackSendPairHtml(
   const unitCost = kind === "ultras" ? PYRO_FIGHT_MERCH : HOOLIGAN_ORDER_BEER;
   const currencySrc =
     kind === "ultras" ? UI_ICONS.currencyFanartikel : UI_ICONS.currencyBier;
-  const src = unitIconPath(kind, color, m.unitTechLevel(kind));
+  const level = m.unitTechLevel(kind);
+  const src = unitIconPath(kind, color, level);
   const effect = kind === "ultras" ? "Fernkampf" : "Nahkampf";
   const prefix = kind === "ultras" ? "ultra" : "hool";
   const oneId = kind === "ultras" ? "btn-pyro-fight" : "btn-hooligan";
   const allId = kind === "ultras" ? "btn-pyro-fight-all" : "btn-hooligan-all";
+  const ready = m.attackReadyCount(kind);
   return (
     railActionBtnHtml({
       kind: "senden",
@@ -172,7 +216,7 @@ function attackSendPairHtml(
       amount: unitCost,
       currencySrc,
       payId: `atk-pay-${prefix}-one`,
-      yieldHtml: `<span class="yield-chip" id="atk-yield-${prefix}-one"><span class="yield-amt">1×</span></span>`,
+      yieldHtml: attackStatsHtml(kind, level, 1, `atk-stats-${prefix}-one`),
       btnId: oneId,
       btnAttrs: `data-attack-kind="${kind}" data-attack-count="1" title="1× ${effect}"`,
     }) +
@@ -181,10 +225,10 @@ function attackSendPairHtml(
       extraClass: "senden-red",
       unitSrc: src,
       unitId: `atk-ico-${prefix}-all`,
-      amount: unitCost,
+      amount: unitCost * Math.max(0, ready),
       currencySrc,
       payId: `atk-pay-${prefix}-all`,
-      yieldHtml: `<span class="yield-chip" id="atk-yield-${prefix}-all"><span class="yield-amt">alle</span></span>`,
+      yieldHtml: attackStatsHtml(kind, level, ready, `atk-stats-${prefix}-all`),
       btnId: allId,
       btnAttrs: `data-attack-kind="${kind}" data-attack-count="all" title="Alle · ${effect}"`,
     })
@@ -721,15 +765,27 @@ function renderMatchScreen(): void {
         if (ico) ico.src = src;
       }
 
+      const level = m.unitTechLevel(kind);
       const payOne = app.querySelector(`#atk-pay-${prefix}-one .amt`);
       if (payOne) payOne.textContent = String(unitCost);
       const payAll = app.querySelector(`#atk-pay-${prefix}-all .amt`);
       if (payAll) payAll.textContent = String(unitCost * ready);
 
-      const yOne = app.querySelector(`#atk-yield-${prefix}-one .yield-amt`);
-      if (yOne) yOne.textContent = "1×";
-      const yAll = app.querySelector(`#atk-yield-${prefix}-all .yield-amt`);
-      if (yAll) yAll.textContent = ready > 1 ? `${ready}×` : "alle";
+      const fillStats = (suffix: "one" | "all", count: number) => {
+        const root = app.querySelector(`#atk-stats-${prefix}-${suffix}`);
+        if (!root) return;
+        const s = attackCombatStats(kind, level, count);
+        const countEl = root.querySelector(".atk-count .yield-amt");
+        if (countEl) countEl.textContent = `x${s.count}`;
+        const hpEl = root.querySelector(".atk-hp .yield-amt");
+        if (hpEl) hpEl.textContent = String(s.hp);
+        const atkEl = root.querySelector(".atk-dmg .yield-amt");
+        if (atkEl) atkEl.textContent = String(s.atk);
+        const atkImg = root.querySelector<HTMLImageElement>(".atk-dmg img");
+        if (atkImg) atkImg.src = s.atkIcon;
+      };
+      fillStats("one", 1);
+      fillStats("all", ready);
 
       const oneReady =
         kind === "ultras" ? m.pyroFightReady(1) : m.hooliganOrderReady(1);
@@ -745,18 +801,20 @@ function renderMatchScreen(): void {
         btnOne.disabled = !oneReady;
         btnOne.classList.toggle("ready", oneReady);
         btnOne.classList.toggle("cd", !oneReady);
+        const s1 = attackCombatStats(kind, level, 1);
         btnOne.title = oneReady
-          ? `1× ${effect} · ${unitCost}`
+          ? `1× ${effect} · HP ${s1.hp} · Atk ${s1.atk} · ${unitCost}`
           : `1× braucht ${unitCost}`;
       }
       if (btnAll) {
         btnAll.disabled = !allReady;
         btnAll.classList.toggle("ready", allReady);
         btnAll.classList.toggle("cd", !allReady);
-        const allCost = unitCost * Math.max(1, ready);
+        const allCost = unitCost * ready;
+        const sN = attackCombatStats(kind, level, ready);
         btnAll.title = allReady
-          ? `${ready}× ${effect} · ${allCost}`
-          : `${ready || 0}× braucht ${allCost}`;
+          ? `${ready}× ${effect} · HP ${sN.hp} · Atk ${sN.atk} · ${allCost}`
+          : `${ready || 0}× braucht ${allCost || unitCost}`;
       }
     }
   };

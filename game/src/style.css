@@ -724,6 +724,46 @@ select {
 .match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-col .yield-chip.yield-delta .yield-amt {
   color: #bbf7d0;
 }
+
+/* Angriff: Anzahl · HP · Atk(+Faust/Pyro) unter dem Unit-Icon */
+.match-shell.matchday .attack-rail .atk-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12em;
+  width: 100%;
+  min-width: 0;
+  line-height: 1.05;
+}
+.match-shell.matchday .attack-rail .atk-stat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2em;
+  max-width: 100%;
+  color: #fff;
+  font-size: clamp(7px, 9cqw, 11px);
+  font-weight: 800;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+  white-space: nowrap;
+}
+.match-shell.matchday .attack-rail .atk-stat .atk-lbl {
+  font-size: 0.85em;
+  font-weight: 700;
+  opacity: 0.9;
+  letter-spacing: 0.02em;
+}
+.match-shell.matchday .attack-rail .atk-stat img {
+  width: 1.15em;
+  height: 1.15em;
+  object-fit: contain;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+}
+.match-shell.matchday .attack-rail .person-card .ar-cost-btn.rail-action .unit-ico {
+  max-height: 48%;
+}
 /* Kosten deutlich größer, rechts neben dem Icon */
 .match-shell.matchday .person-card .ar-cost-btn.rail-action .pay.pay-lg {
   display: inline-flex;

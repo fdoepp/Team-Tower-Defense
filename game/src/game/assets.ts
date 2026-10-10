@@ -134,6 +134,14 @@ export const UI_ICONS = {
     "iconAngriffBlocksturm",
     "icons/ui-final/icon-angriff-blocksturm.png",
   ),
+  iconAngriffFaust: uiPath(
+    "iconAngriffFaust",
+    "icons/ui-final/icon-angriff-faust.png",
+  ),
+  iconAngriffPyro: uiPath(
+    "iconAngriffPyro",
+    "icons/ui-final/icon-angriff-pyro.png",
+  ),
   btnKaufenGrey: uiPath("btnKaufenGrey", "icons/ui/btn-kaufen-grey.png"),
   btnKaufenGreen: uiPath("btnKaufenGreen", "icons/ui/btn-kaufen-green.png"),
   btnSendenGrey: uiPath("btnSendenGrey", "icons/ui/btn-senden-grey.png"),
