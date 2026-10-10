@@ -25,18 +25,18 @@ export const FLOOR_VP = { x: 0.5027, y: 0.0897 } as const;
 export const FLOOR_SIDE_MARGIN = 0.15;
 
 /**
- * Near-plane column ray anchors (x at yNear), 12 lines → 11 cells.
- * Span = [FLOOR_SIDE_MARGIN .. 1-FLOOR_SIDE_MARGIN] (15% free each side).
- *
- * Six equal-width plot cells (0.065) spaced across the full band; door exits
- * sit in the wider gaps so no Bauplatz sits in a vertical Ausgangskorridor:
- *   Heim [0,2] · door · Neutral [4,6] · door · Gäste [8,10]
+ * Near-plane column ray anchors (x at yNear) — 6 equal cells across
+ * [FLOOR_SIDE_MARGIN .. 1-FLOOR_SIDE_MARGIN] (step = 0.70/6 ≈ 0.1167).
+ * Door exits sit in gaps; boothQuad uses evenSlotQuad + door nudge.
  */
 export const FLOOR_COL_XS_NEAR = [
-  0.15, 0.215, 0.258, 0.323, // Heim pair (equal plots)
-  0.399, 0.464, // after Heim door → Neutral left
-  0.536, 0.601, // after Neutral door → Neutral right
-  0.662, 0.727, 0.785, 0.85, // after Gäste door → Gäste pair
+  0.15,
+  0.2667,
+  0.3833,
+  0.5,
+  0.6167,
+  0.7333,
+  0.85,
 ] as const;
 
 /** Depth of the near column anchors (normalized). */
@@ -116,19 +116,14 @@ export function floorCellQuad(c: number, r: number): QuadNorm {
 }
 
 /**
- * Plot assignment: per block → (c0,r0), (c0+2,r0), (c0,r1), (c0+2,r1).
- * +2 skips the intra-gap / door column between the pair.
- */
-const BLOCK_COL0 = [0, 4, 8] as const;
-
-/**
- * Screen-space door lanes (with pad) — vertical Ausgangskorridore.
- * Far-row plots are laid out in the free bands between these lanes.
+ * Vertical Ausgangskorridore (screen x) — centers match doorPos / block
+ * centers; half-width ≈ blockW·doorFrac/2 + small pad so plots stay out of
+ * the dark exit shadows without eating the whole floor band.
  */
 const DOOR_CLEAR_LANES = [
-  { L: 0.338, R: 0.388 }, // Heim
-  { L: 0.475, R: 0.525 }, // Neutral
-  { L: 0.612, R: 0.662 }, // Gäste
+  { L: 0.345, R: 0.381 }, // Heim  cx≈0.363
+  { L: 0.482, R: 0.518 }, // Neutral cx=0.500
+  { L: 0.620, R: 0.656 }, // Gäste cx≈0.638
 ] as const;
 
 /** Inset a floor quad toward its centroid (visual breathing room). */
@@ -143,62 +138,81 @@ export function insetQuad(q: QuadNorm, inset: number): QuadNorm {
   return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
 }
 
+/** Nudge one center clear of every door lane (even→left lip, odd→right). */
+function clearDoors(
+  cx: number,
+  slot: number,
+  clearHalf: number,
+  xMin: number,
+  xMax: number,
+): number {
+  let x = cx;
+  for (const d of DOOR_CLEAR_LANES) {
+    const left = x - clearHalf;
+    const right = x + clearHalf;
+    if (right <= d.L || left >= d.R) continue;
+    x = slot % 2 === 0 ? d.L - clearHalf : d.R + clearHalf;
+  }
+  return Math.max(xMin + clearHalf, Math.min(xMax - clearHalf, x));
+}
+
 /**
- * Far-row plots in screen space: equal widths, spread across the visible
- * floor band (perspective-compressed), never inside a door exit lane.
- * Slot order 0..5 = Heim0, Heim1, Neu0, Neu1, Gast0, Gast1.
+ * Six equal centers across [xMin,xMax] (full width minus side rails).
+ * Door-overlapping footprints are nudged to the corridor lips (even slots
+ * left, odd right) so a color pair flanks its exit instead of sitting in it.
  */
-function farRowQuad(blockId: number, index: number): QuadNorm {
-  const { yTop, yBot } = floorBauBand(0);
+function evenPlotCenters(
+  xMin: number,
+  xMax: number,
+  plotHalf: number,
+): number[] {
+  const n = 6;
+  const span = xMax - xMin;
+  // Clearance uses bottom taper (~1.05×) so the visible footprint stays out.
+  const clearHalf = plotHalf * 1.06;
+  const centers: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const ideal = xMin + ((i + 0.5) / n) * span;
+    centers.push(clearDoors(ideal, i, clearHalf, xMin, xMax));
+  }
+
+  // Keep monotonic order with a minimum gap, then re-clear doors (gap pass
+  // can push a neighbor back into an Ausgangskorridor).
+  const minGap = clearHalf * 2.05;
+  for (let pass = 0; pass < 3; pass++) {
+    for (let i = 1; i < n; i++) {
+      if (centers[i]! < centers[i - 1]! + minGap) {
+        centers[i] = centers[i - 1]! + minGap;
+      }
+    }
+    for (let i = n - 2; i >= 0; i--) {
+      if (centers[i]! > centers[i + 1]! - minGap) {
+        centers[i] = centers[i + 1]! - minGap;
+      }
+    }
+    for (let i = 0; i < n; i++) {
+      centers[i] = clearDoors(centers[i]!, i, clearHalf, xMin, xMax);
+    }
+  }
+  return centers;
+}
+
+/** Screen-space bau quad for a global slot 0..5 at row r (0=far, 1=near). */
+function evenSlotQuad(slot: number, r: number): QuadNorm {
+  const { yTop, yBot } = floorBauBand(r);
   const yMid = (yTop + yBot) / 2;
   const xMin = xAtDepth(FLOOR_SIDE_MARGIN, yMid);
   const xMax = xAtDepth(1 - FLOOR_SIDE_MARGIN, yMid);
-
-  // Free intervals = floor band minus door lanes
-  type Seg = { L: number; R: number };
-  let free: Seg[] = [{ L: xMin, R: xMax }];
-  for (const d of DOOR_CLEAR_LANES) {
-    const next: Seg[] = [];
-    for (const seg of free) {
-      if (d.R <= seg.L || d.L >= seg.R) {
-        next.push(seg);
-        continue;
-      }
-      if (d.L > seg.L) next.push({ L: seg.L, R: Math.min(seg.R, d.L) });
-      if (d.R < seg.R) next.push({ L: Math.max(seg.L, d.R), R: seg.R });
-    }
-    free = next.filter((s) => s.R - s.L > 0.01);
-  }
-
-  // Perspective compresses the far band — end pockets are tight, so prefer
-  // 1·2·2·1 (one in each door-adjacent pocket, two in the wider mid bands).
-  const pad = 0.006;
-  const inset = free.map((s) => ({
-    L: s.L + pad,
-    R: s.R - pad,
-  })).filter((s) => s.R > s.L);
-  const counts =
-    inset.length === 4 ? [1, 2, 2, 1] : inset.map(() => Math.ceil(6 / inset.length));
-  const total = inset.reduce((s, f) => s + (f.R - f.L), 0);
-  const plotW = Math.min(0.048, (total / 6) * 0.65);
-  const centers: number[] = [];
-  for (let fi = 0; fi < inset.length && centers.length < 6; fi++) {
-    const seg = inset[fi]!;
-    const n = Math.min(counts[fi] ?? 1, 6 - centers.length);
-    for (let k = 0; k < n; k++) {
-      centers.push(seg.L + ((k + 0.5) / n) * (seg.R - seg.L));
-    }
-  }
-  while (centers.length < 6) {
-    centers.push((xMin + xMax) / 2);
-  }
-
-  const slot = Math.max(0, Math.min(2, blockId)) * 2 + (index % 2);
-  const cx = centers[slot]!;
+  const span = Math.max(0.05, xMax - xMin);
+  // ~48% of an equal cell — gaps between plots + room to clear door lips.
+  const maxW = r === 0 ? 0.05 : 0.07;
+  const plotW = Math.min(maxW, (span / 6) * 0.48);
   const half = plotW / 2;
-  // Slight perspective taper top vs bottom of the bau band
-  const topHalf = half * 0.92;
-  const botHalf = half * 1.05;
+  const centers = evenPlotCenters(xMin, xMax, half);
+  const s = Math.max(0, Math.min(5, slot | 0));
+  const cx = centers[s]!;
+  const topHalf = half * (r === 0 ? 0.92 : 0.96);
+  const botHalf = half * (r === 0 ? 1.05 : 1.02);
   return {
     tl: { x: cx - topHalf, y: yTop },
     tr: { x: cx + topHalf, y: yTop },
@@ -211,10 +225,8 @@ export function boothQuad(blockId: number, index: number): QuadNorm {
   const b = Math.max(0, Math.min(2, blockId | 0));
   const i = Math.max(0, Math.min(3, index | 0));
   const r = i < 2 ? 0 : 1;
-  if (r === 0) return farRowQuad(b, i);
-  const c0 = BLOCK_COL0[b]!;
-  const dc = (i % 2) * 2;
-  return floorCellQuad(c0 + dc, r);
+  const slot = b * 2 + (i % 2);
+  return evenSlotQuad(slot, r);
 }
 
 export function quadToRect(q: QuadNorm): {
