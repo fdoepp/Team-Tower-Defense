@@ -34,8 +34,11 @@ export const L = {
    */
   blockTop: 0.3,
   blockBodyH: 0.2,
-  /** 0.5% der Pitch-Breite zwischen Tribünen (sichtbare Kanten). */
-  tribuneGap: 0.005,
+  /**
+   * Ziel ~0.5% sichtbarer Abstand zwischen opaken Plattformkanten.
+   * Etwas unter 0.5%, weil Glow/Schatten der PNG-Kanten optisch addieren.
+   */
+  tribuneGap: 0.002,
   gangPadTop: 0.01,
   /** Gang is the bottom ~third — not half the screen */
   gangH: 0.34,
