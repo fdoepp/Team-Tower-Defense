@@ -5901,6 +5901,186 @@
       "notes": "REFERENZ-DEMO (Broadcast-Tech) — nicht Runtime-Default. Runtime = scoreboardChrome + scoreboard-slots.json + Live-Overlays.",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "reference-demo"
+    },
+    "fxFistBlue": {
+      "id": "fxFistBlue",
+      "file": "fx-fist-blue.png",
+      "source": "docs/icons/ui-final/pending/fx-fist-blue.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-fist-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6655,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          30,
+          38,
+          234,
+          210
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T10:47:15.366296+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxFistRed": {
+      "id": "fxFistRed",
+      "file": "fx-fist-red.png",
+      "source": "docs/icons/ui-final/pending/fx-fist-red.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-fist-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7263,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          28,
+          46,
+          225,
+          201
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T10:47:15.496740+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxFistGrey": {
+      "id": "fxFistGrey",
+      "file": "fx-fist-grey.png",
+      "source": "docs/icons/ui-final/pending/fx-fist-grey.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-fist-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6944,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          21,
+          50,
+          234,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T10:47:15.614791+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxHeal": {
+      "id": "fxHeal",
+      "file": "fx-heal.png",
+      "source": "docs/icons/ui-final/pending/fx-heal.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-heal.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5769,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          26,
+          21,
+          229,
+          231
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T10:47:15.731076+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxPyroShot": {
+      "id": "fxPyroShot",
+      "file": "fx-pyro-shot.png",
+      "source": "docs/icons/ui-final/pending/fx-pyro-shot.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7584,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          19,
+          24,
+          244,
+          229
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T10:47:15.849357+00:00"
+      },
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "runtimeBinding": {

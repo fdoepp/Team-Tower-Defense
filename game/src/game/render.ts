@@ -35,6 +35,7 @@ import {
   drawIconQuad,
   drawToyIcon,
   drawToyProp,
+  fistIconPath,
   getIcon,
   type ToyAnimMode,
   slotEmptyIconPath,
@@ -480,21 +481,28 @@ function drawPyroShots(
   for (const p of m.pyroShots) {
     const x = p.x * w;
     const y = p.y * h;
-    const glow = ctx.createRadialGradient(x, y, 1, x, y, 10);
-    glow.addColorStop(0, "#fff7ed");
-    glow.addColorStop(0.35, "#fb923c");
-    glow.addColorStop(1, "rgba(251,146,60,0)");
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(x, y, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#1c1917";
-    ctx.fillRect(x - 1.5, y - 2, 3, 10);
-    ctx.fillStyle = "rgba(148,163,184,0.45)";
-    ctx.beginPath();
-    ctx.ellipse(x - 4, y - 6, 7, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
+    const life = 1 - p.t / Math.max(0.01, p.life);
+    const ih = Math.max(18, Math.min(w, h) * 0.042) * (0.9 + 0.15 * life);
+    const ang = Math.atan2(p.vy * h, p.vx * w);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(ang + Math.PI / 2);
+    ctx.globalAlpha = 0.75 + 0.25 * life;
+    if (!drawIcon(ctx, UI_ICONS.fxPyroShot, -ih / 2, -ih / 2, ih, ih, 0.02)) {
+      const glow = ctx.createRadialGradient(0, 0, 1, 0, 0, 10);
+      glow.addColorStop(0, "#fff7ed");
+      glow.addColorStop(0.35, "#fb923c");
+      glow.addColorStop(1, "rgba(251,146,60,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#1c1917";
+      ctx.fillRect(-1.5, -2, 3, 10);
+    }
+    ctx.restore();
   }
+  ctx.globalAlpha = 1;
 }
 
 function drawSlots(
@@ -1084,6 +1092,7 @@ function drawMannchen(
       facing,
       m.realElapsed + phase,
       anim.propI,
+      teamColor(f.team),
     );
   }
   if (!drew) {
@@ -1416,6 +1425,19 @@ function drawSteward(
       actionProg: anim.actionProg,
     })
   ) {
+    if (anim.prop) {
+      drawToyProp(
+        ctx,
+        anim.prop,
+        x,
+        y,
+        size,
+        facing,
+        m.realElapsed + phase,
+        anim.propI,
+        teamColor(f.team),
+      );
+    }
     const bw = size * 0.7;
     ctx.fillStyle = "rgba(0,0,0,0.5)";
     ctx.fillRect(x - bw / 2, y + size * 0.12, bw, 3);
@@ -1654,7 +1676,11 @@ function drawMoodParticles(
       p.kind === "waitAnger" ||
       p.kind === "waitAngerHot" ||
       p.kind === "moodPlus" ||
-      p.kind === "moodMinus"
+      p.kind === "moodMinus" ||
+      p.kind === "fistBlue" ||
+      p.kind === "fistRed" ||
+      p.kind === "fistGrey" ||
+      p.kind === "heal"
     ) {
       const src =
         p.kind === "waitAnger"
@@ -1663,9 +1689,25 @@ function drawMoodParticles(
             ? UI_ICONS.waitAngerHot
             : p.kind === "moodPlus"
               ? UI_ICONS.moodPlus
-              : UI_ICONS.moodMinus;
-      const ih = Math.max(14, p.size * h * 2.4);
-      drawIcon(ctx, src, px - ih / 2, py - ih / 2, ih, ih, 0.02);
+              : p.kind === "moodMinus"
+                ? UI_ICONS.moodMinus
+                : p.kind === "heal"
+                  ? UI_ICONS.fxHeal
+                  : p.kind === "fistBlue"
+                    ? fistIconPath("blue")
+                    : p.kind === "fistRed"
+                      ? fistIconPath("red")
+                      : fistIconPath("grey");
+      const scale =
+        p.kind === "heal" || p.kind.startsWith("fist")
+          ? 2.8
+          : 2.4;
+      const ih = Math.max(14, p.size * h * scale);
+      const pop =
+        p.kind.startsWith("fist")
+          ? 0.85 + 0.35 * Math.sin(Math.min(1, p.t / 0.12) * Math.PI)
+          : 1;
+      drawIcon(ctx, src, px - (ih * pop) / 2, py - (ih * pop) / 2, ih * pop, ih * pop, 0.02);
     } else {
       ctx.fillStyle = p.color;
       ctx.beginPath();

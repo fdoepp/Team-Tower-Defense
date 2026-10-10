@@ -115,6 +115,12 @@ export const UI_ICONS = {
   moodMinus: uiPath("moodMinus", "icons/ui-final/mood-minus.png"),
   waitAnger: uiPath("waitAnger", "icons/ui-final/wait-anger.png"),
   waitAngerHot: uiPath("waitAngerHot", "icons/ui-final/wait-anger-hot.png"),
+  /** Live-FX pending Freigabe — Nahkampf Faust / Heilung / Pyro-Projektil */
+  fxFistBlue: uiPath("fxFistBlue", "icons/ui-final/fx-fist-blue.png"),
+  fxFistRed: uiPath("fxFistRed", "icons/ui-final/fx-fist-red.png"),
+  fxFistGrey: uiPath("fxFistGrey", "icons/ui-final/fx-fist-grey.png"),
+  fxHeal: uiPath("fxHeal", "icons/ui-final/fx-heal.png"),
+  fxPyroShot: uiPath("fxPyroShot", "icons/ui-final/fx-pyro-shot.png"),
   btnKaufenGrey: uiPath("btnKaufenGrey", "icons/ui/btn-kaufen-grey.png"),
   btnKaufenGreen: uiPath("btnKaufenGreen", "icons/ui/btn-kaufen-green.png"),
   btnSendenGrey: uiPath("btnSendenGrey", "icons/ui/btn-senden-grey.png"),
@@ -517,6 +523,12 @@ export function drawToyIcon(
 
 export type ToyPropKind = "beer" | "pyro" | "fist" | "scarf" | "bag";
 
+export function fistIconPath(color: TeamColor): string {
+  if (color === "blue") return UI_ICONS.fxFistBlue;
+  if (color === "red") return UI_ICONS.fxFistRed;
+  return UI_ICONS.fxFistGrey;
+}
+
 /** Small action prop overlay next to a toy unit (drink / throw / fight). */
 export function drawToyProp(
   ctx: CanvasRenderingContext2D,
@@ -527,6 +539,7 @@ export function drawToyProp(
   facing: number,
   t: number,
   intensity = 1,
+  color: TeamColor = "grey",
 ): void {
   const i = Math.max(0, Math.min(1, intensity));
   if (i < 0.05) return;
@@ -554,33 +567,51 @@ export function drawToyProp(
   } else if (kind === "pyro") {
     const px = facing * size * (0.45 + 0.08 * i);
     const py = -size * (0.55 - 0.12 * i);
-    const g = ctx.createRadialGradient(px, py, 1, px, py, size * 0.16);
-    g.addColorStop(0, "#fff7ed");
-    g.addColorStop(0.45, "#fb923c");
-    g.addColorStop(1, "rgba(239,68,68,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(px, py, size * 0.16, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "#f97316";
-    ctx.lineWidth = Math.max(2, size * 0.04);
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(facing * size * 0.22, -size * 0.2);
-    ctx.lineTo(px, py);
-    ctx.stroke();
+    const ih = size * (0.34 + 0.08 * i);
+    if (
+      !drawIcon(
+        ctx,
+        UI_ICONS.fxPyroShot,
+        px - ih / 2,
+        py - ih / 2,
+        ih,
+        ih,
+        0.02,
+      )
+    ) {
+      const g = ctx.createRadialGradient(px, py, 1, px, py, size * 0.16);
+      g.addColorStop(0, "#fff7ed");
+      g.addColorStop(0.45, "#fb923c");
+      g.addColorStop(1, "rgba(239,68,68,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(px, py, size * 0.16, 0, Math.PI * 2);
+      ctx.fill();
+    }
   } else if (kind === "fist") {
-    const fx = facing * size * (0.5 + 0.2 * i);
-    const fy = -size * 0.25;
-    ctx.fillStyle = "#fde68a";
-    ctx.beginPath();
-    ctx.arc(fx, fy, size * (0.08 + 0.04 * i), 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = `rgba(251,191,36,${0.35 + 0.4 * i})`;
-    ctx.lineWidth = Math.max(2, size * 0.05);
-    ctx.beginPath();
-    ctx.arc(fx, fy, size * (0.14 + 0.06 * i), 0, Math.PI * 2);
-    ctx.stroke();
+    // Replace yellow hit-circle with team fist — similar footprint, short punch pop.
+    const fx = facing * size * (0.42 + 0.18 * i);
+    const fy = -size * (0.22 + 0.06 * i);
+    const pulse = 0.88 + 0.12 * Math.sin(t * 22);
+    const ih = size * (0.3 + 0.14 * i) * pulse;
+    ctx.globalAlpha = 0.5 + 0.5 * i;
+    if (
+      !drawIcon(
+        ctx,
+        fistIconPath(color),
+        fx - ih / 2,
+        fy - ih / 2,
+        ih,
+        ih,
+        0.02,
+      )
+    ) {
+      ctx.fillStyle =
+        color === "blue" ? "#60a5fa" : color === "red" ? "#f87171" : "#a8a29e";
+      ctx.beginPath();
+      ctx.arc(fx, fy, size * (0.08 + 0.04 * i), 0, Math.PI * 2);
+      ctx.fill();
+    }
   } else if (kind === "scarf") {
     const sx = facing * size * 0.05;
     ctx.strokeStyle = "#3b82f6";

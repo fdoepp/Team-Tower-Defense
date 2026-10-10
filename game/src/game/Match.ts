@@ -198,7 +198,11 @@ export type MoodParticle = {
     | "moodPlus"
     | "moodMinus"
     | "flame"
-    | "rubble";
+    | "rubble"
+    | "fistBlue"
+    | "fistRed"
+    | "fistGrey"
+    | "heal";
   x: number;
   y: number;
   vx: number;
@@ -1208,6 +1212,7 @@ export class Match {
       if (a.rangedPyro) {
         this.spawnPyroShot(a, pos.x, pos.y, dmg, null, key);
       } else {
+        this.spawnMeleeFistFx(a, (a.x + pos.x) * 0.5, (a.y + pos.y) * 0.5);
         this.damageOrdnerPost(post, dmg, a);
       }
     }
@@ -2023,7 +2028,25 @@ export class Match {
         Math.abs(f.gangX - postGx) <= stewardPostRadius(postLv) + 0.01 &&
         f.hp < f.maxHp
       ) {
+        const before = f.hp;
         f.hp = Math.min(f.maxHp, f.hp + stewardHealPerSec(postLv) * dt);
+        if (f.hp > before) {
+          f._healFxCd = (f._healFxCd ?? 0) - dt;
+          if ((f._healFxCd ?? 0) <= 0) {
+            f._healFxCd = 0.7;
+            this.moodFx.push({
+              kind: "heal",
+              x: f.x + (Math.random() - 0.5) * 0.01,
+              y: f.y - 0.035,
+              vx: (Math.random() - 0.5) * 0.015,
+              vy: -0.05 - Math.random() * 0.015,
+              color: "#4ade80",
+              t: 0,
+              life: 0.9,
+              size: 0.02,
+            });
+          }
+        }
       }
 
       f.state = "gang";
@@ -3456,7 +3479,36 @@ export class Match {
     }
   }
 
+  /** Short team-colored fist pop at the impact point (replaces yellow hit circle). */
+  private spawnMeleeFistFx(attacker: FanUnit, x: number, y: number): void {
+    const kind =
+      attacker.team === "ksc"
+        ? "fistBlue"
+        : attacker.team === "vfb"
+          ? "fistRed"
+          : "fistGrey";
+    this.moodFx.push({
+      kind,
+      x: x + (Math.random() - 0.5) * 0.01,
+      y: y - 0.02,
+      vx: (Math.random() - 0.5) * 0.03,
+      vy: -0.04 - Math.random() * 0.02,
+      color:
+        kind === "fistBlue" ? "#60a5fa" : kind === "fistRed" ? "#f87171" : "#a8a29e",
+      t: 0,
+      life: 0.42,
+      size: 0.018,
+    });
+  }
+
   private applyHit(attacker: FanUnit, target: FanUnit): void {
+    if (!attacker.rangedPyro) {
+      this.spawnMeleeFistFx(
+        attacker,
+        (attacker.x + target.x) * 0.5,
+        (attacker.y + target.y) * 0.5,
+      );
+    }
     let atkMul = 1;
     let defMul = 1;
     // Ordner anti-rush: stewards hit Ultras harder / take less from them

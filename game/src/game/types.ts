@@ -79,6 +79,8 @@ export type FanUnit = {
   _standArriveAt?: number;
   /** Seconds until next wait-anger smiley */
   _angerCd?: number;
+  /** Throttle Ordner-heal float FX */
+  _healFxCd?: number;
 };
 
 export type BuildSlot = {
