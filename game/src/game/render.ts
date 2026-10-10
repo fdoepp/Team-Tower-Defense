@@ -35,7 +35,9 @@ import {
   drawToyProp,
   getIcon,
   type ToyAnimMode,
+  baustelleSchildIconPath,
   slotEmptyIconPath,
+  standarteSizePx,
   standIconPath,
   teamColor,
   tribuneIconPath,
@@ -536,7 +538,7 @@ function drawPennantUpright(
   drawIcon(ctx, src, footX - size * 0.5, footY - size * 0.92, size, size, 0.02);
 }
 
-/** Baustelle — inset floor chrome, depth-fade far row, + only when selected. */
+/** Baustelle — floor chrome + team jackhammer sign at plot center. */
 function drawBaustelle(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -551,12 +553,16 @@ function drawBaustelle(
   const src = slotEmptyIconPath(control, "persp", false);
   const farRow = s.index < 2;
   let drew = false;
+  let footX = x + bw / 2;
+  let footY = y + bh / 2;
   ctx.save();
   // Far row quieter so the near band and gang stay readable.
   ctx.globalAlpha = sel ? 1 : farRow ? 0.52 : 0.78;
   if (FLOOR_GRID_COUPLE) {
     const cell = boothQuad(s.blockId, s.index);
     const q = scaleQuad(insetQuad(cell, PLOT_DRAW_INSET), m.width, m.height);
+    footX = (q.tl.x + q.tr.x + q.br.x + q.bl.x) / 4;
+    footY = (q.tl.y + q.tr.y + q.br.y + q.bl.y) / 4;
     drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
     if (sel) {
       ctx.globalAlpha = 1;
@@ -571,16 +577,6 @@ function drawBaustelle(
       ctx.stroke();
       ctx.strokeStyle = "rgba(34,197,94,0.35)";
       ctx.lineWidth = 6;
-      ctx.stroke();
-    } else if (drew) {
-      // Soft footprint ring instead of loud always-on +
-      const cx = (q.tl.x + q.tr.x + q.br.x + q.bl.x) / 4;
-      const cy = (q.tl.y + q.tr.y + q.br.y + q.bl.y) / 4;
-      ctx.globalAlpha = farRow ? 0.22 : 0.35;
-      ctx.strokeStyle = "rgba(248,250,252,0.85)";
-      ctx.lineWidth = Math.max(1.2, Math.min(m.width, m.height) * 0.0022);
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, Math.max(6, bw * 0.12), Math.max(4, bh * 0.1), 0, 0, Math.PI * 2);
       ctx.stroke();
     }
   } else {
@@ -600,27 +596,25 @@ function drawBaustelle(
     }
   }
   ctx.restore();
+
+  // Jackhammer sign: Standarte size at gang mid × 75% (far) / 125% (near).
+  const standarte = standarteSizePx(m.width, m.height);
+  const signSize = standarte * (farRow ? 0.75 : 1.25);
+  const signSrc = baustelleSchildIconPath(control);
+  drawPennantUpright(ctx, signSrc, footX, footY, signSize);
+
   if (!drew) {
     const r = Math.min(10, Math.min(bw, bh) * 0.12);
     ctx.fillStyle = "rgba(75,85,99,0.55)";
     roundRect(ctx, x + 4, y + 4, bw - 8, bh - 8, r);
     ctx.fill();
-    if (sel) {
-      ctx.fillStyle = "rgba(255,255,255,0.9)";
-      ctx.font = `800 ${Math.max(14, Math.floor(bh * 0.22))}px Outfit, Manrope, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("+", x + bw / 2, y + bh / 2);
-      ctx.textBaseline = "alphabetic";
-    }
-  } else if (sel) {
-    const cx = x + bw / 2;
-    const cy = y + bh / 2;
+  }
+  if (sel) {
     ctx.fillStyle = "rgba(255,255,255,0.92)";
     ctx.font = `800 ${Math.max(14, Math.floor(bh * 0.2))}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("+", cx, cy);
+    ctx.fillText("+", footX, footY - signSize * 0.55);
     ctx.textBaseline = "alphabetic";
   }
 }

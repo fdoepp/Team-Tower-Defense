@@ -154,6 +154,18 @@ export const UI_ICONS = {
   btnUpgradeGrey: uiPath("btnUpgradeGrey", "icons/ui/btn-upgrade-grey.png"),
   pennantKsc: uiPath("pennantKsc", "icons/ui/pennant-ksc.png"),
   pennantVfb: uiPath("pennantVfb", "icons/ui/pennant-vfb.png"),
+  baustelleSchildKsc: uiPath(
+    "baustelleSchildKsc",
+    "icons/ui-final/baustelle-schild-ksc.png",
+  ),
+  baustelleSchildVfb: uiPath(
+    "baustelleSchildVfb",
+    "icons/ui-final/baustelle-schild-vfb.png",
+  ),
+  baustelleSchildNeutral: uiPath(
+    "baustelleSchildNeutral",
+    "icons/ui-final/baustelle-schild-neutral.png",
+  ),
   menuRail: uiPath("menuRail", "icons/ui/menu-rail-brown.png"),
   /** Referenz-Demo — nicht Runtime-Default */
   scoreboard: uiPath("scoreboard", "icons/ui/scoreboard-momentum.png"),
@@ -190,6 +202,26 @@ export function slotEmptyIconPath(
   if (c === "blue") return UI_ICONS.slotEmptyPerspBlue;
   if (c === "red") return UI_ICONS.slotEmptyPerspRed;
   return UI_ICONS.slotEmptyPersp;
+}
+
+/** Empty-plot jackhammer sign — team color of plot control. */
+export function baustelleSchildIconPath(
+  control: SlotControl | TeamId | "neutral" | null | undefined,
+): string {
+  const c: SlotControl =
+    control === "ksc" || control === "blue"
+      ? "blue"
+      : control === "vfb" || control === "red"
+        ? "red"
+        : "grey";
+  if (c === "blue") return UI_ICONS.baustelleSchildKsc;
+  if (c === "red") return UI_ICONS.baustelleSchildVfb;
+  return UI_ICONS.baustelleSchildNeutral;
+}
+
+/** Standarte reference size (gang mid) — baustelle signs scale from this. */
+export function standarteSizePx(canvasW: number, canvasH: number): number {
+  return Math.min(canvasW * 0.075, canvasH * 0.1);
 }
 
 function loadOne(src: string): Promise<HTMLImageElement> {

@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=21** · **released=143**
+**pending=18** · **released=149**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -36,6 +36,9 @@ Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../
 
 ## Released (diese Runde)
 
+- **166** `baustelleSchildKsc` — `baustelle-schild-ksc.png` — **Presslufthammer-Schild Heim (blau) freigegeben**
+- **167** `baustelleSchildVfb` — `baustelle-schild-vfb.png` — **Presslufthammer-Schild Gäste (rot) freigegeben**
+- **168** `baustelleSchildNeutral` — `baustelle-schild-neutral.png` — **Presslufthammer-Schild Neutral (grau) freigegeben**
 - **163** `btnIconUpgradePerson` — `btn-icon-upgrade-person.png` — **Quadrat blau · Ultra + Upgrade-Pfeil freigegeben**
 - **164** `btnIconUpgradeBuilding` — `btn-icon-upgrade-building.png` — **Quadrat Bau-Amber · Bier + Upgrade-Pfeil freigegeben**
 - **165** `iconUpgradeArrow` — `icon-upgrade-arrow.png` — **Upgrade-Pfeil freigestellt freigegeben**

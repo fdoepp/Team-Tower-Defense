@@ -5,6 +5,9 @@
  */
 
 export type UiFinalId =
+  | "baustelleSchildKsc"
+  | "baustelleSchildNeutral"
+  | "baustelleSchildVfb"
   | "btnBauenAmber"
   | "btnBauenGrey"
   | "btnIconAngriffRed"
@@ -164,6 +167,30 @@ export type UiFinalEntry = {
 
 /** Runtime paths under game/public — only user-approved releases. */
 export const UI_FINAL_PATHS = {
+  "baustelleSchildKsc": {
+    file: "baustelle-schild-ksc.png",
+    path: "icons/ui-final/baustelle-schild-ksc.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "baustelleSchildNeutral": {
+    file: "baustelle-schild-neutral.png",
+    path: "icons/ui-final/baustelle-schild-neutral.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "baustelleSchildVfb": {
+    file: "baustelle-schild-vfb.png",
+    path: "icons/ui-final/baustelle-schild-vfb.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
   "btnBauenAmber": {
     file: "btn-bauen-amber.png",
     path: "icons/ui-final/btn-bauen-amber.png",
