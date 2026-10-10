@@ -389,8 +389,11 @@ export function gangLanePosForUnit(
   };
 }
 
-/** Wait / queue radius around Bier- & Fanshop-Ständen (normalized). */
-export const STAND_WAIT_RADIUS = 0.032;
+/**
+ * Wait / queue radius around Bier- & Fanshop-Ständen (normalized 0–1 field).
+ * ~half a booth width; kept larger than a single sprite so queues don't pixel-stack.
+ */
+export const STAND_WAIT_RADIUS = 0.05;
 
 export function slotIndicesForBlock(_blockId: number): readonly number[] {
   return BUILDABLE_INDICES;

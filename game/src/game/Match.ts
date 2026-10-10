@@ -2025,45 +2025,27 @@ export class Match {
     return best;
   }
 
-  private nearestBierStand(
-    team: TeamId | "neutral",
+  /**
+   * Pick among ALL own-team stands of a type (not just nearest).
+   * Prefers shorter queues, then closer block — spreads traffic across every
+   * Bier/Fanshop the team owns.
+   */
+  private pickOwnVisitStand(
+    team: TeamId,
     fromBlock: number,
+    building: "bier" | "fanshop",
   ): BuildSlot | null {
     let best: BuildSlot | null = null;
-    let bestD = 99;
+    let bestScore = Infinity;
     for (const s of this.slots) {
-      if (s.building !== "bier" || s.beer < 1) continue;
-      if (s.owner !== team && !(s.owner === "neutral" && team === "neutral")) {
-        if (s.owner !== team) continue;
-      }
-      const d = Math.abs(s.blockId - fromBlock);
-      if (d < bestD) {
-        bestD = d;
-        best = s;
-      }
-    }
-    // also allow own-team stands only
-    if (!best) {
-      for (const s of this.slots) {
-        if (s.building !== "bier" || s.beer < 1 || s.owner !== team) continue;
-        const d = Math.abs(s.blockId - fromBlock);
-        if (d < bestD) {
-          bestD = d;
-          best = s;
-        }
-      }
-    }
-    return best;
-  }
-
-  private nearestFanshop(team: TeamId, fromBlock: number): BuildSlot | null {
-    let best: BuildSlot | null = null;
-    let bestD = 99;
-    for (const s of this.slots) {
-      if (s.building !== "fanshop" || s.owner !== team || s.greyNeutral) continue;
-      const d = Math.abs(s.blockId - fromBlock);
-      if (d < bestD) {
-        bestD = d;
+      if (s.building !== building || s.owner !== team || s.greyNeutral) continue;
+      if (building === "bier" && s.beer < 1) continue;
+      const queue = this.queueDepthAt(s);
+      const dist = Math.abs(s.blockId - fromBlock);
+      // Queue dominates so a far empty stand beats a packed neighbour.
+      const score = queue * 10 + dist;
+      if (score < bestScore) {
+        bestScore = score;
         best = s;
       }
     }
@@ -2243,8 +2225,12 @@ export class Match {
     const shopReady = wantsShop && this.realElapsed >= (f.shopUntil || 0);
     if (!beerReady && !shopReady) return;
 
-    const bier = beerReady ? this.nearestBierStand(team, f.blockId) : null;
-    const shop = shopReady ? this.nearestFanshop(team, f.blockId) : null;
+    const bier = beerReady
+      ? this.pickOwnVisitStand(team, f.blockId, "bier")
+      : null;
+    const shop = shopReady
+      ? this.pickOwnVisitStand(team, f.blockId, "fanshop")
+      : null;
 
     let pick: "beer" | "shop" | null = null;
     if (bier && shop) {
