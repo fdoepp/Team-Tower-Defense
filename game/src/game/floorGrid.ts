@@ -27,7 +27,7 @@ export const FLOOR_SIDE_MARGIN = 0.15;
 /**
  * Near-plane column ray anchors (x at yNear) — 6 equal cells across
  * [FLOOR_SIDE_MARGIN .. 1-FLOOR_SIDE_MARGIN] (step = 0.70/6 ≈ 0.1167).
- * Door exits sit in gaps; boothQuad uses evenSlotQuad + door nudge.
+ * Kept for floorCellQuad helpers; boothQuad places via EXIT_BANDS pockets.
  */
 export const FLOOR_COL_XS_NEAR = [
   0.15,
