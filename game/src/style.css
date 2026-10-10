@@ -224,12 +224,12 @@ select {
   height: 100%;
 }
 
-/* Matchday Comic — Rahmenlogik MATCH_LAYOUT_TOKENS.json
-   left 21% · pitch 64% · right 15% (build-open). */
+/* Matchday: Pitch + rechte Toolbar; linke Rail nur bei Klick. */
 .match-shell.matchday {
-  /* Personen- + Gebäude-Rail immer sichtbar (Spiegel) */
   --rail-left-w: 25.41%;
-  --rail-right-w: 25.41%;
+  /* Fixed-ish tool column — never squash below touch size */
+  --rail-tool-w: clamp(84px, 11vw, 110px);
+  --rail-tool-btn: clamp(68px, 9vw, 92px);
   --rail-w: var(--rail-left-w);
   --rail-btn-h: clamp(42px, 10vh, 54px);
   --rail-icon: clamp(40px, 7vh, 52px);
@@ -240,8 +240,9 @@ select {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
+  grid-template-columns: minmax(0, 1fr) var(--rail-tool-w);
   grid-template-rows: 1fr;
+  grid-template-areas: "pitch tools";
   gap: 0;
   position: relative;
   background: #1a1410;
@@ -249,8 +250,92 @@ select {
   overflow: hidden;
 }
 
+.match-shell.matchday.rail-open,
 .match-shell.matchday.build-open {
-  grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
+  grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-tool-w);
+  grid-template-areas: "rail pitch tools";
+}
+
+.match-shell.matchday .rail-slot {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.match-shell.matchday .rail-slot[hidden] {
+  display: none !important;
+}
+
+.match-shell.matchday .rail-slot > .side-rail {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.match-shell.matchday .rail-slot > .side-rail[hidden] {
+  display: none !important;
+}
+
+/* Rechte Toolbar: Gebäude · Personen · Angriff */
+.match-shell.matchday .rail-toolbar {
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 2.5vh, 18px);
+  padding: 10px 6px;
+  padding-right: max(6px, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+  width: 100%;
+  min-width: var(--rail-tool-w);
+  min-height: 0;
+  height: 100%;
+  background:
+    linear-gradient(180deg, rgba(255, 236, 200, 0.18), rgba(80, 45, 18, 0.22)),
+    url("/icons/ui/menu-rail-brown-tile.png") center / cover;
+  border-left: 3px solid #5c3418;
+  box-shadow: inset 2px 0 0 rgba(255, 230, 180, 0.25);
+}
+
+.match-shell.matchday .rail-tool-btn {
+  display: grid;
+  place-items: center;
+  width: var(--rail-tool-btn);
+  height: var(--rail-tool-btn);
+  min-width: 64px;
+  min-height: 64px;
+  flex: 0 0 auto;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 18%;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.28));
+  transition: transform 0.08s ease, filter 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.match-shell.matchday .rail-tool-btn img {
+  display: block;
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.match-shell.matchday .rail-tool-btn:active {
+  transform: translateY(2px) scale(0.96);
+}
+
+.match-shell.matchday .rail-tool-btn.active {
+  outline: 3px solid #fbbf24;
+  outline-offset: -2px;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.28));
 }
 
 .match-shell.matchday .side-rail {
@@ -301,15 +386,10 @@ select {
   border-right-width: 4px;
 }
 
-.match-shell.matchday .right-rail,
-.match-shell.matchday .build-rail {
-  padding-right: var(--rail-inset);
-  margin-right: env(safe-area-inset-right, 0px);
-  border-left-width: 4px;
-}
-
-.match-shell.matchday .build-rail {
-  /* Gleiche relativen Tokens wie Personen-Rail */
+.match-shell.matchday .build-rail,
+.match-shell.matchday .attack-rail,
+.match-shell.matchday .person-rail {
+  /* Gleiche relativen Tokens — immer links im rail-slot */
   container-type: size;
   --person-gap: 0.75cqh;
   --person-card-pad-y: 1.05cqh;
@@ -327,10 +407,12 @@ select {
   min-width: 0;
   gap: var(--person-gap);
   padding: var(--rail-inset);
-  padding-right: var(--rail-inset);
+  padding-left: var(--rail-inset);
+  margin-left: env(safe-area-inset-left, 0px);
+  border-right-width: 4px;
 }
 
-/* Gebäude-Banner — Bau-Amber (#e08f22) statt Personen-Blau */
+/* Gebäude-Banner — Bau-Amber (#e08f22) */
 .match-shell.matchday .build-rail .rail-banner {
   padding: var(--person-banner-pad-y) var(--person-banner-pad-x);
   border-radius: calc(var(--person-card-radius) * 0.7);
@@ -347,7 +429,26 @@ select {
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
 }
 
-.match-shell.matchday .build-rail .rail-close {
+/* Angriff-Banner — Rot wie btnIconAngriffRed */
+.match-shell.matchday .attack-rail .rail-banner {
+  padding: var(--person-banner-pad-y) var(--person-banner-pad-x);
+  border-radius: calc(var(--person-card-radius) * 0.7);
+  background: linear-gradient(180deg, #e04545, #c42a2a 55%, #9f1f1f);
+  border: 2px solid #3d2414;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+  color: #fff;
+  font-size: var(--person-banner-size);
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+.match-shell.matchday .build-rail .rail-close,
+.match-shell.matchday .attack-rail .rail-close,
+.match-shell.matchday .person-rail .rail-close {
   flex: 0 0 auto;
   width: 100%;
   margin-top: var(--person-close-gap, 0.55cqh);
@@ -356,9 +457,15 @@ select {
   border-radius: calc(var(--person-card-radius, 3.6cqw) * 0.9);
 }
 
-.match-shell.matchday .build-rail .building-cards {
+.match-shell.matchday .build-rail .building-cards,
+.match-shell.matchday .attack-rail .attack-cards {
   flex: 1 1 0;
   min-height: 0;
+}
+
+.match-shell.matchday .attack-rail .attack-card {
+  flex: 0 1 auto;
+  max-height: 42%;
 }
 
 .match-shell.matchday .rail-close {
@@ -1139,8 +1246,14 @@ select {
   height: 100%;
   min-width: 0;
   min-height: 0;
-  grid-column: 2;
+  grid-area: pitch;
   background: #1e293b;
+}
+.match-shell.matchday .rail-slot {
+  grid-area: rail;
+}
+.match-shell.matchday .rail-toolbar {
+  grid-area: tools;
 }
 
 .match-shell.matchday #game-wrap.placing {
@@ -1227,10 +1340,15 @@ select {
   .match-shell.matchday {
     --rail-btn-h: clamp(40px, 11vh, 52px);
     --rail-icon: clamp(36px, 8vh, 48px);
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
+    --rail-tool-w: clamp(76px, 16vw, 96px);
+    --rail-tool-btn: clamp(64px, 14vw, 80px);
+    grid-template-columns: minmax(0, 1fr) var(--rail-tool-w);
+    grid-template-areas: "pitch tools";
   }
+  .match-shell.matchday.rail-open,
   .match-shell.matchday.build-open {
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-tool-w);
+    grid-template-areas: "rail pitch tools";
   }
 }
 
@@ -2128,11 +2246,14 @@ select {
   }
   .match-shell.matchday {
     display: grid !important;
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
+    grid-template-columns: minmax(0, 1fr) var(--rail-tool-w);
+    grid-template-areas: "pitch tools";
     pointer-events: auto;
   }
+  .match-shell.matchday.rail-open,
   .match-shell.matchday.build-open {
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-tool-w);
+    grid-template-areas: "rail pitch tools";
   }
 }
 

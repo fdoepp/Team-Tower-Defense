@@ -125,7 +125,7 @@ function personYieldChipHtml(
  * Abstände %-relativ zur Button-Face (skalierbar).
  */
 function railActionBtnHtml(opts: {
-  kind: "kaufen" | "bauen" | "upgrade";
+  kind: "kaufen" | "bauen" | "upgrade" | "senden";
   unitSrc: string;
   unitId: string;
   amount: number | string;
@@ -481,38 +481,97 @@ function renderMatchScreen(): void {
   app.innerHTML = `
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell matchday">
-      <aside class="side-rail left-rail" aria-label="Personen">
-        <header class="rail-banner">Personen</header>
-        <div class="unit-rows person-cards">
-          <article class="person-card">
-            <div class="person-title">Fans <span class="meta" data-person-meta="normalos">(Lvl.1, x0)</span></div>
-            <div class="person-actions dual">
-              ${personBuyUpHtml(m, "normalos", tc)}
-            </div>
-          </article>
-          <article class="person-card">
-            <div class="person-title">Ultras <span class="meta" data-person-meta="ultras">(Lvl.1, x0)</span></div>
-            <div class="person-actions dual">
-              ${personBuyUpHtml(m, "ultras", tc)}
-            </div>
-          </article>
-          <article class="person-card">
-            <div class="person-title">Hooligans <span class="meta" data-person-meta="hooligans">(Lvl.1, x0)</span></div>
-            <div class="person-actions dual">
-              ${personBuyUpHtml(m, "hooligans", tc)}
-            </div>
-          </article>
-          <article class="person-card">
-            <div class="person-title">Ordner <span class="meta" data-person-meta="ordner">(Lvl.1, x0)</span></div>
-            <div class="person-actions dual">
-              ${personBuyUpHtml(m, "ordner", tc, { hireBtnId: "btn-hire-ordner" })}
-            </div>
-          </article>
-        </div>
-        <button type="button" class="rail-close" id="person-rail-close">Schließen</button>
-        <!-- Hidden send controls — still wired for combat orders, not shown in rail -->
-        <button type="button" class="sr-only" id="btn-pyro-fight" tabindex="-1" aria-hidden="true">Senden Ultra</button>
-        <button type="button" class="sr-only" id="btn-hooligan" tabindex="-1" aria-hidden="true">Senden Hool</button>
+      <div class="rail-slot" id="rail-slot" hidden>
+        <aside class="side-rail left-rail person-rail" id="person-rail" aria-label="Personen" hidden>
+          <header class="rail-banner">Personen</header>
+          <div class="unit-rows person-cards">
+            <article class="person-card">
+              <div class="person-title">Fans <span class="meta" data-person-meta="normalos">(Lvl.1, x0)</span></div>
+              <div class="person-actions dual">
+                ${personBuyUpHtml(m, "normalos", tc)}
+              </div>
+            </article>
+            <article class="person-card">
+              <div class="person-title">Ultras <span class="meta" data-person-meta="ultras">(Lvl.1, x0)</span></div>
+              <div class="person-actions dual">
+                ${personBuyUpHtml(m, "ultras", tc)}
+              </div>
+            </article>
+            <article class="person-card">
+              <div class="person-title">Hooligans <span class="meta" data-person-meta="hooligans">(Lvl.1, x0)</span></div>
+              <div class="person-actions dual">
+                ${personBuyUpHtml(m, "hooligans", tc)}
+              </div>
+            </article>
+            <article class="person-card">
+              <div class="person-title">Ordner <span class="meta" data-person-meta="ordner">(Lvl.1, x0)</span></div>
+              <div class="person-actions dual">
+                ${personBuyUpHtml(m, "ordner", tc, { hireBtnId: "btn-hire-ordner" })}
+              </div>
+            </article>
+          </div>
+          <button type="button" class="rail-close" id="person-rail-close">Schließen</button>
+        </aside>
+        <aside class="side-rail left-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
+          <header class="rail-banner" id="build-rail-title">Gebäude</header>
+          <div class="unit-rows person-cards building-cards" id="build-place-rows">
+            <article class="person-card building-card">
+              <div class="person-title">Bierstand <span class="meta" data-build-meta="bier">(Lvl.1, x0)</span></div>
+              <div class="person-actions dual">
+                ${buildingBuyUpHtml(m, "bier", tc)}
+              </div>
+            </article>
+            <article class="person-card building-card">
+              <div class="person-title">Fanshop <span class="meta" data-build-meta="fanshop">(Lvl.1, x0)</span></div>
+              <div class="person-actions dual">
+                ${buildingBuyUpHtml(m, "fanshop", tc)}
+              </div>
+            </article>
+            <article class="person-card building-card">
+              <div class="person-title">Ordnerposten <span class="meta" data-build-meta="ordner">(Lvl.1, x0)</span></div>
+              <div class="person-actions dual">
+                ${buildingBuyUpHtml(m, "ordner", tc)}
+              </div>
+            </article>
+          </div>
+          <div class="build-rows hidden" id="build-upgrade-rows" aria-hidden="true"></div>
+          <button type="button" class="rail-close" id="build-rail-close">Schließen</button>
+        </aside>
+        <aside class="side-rail left-rail attack-rail" id="attack-rail" aria-label="Angriff" hidden>
+          <header class="rail-banner">Angriff</header>
+          <div class="unit-rows person-cards attack-cards">
+            <article class="person-card attack-card">
+              <div class="person-title">Blocksturm</div>
+              <div class="person-actions dual">
+                ${railActionBtnHtml({
+                  kind: "senden",
+                  unitSrc: unitIconPath("ultras", tc, m.unitTechLevel("ultras")),
+                  unitId: "atk-ico-ultra",
+                  amount: PYRO_FIGHT_MERCH,
+                  currencySrc: UI_ICONS.currencyFanartikel,
+                  payId: "atk-pay-ultra",
+                  yieldHtml: `<span class="yield-chip" id="atk-yield-ultra"><span class="yield-amt">Ultra</span></span>`,
+                  btnId: "btn-pyro-fight",
+                  btnAttrs: 'title="Ultra senden"',
+                })}
+                ${railActionBtnHtml({
+                  kind: "senden",
+                  unitSrc: unitIconPath("hooligans", tc, m.unitTechLevel("hooligans")),
+                  unitId: "atk-ico-hool",
+                  amount: HOOLIGAN_ORDER_BEER,
+                  currencySrc: UI_ICONS.currencyBier,
+                  payId: "atk-pay-hool",
+                  yieldHtml: `<span class="yield-chip" id="atk-yield-hool"><span class="yield-amt">Hool</span></span>`,
+                  btnId: "btn-hooligan",
+                  btnAttrs: 'title="Hooligan senden"',
+                })}
+              </div>
+            </article>
+          </div>
+          <button type="button" class="rail-close" id="attack-rail-close">Schließen</button>
+        </aside>
+      </div>
+      <div id="game-wrap">
         <div class="fanbase-col gast sr-only" aria-label="Gegner">
           <span class="fb"><i>N</i><b id="fb-en">0</b></span>
           <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
@@ -523,8 +582,6 @@ function renderMatchScreen(): void {
         <span class="sr-only" id="fb-u">0</span>
         <span class="sr-only" id="fb-h">0</span>
         <span class="sr-only" id="fb-o">0</span>
-      </aside>
-      <div id="game-wrap">
         <div class="top-hud" id="pitch-hud">
           <div class="wallet-row" aria-label="Ressourcen">
             <span class="wi gold chip"><img src="${UI_ICONS.currencyGold}" alt=""><b id="gold">0</b></span>
@@ -576,32 +633,17 @@ function renderMatchScreen(): void {
           </div>
         </div>
       </div>
-      <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude">
-        <header class="rail-banner" id="build-rail-title">Gebäude</header>
-        <div class="unit-rows person-cards building-cards" id="build-place-rows">
-          <article class="person-card building-card">
-            <div class="person-title">Bierstand <span class="meta" data-build-meta="bier">(Lvl.1, x0)</span></div>
-            <div class="person-actions dual">
-              ${buildingBuyUpHtml(m, "bier", tc)}
-            </div>
-          </article>
-          <article class="person-card building-card">
-            <div class="person-title">Fanshop <span class="meta" data-build-meta="fanshop">(Lvl.1, x0)</span></div>
-            <div class="person-actions dual">
-              ${buildingBuyUpHtml(m, "fanshop", tc)}
-            </div>
-          </article>
-          <article class="person-card building-card">
-            <div class="person-title">Ordnerposten <span class="meta" data-build-meta="ordner">(Lvl.1, x0)</span></div>
-            <div class="person-actions dual">
-              ${buildingBuyUpHtml(m, "ordner", tc)}
-            </div>
-          </article>
-        </div>
-        <!-- Legacy hooks kept for sync helpers; panel UI removed (Alt D cards). -->
-        <div class="build-rows hidden" id="build-upgrade-rows" aria-hidden="true"></div>
-        <button type="button" class="rail-close" id="build-rail-close">Schließen</button>
-      </aside>
+      <nav class="rail-toolbar" aria-label="Menü-Buttons">
+        <button type="button" class="rail-tool-btn" id="tool-gebaeude" title="Gebäude" aria-label="Gebäude" data-rail="build">
+          <img src="${UI_ICONS.btnIconBierAmber}" alt="">
+        </button>
+        <button type="button" class="rail-tool-btn" id="tool-personen" title="Personen" aria-label="Personen" data-rail="person">
+          <img src="${UI_ICONS.btnIconUltraBlue}" alt="">
+        </button>
+        <button type="button" class="rail-tool-btn" id="tool-angriff" title="Angriff" aria-label="Angriff" data-rail="attack">
+          <img src="${UI_ICONS.btnIconAngriffRed}" alt="">
+        </button>
+      </nav>
     </div>`;
 
   const canvas = app.querySelector<HTMLCanvasElement>("#c")!;
@@ -612,12 +654,13 @@ function renderMatchScreen(): void {
   const btnHire = app.querySelector<HTMLButtonElement>("#btn-hire-steward")!;
   const fsGate = app.querySelector<HTMLDivElement>("#fs-gate")!;
   const pitchHud = app.querySelector<HTMLDivElement>("#pitch-hud")!;
+  const railSlot = app.querySelector<HTMLElement>("#rail-slot")!;
+  const personRail = app.querySelector<HTMLElement>("#person-rail")!;
   const buildRail = app.querySelector<HTMLElement>("#build-rail")!;
+  const attackRail = app.querySelector<HTMLElement>("#attack-rail")!;
   const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
-  // Gebäude-Rail immer sichtbar (Spiegel zur Personen-Rail)
-  buildRail.hidden = false;
-  buildRail.classList.add("open");
-  shell.classList.add("build-open");
+  type RailId = "person" | "build" | "attack" | null;
+  let openRail: RailId = null;
 
   const layoutHud = () => {
     const rect = wrap.getBoundingClientRect();
@@ -628,23 +671,55 @@ function renderMatchScreen(): void {
     pitchHud.style.height = "auto";
   };
 
+  const syncToolActive = () => {
+    app.querySelectorAll<HTMLButtonElement>(".rail-tool-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.rail === openRail);
+    });
+  };
+
+  const closeLeftRail = () => {
+    openRail = null;
+    personRail.hidden = true;
+    buildRail.hidden = true;
+    attackRail.hidden = true;
+    railSlot.hidden = true;
+    shell.classList.remove("rail-open", "build-open");
+    wrap.classList.remove("placing");
+    syncToolActive();
+  };
+
+  const setOpenRail = (id: RailId) => {
+    if (id === openRail || id == null) {
+      closeLeftRail();
+      return;
+    }
+    openRail = id;
+    personRail.hidden = id !== "person";
+    buildRail.hidden = id !== "build";
+    attackRail.hidden = id !== "attack";
+    railSlot.hidden = false;
+    shell.classList.add("rail-open");
+    shell.classList.toggle("build-open", id === "build");
+    syncToolActive();
+    if (id === "build") syncBuildingRailUi();
+  };
+
   const closeBuildRail = () => {
     state.pendingBuild = null;
     state.buildTarget = null;
     m.buildMenu = null;
     m.selectedSlot = null;
     wrap.classList.remove("placing");
-    syncBuildingRailUi();
+    if (openRail === "build") closeLeftRail();
+    else syncBuildingRailUi();
   };
 
-  /** Plot gewählt → Target setzen; Rail bleibt immer offen. */
+  /** Plot gewählt → Gebäude-Rail öffnen + Target setzen. */
   const openBuildRail = (_mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
     state.buildTarget = target;
     m.selectedSlot = target;
     m.buildMenu = target;
-    buildRail.hidden = false;
-    buildRail.classList.add("open");
-    shell.classList.add("build-open");
+    setOpenRail("build");
     syncBuildingRailUi();
   };
 
@@ -812,7 +887,11 @@ function renderMatchScreen(): void {
     m.seatMenu = null;
     m.selectedSeat = null;
     buildMenu.classList.add("hidden");
-    closeBuildRail();
+    state.pendingBuild = null;
+    state.buildTarget = null;
+    m.buildMenu = null;
+    m.selectedSlot = null;
+    closeLeftRail();
   };
 
   const showBuildMenu = (blockId: number, index: number) => {
@@ -982,10 +1061,27 @@ function renderMatchScreen(): void {
     syncOverlay();
   });
   app.querySelector("#person-rail-close")?.addEventListener("click", () => {
-    hideMenus();
+    closeLeftRail();
+    syncOverlay();
+  });
+  app.querySelector("#attack-rail-close")?.addEventListener("click", () => {
+    closeLeftRail();
     syncOverlay();
   });
 
+  app.querySelectorAll<HTMLButtonElement>(".rail-tool-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.rail as RailId;
+      setOpenRail(id);
+      syncOverlay();
+      // Layout after rail open/close changes grid
+      requestAnimationFrame(() => {
+        window.dispatchEvent(new Event("resize"));
+      });
+    });
+  });
+
+  closeLeftRail();
   syncBuildingRailUi();
   syncOverlay();
   state.last = performance.now();
