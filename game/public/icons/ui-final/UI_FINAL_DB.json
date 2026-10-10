@@ -5356,6 +5356,117 @@
       "approvedBy": "user",
       "approvedAt": "2026-10-10T11:03:07.781Z",
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxPyroShotBlue": {
+      "id": "fxPyroShotBlue",
+      "file": "fx-pyro-shot-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8504,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          14,
+          19,
+          241,
+          235
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:08:45.405034+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:08:45.419Z",
+      "notes": "Pyro: ein Ende brennt, blauer Teamrauch. Freigestellt 256²."
+    },
+    "fxPyroShotRed": {
+      "id": "fxPyroShotRed",
+      "file": "fx-pyro-shot-red.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8289,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          14,
+          20,
+          242,
+          233
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:08:45.552109+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:08:45.566Z",
+      "notes": "Pyro: ein Ende brennt, roter Teamrauch. Freigestellt 256²."
+    },
+    "fxPyroShotGrey": {
+      "id": "fxPyroShotGrey",
+      "file": "fx-pyro-shot-grey.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8161,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          14,
+          27,
+          241,
+          227
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:08:45.703504+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:08:45.716Z",
+      "notes": "Pyro: ein Ende brennt, grauer Teamrauch. Freigestellt 256²."
     }
   },
   "pending": {
@@ -6049,42 +6160,6 @@
       "notes": "REFERENZ-DEMO (Broadcast-Tech) — nicht Runtime-Default. Runtime = scoreboardChrome + scoreboard-slots.json + Live-Overlays.",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "reference-demo"
-    },
-    "fxPyroShot": {
-      "id": "fxPyroShot",
-      "file": "fx-pyro-shot.png",
-      "source": "docs/icons/ui-final/pending/fx-pyro-shot.png",
-      "status": "pendingApproval",
-      "role": "ui",
-      "requirements": {
-        "freigestellt": true,
-        "preserveAspect": true,
-        "format": "png"
-      },
-      "validation": {
-        "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot.png",
-        "mode": "RGBA",
-        "native": {
-          "w": 256,
-          "h": 256
-        },
-        "aspectRatio": 1,
-        "alphaCoverage": 0.7584,
-        "opaqueCornerRatio": 0,
-        "contentBBox": [
-          19,
-          24,
-          244,
-          229
-        ],
-        "freigestellt": true,
-        "exception": null,
-        "preserveAspectRequired": true,
-        "reasons": [],
-        "checkedAt": "2026-10-10T10:47:15.849357+00:00"
-      },
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
   },
   "runtimeBinding": {

@@ -41,6 +41,9 @@ export type UiFinalId =
   | "fxFistGrey"
   | "fxFistRed"
   | "fxHeal"
+  | "fxPyroShotBlue"
+  | "fxPyroShotGrey"
+  | "fxPyroShotRed"
   | "hooliganBlue1"
   | "hooliganBlue2"
   | "hooliganBlue3"
@@ -441,6 +444,30 @@ export const UI_FINAL_PATHS = {
   "fxHeal": {
     file: "fx-heal.png",
     path: "icons/ui-final/fx-heal.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fxPyroShotBlue": {
+    file: "fx-pyro-shot-blue.png",
+    path: "icons/ui-final/fx-pyro-shot-blue.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fxPyroShotGrey": {
+    file: "fx-pyro-shot-grey.png",
+    path: "icons/ui-final/fx-pyro-shot-grey.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fxPyroShotRed": {
+    file: "fx-pyro-shot-red.png",
+    path: "icons/ui-final/fx-pyro-shot-red.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
