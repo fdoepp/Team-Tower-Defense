@@ -482,7 +482,7 @@ function drawPyroShots(
     const x = p.x * w;
     const y = p.y * h;
     const life = 1 - p.t / Math.max(0.01, p.life);
-    const ih = Math.max(18, Math.min(w, h) * 0.042) * (0.9 + 0.15 * life);
+    const ih = Math.max(26, Math.min(w, h) * 0.058) * (0.92 + 0.12 * life);
     const ang = Math.atan2(p.vy * h, p.vx * w);
     ctx.save();
     ctx.translate(x, y);
