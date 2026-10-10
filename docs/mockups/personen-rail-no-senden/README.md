@@ -43,4 +43,5 @@ Generator: `scripts/ui-final/make-square-icon-btns.py`
 ## Freigabe
 
 Quadrat-Icon-Buttons + Angriff-Symbol: **freigegeben** (`game/public/icons/ui-final/`, `UI_ICONS`).  
+Upgrade-Buttons + Pfeil (`btnIconUpgradePerson` / `btnIconUpgradeBuilding` / `iconUpgradeArrow`): **freigegeben**.  
 Personen-Rail Alt D (ohne Senden, Ertrag unter Icon, große Kosten, Schließen): **live in Runtime**.

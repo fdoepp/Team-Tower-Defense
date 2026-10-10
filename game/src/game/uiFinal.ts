@@ -13,6 +13,8 @@ export type UiFinalId =
   | "btnIconSquareBlue"
   | "btnIconSquareRed"
   | "btnIconUltraBlue"
+  | "btnIconUpgradeBuilding"
+  | "btnIconUpgradePerson"
   | "btnSendenBlue"
   | "btnUpgradeGrey"
   | "btnUpgradePurple"
@@ -59,6 +61,7 @@ export type UiFinalId =
   | "hooliganRed4"
   | "hooliganRed5"
   | "iconAngriffBlocksturm"
+  | "iconUpgradeArrow"
   | "menuRail"
   | "menuRailTile"
   | "moodMinus"
@@ -220,6 +223,22 @@ export const UI_FINAL_PATHS = {
   "btnIconUltraBlue": {
     file: "btn-icon-ultra-blue.png",
     path: "icons/ui-final/btn-icon-ultra-blue.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnIconUpgradeBuilding": {
+    file: "btn-icon-upgrade-building.png",
+    path: "icons/ui-final/btn-icon-upgrade-building.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnIconUpgradePerson": {
+    file: "btn-icon-upgrade-person.png",
+    path: "icons/ui-final/btn-icon-upgrade-person.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
@@ -588,6 +607,14 @@ export const UI_FINAL_PATHS = {
   "iconAngriffBlocksturm": {
     file: "icon-angriff-blocksturm.png",
     path: "icons/ui-final/icon-angriff-blocksturm.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "iconUpgradeArrow": {
+    file: "icon-upgrade-arrow.png",
+    path: "icons/ui-final/icon-upgrade-arrow.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,

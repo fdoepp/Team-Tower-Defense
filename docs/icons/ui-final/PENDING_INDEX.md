@@ -34,14 +34,11 @@ Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
 
 
-### upgrade-menu buttons (Freigabe offen)
-
-163. `btnIconUpgradePerson` — `btn-icon-upgrade-person.png` — Blau · Ultra wie Baubutton mittig · lila Pfeil UR-Quadrant Vordergrund
-164. `btnIconUpgradeBuilding` — `btn-icon-upgrade-building.png` — Bau-Amber · Bier wie Baubutton mittig · lila Pfeil UR-Quadrant Vordergrund
-165. `iconUpgradeArrow` — `icon-upgrade-arrow.png` — Lila Pfeil freigestellt (ohne Spitzenpunkt, ohne dunklen Rand)
-
 ## Released (diese Runde)
 
+- **163** `btnIconUpgradePerson` — `btn-icon-upgrade-person.png` — **Quadrat blau · Ultra + Upgrade-Pfeil freigegeben**
+- **164** `btnIconUpgradeBuilding` — `btn-icon-upgrade-building.png` — **Quadrat Bau-Amber · Bier + Upgrade-Pfeil freigegeben**
+- **165** `iconUpgradeArrow` — `icon-upgrade-arrow.png` — **Upgrade-Pfeil freigestellt freigegeben**
 - **156** `btnIconUltraBlue` — `btn-icon-ultra-blue.png` — **Quadrat blau · Ultra Lv5 freigegeben**
 - **157** `btnIconBierAmber` — `btn-icon-bier-amber.png` — **Quadrat Bau-Farbe · Bierstand Lv5 freigegeben**
 - **158** `btnIconAngriffRed` — `btn-icon-angriff-red.png` — **Quadrat rot · Angriff/Blocksturm freigegeben**

@@ -121,6 +121,15 @@ export const UI_ICONS = {
   btnIconSquareRed: uiPath("btnIconSquareRed", "icons/ui-final/btn-icon-square-red.png"),
   btnIconSquareBlue: uiPath("btnIconSquareBlue", "icons/ui-final/btn-icon-square-blue.png"),
   btnIconSquareAmber: uiPath("btnIconSquareAmber", "icons/ui-final/btn-icon-square-amber.png"),
+  btnIconUpgradePerson: uiPath(
+    "btnIconUpgradePerson",
+    "icons/ui-final/btn-icon-upgrade-person.png",
+  ),
+  btnIconUpgradeBuilding: uiPath(
+    "btnIconUpgradeBuilding",
+    "icons/ui-final/btn-icon-upgrade-building.png",
+  ),
+  iconUpgradeArrow: uiPath("iconUpgradeArrow", "icons/ui-final/icon-upgrade-arrow.png"),
   iconAngriffBlocksturm: uiPath(
     "iconAngriffBlocksturm",
     "icons/ui-final/icon-angriff-blocksturm.png",
