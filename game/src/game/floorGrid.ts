@@ -28,16 +28,15 @@ export const FLOOR_SIDE_MARGIN = 0.15;
  * Near-plane column ray anchors (x at yNear), 12 lines → 11 cells.
  * Span = [FLOOR_SIDE_MARGIN .. 1-FLOOR_SIDE_MARGIN] (15% free each side).
  *
- * Pattern: Heim [0,2] · inter [3] · Neutral [4,6] · inter [7] · Gäste [8,10].
- * Intra gaps (esp. Neutral [5]) keep the block door exit corridor clear of plots.
+ * Six equal-width plot cells (0.065) spaced across the full band; door exits
+ * sit in the wider gaps so no Bauplatz sits in a vertical Ausgangskorridor:
+ *   Heim [0,2] · door · Neutral [4,6] · door · Gäste [8,10]
  */
 export const FLOOR_COL_XS_NEAR = [
-  // Heim: both plots left of Heim door (~0.36) so the exit lane stays open
-  0.15, 0.175, 0.185, 0.215,
-  // inter → Neutral: plots flank mid door (~0.50), wide intra = exit lane
-  0.4, 0.455, 0.545, 0.6,
-  // inter → Gäste: both plots right of Gäste door (~0.64)
-  0.78, 0.81, 0.82, 0.85,
+  0.15, 0.215, 0.258, 0.323, // Heim pair (equal plots)
+  0.399, 0.464, // after Heim door → Neutral left
+  0.536, 0.601, // after Neutral door → Neutral right
+  0.662, 0.727, 0.785, 0.85, // after Gäste door → Gäste pair
 ] as const;
 
 /** Depth of the near column anchors (normalized). */
@@ -118,13 +117,13 @@ export function floorCellQuad(c: number, r: number): QuadNorm {
 
 /**
  * Plot assignment: per block → (c0,r0), (c0+2,r0), (c0,r1), (c0+2,r1).
- * +2 skips the intra-gap column between the pair.
+ * +2 skips the intra-gap / door column between the pair.
  */
 const BLOCK_COL0 = [0, 4, 8] as const;
 
 /**
- * Screen-space door lanes (with pad) that far-row plots must not cover.
- * Mirrors tribune door centers ± width so block exits stay walkable.
+ * Screen-space door lanes (with pad) — vertical Ausgangskorridore.
+ * Far-row plots are laid out in the free bands between these lanes.
  */
 const DOOR_CLEAR_LANES = [
   { L: 0.338, R: 0.388 }, // Heim
@@ -144,29 +143,78 @@ export function insetQuad(q: QuadNorm, inset: number): QuadNorm {
   return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
 }
 
-/** Nudge a far-row plot horizontally out of its block door lane. */
-function clearDoorLane(q: QuadNorm, blockId: number): QuadNorm {
-  const lane = DOOR_CLEAR_LANES[Math.max(0, Math.min(2, blockId))]!;
-  const xs = [q.tl.x, q.tr.x, q.br.x, q.bl.x];
-  const x0 = Math.min(...xs);
-  const x1 = Math.max(...xs);
-  if (x1 <= lane.L || x0 >= lane.R) return q;
-  const mid = (x0 + x1) / 2;
-  const doorMid = (lane.L + lane.R) / 2;
-  const dx = mid <= doorMid ? lane.L - x1 : lane.R - x0;
-  const map = (p: { x: number; y: number }) => ({ x: p.x + dx, y: p.y });
-  return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
+/**
+ * Far-row plots in screen space: equal widths, spread across the visible
+ * floor band (perspective-compressed), never inside a door exit lane.
+ * Slot order 0..5 = Heim0, Heim1, Neu0, Neu1, Gast0, Gast1.
+ */
+function farRowQuad(blockId: number, index: number): QuadNorm {
+  const { yTop, yBot } = floorBauBand(0);
+  const yMid = (yTop + yBot) / 2;
+  const xMin = xAtDepth(FLOOR_SIDE_MARGIN, yMid);
+  const xMax = xAtDepth(1 - FLOOR_SIDE_MARGIN, yMid);
+
+  // Free intervals = floor band minus door lanes
+  type Seg = { L: number; R: number };
+  let free: Seg[] = [{ L: xMin, R: xMax }];
+  for (const d of DOOR_CLEAR_LANES) {
+    const next: Seg[] = [];
+    for (const seg of free) {
+      if (d.R <= seg.L || d.L >= seg.R) {
+        next.push(seg);
+        continue;
+      }
+      if (d.L > seg.L) next.push({ L: seg.L, R: Math.min(seg.R, d.L) });
+      if (d.R < seg.R) next.push({ L: Math.max(seg.L, d.R), R: seg.R });
+    }
+    free = next.filter((s) => s.R - s.L > 0.01);
+  }
+
+  // Perspective compresses the far band — end pockets are tight, so prefer
+  // 1·2·2·1 (one in each door-adjacent pocket, two in the wider mid bands).
+  const pad = 0.006;
+  const inset = free.map((s) => ({
+    L: s.L + pad,
+    R: s.R - pad,
+  })).filter((s) => s.R > s.L);
+  const counts =
+    inset.length === 4 ? [1, 2, 2, 1] : inset.map(() => Math.ceil(6 / inset.length));
+  const total = inset.reduce((s, f) => s + (f.R - f.L), 0);
+  const plotW = Math.min(0.048, (total / 6) * 0.65);
+  const centers: number[] = [];
+  for (let fi = 0; fi < inset.length && centers.length < 6; fi++) {
+    const seg = inset[fi]!;
+    const n = Math.min(counts[fi] ?? 1, 6 - centers.length);
+    for (let k = 0; k < n; k++) {
+      centers.push(seg.L + ((k + 0.5) / n) * (seg.R - seg.L));
+    }
+  }
+  while (centers.length < 6) {
+    centers.push((xMin + xMax) / 2);
+  }
+
+  const slot = Math.max(0, Math.min(2, blockId)) * 2 + (index % 2);
+  const cx = centers[slot]!;
+  const half = plotW / 2;
+  // Slight perspective taper top vs bottom of the bau band
+  const topHalf = half * 0.92;
+  const botHalf = half * 1.05;
+  return {
+    tl: { x: cx - topHalf, y: yTop },
+    tr: { x: cx + topHalf, y: yTop },
+    br: { x: cx + botHalf, y: yBot },
+    bl: { x: cx - botHalf, y: yBot },
+  };
 }
 
 export function boothQuad(blockId: number, index: number): QuadNorm {
   const b = Math.max(0, Math.min(2, blockId | 0));
   const i = Math.max(0, Math.min(3, index | 0));
-  const c0 = BLOCK_COL0[b]!;
-  // Skip intra-gap column between the two plots of a block.
-  const dc = (i % 2) * 2;
   const r = i < 2 ? 0 : 1;
-  const q = floorCellQuad(c0 + dc, r);
-  return r === 0 ? clearDoorLane(q, b) : q;
+  if (r === 0) return farRowQuad(b, i);
+  const c0 = BLOCK_COL0[b]!;
+  const dc = (i % 2) * 2;
+  return floorCellQuad(c0 + dc, r);
 }
 
 export function quadToRect(q: QuadNorm): {
