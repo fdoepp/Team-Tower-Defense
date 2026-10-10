@@ -220,15 +220,6 @@ function drawStadiumAtmosphere(
   for (let i = 0; i < 28; i++) {
     ctx.fillRect(0, floorY + (i / 28) * (h - floorY), w, 1);
   }
-  // soft lane arrows on gang
-  ctx.strokeStyle = "rgba(255,255,255,0.1)";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([8, 12]);
-  ctx.beginPath();
-  ctx.moveTo(w * blocksLeftNorm(), floorY + h * gangHeight() * 0.55);
-  ctx.lineTo(w * blocksRightNorm(), floorY + h * gangHeight() * 0.55);
-  ctx.stroke();
-  ctx.setLineDash([]);
 }
 
 /**
