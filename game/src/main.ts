@@ -482,7 +482,7 @@ function renderMatchScreen(): void {
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell matchday">
       <div class="rail-slot" id="rail-slot" hidden>
-        <aside class="side-rail left-rail person-rail" id="person-rail" aria-label="Personen" hidden>
+        <aside class="side-rail right-rail person-rail" id="person-rail" aria-label="Personen" hidden>
           <header class="rail-banner">Personen</header>
           <div class="unit-rows person-cards">
             <article class="person-card">
@@ -512,7 +512,7 @@ function renderMatchScreen(): void {
           </div>
           <button type="button" class="rail-close" id="person-rail-close">Schließen</button>
         </aside>
-        <aside class="side-rail left-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
+        <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
           <header class="rail-banner" id="build-rail-title">Gebäude</header>
           <div class="unit-rows person-cards building-cards" id="build-place-rows">
             <article class="person-card building-card">
@@ -537,12 +537,12 @@ function renderMatchScreen(): void {
           <div class="build-rows hidden" id="build-upgrade-rows" aria-hidden="true"></div>
           <button type="button" class="rail-close" id="build-rail-close">Schließen</button>
         </aside>
-        <aside class="side-rail left-rail attack-rail" id="attack-rail" aria-label="Angriff" hidden>
+        <aside class="side-rail right-rail attack-rail" id="attack-rail" aria-label="Angriff" hidden>
           <header class="rail-banner">Angriff</header>
           <div class="unit-rows person-cards attack-cards">
             <article class="person-card attack-card">
-              <div class="person-title">Blocksturm</div>
-              <div class="person-actions dual">
+              <div class="person-title">Pyro Wurf <span class="meta" data-attack-meta="ultras">(x0 bereit)</span></div>
+              <div class="person-actions single">
                 ${railActionBtnHtml({
                   kind: "senden",
                   unitSrc: unitIconPath("ultras", tc, m.unitTechLevel("ultras")),
@@ -550,10 +550,15 @@ function renderMatchScreen(): void {
                   amount: PYRO_FIGHT_MERCH,
                   currencySrc: UI_ICONS.currencyFanartikel,
                   payId: "atk-pay-ultra",
-                  yieldHtml: `<span class="yield-chip" id="atk-yield-ultra"><span class="yield-amt">Ultra</span></span>`,
+                  yieldHtml: `<span class="yield-chip" id="atk-yield-ultra"><span class="yield-amt">Fernkampf</span></span>`,
                   btnId: "btn-pyro-fight",
-                  btnAttrs: 'title="Ultra senden"',
+                  btnAttrs: 'title="Ultra → Pyro Wurf"',
                 })}
+              </div>
+            </article>
+            <article class="person-card attack-card">
+              <div class="person-title">Nahkampf <span class="meta" data-attack-meta="hooligans">(x0 bereit)</span></div>
+              <div class="person-actions single">
                 ${railActionBtnHtml({
                   kind: "senden",
                   unitSrc: unitIconPath("hooligans", tc, m.unitTechLevel("hooligans")),
@@ -561,9 +566,9 @@ function renderMatchScreen(): void {
                   amount: HOOLIGAN_ORDER_BEER,
                   currencySrc: UI_ICONS.currencyBier,
                   payId: "atk-pay-hool",
-                  yieldHtml: `<span class="yield-chip" id="atk-yield-hool"><span class="yield-amt">Hool</span></span>`,
+                  yieldHtml: `<span class="yield-chip" id="atk-yield-hool"><span class="yield-amt">Nahkampf</span></span>`,
                   btnId: "btn-hooligan",
-                  btnAttrs: 'title="Hooligan senden"',
+                  btnAttrs: 'title="Hooligan → Nahkampf"',
                 })}
               </div>
             </article>
@@ -677,7 +682,32 @@ function renderMatchScreen(): void {
     });
   };
 
-  const closeLeftRail = () => {
+  const attackReadyCount = (kind: "ultras" | "hooligans") =>
+    m.fans.filter(
+      (f) =>
+        f.team === m.playerTeam &&
+        f.kind === kind &&
+        f.hp > 0 &&
+        f.state === "block",
+    ).length;
+
+  const syncAttackRailUi = () => {
+    for (const kind of ["ultras", "hooligans"] as const) {
+      const meta = app.querySelector(`[data-attack-meta="${kind}"]`);
+      if (meta) meta.textContent = `(x${attackReadyCount(kind)} bereit)`;
+    }
+    const ultraIco = app.querySelector<HTMLImageElement>("#atk-ico-ultra");
+    if (ultraIco) {
+      ultraIco.src = unitIconPath("ultras", tc, m.unitTechLevel("ultras"));
+    }
+    const hoolIco = app.querySelector<HTMLImageElement>("#atk-ico-hool");
+    if (hoolIco) {
+      hoolIco.src = unitIconPath("hooligans", tc, m.unitTechLevel("hooligans"));
+    }
+  };
+
+  /** Schließt Aktionsrail; schmale Icon-Toolbar rechts kommt zurück. */
+  const closeActionRail = () => {
     openRail = null;
     personRail.hidden = true;
     buildRail.hidden = true;
@@ -690,7 +720,7 @@ function renderMatchScreen(): void {
 
   const setOpenRail = (id: RailId) => {
     if (id === openRail || id == null) {
-      closeLeftRail();
+      closeActionRail();
       return;
     }
     openRail = id;
@@ -702,6 +732,7 @@ function renderMatchScreen(): void {
     shell.classList.toggle("build-open", id === "build");
     syncToolActive();
     if (id === "build") syncBuildingRailUi();
+    if (id === "attack") syncAttackRailUi();
   };
 
   const closeBuildRail = () => {
@@ -710,7 +741,7 @@ function renderMatchScreen(): void {
     m.buildMenu = null;
     m.selectedSlot = null;
     wrap.classList.remove("placing");
-    if (openRail === "build") closeLeftRail();
+    if (openRail === "build") closeActionRail();
     else syncBuildingRailUi();
   };
 
@@ -891,7 +922,7 @@ function renderMatchScreen(): void {
     state.buildTarget = null;
     m.buildMenu = null;
     m.selectedSlot = null;
-    closeLeftRail();
+    closeActionRail();
   };
 
   const showBuildMenu = (blockId: number, index: number) => {
@@ -975,6 +1006,7 @@ function renderMatchScreen(): void {
       plus.classList.toggle("cd", !ok);
     });
     syncPendingBuildUi();
+    if (openRail === "attack") syncAttackRailUi();
   };
 
   app.querySelector("#btn-hooligan")!.addEventListener("click", () => {
@@ -1061,11 +1093,11 @@ function renderMatchScreen(): void {
     syncOverlay();
   });
   app.querySelector("#person-rail-close")?.addEventListener("click", () => {
-    closeLeftRail();
+    closeActionRail();
     syncOverlay();
   });
   app.querySelector("#attack-rail-close")?.addEventListener("click", () => {
-    closeLeftRail();
+    closeActionRail();
     syncOverlay();
   });
 
@@ -1081,7 +1113,7 @@ function renderMatchScreen(): void {
     });
   });
 
-  closeLeftRail();
+  closeActionRail();
   syncBuildingRailUi();
   syncOverlay();
   state.last = performance.now();

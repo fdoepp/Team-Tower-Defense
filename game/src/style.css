@@ -226,11 +226,12 @@ select {
 
 /* Matchday: Pitch + rechte Toolbar; linke Rail nur bei Klick. */
 .match-shell.matchday {
-  --rail-left-w: 25.41%;
+  --rail-action-w: 25.41%;
+  --rail-left-w: var(--rail-action-w); /* alias */
   /* Fixed-ish tool column — never squash below touch size */
   --rail-tool-w: clamp(84px, 11vw, 110px);
   --rail-tool-btn: clamp(68px, 9vw, 92px);
-  --rail-w: var(--rail-left-w);
+  --rail-w: var(--rail-action-w);
   --rail-btn-h: clamp(42px, 10vh, 54px);
   --rail-icon: clamp(40px, 7vh, 52px);
   --wallet-icon: 25px; /* ×1.15 vs 22px baseline */
@@ -250,10 +251,16 @@ select {
   overflow: hidden;
 }
 
+/* Aktionsrail rechts statt Toolbar — Toolbar ausgeblendet */
 .match-shell.matchday.rail-open,
 .match-shell.matchday.build-open {
-  grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-tool-w);
-  grid-template-areas: "rail pitch tools";
+  grid-template-columns: minmax(0, 1fr) var(--rail-action-w);
+  grid-template-areas: "pitch rail";
+}
+
+.match-shell.matchday.rail-open .rail-toolbar,
+.match-shell.matchday.build-open .rail-toolbar {
+  display: none !important;
 }
 
 .match-shell.matchday .rail-slot {
@@ -366,30 +373,12 @@ select {
     0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
-/* Personen-Rail = fertige Card-A (Mockup + abgelegtes ui-final Chrome)
- * Alle Abstände/Größen %- / cqw/cqh-relativ zur Rail (skalierbar). */
-.match-shell.matchday .left-rail {
-  container-type: size;
-  --person-gap: 0.75cqh;
-  --person-card-pad-y: 1.05cqh;
-  --person-card-radius: 3.6cqw;
-  --person-title-size: clamp(9px, 5.4cqw, 13px);
-  --person-banner-size: clamp(9px, 5.2cqw, 13px);
-  --person-banner-pad-y: 0.9cqh;
-  --person-banner-pad-x: 2.4cqw;
-  --person-close-gap: 0.55cqh;
-  padding: var(--rail-inset);
-  /* Safe-area weitet die Rail, nicht den Karten-Inset */
-  padding-left: var(--rail-inset);
-  margin-left: env(safe-area-inset-left, 0px);
-  gap: var(--person-gap);
-  border-right-width: 4px;
-}
-
+/* Aktionsrails rechts (Personen / Gebäude / Angriff) — Card-A Tokens */
+.match-shell.matchday .right-rail,
+.match-shell.matchday .left-rail,
 .match-shell.matchday .build-rail,
 .match-shell.matchday .attack-rail,
 .match-shell.matchday .person-rail {
-  /* Gleiche relativen Tokens — immer links im rail-slot */
   container-type: size;
   --person-gap: 0.75cqh;
   --person-card-pad-y: 1.05cqh;
@@ -407,9 +396,9 @@ select {
   min-width: 0;
   gap: var(--person-gap);
   padding: var(--rail-inset);
-  padding-left: var(--rail-inset);
-  margin-left: env(safe-area-inset-left, 0px);
-  border-right-width: 4px;
+  padding-right: var(--rail-inset);
+  margin-right: env(safe-area-inset-right, 0px);
+  border-left-width: 4px;
 }
 
 /* Gebäude-Banner — Bau-Amber (#e08f22) */
@@ -464,8 +453,8 @@ select {
 }
 
 .match-shell.matchday .attack-rail .attack-card {
-  flex: 0 1 auto;
-  max-height: 42%;
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .match-shell.matchday .rail-close {
@@ -515,7 +504,9 @@ select {
 }
 
 /* Card-A Banner — gleiches Blau wie btnIconUltraBlue Face (#3184ca) */
-.match-shell.matchday .left-rail .rail-banner {
+.match-shell.matchday .right-rail.person-rail .rail-banner,
+.match-shell.matchday .left-rail .rail-banner,
+.match-shell.matchday .person-rail .rail-banner {
   padding: var(--person-banner-pad-y) var(--person-banner-pad-x);
   border-radius: calc(var(--person-card-radius) * 0.7);
   background: linear-gradient(180deg, #4a9be0, #3184ca 55%, #2769a8);
@@ -612,6 +603,13 @@ select {
 }
 
 /* Button-Gutter ~1% Card-Breite (Rahmenlogik: schmaler Innenrand) */
+.match-shell.matchday .person-actions.single {
+  grid-template-columns: 2% minmax(0, 1fr) 2%;
+}
+.match-shell.matchday .person-actions.single .ar-cost-btn {
+  grid-column: 2;
+}
+
 .match-shell.matchday .person-actions.dual {
   grid-template-columns: 1% 48% 2% 48% 1%;
 }
@@ -1347,8 +1345,8 @@ select {
   }
   .match-shell.matchday.rail-open,
   .match-shell.matchday.build-open {
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-tool-w);
-    grid-template-areas: "rail pitch tools";
+    grid-template-columns: minmax(0, 1fr) var(--rail-action-w);
+    grid-template-areas: "pitch rail";
   }
 }
 
@@ -2252,8 +2250,8 @@ select {
   }
   .match-shell.matchday.rail-open,
   .match-shell.matchday.build-open {
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-tool-w);
-    grid-template-areas: "rail pitch tools";
+    grid-template-columns: minmax(0, 1fr) var(--rail-action-w);
+    grid-template-areas: "pitch rail";
   }
 }
 
