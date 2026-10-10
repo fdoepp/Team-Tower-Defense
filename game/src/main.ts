@@ -31,10 +31,13 @@ import {
   STEWARD_HIRE_GOLD,
   UPGRADE_COST,
   UPGRADE_MAX,
+  canVisit,
   ordnerPostMaxHp,
   productionRate,
   stewardHealPerSec,
   stewardPostRadius,
+  visitGoldPayout,
+  visitInterval,
   type BuildingKind,
   type FanKind,
   type FanMix,
@@ -125,6 +128,133 @@ function arCostBtnHtml(opts: {
     return `<button type="button" class="ar-cost-btn ${opts.kind}"${id}${attrs}>${inner}</button>`;
   }
   return `<span class="ar-cost-btn ${opts.kind}" aria-hidden="true">${inner}</span>`;
+}
+
+/**
+ * Amortisierte Besuch-Einnahmen (€/s) bzw. Ordner-Heilung (HP/s).
+ * Basis für Kauf-Ertrag und Upgrade-Delta.
+ */
+function personYieldPerSec(kind: FanKind | "ordner", level: number): number {
+  const lv = Math.max(1, Math.min(UPGRADE_MAX, Math.floor(level) || 1));
+  if (kind === "ordner") return stewardHealPerSec(lv);
+  let gold = 0;
+  if (canVisit(kind, "beer")) {
+    const iv = visitInterval(kind, "beer", lv);
+    if (iv) gold += visitGoldPayout("beer", lv) / iv;
+  }
+  if (canVisit(kind, "shop")) {
+    const iv = visitInterval(kind, "shop", lv);
+    if (iv) gold += visitGoldPayout("shop", lv) / iv;
+  }
+  return Math.round(gold * 100) / 100;
+}
+
+function personYieldCurrency(kind: FanKind | "ordner"): string {
+  return kind === "ordner" ? UI_ICONS.currencySicherheit : UI_ICONS.currencyGold;
+}
+
+function personYieldChipHtml(
+  kind: FanKind | "ordner",
+  perSec: number,
+  opts?: { delta?: boolean; id?: string },
+): string {
+  const sign = opts?.delta ? (perSec >= 0 ? "+" : "") : "";
+  const id = opts?.id ? ` id="${opts.id}"` : "";
+  const deltaCls = opts?.delta ? " yield-delta" : "";
+  const unit = kind === "ordner" ? "" : "";
+  void unit;
+  return `<span class="yield-chip${deltaCls}"${id}><img src="${personYieldCurrency(kind)}" alt=""><span class="yield-amt">${sign}${formatYieldPerSec(perSec)}/s</span></span>`;
+}
+
+/** Personen Kauf/UP: Unit-Icon links + Kosten + Ertrag (kein Verb-Text). */
+function personActionBtnHtml(opts: {
+  kind: "kaufen" | "upgrade";
+  unitSrc: string;
+  unitId: string;
+  amount: number | string;
+  currencySrc: string;
+  payId: string;
+  yieldHtml: string;
+  asButton?: boolean;
+  btnId?: string;
+  btnAttrs?: string;
+}): string {
+  const payId = opts.payId ? ` id="${opts.payId}"` : "";
+  const unitId = opts.unitId ? ` id="${opts.unitId}"` : "";
+  const inner = `<span class="inner person-btn-inner"><img class="unit-ico"${unitId} src="${opts.unitSrc}" alt=""><span class="person-stats"><span class="pay"${payId}><img src="${opts.currencySrc}" alt=""><span class="amt">${opts.amount}</span></span>${opts.yieldHtml}</span></span>`;
+  if (opts.asButton !== false) {
+    const id = opts.btnId ? ` id="${opts.btnId}"` : "";
+    const attrs = opts.btnAttrs ? ` ${opts.btnAttrs}` : "";
+    return `<button type="button" class="ar-cost-btn ${opts.kind} person-action"${id}${attrs}>${inner}</button>`;
+  }
+  return `<span class="ar-cost-btn ${opts.kind} person-action" aria-hidden="true">${inner}</span>`;
+}
+
+function personBuyCost(
+  kind: FanKind | "ordner",
+): { amount: number; currencySrc: string } {
+  if (kind === "ordner") {
+    return { amount: STEWARD_HIRE_GOLD, currencySrc: UI_ICONS.currencyGold };
+  }
+  const c = BUY_COST[kind];
+  if (c.security > 0) {
+    return { amount: c.security, currencySrc: UI_ICONS.currencySicherheit };
+  }
+  if (c.merch > 0) {
+    return { amount: c.merch, currencySrc: UI_ICONS.currencyFanartikel };
+  }
+  return { amount: c.beer, currencySrc: UI_ICONS.currencyBier };
+}
+
+/** Kauf + UP (Icon/Kosten/Ertrag) für eine Personen-Kategorie. */
+function personBuyUpHtml(
+  m: Match,
+  kind: FanKind | "ordner",
+  color: ReturnType<typeof teamColor>,
+  opts?: { hireBtnId?: string },
+): string {
+  const tech = m.unitTechLevel(kind);
+  const next = Math.min(UPGRADE_MAX, tech + 1);
+  const buy = personBuyCost(kind);
+  const buyYield = personYieldPerSec(kind, tech);
+  const upCost = m.unitUpgradeCostFor(kind);
+  const upDelta =
+    tech < UPGRADE_MAX
+      ? personYieldPerSec(kind, next) - personYieldPerSec(kind, tech)
+      : 0;
+  const buyIcon = unitIconPath(kind === "ordner" ? "ordner" : kind, color, tech);
+  const upIcon = unitIconPath(kind === "ordner" ? "ordner" : kind, color, next);
+  const buyAttrs =
+    kind === "ordner"
+      ? 'title="Kaufen"'
+      : `data-quick-buy="${kind}" title="Kaufen"`;
+  const buyBtnId = kind === "ordner" ? opts?.hireBtnId ?? "btn-hire-ordner" : undefined;
+  return (
+    personActionBtnHtml({
+      kind: "kaufen",
+      unitSrc: buyIcon,
+      unitId: `buy-ico-${kind}`,
+      amount: buy.amount,
+      currencySrc: buy.currencySrc,
+      payId: `buy-pay-${kind}`,
+      yieldHtml: personYieldChipHtml(kind, buyYield, { id: `buy-yield-${kind}` }),
+      btnId: buyBtnId,
+      btnAttrs: buyAttrs,
+    }) +
+    personActionBtnHtml({
+      kind: "upgrade",
+      unitSrc: upIcon,
+      unitId: `up-ico-${kind}`,
+      amount: upCost != null ? upCost : "—",
+      currencySrc: UI_ICONS.currencyGold,
+      payId: `up-pay-${kind}`,
+      yieldHtml: personYieldChipHtml(kind, upDelta, {
+        delta: true,
+        id: `up-yield-${kind}`,
+      }),
+      btnAttrs: `data-unit-up="${kind}" title="Upgrade"`,
+    })
+  );
 }
 
 /** Personen-Titel-Meta: "(Lvl.1, x5)" — Lvl = Tech-Stufe (ändert sich bei UP) */
@@ -310,49 +440,13 @@ function renderMatchScreen(): void {
           <article class="person-card">
             <div class="person-title">Fans <span class="meta" data-person-meta="normalos">(Lvl.1, x0)</span></div>
             <div class="person-actions dual">
-              ${arCostBtnHtml({
-                kind: "kaufen",
-                full: "KAUFEN",
-                short: "KAUF",
-                amount: BUY_COST.normalos.security,
-                currencySrc: UI_ICONS.currencySicherheit,
-                asButton: true,
-                btnAttrs: 'data-quick-buy="normalos" title="Kaufen"',
-              })}
-              ${arCostBtnHtml({
-                kind: "upgrade",
-                full: "UPGRADE",
-                short: "UP",
-                amount: 22,
-                currencySrc: UI_ICONS.currencyGold,
-                payId: "up-pay-normalos",
-                asButton: true,
-                btnAttrs: 'data-unit-up="normalos" title="Upgrade"',
-              })}
+              ${personBuyUpHtml(m, "normalos", tc)}
             </div>
           </article>
           <article class="person-card">
             <div class="person-title">Ultras <span class="meta" data-person-meta="ultras">(Lvl.1, x0)</span></div>
             <div class="person-actions triple">
-              ${arCostBtnHtml({
-                kind: "kaufen",
-                full: "KAUFEN",
-                short: "KAUF",
-                amount: BUY_COST.ultras.merch,
-                currencySrc: UI_ICONS.currencyFanartikel,
-                asButton: true,
-                btnAttrs: 'data-quick-buy="ultras" title="Kaufen"',
-              })}
-              ${arCostBtnHtml({
-                kind: "upgrade",
-                full: "UPGRADE",
-                short: "UP",
-                amount: 22,
-                currencySrc: UI_ICONS.currencyGold,
-                payId: "up-pay-ultras",
-                asButton: true,
-                btnAttrs: 'data-unit-up="ultras" title="Upgrade"',
-              })}
+              ${personBuyUpHtml(m, "ultras", tc)}
               ${arCostBtnHtml({
                 kind: "senden",
                 full: "SENDEN",
@@ -368,25 +462,7 @@ function renderMatchScreen(): void {
           <article class="person-card">
             <div class="person-title">Hooligans <span class="meta" data-person-meta="hooligans">(Lvl.1, x0)</span></div>
             <div class="person-actions triple">
-              ${arCostBtnHtml({
-                kind: "kaufen",
-                full: "KAUFEN",
-                short: "KAUF",
-                amount: BUY_COST.hooligans.beer,
-                currencySrc: UI_ICONS.currencyBier,
-                asButton: true,
-                btnAttrs: 'data-quick-buy="hooligans" title="Kaufen"',
-              })}
-              ${arCostBtnHtml({
-                kind: "upgrade",
-                full: "UPGRADE",
-                short: "UP",
-                amount: 22,
-                currencySrc: UI_ICONS.currencyGold,
-                payId: "up-pay-hooligans",
-                asButton: true,
-                btnAttrs: 'data-unit-up="hooligans" title="Upgrade"',
-              })}
+              ${personBuyUpHtml(m, "hooligans", tc)}
               ${arCostBtnHtml({
                 kind: "senden",
                 full: "SENDEN",
@@ -402,26 +478,7 @@ function renderMatchScreen(): void {
           <article class="person-card">
             <div class="person-title">Ordner <span class="meta" data-person-meta="ordner">(Lvl.1, x0)</span></div>
             <div class="person-actions dual">
-              ${arCostBtnHtml({
-                kind: "kaufen",
-                full: "KAUFEN",
-                short: "KAUF",
-                amount: STEWARD_HIRE_GOLD,
-                currencySrc: UI_ICONS.currencyGold,
-                asButton: true,
-                btnId: "btn-hire-ordner",
-                btnAttrs: 'title="Kaufen"',
-              })}
-              ${arCostBtnHtml({
-                kind: "upgrade",
-                full: "UPGRADE",
-                short: "UP",
-                amount: 22,
-                currencySrc: UI_ICONS.currencyGold,
-                payId: "up-pay-ordner",
-                asButton: true,
-                btnAttrs: 'data-unit-up="ordner" title="Upgrade"',
-              })}
+              ${personBuyUpHtml(m, "ordner", tc, { hireBtnId: "btn-hire-ordner" })}
             </div>
           </article>
         </div>
@@ -953,9 +1010,42 @@ function renderMatchScreen(): void {
         "ordner",
       ];
       for (const kind of kinds) {
-        const lvMin = m.minUnitLevel(kind);
+        const tech = m.unitTechLevel(kind);
+        const next = Math.min(UPGRADE_MAX, tech + 1);
         const meta = app.querySelector(`[data-person-meta="${kind}"]`);
         if (meta) meta.textContent = personMetaLabel(m, kind, counts[kind]);
+        const buyIco = app.querySelector<HTMLImageElement>(`#buy-ico-${kind}`);
+        if (buyIco) {
+          buyIco.src = unitIconPath(
+            kind === "ordner" ? "ordner" : kind,
+            tc,
+            tech,
+          );
+        }
+        const upIco = app.querySelector<HTMLImageElement>(`#up-ico-${kind}`);
+        if (upIco) {
+          upIco.src = unitIconPath(
+            kind === "ordner" ? "ordner" : kind,
+            tc,
+            next,
+          );
+        }
+        const buyYield = app.querySelector(`#buy-yield-${kind} .yield-amt`);
+        if (buyYield) {
+          buyYield.textContent = `${formatYieldPerSec(personYieldPerSec(kind, tech))}/s`;
+        }
+        const upYield = app.querySelector(`#up-yield-${kind} .yield-amt`);
+        if (upYield) {
+          const delta =
+            tech < UPGRADE_MAX
+              ? personYieldPerSec(kind, next) - personYieldPerSec(kind, tech)
+              : 0;
+          const sign = delta >= 0 ? "+" : "";
+          upYield.textContent =
+            tech < UPGRADE_MAX
+              ? `${sign}${formatYieldPerSec(delta)}/s`
+              : "—";
+        }
         const upBtn = app.querySelector<HTMLButtonElement>(
           `[data-unit-up="${kind}"]`,
         );
@@ -969,7 +1059,7 @@ function renderMatchScreen(): void {
           upBtn.title =
             cost == null
               ? "Max. Stufe"
-              : `Alle ${kind} → Lv${lvMin + 1} · ${cost}€`;
+              : `Alle ${kind} → Lv${next} · ${cost}€`;
         }
       }
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");

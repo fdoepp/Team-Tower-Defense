@@ -374,18 +374,21 @@ select {
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
-/* Card-A Banner — exakt Mockup */
+/* Card-A Banner — gleiches Blau wie btnIconUltraBlue Face (#3184ca) */
 .match-shell.matchday .left-rail .rail-banner {
   padding: 4px 6px;
   border-radius: 7px;
-  background: linear-gradient(180deg, #6b4428, #4a2c18);
+  background: linear-gradient(180deg, #4a9be0, #3184ca 55%, #2769a8);
   border: 2px solid #3d2414;
-  box-shadow: none;
-  color: #f8e7c0;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+  color: #fff;
   font-size: 12px;
+  font-weight: 900;
   letter-spacing: 0;
   text-transform: none;
-  text-shadow: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
 }
 
 .rail-hint {
@@ -508,6 +511,64 @@ select {
   gap: 0.3em;
   font-family: inherit;
   font-size: clamp(9px, 12cqw, 14px);
+}
+
+/* Kauf/UP: Icon links (2–3% Face-Innenrand) + Kosten/Ertrag daneben */
+.match-shell.matchday .person-card .ar-cost-btn.person-action .inner.person-btn-inner {
+  left: calc(var(--wood-x) + 2.5%);
+  right: calc(var(--wood-x) + var(--inset));
+  top: calc(var(--wood-y-top) + var(--inset));
+  bottom: calc(var(--wood-y-bot) + var(--inset));
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4%;
+  font-size: clamp(8px, 11cqw, 13px);
+}
+.match-shell.matchday .person-card .ar-cost-btn.person-action .unit-ico {
+  display: block;
+  height: 92%;
+  width: auto;
+  max-width: 42%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  flex: 0 0 auto;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+.match-shell.matchday .person-card .ar-cost-btn.person-action .person-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.2em;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+.match-shell.matchday .person-card .ar-cost-btn.person-action .person-stats .pay,
+.match-shell.matchday .person-card .ar-cost-btn.person-action .person-stats .yield-chip {
+  font-size: 1em;
+  line-height: 1;
+}
+.match-shell.matchday .person-card .ar-cost-btn.person-action .yield-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  border: 0;
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+}
+.match-shell.matchday .person-card .ar-cost-btn.person-action .yield-chip img {
+  width: 1.1em;
+  height: 1.1em;
+  object-fit: contain;
+}
+.match-shell.matchday .person-card .ar-cost-btn.person-action .yield-chip.yield-delta .yield-amt {
+  color: #bbf7d0;
 }
 
 .match-shell.matchday .ar-icon-btn {
