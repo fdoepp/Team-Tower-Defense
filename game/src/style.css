@@ -629,15 +629,15 @@ select {
   flex: 1 1 auto;
   min-width: 0;
   height: 100%;
-  font-size: clamp(14px, 22cqw, 28px);
+  font-size: clamp(12px, 18cqw, 24px);
   font-weight: 900;
   letter-spacing: 0.01em;
   line-height: 1;
   overflow: hidden;
 }
 .match-shell.matchday .person-card .ar-cost-btn.rail-action .pay.pay-lg img {
-  width: 0.95em;
-  height: 0.95em;
+  width: 0.9em;
+  height: 0.9em;
   object-fit: contain;
   flex: 0 0 auto;
 }
