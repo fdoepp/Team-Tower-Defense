@@ -1,6 +1,12 @@
 import type { BuildingKind, FanKind, TeamId } from "./types";
+import { uiFinalIconPath } from "./uiFinal";
 
 export type TeamColor = "blue" | "red" | "grey";
+
+/** Prefer Final-UI DB when released; else legacy icons/ui/. */
+function uiPath(id: string, legacy: string): string {
+  return uiFinalIconPath(id) ?? legacy;
+}
 
 const cache = new Map<string, HTMLImageElement>();
 let preloadPromise: Promise<void> | null = null;
@@ -17,7 +23,8 @@ export function standIconPath(
   level: number,
 ): string {
   const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
-  return `icons/stands/${kind}-${color}-${lv}.png`;
+  const finalId = `stand${kind[0].toUpperCase()}${kind.slice(1)}${color[0].toUpperCase()}${color.slice(1)}${lv}`;
+  return uiPath(finalId, `icons/stands/${kind}-${color}-${lv}.png`);
 }
 
 export function unitIconPath(
@@ -32,24 +39,130 @@ export function unitIconPath(
     ordner: "ordner",
   };
   const lv = Math.max(1, Math.min(5, Math.floor(level) || 1));
-  return `icons/units/${map[kind]}-${color}-${lv}.png`;
+  const base = map[kind];
+  const finalId = `${base}${color[0].toUpperCase()}${color.slice(1)}${lv}`;
+  return uiPath(finalId, `icons/units/${base}-${color}-${lv}.png`);
 }
 
-export const UI_ICONS = {
-  slotEmpty: "icons/ui/slot-empty.png",
-  currencyGold: "icons/ui/currency-gold.png",
-  currencyBier: "icons/ui/currency-bier.png",
-  currencyFanartikel: "icons/ui/currency-fanartikel.png",
-  currencySicherheit: "icons/ui/currency-sicherheit.png",
-  btnKaufenGrey: "icons/ui/btn-kaufen-grey.png",
-  btnKaufenGreen: "icons/ui/btn-kaufen-green.png",
-  btnSendenGrey: "icons/ui/btn-senden-grey.png",
-  btnSendenGreen: "icons/ui/btn-senden-green.png",
-  pennantKsc: "icons/ui/pennant-ksc.png",
-  pennantVfb: "icons/ui/pennant-vfb.png",
-  menuRail: "icons/ui/menu-rail-brown.png",
-  scoreboard: "icons/ui/scoreboard-momentum.png",
+export type SlotControl = "blue" | "red" | "grey";
+export type SlotEmptyOrientation = "parallel" | "iso" | "persp";
+/** Deploy-Default: Stadionboden-Perspektive (nicht Ortho/Quadrat). */
+export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "persp";
+
+export const SCENE_ASSETS = {
+  tribuneBlue: uiPath("tribuneBlue", "assets/tribune-block-blue.png"),
+  tribuneGrey: uiPath("tribuneGrey", "assets/tribune-block-grey.png"),
+  tribuneRed: uiPath("tribuneRed", "assets/tribune-block-red.png"),
+  /** Binding match backdrop — see MATCH_LAYOUT_TOKENS.json / stadium-background rule */
+  stadiumFloodlightDerby: "assets/stadium-floodlight-derby-bg.jpg",
 } as const;
+
+export function tribuneIconPath(blockId: number): string {
+  if (blockId === 0) return SCENE_ASSETS.tribuneBlue;
+  if (blockId === 2) return SCENE_ASSETS.tribuneRed;
+  return SCENE_ASSETS.tribuneGrey;
+}
+
+/**
+ * UI icons — released keys from UI_FINAL_DB (`icons/ui-final/…`).
+ * Draw only with uniform scale (drawIcon / fitUniform) — never distort.
+ */
+export const UI_ICONS = {
+  slotEmpty: uiPath("slotEmpty", "icons/ui/slot-empty.png"),
+  slotEmptyParallel: uiPath("slotEmptyParallel", "icons/ui/slot-empty-parallel.png"),
+  slotEmptyIso: uiPath("slotEmptyIso", "icons/ui/slot-empty-iso.png"),
+  slotEmptyParallelBlue: uiPath(
+    "slotEmptyParallelBlue",
+    "icons/ui/slot-empty-parallel-blue.png",
+  ),
+  slotEmptyParallelRed: uiPath(
+    "slotEmptyParallelRed",
+    "icons/ui/slot-empty-parallel-red.png",
+  ),
+  slotEmptyIsoBlue: uiPath("slotEmptyIsoBlue", "icons/ui/slot-empty-iso-blue.png"),
+  slotEmptyIsoRed: uiPath("slotEmptyIsoRed", "icons/ui/slot-empty-iso-red.png"),
+  slotEmptyOrtho: uiPath("slotEmptyOrtho", "icons/ui/slot-empty-ortho.png"),
+  slotEmptyOrthoBlue: uiPath("slotEmptyOrthoBlue", "icons/ui/slot-empty-ortho-blue.png"),
+  slotEmptyOrthoRed: uiPath("slotEmptyOrthoRed", "icons/ui/slot-empty-ortho-red.png"),
+  slotEmptyPersp: uiPath("slotEmptyPersp", "icons/ui/slot-empty-persp.png"),
+  slotEmptyPerspBlue: uiPath("slotEmptyPerspBlue", "icons/ui/slot-empty-persp-blue.png"),
+  slotEmptyPerspRed: uiPath("slotEmptyPerspRed", "icons/ui/slot-empty-persp-red.png"),
+  currencyGold: uiPath("currencyGold", "icons/ui/currency-gold.png"),
+  currencyGoldPlus: uiPath("currencyGoldPlus", "icons/ui-final/currency-gold-plus.png"),
+  currencyGoldMinus: uiPath("currencyGoldMinus", "icons/ui-final/currency-gold-minus.png"),
+  currencyBier: uiPath("currencyBier", "icons/ui/currency-bier.png"),
+  currencyBierPlus: uiPath("currencyBierPlus", "icons/ui-final/currency-bier-plus.png"),
+  currencyBierMinus: uiPath("currencyBierMinus", "icons/ui-final/currency-bier-minus.png"),
+  currencyFanartikel: uiPath("currencyFanartikel", "icons/ui/currency-fanartikel.png"),
+  currencyFanartikelPlus: uiPath(
+    "currencyFanartikelPlus",
+    "icons/ui-final/currency-fanartikel-plus.png",
+  ),
+  currencyFanartikelMinus: uiPath(
+    "currencyFanartikelMinus",
+    "icons/ui-final/currency-fanartikel-minus.png",
+  ),
+  currencySicherheit: uiPath("currencySicherheit", "icons/ui/currency-sicherheit.png"),
+  currencySicherheitPlus: uiPath(
+    "currencySicherheitPlus",
+    "icons/ui-final/currency-sicherheit-plus.png",
+  ),
+  currencySicherheitMinus: uiPath(
+    "currencySicherheitMinus",
+    "icons/ui-final/currency-sicherheit-minus.png",
+  ),
+  moodPlus: uiPath("moodPlus", "icons/ui-final/mood-plus.png"),
+  moodMinus: uiPath("moodMinus", "icons/ui-final/mood-minus.png"),
+  waitAnger: uiPath("waitAnger", "icons/ui-final/wait-anger.png"),
+  waitAngerHot: uiPath("waitAngerHot", "icons/ui-final/wait-anger-hot.png"),
+  btnKaufenGrey: uiPath("btnKaufenGrey", "icons/ui/btn-kaufen-grey.png"),
+  btnKaufenGreen: uiPath("btnKaufenGreen", "icons/ui/btn-kaufen-green.png"),
+  btnSendenGrey: uiPath("btnSendenGrey", "icons/ui/btn-senden-grey.png"),
+  btnSendenGreen: uiPath("btnSendenGreen", "icons/ui/btn-senden-green.png"),
+  btnSendenBlue: uiPath("btnSendenBlue", "icons/ui/btn-senden-blue.png"),
+  btnBauenAmber: uiPath("btnBauenAmber", "icons/ui/btn-bauen-amber.png"),
+  btnBauenGrey: uiPath("btnBauenGrey", "icons/ui/btn-bauen-grey.png"),
+  btnUpgradePurple: uiPath("btnUpgradePurple", "icons/ui/btn-upgrade-purple.png"),
+  btnUpgradeGrey: uiPath("btnUpgradeGrey", "icons/ui/btn-upgrade-grey.png"),
+  pennantKsc: uiPath("pennantKsc", "icons/ui/pennant-ksc.png"),
+  pennantVfb: uiPath("pennantVfb", "icons/ui/pennant-vfb.png"),
+  menuRail: uiPath("menuRail", "icons/ui/menu-rail-brown.png"),
+  /** Referenz-Demo — nicht Runtime-Default */
+  scoreboard: uiPath("scoreboard", "icons/ui/scoreboard-momentum.png"),
+  /** Leeres Chrome — Runtime-Default (STORAGE_CANON) */
+  scoreboardChrome: uiPath("scoreboardChrome", "icons/ui-final/scoreboard-chrome.png"),
+} as const;
+
+/**
+ * Leerer Bauplatz je Kontrolle — Deploy-Default = Perspektive (nicht Ortho).
+ * `orthoSource` bleibt für Archiv-Warps, Runtime nutzt Persp-PNGs.
+ */
+export function slotEmptyIconPath(
+  control: SlotControl | TeamId | "neutral" | null | undefined,
+  orientation: SlotEmptyOrientation = SLOT_EMPTY_ORIENTATION,
+  orthoSource = false,
+): string {
+  const c: SlotControl =
+    control === "ksc" || control === "blue"
+      ? "blue"
+      : control === "vfb" || control === "red"
+        ? "red"
+        : "grey";
+  if (orthoSource) {
+    if (c === "blue") return UI_ICONS.slotEmptyOrthoBlue;
+    if (c === "red") return UI_ICONS.slotEmptyOrthoRed;
+    return UI_ICONS.slotEmptyOrtho;
+  }
+  if (orientation === "iso") {
+    if (c === "blue") return UI_ICONS.slotEmptyIsoBlue;
+    if (c === "red") return UI_ICONS.slotEmptyIsoRed;
+    return UI_ICONS.slotEmptyIso;
+  }
+  // persp (default) + parallel-alias → Stadionboden-Perspektive
+  if (c === "blue") return UI_ICONS.slotEmptyPerspBlue;
+  if (c === "red") return UI_ICONS.slotEmptyPerspRed;
+  return UI_ICONS.slotEmptyPersp;
+}
 
 function loadOne(src: string): Promise<HTMLImageElement> {
   const hit = cache.get(src);
@@ -72,7 +185,10 @@ function loadOne(src: string): Promise<HTMLImageElement> {
 
 /** All icon paths used in a match (stands × colors × levels + units + UI). */
 function allIconPaths(): string[] {
-  const paths = new Set<string>(Object.values(UI_ICONS));
+  const paths = new Set<string>([
+    ...Object.values(UI_ICONS),
+    ...Object.values(SCENE_ASSETS),
+  ]);
   for (const kind of ["bier", "fanshop", "ordner"] as BuildingKind[]) {
     for (const color of ["blue", "red", "grey"] as TeamColor[]) {
       for (let lv = 1; lv <= 5; lv++) paths.add(standIconPath(kind, color, lv));
@@ -82,6 +198,14 @@ function allIconPaths(): string[] {
     for (const color of ["blue", "red", "grey"] as TeamColor[]) {
       for (let lv = 1; lv <= 5; lv++) paths.add(unitIconPath(kind, color, lv));
     }
+  }
+  for (const orient of ["parallel", "iso"] as SlotEmptyOrientation[]) {
+    for (const c of ["grey", "blue", "red"] as SlotControl[]) {
+      paths.add(slotEmptyIconPath(c, orient));
+    }
+  }
+  for (const c of ["grey", "blue", "red"] as SlotControl[]) {
+    paths.add(slotEmptyIconPath(c, undefined, true));
   }
   return [...paths];
 }
@@ -97,6 +221,79 @@ export function getIcon(src: string): HTMLImageElement | null {
   if (img && img.complete && img.naturalWidth > 0) return img;
   if (!cache.has(src)) void loadOne(src);
   return null;
+}
+
+type Pt = { x: number; y: number };
+
+/**
+ * Draw a freigestelltes icon into a convex screen quad (TL,TR,BR,BL)
+ * via two affine triangles — used to cut Bauplatz into the floor grid.
+ */
+export function drawIconQuad(
+  ctx: CanvasRenderingContext2D,
+  src: string,
+  tl: Pt,
+  tr: Pt,
+  br: Pt,
+  bl: Pt,
+): boolean {
+  const img = getIcon(src);
+  if (!img) return false;
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  if (iw < 2 || ih < 2) return false;
+  drawTexturedTriangle(ctx, img, tl, tr, bl, { x: 0, y: 0 }, { x: iw, y: 0 }, { x: 0, y: ih });
+  drawTexturedTriangle(ctx, img, tr, br, bl, { x: iw, y: 0 }, { x: iw, y: ih }, { x: 0, y: ih });
+  return true;
+}
+
+/** Affine-map image triangle abc → screen triangle ABC. */
+function drawTexturedTriangle(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  a: Pt,
+  b: Pt,
+  c: Pt,
+  ia: Pt,
+  ib: Pt,
+  ic: Pt,
+): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(a.x, a.y);
+  ctx.lineTo(b.x, b.y);
+  ctx.lineTo(c.x, c.y);
+  ctx.closePath();
+  ctx.clip();
+
+  const denom =
+    ia.x * (ib.y - ic.y) + ib.x * (ic.y - ia.y) + ic.x * (ia.y - ib.y);
+  if (Math.abs(denom) < 1e-6) {
+    ctx.restore();
+    return;
+  }
+  const m11 =
+    (a.x * (ib.y - ic.y) + b.x * (ic.y - ia.y) + c.x * (ia.y - ib.y)) / denom;
+  const m12 =
+    (a.x * (ic.x - ib.x) + b.x * (ia.x - ic.x) + c.x * (ib.x - ia.x)) / denom;
+  const m13 =
+    (a.x * (ib.x * ic.y - ic.x * ib.y) +
+      b.x * (ic.x * ia.y - ia.x * ic.y) +
+      c.x * (ia.x * ib.y - ib.x * ia.y)) /
+    denom;
+  const m21 =
+    (a.y * (ib.y - ic.y) + b.y * (ic.y - ia.y) + c.y * (ia.y - ib.y)) / denom;
+  const m22 =
+    (a.y * (ic.x - ib.x) + b.y * (ia.x - ic.x) + c.y * (ib.x - ia.x)) / denom;
+  const m23 =
+    (a.y * (ib.x * ic.y - ic.x * ib.y) +
+      b.y * (ic.x * ia.y - ia.x * ic.y) +
+      c.y * (ia.x * ib.y - ib.x * ia.y)) /
+    denom;
+
+  ctx.transform(m11, m21, m12, m22, m13, m23);
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
 }
 
 /** Draw a freigestelltes icon centered in a rect, preserving aspect ratio. */
@@ -126,6 +323,7 @@ export function drawIcon(
 
 export type ToyAnimMode =
   | "idle"
+  | "planted"
   | "walk"
   | "cheer"
   | "fight"
@@ -189,66 +387,74 @@ export function drawToyIcon(
   const shopBob = Math.sin(t * 6 + ph) * size * 0.035;
 
   const bob =
-    mode === "cheer"
-      ? cheerBob
-      : mode === "fight"
-        ? fightBob
-        : mode === "drink"
-          ? drinkBob
-          : mode === "throw"
-            ? throwBob
-            : mode === "shop"
-              ? shopBob
-              : mode === "walk" || mode === "exit"
-                ? -walkBob
-                : idleBob;
+    mode === "planted"
+      ? 0
+      : mode === "cheer"
+        ? cheerBob
+        : mode === "fight"
+          ? fightBob
+          : mode === "drink"
+            ? drinkBob
+            : mode === "throw"
+              ? throwBob
+              : mode === "shop"
+                ? shopBob
+                : mode === "walk" || mode === "exit"
+                  ? -walkBob
+                  : idleBob;
 
   const squashY =
-    mode === "walk" || mode === "exit"
-      ? 1 - stepAbs * 0.12 * hop
-      : mode === "fight"
-        ? 1 - strike * 0.14 + Math.sin(t * 14 + ph) * 0.03
-        : mode === "cheer"
-          ? 1 + Math.sin(t * 10.5 + ph) * 0.07
-          : mode === "drink"
-            ? 1 - 0.06 * ap
-            : mode === "throw"
-              ? 1 - (ap < 0.45 ? 0.04 : 0.1 * ((ap - 0.45) / 0.55))
-              : mode === "shop"
-                ? 1 + Math.sin(t * 6 + ph) * 0.03
-                : 1 + Math.sin(t * 5.4 + ph) * 0.025;
+    mode === "planted"
+      ? 1
+      : mode === "walk" || mode === "exit"
+        ? 1 - stepAbs * 0.12 * hop
+        : mode === "fight"
+          ? 1 - strike * 0.14 + Math.sin(t * 14 + ph) * 0.03
+          : mode === "cheer"
+            ? 1 + Math.sin(t * 10.5 + ph) * 0.07
+            : mode === "drink"
+              ? 1 - 0.06 * ap
+              : mode === "throw"
+                ? 1 - (ap < 0.45 ? 0.04 : 0.1 * ((ap - 0.45) / 0.55))
+                : mode === "shop"
+                  ? 1 + Math.sin(t * 6 + ph) * 0.03
+                  : 1 + Math.sin(t * 5.4 + ph) * 0.025;
   const squashX = 2 - squashY;
 
   const sway =
-    mode === "cheer"
-      ? Math.sin(t * 6.2 + ph) * 0.16
-      : mode === "fight"
-        ? Math.sin(t * 16 + ph) * 0.2 + strike * 0.28 * facing
-        : mode === "drink"
-          ? -0.12 * ap * facing + Math.sin(t * 5 + ph) * 0.03
-          : mode === "throw"
-            ? (ap < 0.45 ? -0.22 * (ap / 0.45) : 0.32 * ((ap - 0.45) / 0.55)) *
-              facing
-            : mode === "shop"
-              ? Math.sin(t * 4.5 + ph) * 0.08
-              : mode === "exit"
-                ? 0.18 * facing + step * 0.06
-                : mode === "walk"
-                  ? step * 0.12 * hop
-                  : Math.sin(t * 2.3 + ph) * 0.04;
+    mode === "planted"
+      ? 0
+      : mode === "cheer"
+        ? Math.sin(t * 6.2 + ph) * 0.16
+        : mode === "fight"
+          ? Math.sin(t * 16 + ph) * 0.2 + strike * 0.28 * facing
+          : mode === "drink"
+            ? -0.12 * ap * facing + Math.sin(t * 5 + ph) * 0.03
+            : mode === "throw"
+              ? (ap < 0.45 ? -0.22 * (ap / 0.45) : 0.32 * ((ap - 0.45) / 0.55)) *
+                facing
+              : mode === "shop"
+                ? Math.sin(t * 4.5 + ph) * 0.08
+                : mode === "exit"
+                  ? 0.18 * facing + step * 0.06
+                  : mode === "walk"
+                    ? step * 0.12 * hop
+                    : Math.sin(t * 2.3 + ph) * 0.04;
 
   const shear =
-    mode === "walk" || mode === "exit"
-      ? step * 0.2 * hop * facing
-      : mode === "fight"
-        ? strike * 0.32 * facing
-        : mode === "drink"
-          ? 0.08 * ap * facing
-          : mode === "throw"
-            ? (ap < 0.45 ? -0.15 : 0.35) * facing * Math.min(1, ap * 1.4)
-            : mode === "shop"
-              ? Math.sin(t * 5 + ph) * 0.06 * facing
-              : 0;
+    mode === "planted"
+      ? 0
+      : mode === "walk" || mode === "exit"
+        ? step * 0.2 * hop * facing
+        : mode === "fight"
+          ? strike * 0.32 * facing
+          : mode === "drink"
+            ? 0.08 * ap * facing
+            : mode === "throw"
+              ? (ap < 0.45 ? -0.15 : 0.35) * facing * Math.min(1, ap * 1.4)
+              : mode === "shop"
+                ? Math.sin(t * 5 + ph) * 0.06 * facing
+                : 0;
 
   const lean =
     mode === "exit"

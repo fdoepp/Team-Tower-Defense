@@ -224,18 +224,23 @@ select {
   height: 100%;
 }
 
-/* Matchday Comic — fixed % rails, Bloons touch buttons
-   Rails ≈ 22% screen; buttons ≈ 36–42% of each person card height. */
+/* Matchday Comic — Rahmenlogik MATCH_LAYOUT_TOKENS.json
+   left 21% · pitch 64% · right 15% (build-open). */
 .match-shell.matchday {
-  --rail-w: 22%;
+  /* +10% left / +30% right vs 21%/15% Rahmen-Baseline */
+  --rail-left-w: 25.41%;
+  --rail-right-w: 29.25%;
+  --rail-w: var(--rail-left-w);
   --rail-btn-h: clamp(42px, 10vh, 54px);
   --rail-icon: clamp(40px, 7vh, 52px);
+  --wallet-icon: 25px; /* ×1.15 vs 22px baseline */
+  --hud-scale: 1.15;
   flex: 1;
   min-height: 0;
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
   grid-template-rows: 1fr;
   gap: 0;
   position: relative;
@@ -245,8 +250,7 @@ select {
 }
 
 .match-shell.matchday.build-open {
-  --rail-w: 21%;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--rail-w);
+  grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
 }
 
 .match-shell.matchday .side-rail {
@@ -259,7 +263,10 @@ select {
   min-height: 0;
   height: 100%;
   max-height: 100%;
-  padding: 6px 7px max(6px, env(safe-area-inset-bottom));
+  /* Rahmenlogik: Karten ~volle Rail — Innenrand 1–2% (nicht safe-area) */
+  --rail-inset: 1%;
+  padding: var(--rail-inset);
+  padding-bottom: var(--rail-inset);
   overflow: hidden;
   overflow-x: hidden;
   pointer-events: auto;
@@ -274,21 +281,35 @@ select {
     0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
+/* Personen-Rail = fertige Card-A (Mockup + abgelegtes ui-final Chrome) */
 .match-shell.matchday .left-rail {
-  padding-left: max(10px, env(safe-area-inset-left));
+  padding: var(--rail-inset);
+  /* Safe-area weitet die Rail, nicht den Karten-Inset */
+  padding-left: var(--rail-inset);
+  margin-left: env(safe-area-inset-left, 0px);
+  gap: 3px;
   border-right-width: 4px;
 }
 
 .match-shell.matchday .right-rail,
 .match-shell.matchday .build-rail {
-  padding-right: max(10px, env(safe-area-inset-right));
+  padding-right: var(--rail-inset);
+  margin-right: env(safe-area-inset-right, 0px);
   border-left-width: 4px;
 }
 
 .match-shell.matchday .build-rail {
+  --br-gap: 2%;
+  --br-pad: 1%;
+  --br-icon: 26%;
   position: relative;
   z-index: 8;
   min-width: 0;
+  container-type: size;
+  gap: 2%;
+  /* Karten fast volle Railbreite — Innenrand 1% */
+  padding: var(--rail-inset);
+  padding-right: var(--rail-inset);
   animation: build-rail-in 0.22s ease-out;
 }
 
@@ -353,14 +374,22 @@ select {
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
+/* Card-A Banner — exakt Mockup */
+.match-shell.matchday .left-rail .rail-banner {
+  padding: 4px 6px;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #6b4428, #4a2c18);
+  border: 2px solid #3d2414;
+  box-shadow: none;
+  color: #f8e7c0;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+  text-shadow: none;
+}
+
 .rail-hint {
-  flex: 0 0 auto;
-  margin: 0;
-  font-size: 0.55rem;
-  font-weight: 700;
-  color: #f5e6c8;
-  line-height: 1.2;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  display: none; /* Hinweise entfallen — Live-Titel/Erträge reichen */
 }
 
 .match-shell.matchday .freie-plaetze {
@@ -372,21 +401,25 @@ select {
   color: #fff7ed;
 }
 
-.match-shell.matchday .unit-rows {
+.match-shell.matchday .unit-rows,
+.match-shell.matchday .person-cards {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  flex: 1 1 auto;
+  gap: 3px;
+  flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
   width: 100%;
 }
 
-/* Bloons card: whole card = Kaufen; fat bar buttons (~40% of card) */
-.match-shell.matchday .ur-row {
+/*
+ * Card A — dynamische Abstände aus fertigem Mockup
+ * (docs/mockups/personen-action-card + ui-final Chrome).
+ * Dual 3%·46%·2%·46%·3% / Triple 3%·30%·2%·30%·2%·30%·3%.
+ */
+.match-shell.matchday .person-card {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   gap: 3px;
   flex: 1 1 0;
   min-height: 0;
@@ -394,99 +427,87 @@ select {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  background: linear-gradient(180deg, #fffaf0, #f3e2c4);
-  border: 2px solid #7a4a22;
-  border-radius: 14px;
-  padding: 5px 6px 6px;
-  overflow: visible;
+  padding: 4px 0 5px;
+  overflow: hidden;
+  color: #1c120a;
+  background: linear-gradient(180deg, #f7ebcf, #e5cf9f);
+  border: 2px solid #3d2414;
+  border-radius: 10px;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    0 3px 0 rgba(60, 30, 10, 0.35);
-  cursor: pointer;
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 1px 0 rgba(0, 0, 0, 0.25);
   -webkit-tap-highlight-color: transparent;
 }
 
-.match-shell.matchday .ur-row:active {
-  transform: translateY(1px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.75),
-    0 1px 0 rgba(60, 30, 10, 0.35);
-}
-
-.match-shell.matchday .ur-top {
-  display: grid;
-  grid-template-columns: var(--rail-icon) 1fr;
-  gap: 5px;
-  align-items: center;
-  flex: 1 1 auto;
-  min-height: 0;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.match-shell.matchday .ur-row .ur-icon,
-.match-shell.matchday .ur-icon {
-  width: var(--rail-icon);
-  height: var(--rail-icon);
-  object-fit: contain;
-  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.28));
-  pointer-events: none;
-}
-
-.match-shell.matchday .ur-meta {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  column-gap: 4px;
-  min-width: 0;
-}
-
-.match-shell.matchday .ur-name {
-  font-family: var(--display);
-  font-weight: 900;
-  font-size: clamp(0.78rem, 1.6vh, 0.95rem);
-  color: #2b1608;
-  line-height: 1.1;
-}
-
-.match-shell.matchday .ur-count {
-  font-family: var(--display);
-  font-size: clamp(1rem, 2.2vh, 1.25rem);
-  font-weight: 900;
-  color: #1d4ed8;
-  line-height: 1;
-  grid-row: 1 / span 2;
-  align-self: center;
-}
-
-.match-shell.matchday .ur-cost {
-  margin: 0;
-  grid-column: 1;
-  font-size: clamp(0.58rem, 1.3vh, 0.7rem);
-  font-weight: 800;
-  color: #7a5530;
-  line-height: 1.15;
-}
-
-/* Fat Bloons bars: fixed height, fill the touch target (PNG is 360×100).
-   Dual = Kaufen | Senden side-by-side so all 4 person cards fit on phone. */
-.match-shell.matchday .ur-actions {
-  display: flex;
-  flex-direction: row;
-  gap: 5px;
+.match-shell.matchday .person-title {
   flex: 0 0 auto;
-  height: var(--rail-btn-h);
-  min-height: var(--rail-btn-h);
-  max-height: var(--rail-btn-h);
+  font-family: var(--display), "Segoe UI", system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 12px;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 1.5%;
+  color: #1c120a;
+}
+
+.match-shell.matchday .person-title .meta {
+  font-weight: 700;
+  color: #6b4e2e;
+}
+
+.match-shell.matchday .person-actions {
+  flex: 1 1 0;
+  display: grid;
+  align-items: stretch;
+  justify-items: stretch;
+  min-height: 0;
   width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0;
 }
 
-.match-shell.matchday .ur-actions-dual {
-  flex-direction: row;
+/* Button-Gutter ~1% Card-Breite (Rahmenlogik: schmaler Innenrand) */
+.match-shell.matchday .person-actions.dual {
+  grid-template-columns: 1% 48% 2% 48% 1%;
+}
+.match-shell.matchday .person-actions.dual .ar-cost-btn:nth-child(1) {
+  grid-column: 2;
+}
+.match-shell.matchday .person-actions.dual .ar-cost-btn:nth-child(2) {
+  grid-column: 4;
 }
 
-.match-shell.matchday .ur-row {
-  min-height: calc(var(--rail-btn-h) + 36px);
+.match-shell.matchday .person-actions.triple {
+  grid-template-columns: 1% 32% 1% 32% 1% 32% 1%;
+}
+.match-shell.matchday .person-actions.triple .ar-cost-btn:nth-child(1) {
+  grid-column: 2;
+}
+.match-shell.matchday .person-actions.triple .ar-cost-btn:nth-child(2) {
+  grid-column: 4;
+}
+.match-shell.matchday .person-actions.triple .ar-cost-btn:nth-child(3) {
+  grid-column: 6;
+}
+
+/* Abgelegtes Chrome: Zelle füllen, Live-Text Holz+2% (wie Mockup .cost-btn) */
+.match-shell.matchday .person-card .ar-cost-btn {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: auto;
+  flex: unset;
+  border-radius: 8px;
+}
+.match-shell.matchday .person-card .ar-cost-btn .inner {
+  gap: 0.3em;
+  font-family: inherit;
+  font-size: clamp(9px, 12cqw, 14px);
 }
 
 .match-shell.matchday .ar-icon-btn {
@@ -514,7 +535,6 @@ select {
   display: block;
   width: 100%;
   height: 100%;
-  /* Stretch wide bar art into the touch rect — contain made dual buttons ~17px tall */
   object-fit: fill;
   object-position: center;
   pointer-events: none;
@@ -529,28 +549,31 @@ select {
 .match-shell.matchday .build-rows {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--br-gap, 2.5%);
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
   overflow-x: hidden;
+  justify-content: flex-start;
+  align-content: flex-start;
 }
 
-/* Build card = same Bloons stack as person cards: top meta + fat Kaufen bar */
+/* Build card: Inhalt bestimmt Höhe, hart bei 40% Rail-Höhe kappen */
 .match-shell.matchday .build-card {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  flex: 1 1 0;
+  gap: 4%;
+  flex: 0 1 auto;
   min-height: 0;
   min-width: 0;
   width: 100%;
   max-width: 100%;
+  max-height: 40%;
   box-sizing: border-box;
   text-align: left;
-  padding: 7px 8px;
+  padding: var(--br-pad, 1.5%);
   border-radius: 14px;
   border: 2px solid #7a4a22;
   background: linear-gradient(180deg, #fffaf0, #f3e2c4);
@@ -559,22 +582,50 @@ select {
     0 3px 0 rgba(60, 30, 10, 0.35);
   cursor: pointer;
   overflow: hidden;
+  container-type: inline-size;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* Bauen/Upgrade: ein Chrome wie links — kein zweites Face hinter Live-Text */
+.match-shell.matchday .build-card .ar-cost-btn,
+.match-shell.matchday .upgrade-panel .ar-cost-btn {
+  background-color: transparent;
+  box-shadow: none;
+  filter: none;
+  outline: none;
+}
+.match-shell.matchday .build-card .ar-cost-btn .inner,
+.match-shell.matchday .upgrade-panel .ar-cost-btn .inner {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  /* kein extra Containment-Plate — nur Live-Text auf Face */
+  container-type: inline-size;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
 }
 
 .match-shell.matchday .build-card .build-top {
   display: grid;
-  grid-template-columns: var(--rail-icon) 1fr;
-  gap: 7px;
+  grid-template-columns: minmax(0, var(--br-icon, 26%)) minmax(0, 1fr);
+  gap: 4%;
   align-items: center;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-height: 0;
   min-width: 0;
   width: 100%;
 }
 
 .match-shell.matchday .build-card .build-preview,
 .match-shell.matchday .build-card > img.build-preview {
-  width: var(--rail-icon);
-  height: var(--rail-icon);
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  max-height: 100%;
+  aspect-ratio: 1;
   object-fit: contain;
   filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.28));
   pointer-events: none;
@@ -590,45 +641,219 @@ select {
 .match-shell.matchday .build-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.35em;
   min-width: 0;
   width: 100%;
   overflow: hidden;
+  justify-content: center;
 }
 
-.match-shell.matchday .build-card span,
-.match-shell.matchday .build-info span {
+.match-shell.matchday .build-card .build-name,
+.match-shell.matchday .build-info .build-name {
   font-family: var(--display);
   font-weight: 900;
-  font-size: clamp(0.78rem, 1.6vh, 0.95rem);
+  font-size: clamp(0.65rem, 7cqw, 0.95rem);
   color: #1f140c;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.1;
+}
+
+.match-shell.matchday .yield-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  min-width: 0;
+  max-width: 100%;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(0.5rem, 5.5cqw, 0.75rem);
+  color: #5c3a1a;
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.match-shell.matchday .build-card small,
-.match-shell.matchday .build-info small {
-  font-size: clamp(0.62rem, 1.35vh, 0.75rem);
-  font-weight: 800;
-  color: #7a5530;
+.match-shell.matchday .yield-chip img {
+  width: 1.15em;
+  height: 1.15em;
+  object-fit: contain;
+  flex: 0 0 auto;
 }
 
-.match-shell.matchday .build-card .build-kaufen,
-.match-shell.matchday .build-info .build-kaufen,
-.match-shell.matchday .upgrade-buy .build-kaufen {
+.match-shell.matchday .yield-chip.yield-delta {
+  color: #15803d;
+  font-weight: 900;
+}
+
+.match-shell.matchday .yield-chip.hidden {
+  display: none;
+}
+
+.match-shell.matchday .stat-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+  min-width: 0;
+  max-width: 100%;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(0.48rem, 5cqw, 0.7rem);
+  color: #5c3a1a;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.match-shell.matchday .stat-chip .stat-label {
+  font-weight: 700;
+  color: #7a5530;
+  font-size: 0.9em;
+}
+
+.match-shell.matchday .stat-chip.yield-delta,
+.match-shell.matchday .stat-chip.yield-delta .stat-label {
+  color: #15803d;
+  font-weight: 900;
+}
+
+.match-shell.matchday .up-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/*
+ * Button-Chrome + Live-Text (STORAGE_CANON):
+ * PNG = Holz + eine Fläche; Verb/Kosten nur im DOM.
+ * Overlay: Holz-Innenkante + 2% (Breite L/R, Höhe T/B).
+ */
+.match-shell.matchday .ar-cost-btn {
+  /* Face-Kante des Chrome-PNG; Live-Text Holz-Innen + 2% */
+  --wood-x: 6.41%;
+  --wood-y-top: 13.54%;
+  --wood-y-bot: 18.75%;
+  --inset: 2%;
+  position: relative;
   display: block;
   flex: 0 0 auto;
   width: 100%;
   max-width: 100%;
-  height: var(--rail-btn-h);
-  min-height: var(--rail-btn-h);
-  max-height: var(--rail-btn-h);
-  object-fit: fill;
-  object-position: center;
-  margin-top: 0;
-  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.28));
+  height: auto;
+  min-height: 0;
+  max-height: 42%;
+  aspect-ratio: 320 / 96;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  cursor: inherit;
+  font: inherit;
+  color: #fff;
+}
+.match-shell.matchday button.ar-cost-btn {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.match-shell.matchday .ar-cost-btn.bauen {
+  background-image: url("/icons/ui-final/btn-bauen-amber.png");
+}
+.match-shell.matchday .ar-cost-btn.kaufen {
+  background-image: url("/icons/ui-final/btn-kaufen-green.png");
+}
+.match-shell.matchday .ar-cost-btn.upgrade {
+  background-image: url("/icons/ui-final/btn-upgrade-purple.png");
+}
+.match-shell.matchday .ar-cost-btn.senden {
+  background-image: url("/icons/ui-final/btn-senden-blue.png");
+}
+.match-shell.matchday .build-card.cd .ar-cost-btn.bauen,
+.match-shell.matchday .ar-cost-btn.bauen.cd {
+  background-image: url("/icons/ui-final/btn-bauen-grey.png");
+}
+.match-shell.matchday .build-card.cd .ar-cost-btn.kaufen,
+.match-shell.matchday .ar-cost-btn.kaufen.cd,
+.match-shell.matchday .ar-cost-btn.kaufen:disabled,
+.match-shell.matchday .build-card:disabled .ar-cost-btn.kaufen {
+  background-image: url("/icons/ui-final/btn-kaufen-grey.png");
+}
+.match-shell.matchday .ar-cost-btn.upgrade.cd,
+.match-shell.matchday .ar-cost-btn.upgrade:disabled {
+  background-image: url("/icons/ui-final/btn-upgrade-grey.png");
+}
+.match-shell.matchday .ar-cost-btn.senden.cd,
+.match-shell.matchday .ar-cost-btn.senden:disabled {
+  background-image: url("/icons/ui-final/btn-senden-grey.png");
+}
+.match-shell.matchday .ar-cost-btn .inner {
+  position: absolute;
+  left: calc(var(--wood-x) + var(--inset));
+  right: calc(var(--wood-x) + var(--inset));
+  top: calc(var(--wood-y-top) + var(--inset));
+  bottom: calc(var(--wood-y-bot) + var(--inset));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  font-weight: 900;
+  font-family: var(--display), system-ui, sans-serif;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+  container-type: inline-size;
+  font-size: clamp(9px, 12cqw, 14px);
+  overflow: hidden;
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  border-radius: 0;
   pointer-events: none;
+}
+.match-shell.matchday .ar-cost-btn .txt,
+.match-shell.matchday .ar-cost-btn .pay {
+  font-size: 1em;
+  font-weight: inherit;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+}
+.match-shell.matchday .ar-cost-btn .txt .short { display: none; }
+.match-shell.matchday .ar-cost-btn .txt .full { display: inline; }
+@container (max-width: 100px) {
+  .match-shell.matchday .ar-cost-btn .txt .full { display: none; }
+  .match-shell.matchday .ar-cost-btn .txt .short { display: inline; }
+}
+.match-shell.matchday .ar-cost-btn .pay {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+}
+.match-shell.matchday .ar-cost-btn .pay img {
+  width: 1.15em;
+  height: 1.15em;
+  object-fit: contain;
+  flex: 0 0 auto;
 }
 
 .match-shell.matchday .build-card.selected {
@@ -637,23 +862,28 @@ select {
 }
 
 .match-shell.matchday .build-card.cd,
-.match-shell.matchday .upgrade-buy:disabled {
+.match-shell.matchday .ar-cost-btn.upgrade:disabled,
+.match-shell.matchday .ar-cost-btn.upgrade.cd,
+.match-shell.matchday .ar-cost-btn.kaufen:disabled,
+.match-shell.matchday .ar-cost-btn.kaufen.cd,
+.match-shell.matchday .ar-cost-btn.senden:disabled,
+.match-shell.matchday .ar-cost-btn.senden.cd {
   opacity: 0.55;
 }
 
-/* Upgrade panel — full rail width, no sideways scroll; leave room for hire card */
+/* Upgrade panel — Inhalt bestimmt Höhe, max. 40% Rail */
 .match-shell.matchday .upgrade-panel {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  flex: 1 1 auto;
+  gap: 4%;
+  flex: 0 1 auto;
   min-height: 0;
-  max-height: 62%;
   min-width: 0;
   max-width: 100%;
+  max-height: 40%;
   width: 100%;
   box-sizing: border-box;
-  padding: 7px 8px;
+  padding: var(--br-pad, 1.5%);
   border-radius: 14px;
   border: 2px solid #7a4a22;
   background: linear-gradient(180deg, #fffaf0, #f3e2c4);
@@ -662,19 +892,20 @@ select {
     0 3px 0 rgba(60, 30, 10, 0.35);
   overflow: hidden;
   overflow-x: hidden;
+  container-type: inline-size;
 }
 
-.match-shell.matchday #build-upgrade-rows > .build-card {
-  flex: 0 0 auto;
-  min-height: calc(var(--rail-btn-h) + 52px);
-  max-height: 38%;
+.match-shell.matchday #build-upgrade-rows {
+  gap: var(--br-gap, 2.5%);
+  justify-content: flex-start;
 }
 
 .match-shell.matchday .upgrade-title {
+  flex: 0 0 auto;
   margin: 0;
   font-family: var(--display);
   font-weight: 900;
-  font-size: clamp(0.72rem, 1.5vh, 0.88rem);
+  font-size: clamp(0.7rem, 7cqw, 1rem);
   color: #1f140c;
   white-space: nowrap;
   overflow: hidden;
@@ -684,92 +915,68 @@ select {
 .match-shell.matchday .upgrade-preview {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 4px;
+  gap: 3%;
   align-items: center;
+  flex: 1 1 auto;
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  min-height: 0;
 }
 
 .match-shell.matchday .up-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
+  justify-content: center;
+  gap: 4%;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
 }
 
-.match-shell.matchday .up-stage img {
-  width: min(48px, 28%);
-  max-width: 52px;
+.match-shell.matchday .up-stage > img {
+  width: min(56%, 64px);
+  max-width: 100%;
   height: auto;
+  max-height: 55%;
   aspect-ratio: 1;
   object-fit: contain;
   filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.28));
+  flex: 0 1 auto;
 }
 
-.match-shell.matchday .up-stage span {
+.match-shell.matchday .up-stage .up-lv {
   font-family: var(--display);
   font-weight: 900;
-  font-size: clamp(0.55rem, 1.2vh, 0.68rem);
+  font-size: clamp(0.5rem, 5.5cqw, 0.72rem);
   color: #1d4ed8;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.match-shell.matchday .up-stage .yield-chip {
+  font-size: clamp(0.5rem, 5.5cqw, 0.75rem);
+  flex: 0 0 auto;
 }
 
 .match-shell.matchday .up-arrow {
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 8cqw, 1.15rem);
   font-weight: 900;
   color: #3b2412;
   flex: 0 0 auto;
+  line-height: 1;
 }
 
 .match-shell.matchday .upgrade-blurb {
-  margin: 0;
-  font-size: clamp(0.52rem, 1.15vh, 0.62rem);
-  font-weight: 700;
-  color: #7a5530;
-  line-height: 1.2;
-  overflow: hidden;
+  display: none;
 }
 
-.match-shell.matchday .upgrade-buy {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 2px;
-  flex: 0 0 auto;
+.match-shell.matchday .upgrade-panel .ar-cost-btn {
+  flex: 0 1 auto;
   width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  min-height: 0;
-  padding: 6px 7px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #ecfdf5, #bbf7d0);
-  box-shadow: 0 3px 0 #166534;
-  cursor: pointer;
-  box-sizing: border-box;
-  overflow: hidden;
-}
-
-.match-shell.matchday .upgrade-buy span {
-  font-family: var(--display);
-  font-weight: 900;
-  font-size: clamp(0.72rem, 1.5vh, 0.88rem);
-  color: #14532d;
-}
-
-.match-shell.matchday .upgrade-buy small {
-  font-weight: 800;
-  font-size: clamp(0.58rem, 1.25vh, 0.7rem);
-  color: #166534;
-}
-
-.match-shell.matchday .upgrade-buy .build-kaufen {
-  height: var(--rail-btn-h);
-  min-height: var(--rail-btn-h);
-  width: 100%;
-  max-width: 100%;
+  max-height: 28%;
 }
 
 .match-shell.matchday #game-wrap {
@@ -796,18 +1003,21 @@ select {
   top: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 4px;
-  padding: 6px 8px;
-  padding-top: max(6px, env(safe-area-inset-top));
+  padding: 3% 2% 0;
+  padding-top: max(3%, env(safe-area-inset-top));
   pointer-events: none;
-  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.45), transparent 85%);
+  background: transparent;
   overflow: visible;
   height: auto;
 }
 
+/* Wallet: oben links im Pitch (nicht zentriert) — MATCH_LAYOUT_TOKENS */
 .match-shell.matchday .wallet-row {
-  justify-content: center;
+  align-self: flex-start;
+  justify-content: flex-start;
+  margin-left: 2%;
   pointer-events: none;
 }
 
@@ -824,7 +1034,7 @@ select {
 }
 
 .match-shell.matchday .fanbase-col.gast {
-  display: none; /* height goes to fat stacked Kaufen/Senden bars */
+  display: none; /* card A: Höhe geht an die vier Personen-Karten */
   grid-template-columns: 1fr 1fr;
   flex: 0 0 auto;
   gap: 2px;
@@ -832,12 +1042,6 @@ select {
   padding-top: 3px;
   border-top: 1px solid rgba(255, 230, 180, 0.25);
   pointer-events: none;
-}
-
-@media (min-height: 480px) {
-  .match-shell.matchday .fanbase-col.gast {
-    display: grid;
-  }
 }
 
 .match-shell.matchday .fanbase-col.gast::before {
@@ -865,17 +1069,15 @@ select {
   font-weight: 700;
 }
 
-/* Phone landscape: same % rails, never crush buttons below touch size */
+/* Phone landscape: keep Rahmenlogik rails, never crush buttons below touch size */
 @media (max-width: 900px) {
   .match-shell.matchday {
-    --rail-w: 23%;
     --rail-btn-h: clamp(40px, 11vh, 52px);
     --rail-icon: clamp(36px, 8vh, 48px);
-    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
   }
   .match-shell.matchday.build-open {
-    --rail-w: 21.5%;
-    grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--rail-w);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
   }
 }
 
@@ -891,14 +1093,12 @@ select {
   .match-shell.matchday .freie-plaetze {
     font-size: 0.5rem;
   }
-  .match-shell.matchday .ur-row {
-    min-height: calc(var(--rail-btn-h) + 28px);
+  .match-shell.matchday .left-rail .rail-banner {
+    font-size: 11px;
+    padding: 3px 5px;
   }
-  .match-shell.matchday .ur-name {
-    font-size: 0.72rem;
-  }
-  .match-shell.matchday .ur-cost {
-    font-size: 0.52rem;
+  .match-shell.matchday .person-title {
+    font-size: 11px;
   }
 }
 
@@ -984,10 +1184,19 @@ select {
 }
 
 .wallet-row .wi.chip img {
-  width: 22px;
-  height: 22px;
+  width: var(--wallet-icon, 25px);
+  height: var(--wallet-icon, 25px);
   object-fit: contain;
   display: block;
+}
+
+.match-shell.matchday .wallet-row .wi {
+  font-size: calc(0.52rem * var(--hud-scale, 1.15));
+  padding: 2px 6px 2px 3px;
+}
+
+.match-shell.matchday .wallet-row .wi b {
+  font-size: calc(0.68rem * var(--hud-scale, 1.15));
 }
 
 .wallet-row .wi i {
@@ -1769,11 +1978,11 @@ select {
   }
   .match-shell.matchday {
     display: grid !important;
-    grid-template-columns: var(--rail-w) minmax(0, 1fr);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
     pointer-events: auto;
   }
   .match-shell.matchday.build-open {
-    grid-template-columns: var(--rail-w) minmax(0, 1fr) var(--rail-w);
+    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
   }
 }
 

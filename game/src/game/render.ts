@@ -13,24 +13,38 @@ import {
   HEIM_BLOCK,
   L,
   SEATS_PER_BLOCK,
+  FLOOR_GRID_COUPLE,
   blockCenterX,
-  blockWidthNorm,
+  blocksLeftNorm,
+  blocksRightNorm,
+  boothCenter,
+  boothQuad,
   boothRect,
   doorPos,
+  gangHeight,
   gangY,
   pennantPos,
   seatPos,
+  syncTribuneLayout,
+  tribuneRect,
 } from "./layout";
 import {
+  SCENE_ASSETS,
   UI_ICONS,
   drawIcon,
+  drawIconQuad,
   drawToyIcon,
   drawToyProp,
+  getIcon,
   type ToyAnimMode,
+  slotEmptyIconPath,
   standIconPath,
   teamColor,
+  tribuneIconPath,
   unitIconPath,
+  type SlotControl,
 } from "./assets";
+import { boothFacadeQuad, scaleQuad, type ScreenQuad } from "./floorGrid";
 
 export { SEATS_PER_BLOCK } from "./layout";
 export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
@@ -38,6 +52,7 @@ export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } 
 export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   const w = m.width;
   const h = m.height;
+  syncTribuneLayout(w, h);
   // Skip when shell is display:none / zero-sized — arcTo crashes on tiny/negative rects
   if (w < 32 || h < 32) return;
   ctx.clearRect(0, 0, w, h);
@@ -57,6 +72,23 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawFloats(ctx, m, w, h);
 }
 
+/** Cover-draw stadium-floodlight-derby-bg when available (Rahmenlogik). */
+function drawStadiumBackdrop(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+): boolean {
+  const img = getIcon(SCENE_ASSETS.stadiumFloodlightDerby);
+  if (!img?.complete || !img.naturalWidth) return false;
+  const iw = img.naturalWidth;
+  const ih = img.naturalHeight;
+  const s = Math.max(w / iw, h / ih);
+  const dw = iw * s;
+  const dh = ih * s;
+  ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  return true;
+}
+
 /** Night stadium bowl + floodlights behind the stands (Matchday Comic) */
 function drawStadiumAtmosphere(
   ctx: CanvasRenderingContext2D,
@@ -64,6 +96,17 @@ function drawStadiumAtmosphere(
   w: number,
   h: number,
 ): void {
+  if (drawStadiumBackdrop(ctx, w, h)) {
+    // Soft asphalt veil so gang sprites stay readable over photo BG
+    const floorY = h * gangY();
+    const veil = ctx.createLinearGradient(0, floorY - h * 0.02, 0, h);
+    veil.addColorStop(0, "rgba(55, 58, 64, 0.15)");
+    veil.addColorStop(1, "rgba(40, 42, 48, 0.35)");
+    ctx.fillStyle = veil;
+    ctx.fillRect(0, floorY - h * 0.02, w, h - floorY + h * 0.02);
+    return;
+  }
+
   const skyH = h * (L.blockTop + L.blockBodyH * 0.55);
   const sky = ctx.createLinearGradient(0, 0, 0, skyH);
   sky.addColorStop(0, "#04070f");
@@ -178,28 +221,32 @@ function drawStadiumAtmosphere(
   ctx.lineWidth = 2;
   ctx.setLineDash([8, 12]);
   ctx.beginPath();
-  ctx.moveTo(w * L.blocksLeft, floorY + h * L.gangH * 0.55);
-  ctx.lineTo(w * L.blocksRight, floorY + h * L.gangH * 0.55);
+  ctx.moveTo(w * blocksLeftNorm(), floorY + h * gangHeight() * 0.55);
+  ctx.lineTo(w * blocksRightNorm(), floorY + h * gangHeight() * 0.55);
   ctx.stroke();
   ctx.setLineDash([]);
 }
 
+/**
+ * Freigestellte Tribünen — flush strip, grey centered, uniform scale (no distort).
+ */
 function drawBlocks(
   ctx: CanvasRenderingContext2D,
   m: Match,
   w: number,
   h: number,
 ): void {
-  const top = h * L.blockTop;
-  const bh = h * L.blockBodyH;
-  const bw = blockWidthNorm() * w;
-  const labels = ["Heim", "Neutral", "Gäste"];
+  syncTribuneLayout(w, h);
 
   for (const b of BLOCK_META) {
-    const cx = blockCenterX(b.id) * w;
-    const left = cx - bw / 2;
+    const tr = tribuneRect(b.id);
+    const left = tr.x * w;
+    const top = tr.y * h;
+    const bw = tr.w * w;
+    const bh = tr.h * h;
+    const cx = left + bw / 2;
     const owner = m.blockOwner[b.id];
-    // Gradual tint from people in the block (capture pressure)
+
     let blue = 0;
     let red = 0;
     for (const f of m.fans) {
@@ -210,97 +257,44 @@ function drawBlocks(
       else if (f.team === "vfb") red++;
     }
     const crowd = blue + red;
-    const lean = crowd > 0 ? (blue - red) / crowd : 0; // +heim blue, -gast red
+    const lean = crowd > 0 ? (blue - red) / crowd : 0;
     const pressure = Math.min(1, crowd / 8) * Math.abs(lean);
-
-    let base =
-      owner === "ksc" ? "#2563eb" : owner === "vfb" ? "#dc2626" : "#64748b";
-    let deep =
-      owner === "ksc" ? "#1e3a8a" : owner === "vfb" ? "#7f1d1d" : "#334155";
-    if (owner === "neutral" && pressure > 0.08) {
-      base = lean > 0 ? lerpHex("#64748b", "#2563eb", pressure) : lerpHex("#64748b", "#dc2626", pressure);
-      deep = lean > 0 ? lerpHex("#334155", "#1e3a8a", pressure) : lerpHex("#334155", "#7f1d1d", pressure);
-    }
     const glow =
       owner === "ksc" || (owner === "neutral" && lean > 0.15)
-        ? `rgba(59,130,246,${0.25 + pressure * 0.35})`
+        ? `rgba(59,130,246,${0.18 + pressure * 0.3})`
         : owner === "vfb" || (owner === "neutral" && lean < -0.15)
-          ? `rgba(248,113,113,${0.25 + pressure * 0.35})`
-          : "rgba(148,163,184,0.25)";
+          ? `rgba(248,113,113,${0.18 + pressure * 0.3})`
+          : "rgba(148,163,184,0.14)";
 
-    // colored glow under platform
-    const g = ctx.createRadialGradient(cx, top + bh * 0.4, 10, cx, top + bh * 0.5, bw * 0.7);
+    const g = ctx.createRadialGradient(cx, top + bh * 0.45, 8, cx, top + bh * 0.5, bw * 0.72);
     g.addColorStop(0, glow);
     g.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = g;
-    ctx.fillRect(left - 8, top - 12, bw + 16, bh + 24);
+    ctx.fillRect(left - 10, top - 8, bw + 20, bh + 20);
 
-    // raised platform base (isometric lip)
-    ctx.fillStyle = "rgba(0,0,0,0.4)";
-    roundRect(ctx, left + 6, top + 10, bw, bh, 20);
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(cx, top + bh * 0.92, bw * 0.42, bh * 0.08, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    const shell = ctx.createLinearGradient(left, top, left, top + bh);
-    shell.addColorStop(0, base);
-    shell.addColorStop(0.35, deep);
-    shell.addColorStop(0.75, "#0f172a");
-    shell.addColorStop(1, "#020617");
-    ctx.fillStyle = shell;
-    roundRect(ctx, left, top, bw, bh, 20);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(255,255,255,0.28)";
-    ctx.lineWidth = 2.5;
-    roundRect(ctx, left + 2, top + 2, bw - 4, bh - 4, 18);
-    ctx.stroke();
-
-    // terrace steps
-    ctx.save();
-    roundRect(ctx, left, top, bw, bh, 20);
-    ctx.clip();
-    for (let row = 0; row < 5; row++) {
-      const ry = top + bh * 0.2 + row * (bh * 0.14);
-      ctx.fillStyle = row % 2 === 0 ? "rgba(255,255,255,0.14)" : "rgba(15,23,42,0.3)";
-      ctx.fillRect(left + 10, ry, bw - 20, bh * 0.11);
+    const tribSrc = tribuneIconPath(b.id);
+    // Cell already native-aspect packed — pad 0 so faces stay 0.5% apart
+    const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
+    if (!drew) {
+      ctx.fillStyle =
+        b.id === 0 ? "#2563eb" : b.id === 2 ? "#dc2626" : "#64748b";
+      roundRect(ctx, left, top, bw, bh, 18);
+      ctx.fill();
     }
-    const canopy = ctx.createLinearGradient(left, top, left, top + bh * 0.18);
-    canopy.addColorStop(0, "rgba(15,23,42,0.65)");
-    canopy.addColorStop(1, "rgba(15,23,42,0)");
-    ctx.fillStyle = canopy;
-    ctx.fillRect(left, top, bw, bh * 0.18);
-    ctx.restore();
+    // Keine Heim/Neutral/Gäste-Überschriften auf den Tribünen
 
-    // label chip
-    const label = labels[b.id] ?? "Block";
-    const chipW = Math.max(54, bw * 0.55);
-    const chipH = Math.max(18, h * 0.026);
-    ctx.fillStyle = "rgba(255,255,255,0.95)";
-    roundRect(ctx, cx - chipW / 2, top + 6, chipW, chipH, 9);
-    ctx.fill();
-    if (owner === "ksc" || owner === "vfb") {
-      drawClubCrest(ctx, cx - chipW * 0.28, top + 6 + chipH / 2, chipH * 0.38, owner);
-    }
-    ctx.fillStyle = "#0f172a";
-    ctx.font = `800 ${Math.floor(chipH * 0.55)}px Outfit, Manrope, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(label, cx + (owner === "ksc" || owner === "vfb" ? 6 : 0), top + 6 + chipH / 2 + 0.5);
-    ctx.textBaseline = "alphabetic";
-
-    // exit tunnel
     const d = doorPos(b.id);
-    const doorW = bw * L.doorFrac;
+    const doorW = bw * L.doorFrac * 0.85;
     const corridorTop = d.y * h;
-    const corridorH = Math.max(10, h * gangY() - corridorTop + 6);
+    const corridorH = Math.max(8, h * gangY() - corridorTop + 4);
     const dx = d.x * w - doorW / 2;
-    const tunnel = ctx.createLinearGradient(dx, corridorTop, dx, corridorTop + corridorH);
-    tunnel.addColorStop(0, "#111827");
-    tunnel.addColorStop(1, "#020617");
-    ctx.fillStyle = tunnel;
-    roundRect(ctx, dx, corridorTop - 2, doorW, corridorH + 4, 8);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.12)";
-    roundRect(ctx, dx + 3, corridorTop + 2, doorW - 6, Math.min(corridorH * 0.35, h * 0.03), 5);
+    ctx.fillStyle = "rgba(2,6,23,0.55)";
+    roundRect(ctx, dx, corridorTop - 2, doorW, corridorH + 4, 6);
     ctx.fill();
   }
 }
@@ -325,19 +319,27 @@ function drawSeats(
   }
 }
 
-/** Center scoreboard + momentum strip (Matchday Comic / mockup) */
+/** Scoreboard slots — scoreboard-slots.json (0–1 on chrome box). */
+const SB_SLOTS = {
+  logoHeim: { x: 0.08, y: 0.28, w: 0.18, h: 0.44 },
+  logoGast: { x: 0.74, y: 0.28, w: 0.18, h: 0.44 },
+  score: { x: 0.32, y: 0.3, w: 0.36, h: 0.36 },
+  clock: { x: 0.45, y: 0.17, w: 0.1, h: 0.14 },
+  momentumTrack: { x: 0.1, y: 0.78, w: 0.8, h: 0.14 },
+} as const;
+
+/** Empty chrome + live overlays (STORAGE_CANON). Sizes: MATCH_LAYOUT_TOKENS. */
 function drawScoreboard(
   ctx: CanvasRenderingContext2D,
   m: Match,
   w: number,
   h: number,
 ): void {
-  // Keep scoreboard inside the top third (above the stands)
-  const boardW = Math.min(w * 0.38, h * 0.42);
-  const boardH = Math.min(boardW * (720 / 1280) * 0.68, h * 0.22);
+  const boardW = Math.min(w * 0.598, h * 0.48);
+  const boardH = Math.min(boardW * (508 / 1041), h * 0.1725);
   const bx = (w - boardW) / 2;
-  const by = h * 0.008;
-  // Soft stadium glow behind board
+  const by = h * 0.03;
+
   const glow = ctx.createRadialGradient(
     w * 0.5,
     by + boardH * 0.55,
@@ -351,69 +353,66 @@ function drawScoreboard(
   ctx.fillStyle = glow;
   ctx.fillRect(bx - 20, by - 8, boardW + 40, boardH + 24);
 
-  const drew = drawIcon(ctx, UI_ICONS.scoreboard, bx, by, boardW, boardH, 0.02);
+  const drew = drawIcon(ctx, UI_ICONS.scoreboardChrome, bx, by, boardW, boardH, 0.02);
   if (!drew) {
-    // fallback panel
     ctx.fillStyle = "rgba(15,23,42,0.88)";
     roundRect(ctx, bx, by, boardW, boardH * 0.62, 10);
     ctx.fill();
   }
 
-  // Scoreboard PNG has baked mock values (3:2, 39', Torchance 70/30).
-  // Cover those faces before drawing live match state.
-  const faceY = by + boardH * 0.2;
-  const faceH = boardH * 0.4;
-  const faceX = bx + boardW * 0.28;
-  const faceW = boardW * 0.44;
-  ctx.fillStyle = "#efe6d4";
-  roundRect(ctx, faceX, faceY, faceW, faceH, 6);
-  ctx.fill();
-  // Clock orb area (baked 39')
-  const clockR = Math.max(10, boardH * 0.11);
-  ctx.beginPath();
-  ctx.arc(w * 0.5 + boardW * 0.36, by + boardH * 0.12, clockR, 0, Math.PI * 2);
-  ctx.fillStyle = "#16a34a";
-  ctx.fill();
+  const slot = (key: keyof typeof SB_SLOTS) => {
+    const s = SB_SLOTS[key];
+    return {
+      x: bx + s.x * boardW,
+      y: by + s.y * boardH,
+      w: s.w * boardW,
+      h: s.h * boardH,
+    };
+  };
 
-  // Live score + minute — dark on cream so it stays readable
+  // Logos are baked into scoreboardChrome — no live Wimpel overlays
+
   ctx.save();
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillStyle = "#0f172a";
-  ctx.font = `900 ${Math.max(16, Math.floor(faceH * 0.72))}px Outfit, Manrope, sans-serif`;
-  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, w * 0.5, faceY + faceH * 0.52);
+  const sc = slot("score");
   ctx.fillStyle = "#f8fafc";
-  ctx.font = `800 ${Math.max(10, Math.floor(clockR * 0.95))}px Outfit, Manrope, sans-serif`;
-  const min = Math.floor(m.minute ?? 0);
-  ctx.fillText(`${min}′`, w * 0.5 + boardW * 0.36, by + boardH * 0.12);
+  ctx.font = `900 ${Math.max(16, Math.floor(sc.h * 0.62))}px Outfit, Manrope, sans-serif`;
+  ctx.shadowColor = "rgba(0,0,0,0.55)";
+  ctx.shadowBlur = 5;
+  ctx.fillText(`${m.scoreKsc} : ${m.scoreVfb}`, sc.x + sc.w / 2, sc.y + sc.h / 2);
+  ctx.shadowBlur = 0;
 
-  // Momentum strip: who scores next (covers baked Torchance gem + 70/30)
-  const barY = by + boardH * 0.72;
-  const barH = Math.max(16, boardH * 0.2);
-  const barX = bx + boardW * 0.06;
-  const barW = boardW * 0.88;
+  const ck = slot("clock");
+  const min = Math.floor(m.minute ?? 0);
+  ctx.fillStyle = "#0f2310";
+  ctx.font = `800 ${Math.max(10, Math.floor(ck.h * 0.55))}px Outfit, Manrope, sans-serif`;
+  ctx.fillText(`${min}′`, ck.x + ck.w / 2, ck.y + ck.h / 2);
+
+  // Momentum in track slot
+  const mt = slot("momentumTrack");
   const ch = m.goalChance();
   const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
-  roundRect(ctx, barX, barY, barW, barH, 8);
-  ctx.fillStyle = "rgba(15,23,42,0.92)";
+  roundRect(ctx, mt.x, mt.y, mt.w, mt.h, 6);
+  ctx.fillStyle = "rgba(15,23,42,0.75)";
   ctx.fill();
-  const split = barX + barW * heimPct;
+  const split = mt.x + mt.w * heimPct;
   ctx.fillStyle = "#2563eb";
-  roundRect(ctx, barX, barY, Math.max(4, split - barX), barH, 8);
+  roundRect(ctx, mt.x, mt.y, Math.max(4, split - mt.x), mt.h, 6);
   ctx.fill();
   ctx.fillStyle = "#dc2626";
-  roundRect(ctx, split, barY, Math.max(4, barX + barW - split), barH, 8);
+  roundRect(ctx, split, mt.y, Math.max(4, mt.x + mt.w - split), mt.h, 6);
   ctx.fill();
   ctx.fillStyle = "#f8fafc";
-  ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.48))}px Outfit, Manrope, sans-serif`;
+  ctx.font = `800 ${Math.max(9, Math.floor(mt.h * 0.45))}px Outfit, Manrope, sans-serif`;
   ctx.textAlign = "left";
-  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, barX + 8, barY + barH / 2 + 0.5);
+  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 6, mt.y + mt.h / 2);
   ctx.textAlign = "right";
-  ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, barX + barW - 8, barY + barH / 2 + 0.5);
+  ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, mt.x + mt.w - 6, mt.y + mt.h / 2);
   ctx.textAlign = "center";
-  ctx.fillStyle = "#fde68a";
-  ctx.font = `800 ${Math.max(8, Math.floor(barH * 0.4))}px Outfit, Manrope, sans-serif`;
-  ctx.fillText("nächstes Tor", w * 0.5, barY + barH / 2 + 0.5);
+  ctx.fillStyle = "#e2e8f0";
+  ctx.font = `700 ${Math.max(8, Math.floor(mt.h * 0.38))}px Outfit, Manrope, sans-serif`;
+  ctx.fillText("nächstes Tor", w * 0.5, mt.y + mt.h / 2);
   ctx.restore();
 }
 
@@ -424,21 +423,13 @@ function drawGang(
   h: number,
 ): void {
   const y = h * gangY();
-  const gh = h * L.gangH;
-  const left = w * L.blocksLeft;
-  const span = w * (L.blocksRight - L.blocksLeft);
+  const gh = h * gangHeight();
+  const left = w * blocksLeftNorm();
+  const span = w * (blocksRightNorm() - blocksLeftNorm());
   const px = left + span * m.linePlayer;
   const ax = left + span * m.lineAi;
 
-  // Soft open concourse — light territory wash only
-  const pEdge = Math.min(px, ax);
-  const aEdge = Math.max(px, ax);
-  ctx.fillStyle = "rgba(59,130,246,0.18)";
-  ctx.fillRect(left, y, Math.max(0, pEdge - left), gh);
-  ctx.fillStyle = "rgba(239,68,68,0.18)";
-  ctx.fillRect(aEdge, y, left + span - aEdge, gh);
-
-  // Front lines (thicker so territory edge is obvious)
+  // Front lines mark territory — no gang color wash
   ctx.save();
   ctx.setLineDash([7, 5]);
   ctx.lineWidth = 3.5;
@@ -463,9 +454,9 @@ function drawFrontStandards(
   h: number,
 ): void {
   const y = h * gangY();
-  const gh = h * L.gangH;
-  const left = w * L.blocksLeft;
-  const span = w * (L.blocksRight - L.blocksLeft);
+  const gh = h * gangHeight();
+  const left = w * blocksLeftNorm();
+  const span = w * (blocksRightNorm() - blocksLeftNorm());
   const poles: { x: number; team: "ksc" | "vfb" }[] = [
     { x: left + span * m.linePlayer, team: m.playerTeam },
     { x: left + span * m.lineAi, team: m.aiTeam },
@@ -473,24 +464,10 @@ function drawFrontStandards(
   for (const pole of poles) {
     const src = pole.team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
     const baseY = y + gh * 0.88;
-    const poleH = gh * 0.72;
-    // pole
-    ctx.strokeStyle = "#44403c";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(pole.x, baseY);
-    ctx.lineTo(pole.x, baseY - poleH);
-    ctx.stroke();
-    // base disk
-    ctx.fillStyle = "rgba(15,23,42,0.45)";
-    ctx.beginPath();
-    ctx.ellipse(pole.x, baseY + 2, 8, 3.5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    // flag
-    const fw = Math.min(w * 0.07, h * 0.09);
-    const fh = fw * 1.15;
+    const size = Math.min(w * 0.075, h * 0.1);
     const bob = Math.sin(m.realElapsed * 3.5 + (pole.team === "ksc" ? 0 : 1)) * 2;
-    drawIcon(ctx, src, pole.x - 2, baseY - poleH - fh * 0.15 + bob, fw, fh, 0.02);
+    // Full standarte asset (includes pole) — upright billboard, no duplicate stroke pole.
+    drawPennantUpright(ctx, src, pole.x, baseY + bob, size);
   }
 }
 
@@ -544,23 +521,48 @@ function drawSlots(
   }
 }
 
+function slotControlForPlot(m: Match, s: BuildSlot): SlotControl {
+  if (s.greyNeutral || s.owner === "neutral") return "grey";
+  if (s.owner === "ksc") return "blue";
+  if (s.owner === "vfb") return "red";
+
+  const bo = m.blockOwner[s.blockId];
+  if (bo === "ksc" || bo === "vfb") {
+    if (bo === m.playerTeam && m.inPlayerTerritory(s.blockId, s.index)) {
+      return bo === "ksc" ? "blue" : "red";
+    }
+    if (bo === m.aiTeam && m.inAiTerritory(s.blockId, s.index)) {
+      return bo === "ksc" ? "blue" : "red";
+    }
+  }
+  if (m.inPlayerTerritory(s.blockId, s.index)) {
+    return m.playerTeam === "ksc" ? "blue" : "red";
+  }
+  if (m.inAiTerritory(s.blockId, s.index)) {
+    return m.aiTeam === "ksc" ? "blue" : "red";
+  }
+  return "grey";
+}
+
 /**
- * Fahne an Plot = baubar/besetzt von diesem Team.
- * So ist klar, welche Bauplätze gerade in welcher Hand sind.
+ * Separate Standarten nur auf gebauten Buden.
+ * Leere Plots: fahnenloses Slot-Icon mit Bodenton (kein Wimpel im Warp).
  */
 function plotPennantTeam(
   m: Match,
   s: BuildSlot,
 ): "ksc" | "vfb" | null {
+  void m;
   if (s.building && !s.greyNeutral && (s.owner === "ksc" || s.owner === "vfb")) {
     return s.owner;
   }
-  // Empty / claimable: show who may build here right now
-  if (m.inPlayerTerritory(s.blockId, s.index)) return m.playerTeam;
-  if (m.inAiTerritory(s.blockId, s.index)) return m.aiTeam;
   return null;
 }
 
+/**
+ * Standarten as viewer-facing upright billboards (same rule as built stands):
+ * foot on the plot ground, size from VP facade math, no icon warp/yaw.
+ */
 function drawTerritoryPennants(
   ctx: CanvasRenderingContext2D,
   m: Match,
@@ -570,16 +572,52 @@ function drawTerritoryPennants(
   for (const s of m.slots) {
     const team = plotPennantTeam(m, s);
     if (!team) continue;
-    const p = pennantPos(s.blockId, s.index);
     const src = team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
+    const bob = Math.sin(m.realElapsed * 3.2 + s.blockId + s.index) * 1.5;
+    if (FLOOR_GRID_COUPLE) {
+      const pq = scaleQuad(boothQuad(s.blockId, s.index), w, h);
+      const facade = boothFacadeQuad(s.blockId, s.index, w, h, {
+        widthScale: 0.38,
+        heightScale: 1.05,
+        taper: 0.28,
+      });
+      const footX = pq.bl.x * 0.72 + pq.tl.x * 0.28;
+      const footY = pq.bl.y * 0.88 + pq.tl.y * 0.12;
+      const baseW = Math.hypot(pq.br.x - pq.bl.x, pq.br.y - pq.bl.y);
+      const facadeH = Math.max(
+        1,
+        (facade.bl.y + facade.br.y) / 2 - (facade.tl.y + facade.tr.y) / 2,
+      );
+      const size = Math.max(26, Math.min(baseW * 0.62, facadeH * 0.72, h * 0.09));
+      drawPennantUpright(ctx, src, footX, footY + bob, size);
+      continue;
+    }
+    const p = pennantPos(s.blockId, s.index);
     const pw = Math.min(w * 0.045, h * 0.055);
     const ph = pw * 1.15;
-    const bob = Math.sin(m.realElapsed * 3.2 + s.blockId + s.index) * 1.5;
     drawIcon(ctx, src, p.x * w - pw * 0.15, p.y * h - ph * 0.35 + bob, pw, ph, 0.02);
   }
 }
 
-/** Toy-3D Baustelle — tinted by who can currently build here */
+/** Foot-anchored upright blit — pole reads screen-vertical in the VP floor. */
+function drawPennantUpright(
+  ctx: CanvasRenderingContext2D,
+  src: string,
+  footX: number,
+  footY: number,
+  size: number,
+): void {
+  ctx.save();
+  ctx.fillStyle = "rgba(15,23,42,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(footX, footY + 2, size * 0.22, size * 0.06, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  // drawIcon rect with bottom-center at foot
+  drawIcon(ctx, src, footX - size * 0.5, footY - size * 0.92, size, size, 0.02);
+}
+
+/** Baustelle — Slot-Icon, Auto-Swap mit Kontrolle; bei Floor-Grid in Zellen-Trapez. */
 function drawBaustelle(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -587,9 +625,48 @@ function drawBaustelle(
   bw: number,
   bh: number,
   sel: boolean,
-  claim: "ksc" | "vfb" | null,
+  m: Match,
+  s: BuildSlot,
 ): void {
-  const drew = drawIcon(ctx, UI_ICONS.slotEmpty, x, y, bw, bh, 0.02);
+  const control = slotControlForPlot(m, s);
+  // Freigegebene Perspektive — kein Ortho-Warp (wirkte quadratisch)
+  const src = slotEmptyIconPath(control, "persp", false);
+  let drew = false;
+  if (FLOOR_GRID_COUPLE) {
+    let q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+    // Far Bau-row: taller for clicks, but ≥0.5% total-width gaps (no overlap)
+    if (s.index < 2) {
+      q = fitFarSlotQuad(q, m, s);
+    }
+    // Warp persp chrome into floor trapezoid (equal ground cells, readable depth)
+    drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
+    if (sel) {
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(q.tl.x, q.tl.y);
+      ctx.lineTo(q.tr.x, q.tr.y);
+      ctx.lineTo(q.br.x, q.br.y);
+      ctx.lineTo(q.bl.x, q.bl.y);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(34,197,94,0.35)";
+      ctx.lineWidth = 6;
+      ctx.stroke();
+    }
+  } else {
+    drew = drawIcon(ctx, src, x, y, bw, bh, 0.02);
+    if (sel) {
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 3.5;
+      roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 10);
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(34,197,94,0.35)";
+      ctx.lineWidth = 6;
+      roundRect(ctx, x - 1, y - 1, bw + 2, bh + 2, 12);
+      ctx.stroke();
+    }
+  }
   if (!drew) {
     const r = Math.min(10, Math.min(bw, bh) * 0.12);
     ctx.fillStyle = "#4b5563";
@@ -599,28 +676,12 @@ function drawBaustelle(
     ctx.lineWidth = 3;
     roundRect(ctx, x + 6, y + 6, bw - 12, bh - 12, r - 2);
     ctx.stroke();
-  }
-  // Territory wash on empty plots
-  if (claim) {
-    ctx.fillStyle =
-      claim === "ksc" ? "rgba(37,99,235,0.28)" : "rgba(220,38,38,0.28)";
-    roundRect(ctx, x + 6, y + 6, bw - 12, bh - 12, 8);
-    ctx.fill();
-    ctx.strokeStyle =
-      claim === "ksc" ? "rgba(59,130,246,0.85)" : "rgba(248,113,113,0.85)";
-    ctx.lineWidth = 2.5;
-    roundRect(ctx, x + 3, y + 3, bw - 6, bh - 6, 9);
-    ctx.stroke();
-  }
-  if (sel) {
-    ctx.strokeStyle = "#22c55e";
-    ctx.lineWidth = 3.5;
-    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, 10);
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(34,197,94,0.35)";
-    ctx.lineWidth = 6;
-    roundRect(ctx, x - 1, y - 1, bw + 2, bh + 2, 12);
-    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.9)";
+    ctx.font = `800 ${Math.max(16, Math.floor(bh * 0.28))}px Outfit, Manrope, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("+", x + bw / 2, y + bh / 2);
+    ctx.textBaseline = "alphabetic";
   }
 }
 
@@ -639,39 +700,69 @@ function drawBuilding(
   const ai = s.owner === m.aiTeam;
   const r = Math.min(10, Math.min(bw, bh) * 0.12);
   const convT = Math.min(1, s.convertAcc / STAND_CONVERT_SEC);
-  const cx = x + bw / 2;
 
   if (!s.building) {
-    const claim = plotPennantTeam(m, s);
-    drawBaustelle(ctx, x, y, bw, bh, sel, claim);
+    drawBaustelle(ctx, x, y, bw, bh, sel, m, s);
     return;
   }
 
-  // plot pad under building
-  ctx.fillStyle = "rgba(15,23,42,0.25)";
-  roundRect(ctx, x + 4, y + bh * 0.55, bw - 8, bh * 0.38, r);
-  ctx.fill();
+  // Built plot: front faces the viewer (upright). Per-slot perspective only
+  // sets foot position + size from the VP facade math — no icon warp/yaw.
+  let cx = x + bw / 2;
+  let footY = y + bh * 0.78;
+  // Gebäude ×1.2 vs baseline (20% smaller than prior ×1.5)
+  const BUILD_SCALE = 1.2;
+  let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
+  let pq: ReturnType<typeof scaleQuad> | null = null;
+  let facade: ReturnType<typeof boothFacadeQuad> | null = null;
+  if (FLOOR_GRID_COUPLE) {
+    pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, {
+      widthScale: 1.35,
+      heightScale: 1.92,
+      taper: 0.32,
+    });
+  }
 
   const color = teamColor(
     grey && !(s.convertBy && convT > 0.35) ? "neutral" : s.owner,
   );
   const lv = Math.max(1, Math.min(5, s.level || 1));
   const iconSrc = standIconPath(s.building, color, lv);
-  // soft contact shadow
-  ctx.fillStyle = "rgba(15,23,42,0.35)";
-  ctx.beginPath();
-  ctx.ellipse(cx, y + bh * 0.88, bw * 0.32, bh * 0.08, 0, 0, Math.PI * 2);
-  ctx.fill();
 
-  // Toy-3D bob on stands (same language as units)
-  const size = Math.min(bw, bh) * 0.98;
-  const drew = drawToyIcon(ctx, iconSrc, cx, y + bh * 0.78, size, {
-    t: m.realElapsed,
-    phase: s.blockId * 1.7 + s.index * 0.9,
-    mode: s.prodFlash > 0.2 ? "cheer" : "idle",
-    facing: 1,
-    hop: 0,
-  });
+  let drew = false;
+  if (facade && pq) {
+    cx = (facade.bl.x + facade.br.x) / 2;
+    footY = (facade.bl.y + facade.br.y) / 2;
+    const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
+    const topY = (facade.tl.y + facade.tr.y) / 2;
+    const facadeH = Math.max(1, footY - topY);
+    size = Math.max(40, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
+    ctx.fillStyle = "rgba(15,23,42,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
+    ctx.fill();
+    drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
+      t: 0,
+      phase: 0,
+      mode: "planted",
+      facing: 1,
+      hop: 0,
+    });
+  }
+  if (!drew) {
+    ctx.fillStyle = "rgba(15,23,42,0.35)";
+    ctx.beginPath();
+    ctx.ellipse(cx, footY + size * 0.04, size * 0.3, size * 0.075, 0, 0, Math.PI * 2);
+    ctx.fill();
+    drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
+      t: 0,
+      phase: 0,
+      mode: "planted",
+      facing: 1,
+      hop: 0,
+    });
+  }
   if (!drew) {
     ctx.fillStyle = grey ? "#e2e8f0" : player ? "#eff6ff" : ai ? "#fef2f2" : "#f8fafc";
     roundRect(ctx, x, y, bw, bh, r);
@@ -685,8 +776,18 @@ function drawBuilding(
     ctx.strokeStyle =
       s.building === "bier" ? "#fbbf24" : s.building === "ordner" ? "#60a5fa" : "#c084fc";
     ctx.lineWidth = 3 + flash * 4;
-    roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
-    ctx.stroke();
+    if (pq) {
+      ctx.beginPath();
+      ctx.moveTo(pq.tl.x, pq.tl.y);
+      ctx.lineTo(pq.tr.x, pq.tr.y);
+      ctx.lineTo(pq.br.x, pq.br.y);
+      ctx.lineTo(pq.bl.x, pq.bl.y);
+      ctx.closePath();
+      ctx.stroke();
+    } else {
+      roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 
@@ -746,39 +847,6 @@ function drawBuilding(
     ctx.fillStyle = "#fde68a";
     ctx.fillRect(x + 6, y + bh - 10, (bw - 12) * (s.beer / s.capacity), 4);
   }
-}
-
-/** Vereinswappen on captured stands / stormed blocks */
-function drawClubCrest(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  s: number,
-  team: "ksc" | "vfb",
-): void {
-  ctx.save();
-  ctx.translate(x, y);
-  // shield
-  ctx.beginPath();
-  ctx.moveTo(0, -s * 0.55);
-  ctx.lineTo(s * 0.45, -s * 0.25);
-  ctx.lineTo(s * 0.4, s * 0.25);
-  ctx.lineTo(0, s * 0.55);
-  ctx.lineTo(-s * 0.4, s * 0.25);
-  ctx.lineTo(-s * 0.45, -s * 0.25);
-  ctx.closePath();
-  ctx.fillStyle = team === "ksc" ? "#1d4ed8" : "#b91c1c";
-  ctx.fill();
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = Math.max(1.2, s * 0.08);
-  ctx.stroke();
-  // monogram
-  ctx.fillStyle = "#fff";
-  ctx.font = `800 ${Math.max(8, Math.floor(s * 0.55))}px Outfit, Manrope, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText(team === "ksc" ? "K" : "V", 0, s * 0.02);
-  ctx.restore();
 }
 
 export function slotPos(
@@ -879,7 +947,7 @@ function personAnimMode(m: Match, f: FanUnit): {
 } {
   const onGang = f.state === "gang" || f.invading;
   const exiting =
-    f.state === "moving" && f.y < gangY() + L.gangH * 0.22;
+    f.state === "moving" && f.y < gangY() + gangHeight() * 0.22;
   const moving = f.state === "moving" || onGang;
   const fighting =
     (onGang || f.invading || f.isSteward) &&
@@ -1429,6 +1497,29 @@ function drawSteward(
   ctx.fillRect(x - bw / 2, y + s * 1.25, bw * Math.max(0, f.hp / f.maxHp), 3);
 }
 
+/** Map float labels → freigestellte Zuwachs/Abnahme-Icons. */
+function floatCurrencyIcon(text: string, good: boolean): string | null {
+  const t = text.toLowerCase();
+  if (t.includes("bier") || t.includes("fass")) {
+    return good ? UI_ICONS.currencyBierPlus : UI_ICONS.currencyBierMinus;
+  }
+  if (t.includes("sicherheit") || t.includes("sec")) {
+    return good ? UI_ICONS.currencySicherheitPlus : UI_ICONS.currencySicherheitMinus;
+  }
+  if (t.includes("fanartikel") || t.includes("merch") || t.includes("shop")) {
+    return good
+      ? UI_ICONS.currencyFanartikelPlus
+      : UI_ICONS.currencyFanartikelMinus;
+  }
+  if (t.includes("€") || t.includes("gold")) {
+    return good ? UI_ICONS.currencyGoldPlus : UI_ICONS.currencyGoldMinus;
+  }
+  if (t.includes("stimmung") || t.includes("mood") || t.includes("momentum")) {
+    return good ? UI_ICONS.moodPlus : UI_ICONS.moodMinus;
+  }
+  return null;
+}
+
 function drawFloats(
   ctx: CanvasRenderingContext2D,
   m: Match,
@@ -1438,17 +1529,33 @@ function drawFloats(
   for (const f of m.floats) {
     const alpha = Math.min(1, f.t / 0.35);
     ctx.globalAlpha = alpha;
-    ctx.font = `700 ${Math.floor(h * 0.026)}px Manrope, sans-serif`;
+    const fontPx = Math.max(12, Math.floor(h * 0.026));
+    ctx.font = `700 ${fontPx}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(0,0,0,0.55)";
     ctx.fillStyle = f.good ? "#6bcb77" : "#f87171";
     const x = f.x * w;
     const y = f.y * h;
-    ctx.strokeText(f.text, x, y);
-    ctx.fillText(f.text, x, y);
+    const icon = floatCurrencyIcon(f.text, f.good);
+    if (icon) {
+      const ih = fontPx * 1.15;
+      const tw = ctx.measureText(f.text).width;
+      const gap = 4;
+      const total = ih + gap + tw;
+      const ix = x - total / 2;
+      drawIcon(ctx, icon, ix, y - ih / 2, ih, ih, 0.02);
+      const tx = ix + ih + gap + tw / 2;
+      ctx.strokeText(f.text, tx, y);
+      ctx.fillText(f.text, tx, y);
+    } else {
+      ctx.strokeText(f.text, x, y);
+      ctx.fillText(f.text, x, y);
+    }
   }
   ctx.globalAlpha = 1;
+  ctx.textBaseline = "alphabetic";
 }
 
 function drawConfetti(
@@ -1498,7 +1605,7 @@ function drawMoodParticles(
       ctx.beginPath();
       ctx.arc(px, py, rad, 0, Math.PI * 2);
       ctx.fill();
-    } else if (p.kind === "flare") {
+    } else if (p.kind === "flare" || p.kind === "rocket") {
       ctx.strokeStyle = p.color;
       ctx.lineWidth = Math.max(2, p.size * h * 2);
       ctx.lineCap = "round";
@@ -1514,6 +1621,25 @@ function drawMoodParticles(
       ctx.beginPath();
       ctx.arc(px, py, 6, 0, Math.PI * 2);
       ctx.fill();
+    } else if (p.kind === "mug") {
+      const ih = Math.max(10, p.size * h * 2.2);
+      drawIcon(ctx, UI_ICONS.currencyBier, px - ih / 2, py - ih / 2, ih, ih, 0.02);
+    } else if (
+      p.kind === "waitAnger" ||
+      p.kind === "waitAngerHot" ||
+      p.kind === "moodPlus" ||
+      p.kind === "moodMinus"
+    ) {
+      const src =
+        p.kind === "waitAnger"
+          ? UI_ICONS.waitAnger
+          : p.kind === "waitAngerHot"
+            ? UI_ICONS.waitAngerHot
+            : p.kind === "moodPlus"
+              ? UI_ICONS.moodPlus
+              : UI_ICONS.moodMinus;
+      const ih = Math.max(14, p.size * h * 2.4);
+      drawIcon(ctx, src, px - ih / 2, py - ih / 2, ih, ih, 0.02);
     } else {
       ctx.fillStyle = p.color;
       ctx.beginPath();
@@ -1525,23 +1651,100 @@ function drawMoodParticles(
   ctx.globalAlpha = 1;
 }
 
+/** Min gap between far-row empty slots as fraction of total canvas width. */
+const FAR_SLOT_GAP_FRAC = 0.005;
+
+/**
+ * Enlarge far-row slots for clicks, but keep ≥0.5% total-width gaps
+ * so neighboring Leerplätze don't overlap.
+ */
+function fitFarSlotQuad(q: ScreenQuad, m: Match, s: BuildSlot): ScreenQuad {
+  let th = 0;
+  let n = 0;
+  for (const slot of m.slots) {
+    if (slot.index < 2) continue;
+    const r = boothRect(slot.blockId, slot.index);
+    th += r.h * m.height;
+    n++;
+  }
+  const targetH = n > 0 ? th / n : (Math.max(q.br.y, q.bl.y) - Math.min(q.tl.y, q.tr.y));
+
+  const cx = (q.bl.x + q.br.x) / 2;
+  const cy = (q.bl.y + q.br.y) / 2;
+  const curW = Math.max(1, Math.max(q.tr.x, q.br.x) - Math.min(q.tl.x, q.bl.x));
+  const curH = Math.max(1, Math.max(q.br.y, q.bl.y) - Math.min(q.tl.y, q.tr.y));
+
+  // Nearest far-row neighbor center → max half-width with gap
+  const gapPx = FAR_SLOT_GAP_FRAC * m.width;
+  let nearest = Infinity;
+  for (const o of m.slots) {
+    if (o.index >= 2) continue;
+    if (o.blockId === s.blockId && o.index === s.index) continue;
+    const oc = boothCenter(o.blockId, o.index);
+    const d = Math.abs(oc.x * m.width - cx);
+    if (d > 1 && d < nearest) nearest = d;
+  }
+  const maxW =
+    nearest < Infinity ? Math.max(curW, nearest - gapPx) : curW * 1.35;
+
+  const scaleY = Math.max(1, Math.min(2.0, targetH / curH));
+  const scaleX = Math.max(1, Math.min(maxW / curW, scaleY * 1.15));
+  const map = (p: { x: number; y: number }) => ({
+    x: cx + (p.x - cx) * scaleX,
+    y: cy + (p.y - cy) * scaleY,
+  });
+  return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
+}
+
+function pointInQuad(q: ScreenQuad, mx: number, my: number): boolean {
+  const pts = [q.tl, q.tr, q.br, q.bl];
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const yi = pts[i]!.y;
+    const yj = pts[j]!.y;
+    const xi = pts[i]!.x;
+    const xj = pts[j]!.x;
+    const intersect =
+      yi > my !== yj > my &&
+      mx < ((xj - xi) * (my - yi)) / (yj - yi + 1e-9) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
 export function hitSlot(
   m: Match,
   mx: number,
   my: number,
 ): { blockId: number; index: number } | null {
   let best: { blockId: number; index: number; d: number } | null = null;
+  /** Minimum touch target — far row was tiny with AABB-only hits */
+  const minPad = Math.max(18, Math.min(m.width, m.height) * 0.028);
   for (const s of m.slots) {
     // AI home plots are not clickable for the player
     if (s.blockId === GAST_BLOCK && s.owner === m.aiTeam && s.building) continue;
     const r = boothRect(s.blockId, s.index);
-    const x0 = r.x * m.width;
-    const y0 = r.y * m.height;
-    const x1 = (r.x + r.w) * m.width;
-    const y1 = (r.y + r.h) * m.height;
-    if (mx >= x0 && mx <= x1 && my >= y0 && my <= y1) {
-      const cx = (x0 + x1) / 2;
-      const cy = (y0 + y1) / 2;
+    let x0 = r.x * m.width;
+    let y0 = r.y * m.height;
+    let x1 = (r.x + r.w) * m.width;
+    let y1 = (r.y + r.h) * m.height;
+    const cx = (x0 + x1) / 2;
+    const cy = (y0 + y1) / 2;
+    if (x1 - x0 < minPad * 2) {
+      x0 = cx - minPad;
+      x1 = cx + minPad;
+    }
+    if (y1 - y0 < minPad * 2) {
+      y0 = cy - minPad;
+      y1 = cy + minPad;
+    }
+    let hit = mx >= x0 && mx <= x1 && my >= y0 && my <= y1;
+    if (FLOOR_GRID_COUPLE) {
+      let q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+      if (s.index < 2) q = fitFarSlotQuad(q, m, s);
+      if (pointInQuad(q, mx, my)) hit = true;
+    }
+    if (hit) {
       const d = Math.hypot(mx - cx, my - cy);
       if (!best || d < best.d) best = { blockId: s.blockId, index: s.index, d };
     }

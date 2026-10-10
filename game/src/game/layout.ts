@@ -1,5 +1,14 @@
 /** Matchday Comic — ~⅓ scoreboard / ⅓ blocks / ⅓ gang */
 
+import {
+  boothQuad,
+  FLOOR_GRID_COUPLE,
+  floorGangBand,
+  quadCenter,
+  quadPennantPos,
+  quadToRect,
+} from "./floorGrid";
+
 export const BLOCK_COUNT = 3;
 export const HEIM_BLOCK = 0;
 export const NEUTRAL_BLOCK = 1;
@@ -18,20 +27,139 @@ export const VISUAL_CROWD_SOFT_CAP = 20;
  * - bottom: gang with Baustellen
  */
 export const L = {
-  stadiumH: 0.32,
-  /** Stands sit in the middle third */
-  blockTop: 0.32,
-  blockBodyH: 0.3,
+  stadiumH: 0.3,
+  /**
+   * Tribünen-Band per MATCH_LAYOUT_TOKENS:
+   * von Bildmitte 20% nach oben → y0=0.30 … y1=0.50 (Höhe = 20%).
+   */
+  blockTop: 0.3,
+  blockBodyH: 0.2,
+  /**
+   * Ziel ~0.5% sichtbarer Abstand zwischen opaken Plattformkanten.
+   * Etwas unter 0.5%, weil Glow/Schatten der PNG-Kanten optisch addieren.
+   */
+  tribuneGap: 0.002,
   gangPadTop: 0.01,
   /** Gang is the bottom ~third — not half the screen */
   gangH: 0.34,
-  blocksLeft: 0.04,
-  blocksRight: 0.96,
-  blockGap: 0.024,
+  /**
+   * Outer inset for the flush tribune strip (normalized).
+   * Outer corners sit just inside the canvas / sidebars.
+   */
+  blocksLeft: 0.01,
+  blocksRight: 0.99,
+  /** Kept for legacy; flush pack uses face-overlap. */
+  blockGap: 0,
   doorFrac: 0.14,
   plotW: 0.1,
   plotH: 0.095,
 };
+
+/**
+ * Native tribune PNG sizes + opaque floor-face pads (px, measured).
+ * Transparent side pads are overlapped so visible platforms sit 0.5% apart.
+ */
+export const TRIBUNE_NATIVE = [
+  { w: 426, h: 309, faceL: 6, faceR: 29 }, // Heim blue
+  { w: 386, h: 308, faceL: 6, faceR: 6 }, // Neutral grey
+  { w: 426, h: 309, faceL: 28, faceR: 6 }, // Gäste red
+] as const;
+
+export type TribuneRectNorm = { x: number; y: number; w: number; h: number };
+
+type TribunePack = {
+  aspect: number;
+  rects: TribuneRectNorm[];
+  centers: number[];
+  widths: number[];
+  left: number;
+  right: number;
+};
+
+let _pack: TribunePack | null = null;
+
+/**
+ * Recompute flush tribune strip for the current canvas aspect (W/H).
+ * Native aspect per PNG (no distort); opaque faces spaced by tribuneGap (0.5%).
+ */
+export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack {
+  const aspect = canvasW / Math.max(1, canvasH);
+  if (_pack && Math.abs(_pack.aspect - aspect) < 1e-5) return _pack;
+
+  const edge = L.blocksLeft;
+  const shelfBottom = L.blockTop + L.blockBodyH; // 0.50
+  const maxH = L.blockBodyH; // 0.20
+  const gap = L.tribuneGap;
+
+  const packAt = (hNorm: number) => {
+    const ws = TRIBUNE_NATIVE.map(
+      (n) => (hNorm * (n.w / n.h)) / Math.max(1e-6, aspect),
+    );
+    const faceL = TRIBUNE_NATIVE.map((n, i) => (n.faceL / n.w) * ws[i]!);
+    const faceR = TRIBUNE_NATIVE.map((n, i) => (n.faceR / n.w) * ws[i]!);
+    const xs = [0, 0, 0];
+    // Place so opaque content edges are exactly `gap` apart
+    xs[0] = 0;
+    const contentR0 = xs[0]! + ws[0]! - faceR[0]!;
+    xs[1] = contentR0 + gap - faceL[1]!;
+    const contentR1 = xs[1]! + ws[1]! - faceR[1]!;
+    xs[2] = contentR1 + gap - faceL[2]!;
+    const leftC = xs[0]!;
+    const rightC = xs[2]! + ws[2]!;
+    return { xs, ws, leftC, rightC, span: rightC - leftC };
+  };
+
+  let hNorm = maxH;
+  let packed = packAt(hNorm);
+  const maxSpan = Math.max(0.2, 1 - edge * 2);
+  if (packed.span > maxSpan) {
+    hNorm *= maxSpan / packed.span;
+    packed = packAt(hNorm);
+  }
+
+  // Center grey; keep strip inside pitch edges
+  const greyCx = packed.xs[1]! + packed.ws[1]! / 2;
+  let shift = 0.5 - greyCx;
+  if (packed.leftC + shift < edge) shift = edge - packed.leftC;
+  if (packed.rightC + shift > 1 - edge) shift = 1 - edge - packed.rightC;
+
+  const top = shelfBottom - hNorm;
+  const rects: TribuneRectNorm[] = [0, 1, 2].map((i) => ({
+    x: packed.xs[i]! + shift,
+    y: top,
+    w: packed.ws[i]!,
+    h: hNorm,
+  }));
+
+  _pack = {
+    aspect,
+    rects,
+    centers: rects.map((r) => r.x + r.w / 2),
+    widths: rects.map((r) => r.w),
+    left: rects[0]!.x,
+    right: rects[2]!.x + rects[2]!.w,
+  };
+  return _pack;
+}
+
+function ensureTribunePack(): TribunePack {
+  if (_pack) return _pack;
+  return syncTribuneLayout(16, 9);
+}
+
+export function tribuneRect(blockId: number): TribuneRectNorm {
+  const p = ensureTribunePack();
+  const i = Math.max(0, Math.min(2, blockId | 0));
+  return p.rects[i]!;
+}
+
+export function blocksLeftNorm(): number {
+  return ensureTribunePack().left;
+}
+
+export function blocksRightNorm(): number {
+  return ensureTribunePack().right;
+}
 
 /** 4 plots per block → 12 total */
 export const SLOTS_PER_BLOCK = 4;
@@ -41,7 +169,7 @@ export const BUILDABLE_INDICES_NEUTRAL = BUILDABLE_INDICES;
 export const ULTRA_PAD_INDEX = 0;
 
 /**
- * 12 Baustellen packed into the bottom gang third.
+ * Legacy AABB scatter (fallback if FLOOR_GRID_COUPLE is off).
  * flat 0–3 Heim (left), 4–7 Neutral (center), 8–11 Gäste (right).
  */
 export const PLOT_SCATTER: readonly { x: number; y: number; w: number; h: number }[] = [
@@ -62,15 +190,16 @@ export const PLOT_SCATTER: readonly { x: number; y: number; w: number; h: number
   { x: 0.85, y: 0.875, w: 0.095, h: 0.09 },
 ];
 
-export function blockWidthNorm(): number {
-  const span = L.blocksRight - L.blocksLeft;
-  const gaps = BLOCK_COUNT - 1;
-  return (span - gaps * L.blockGap) / BLOCK_COUNT;
+export function blockWidthNorm(blockId = NEUTRAL_BLOCK): number {
+  const p = ensureTribunePack();
+  const i = Math.max(0, Math.min(2, blockId | 0));
+  return p.widths[i]!;
 }
 
 export function blockCenterX(blockId: number): number {
-  const bw = blockWidthNorm();
-  return L.blocksLeft + bw / 2 + blockId * (bw + L.blockGap);
+  const p = ensureTribunePack();
+  const i = Math.max(0, Math.min(2, blockId | 0));
+  return p.centers[i]!;
 }
 
 export function blockIdToGangX(blockId: number): number {
@@ -92,20 +221,34 @@ export function worldXToGangX(worldX: number): number {
   return Math.max(0, Math.min(1, (worldX - left) / (right - left)));
 }
 
-export function blockTopY(_blockId: number): number {
-  return L.blockTop;
+export function blockTopY(blockId: number): number {
+  return tribuneRect(blockId).y;
 }
 
 export function blockBodyBottom(blockId: number): number {
-  return blockTopY(blockId) + L.blockBodyH;
+  const r = tribuneRect(blockId);
+  return r.y + r.h;
 }
 
 export function gangY(): number {
+  if (FLOOR_GRID_COUPLE) {
+    // Fight corridor starts at the near edge of the far Bau row.
+    return floorGangBand().y0;
+  }
   return L.blockTop + L.blockBodyH + L.gangPadTop;
 }
 
 export function gangMidY(): number {
+  if (FLOOR_GRID_COUPLE) {
+    return floorGangBand().mid;
+  }
   return gangY() + L.gangH * 0.42;
+}
+
+/** Normalized gang band height (floor-grid corridor when coupled). */
+export function gangHeight(): number {
+  if (FLOOR_GRID_COUPLE) return floorGangBand().h;
+  return L.gangH;
 }
 
 export function doorPos(blockId: number): { x: number; y: number } {
@@ -128,13 +271,12 @@ export function blockCrowdRect(blockId: number): {
   width: number;
   height: number;
 } {
-  const cx = blockCenterX(blockId);
-  const bw = blockWidthNorm();
+  const r = tribuneRect(blockId);
   return {
-    left: cx - bw * 0.38,
-    top: blockTopY(blockId) + L.blockBodyH * 0.18,
-    width: bw * 0.76,
-    height: L.blockBodyH * 0.72,
+    left: r.x + r.w * 0.12,
+    top: r.y + r.h * 0.18,
+    width: r.w * 0.76,
+    height: r.h * 0.72,
   };
 }
 
@@ -220,6 +362,36 @@ export function gangLanePos(blockId: number): { x: number; y: number } {
   };
 }
 
+/** Stable 0..1 hash from unit id (for lane stagger). */
+function unitLaneHash(unitId: number): number {
+  const x = Math.sin((unitId + 1) * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+/**
+ * Personal gang Y in the middle 80% of the fight corridor (not exact mid).
+ * Slight stagger so stacked units stay readable.
+ */
+export function gangLaneYForUnit(unitId: number): number {
+  const y0 = gangY();
+  const h = Math.max(0.02, gangHeight());
+  const u = unitLaneHash(unitId);
+  return y0 + h * (0.1 + u * 0.8);
+}
+
+export function gangLanePosForUnit(
+  blockId: number,
+  unitId: number,
+): { x: number; y: number } {
+  return {
+    x: blockCenterX(blockId),
+    y: gangLaneYForUnit(unitId),
+  };
+}
+
+/** Wait / queue radius around Bier- & Fanshop-Ständen (normalized). */
+export const STAND_WAIT_RADIUS = 0.032;
+
 export function slotIndicesForBlock(_blockId: number): readonly number[] {
   return BUILDABLE_INDICES;
 }
@@ -243,12 +415,18 @@ export function boothRect(
   blockId: number,
   index: number,
 ): { x: number; y: number; w: number; h: number } {
+  if (FLOOR_GRID_COUPLE) {
+    return quadToRect(boothQuad(blockId, index));
+  }
   const flat = Math.max(0, Math.min(PLOT_SCATTER.length - 1, slotFlatIndex(blockId, index)));
   const p = PLOT_SCATTER[flat]!;
   return { x: p.x, y: p.y, w: p.w, h: p.h };
 }
 
 export function boothCenter(blockId: number, index: number): { x: number; y: number } {
+  if (FLOOR_GRID_COUPLE) {
+    return quadCenter(boothQuad(blockId, index));
+  }
   const r = boothRect(blockId, index);
   return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
 }
@@ -259,6 +437,11 @@ export function plotGangX(blockId: number, index: number): number {
 }
 
 export function pennantPos(blockId: number, index: number): { x: number; y: number } {
+  if (FLOOR_GRID_COUPLE) {
+    return quadPennantPos(boothQuad(blockId, index));
+  }
   const r = boothRect(blockId, index);
   return { x: r.x + r.w * 0.08, y: r.y + r.h * 0.05 };
 }
+
+export { boothQuad, FLOOR_GRID_COUPLE, floorGangBand, quadCenter } from "./floorGrid";

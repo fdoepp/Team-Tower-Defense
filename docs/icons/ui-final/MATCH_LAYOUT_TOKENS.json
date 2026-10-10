@@ -1,0 +1,96 @@
+{
+  "id": "matchLayoutRahmen",
+  "status": "binding",
+  "refSize": {
+    "w": 1600,
+    "h": 900
+  },
+  "background": "game/public/assets/stadium-floodlight-derby-bg.jpg",
+  "notes": "Verbindliche Rahmenlogik. Rails: left +10% / right +50% vs 23.1%/19.5%. Scoreboard ohne Live-Wimpel. Far-slots ≥0.5% Gap. Gebäude ×1.2 (fixiert, kein Idle-Wobble). Gang ohne Territorium-Wash. Stand-Wait-Radius + Queue-Wutsmileys. Grau-Starter ~20 Fans shoppen. Tor-FX: Fans Konfetti / Ultras Rauch / Hools Bier|Rakete.",
+  "rails": {
+    "left_w": 0.2541,
+    "right_w": 0.2925,
+    "pitch_w": 0.4534
+  },
+  "hud": {
+    "top": 0.03,
+    "scoreboard": {
+      "max_w_of_pitch": 0.598,
+      "h_of_screen": 0.1725,
+      "align": "center",
+      "scale_vs_baseline": 1.15,
+      "slots": "docs/icons/ui-final/scoreboard-slots.json",
+      "livePennants": false
+    },
+    "wallet": {
+      "inset_x_of_pitch": 0.02,
+      "icon_h_of_screen": 0.02811,
+      "chip_h_of_screen": 0.03578,
+      "gap_of_pitch": 0.006,
+      "scale_vs_baseline": 1.15,
+      "currencies": [
+        "currencyGold",
+        "currencyBier",
+        "currencyFanartikel",
+        "currencySicherheit"
+      ],
+      "plusMinusButtonsInDb": true
+    }
+  },
+  "scene": {
+    "tribune_y0": 0.3,
+    "tribune_y1": 0.5,
+    "tribune_gap_of_pitch": 0.005,
+    "slot_top_y": 0.58,
+    "combat_y0": 0.695,
+    "combat_y1": 0.86,
+    "slot_bot_y": 0.975,
+    "far_slot_gap_of_width": 0.005,
+    "building_scale": 1.2,
+    "gang_lane_use": 0.8,
+    "stand_wait_radius": 0.032,
+    "gang_territory_wash": false
+  },
+  "personCard": {
+    "railInset": 0.01,
+    "dual": "1%·48%·2%·48%·1%",
+    "triple": "1%·32%·1%·32%·1%·32%·1%",
+    "liveTextInset": 0.02,
+    "wood": {
+      "x": 0.0641,
+      "yTop": 0.1354,
+      "yBot": 0.1875
+    }
+  },
+  "runtime": {
+    "scoreboardAsset": "scoreboardChrome",
+    "slotEmptyOrientation": "persp",
+    "tribuneLabels": false,
+    "walletAlign": "top-left",
+    "unitTechLevelChrome": true
+  },
+  "tokensFlat": {
+    "left_rail_w": 0.2541,
+    "right_rail_w": 0.2925,
+    "hud_top": 0.03,
+    "scoreboard_max_w_of_pitch": 0.598,
+    "scoreboard_h": 0.1725,
+    "scoreboard_scale": 1.15,
+    "wallet_inset_x": 0.02,
+    "wallet_icon_h": 0.02811,
+    "wallet_chip_h": 0.03578,
+    "wallet_scale": 1.15,
+    "wallet_gap": 0.006,
+    "tribune_y0": 0.3,
+    "tribune_y1": 0.5,
+    "tribune_gap": 0.005,
+    "slot_top_y": 0.58,
+    "combat_y0": 0.695,
+    "combat_y1": 0.86,
+    "slot_bot_y": 0.975,
+    "pitch_w": 0.4534,
+    "rail_inset": 0.01,
+    "far_slot_gap": 0.005,
+    "building_scale": 1.2
+  }
+}

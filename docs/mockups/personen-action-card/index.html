@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Personen Action Card — Vorschlag A</title>
+<style>
+  :root {
+    --wood-deep: #3d2414;
+    --ink: #1c120a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #1a1a1a;
+    color: #f5f5f5;
+    padding: 16px;
+  }
+  h1 { font-size: 1.1rem; margin: 0 0 6px; }
+  .note { color: #bbb; font-size: 0.85rem; max-width: 1040px; margin-bottom: 14px; line-height: 1.4; }
+  .nav { margin-bottom: 12px; font-size: 0.85rem; }
+  .nav a { color: #fde68a; margin-right: 14px; }
+  .stage { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
+
+  .phone {
+    width: 844px;
+    height: 470px;
+    border-radius: 18px;
+    border: 3px solid #333;
+    box-shadow: 0 12px 40px rgba(0,0,0,.55);
+    display: grid;
+    grid-template-columns: 38% 1fr;
+    overflow: hidden;
+  }
+  .pitch-fake {
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(255,250,220,.15), transparent 50%),
+      repeating-linear-gradient(90deg, #2f6b2f 0 40px, #2a622a 40px 80px);
+    position: relative;
+  }
+  .pitch-fake::after {
+    content: "Stadion (Querformat)";
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    color: rgba(255,255,255,.35);
+    font-weight: 800;
+  }
+
+  .rail {
+    background: url("rail-tile.png") center / cover;
+    padding: 4px 3px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    min-height: 0;
+  }
+  .banner {
+    background: linear-gradient(180deg, #6b4428, #4a2c18);
+    color: #f8e7c0;
+    font-weight: 900;
+    font-size: 12px;
+    text-align: center;
+    border-radius: 7px;
+    padding: 4px 6px;
+    border: 2px solid var(--wood-deep);
+    flex: 0 0 auto;
+  }
+
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .card {
+    flex: 1 1 0;
+    min-height: 0;
+    background: linear-gradient(180deg, #f7ebcf, #e5cf9f);
+    border: 2px solid var(--wood-deep);
+    border-radius: 10px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.4),
+      0 1px 0 rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 4px 0 5px;
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  .title {
+    flex: 0 0 auto;
+    font-weight: 900;
+    font-size: 12px;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 3%;
+  }
+  .title .meta {
+    font-weight: 700;
+    color: #6b4e2e;
+  }
+
+  /* Einheitliches Grid auf allen Karten — Spalten bündig übereinander */
+  /*
+   * Triple: 3% | 30% Kauf | 2% | 30% Upgrade | 2% | 30% Send | 3%
+   * Dual:   3% | 46% Kauf | 2% | 46% Upgrade | 3%
+   */
+  .actions {
+    flex: 1 1 0;
+    display: grid;
+    grid-template-columns: 3% 30% 2% 30% 2% 30% 3%;
+    align-items: stretch;
+    justify-items: stretch;
+    min-height: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+  }
+  .actions .cost-btn:nth-child(1) { grid-column: 2; }
+  .actions .cost-btn:nth-child(2) { grid-column: 4; }
+  .actions .cost-btn:nth-child(3) { grid-column: 6; }
+  .actions.dual {
+    grid-template-columns: 3% 46% 2% 46% 3%;
+  }
+  .actions.dual .cost-btn:nth-child(1) { grid-column: 2; }
+  .actions.dual .cost-btn:nth-child(2) { grid-column: 4; }
+
+  /*
+   * Chrome-PNG: nur Holzrahmen + eine saubere Farbfläche (kein gebackenes Label).
+   * Live-Text im .inner — 2% Abstand zu allen Innenkanten des Holzrahmens.
+   * Holz-Rims müssen zu btn-*-chrome.png passen (siehe Generator).
+   */
+  .cost-btn {
+    /* Gemessen am Chrome: Innenkante Holzrahmen → Face (eine Fläche, kein Label) */
+    --wood-x: 6.41%;
+    --wood-y-top: 13.54%;
+    --wood-y-bot: 18.75%;
+    /* Live-Text: zusätzlich ~2% der Button-Breite/-Höhe zu allen Innenrändern */
+    --inset: 2%;
+    appearance: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 52px;
+    border-radius: 8px;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 100% 100%;
+    cursor: pointer;
+    overflow: hidden;
+    display: block;
+    position: relative;
+  }
+  .cost-btn.kaufen { background-image: url("btn-kaufen-chrome.png"); }
+  .cost-btn.upgrade { background-image: url("btn-upgrade-chrome.png"); }
+  .cost-btn.senden { background-image: url("btn-senden-chrome.png"); }
+
+  /* Overlay: Holz-Innenrand + 2% (Breite für L/R, Höhe für T/B) */
+  .cost-btn .inner {
+    position: absolute;
+    left: calc(var(--wood-x) + var(--inset));
+    right: calc(var(--wood-x) + var(--inset));
+    top: calc(var(--wood-y-top) + var(--inset));
+    bottom: calc(var(--wood-y-bot) + var(--inset));
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+    margin: 0;
+    padding: 0;
+    color: #fff;
+    font-weight: 900;
+    font-family: inherit;
+    text-shadow: 0 1px 1px rgba(0,0,0,.55);
+    container-type: inline-size;
+    font-size: clamp(9px, 12cqw, 14px);
+    overflow: hidden;
+    background: transparent; /* kein zweites Farbfeld */
+    box-shadow: none;
+  }
+  .cost-btn .txt,
+  .cost-btn .pay {
+    font-size: 1em;
+    font-weight: inherit;
+    font-family: inherit;
+    letter-spacing: .02em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  /* Dynamisch: volle Wörter wenn die Zelle breit genug ist, sonst Kurzform */
+  .cost-btn .txt .short { display: none; }
+  .cost-btn .txt .full { display: inline; }
+  @container (max-width: 100px) {
+    .cost-btn .txt .full { display: none; }
+    .cost-btn .txt .short { display: inline; }
+  }
+  .cost-btn .pay {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2em;
+  }
+  .cost-btn .pay img {
+    width: 1.15em;
+    height: 1.15em;
+    object-fit: contain;
+    flex: 0 0 auto;
+  }
+
+  .zoom {
+    background: #2a2a2a;
+    border-radius: 12px;
+    padding: 12px;
+    width: min(520px, 100%);
+  }
+  .zoom h2 { margin: 0 0 8px; font-size: 0.95rem; }
+  .zoom .card {
+    height: 128px;
+    padding: 8px 0 10px;
+    gap: 6px;
+    border-width: 3px;
+    border-radius: 12px;
+  }
+  .zoom .title { font-size: 16px; }
+  .zoom .cost-btn { min-height: 70px; }
+  .legend {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #ccc;
+    line-height: 1.45;
+  }
+  .legend code { color: #fde68a; }
+</style>
+</head>
+<body>
+  <h1>Personen-Action-Card — Vorschlag A</h1>
+  <p class="nav">
+    <a href="index.html">Vorschlag A</a>
+    <a href="index-b.html">Vorschlag B</a>
+    <a href="compare.html">Vergleich A/B</a>
+  </p>
+  <p class="note">
+    Chrome ohne gebackenes Label — Verb/Kosten nur live. Eine Farbfläche + Holzrahmen
+    (kein gestapeltes Overlay). Live-Text mit <code>2%</code> Abstand zu allen Innenkanten des Holzrahmens.
+    Button-Breiten dynamisch: Triple <code>3%·30%·2%·30%·2%·30%·3%</code>, Dual <code>3%·46%·2%·46%·3%</code>. Verb oben / Kosten unten.
+  </p>
+
+  <div class="stage">
+    <div class="phone">
+      <aside class="rail" aria-label="Personen">
+        <div class="banner">Personen</div>
+        <div class="cards">
+          <article class="card">
+            <div class="title">Fans <span class="meta">(Lvl.1, x5)</span></div>
+            <div class="actions dual">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-sec.png" alt="">12</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+            </div>
+          </article>
+          <article class="card">
+            <div class="title">Ultras <span class="meta">(Lvl.1, x3)</span></div>
+            <div class="actions">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-merch.png" alt="">12</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+              <button class="cost-btn senden" type="button"><span class="inner"><span class="txt"><span class="full">SENDEN</span><span class="short">SEND</span></span><span class="pay"><img src="cur-merch.png" alt="">6</span></span></button>
+            </div>
+          </article>
+          <article class="card">
+            <div class="title">Hooligans <span class="meta">(Lvl.1, x2)</span></div>
+            <div class="actions">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-bier.png" alt="">12</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+              <button class="cost-btn senden" type="button"><span class="inner"><span class="txt"><span class="full">SENDEN</span><span class="short">SEND</span></span><span class="pay"><img src="cur-bier.png" alt="">6</span></span></button>
+            </div>
+          </article>
+          <article class="card">
+            <div class="title">Ordner <span class="meta">(Lvl.1, x1)</span></div>
+            <div class="actions dual">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+            </div>
+          </article>
+        </div>
+      </aside>
+      <div class="pitch-fake"></div>
+    </div>
+
+    <div class="zoom">
+      <h2>Detail · Ultras</h2>
+      <article class="card">
+        <div class="title">Ultras <span class="meta">(Lvl.1, x3)</span></div>
+        <div class="actions">
+          <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-merch.png" alt="">12</span></span></button>
+          <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+          <button class="cost-btn senden" type="button"><span class="inner"><span class="txt"><span class="full">SENDEN</span><span class="short">SEND</span></span><span class="pay"><img src="cur-merch.png" alt="">6</span></span></button>
+        </div>
+      </article>
+      <div class="legend">
+        Nur Live-Text · 2% Inset vom Holz-Innenrand · eine Farbfläche · zweizeilig.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -62,3 +62,7 @@ Teamfarben geteilt: Blau `(31,76,160)` · Rot `(151,27,32)`.
 Platzierung: **oben links**, zwischen Personen-Sidebar und Stadionfläche, unterhalb/seitlich vom Top-HUD.
 
 Empfehlung: **Variante A (Chip-Rail)** — brauner Rahmen im Bloons-Menü-Look, vier Chips (Gold, Bier, Fanartikel, Sicherheit) mit Icon + Wert. Details in den Proposal-Bildern.
+
+## UI Final Freigabe-Gate
+
+Alle Einträge dieser Liste stehen in [`ui-final/PENDING_INDEX.md`](./ui-final/PENDING_INDEX.md) als **pending** (142). Runtime-`released` erst nach manueller Freigabe.

@@ -10,6 +10,7 @@ import {
   onFullscreenChange,
 } from "./game/fullscreen";
 import { drawMatch, hitSlot } from "./game/render";
+import { syncTribuneLayout } from "./game/layout";
 import {
   UI_ICONS,
   preloadIcons,
@@ -23,10 +24,17 @@ import {
   HOOLIGAN_ORDER_BEER,
   MIX_MAX,
   MIX_MIN,
+  PROD_BEER,
+  PROD_MERCH,
+  PROD_SECURITY,
   PYRO_FIGHT_MERCH,
   STEWARD_HIRE_GOLD,
   UPGRADE_COST,
   UPGRADE_MAX,
+  ordnerPostMaxHp,
+  productionRate,
+  stewardHealPerSec,
+  stewardPostRadius,
   type BuildingKind,
   type FanKind,
   type FanMix,
@@ -44,6 +52,94 @@ import {
 } from "./game/util";
 
 void preloadIcons();
+
+const BUILD_NAME: Record<BuildingKind, string> = {
+  bier: "Bierstand",
+  fanshop: "Fanshop",
+  ordner: "Ordnerposten",
+};
+
+function buildingYieldCurrency(kind: BuildingKind): string {
+  if (kind === "bier") return UI_ICONS.currencyBier;
+  if (kind === "fanshop") return UI_ICONS.currencyFanartikel;
+  return UI_ICONS.currencySicherheit;
+}
+
+/** Tatsächliche Produktion / Sekunde (PROD_* × productionRate). */
+function buildingYieldPerSec(kind: BuildingKind, level: number): number {
+  const base =
+    kind === "bier" ? PROD_BEER : kind === "fanshop" ? PROD_MERCH : PROD_SECURITY;
+  return Math.round(base * productionRate(level) * 100) / 100;
+}
+
+function formatYieldPerSec(n: number): string {
+  return n.toFixed(2);
+}
+
+/** Heilradius als % der Gang-Breite (gangX×100). */
+function formatHealRadius(level: number): string {
+  return String(Math.round(stewardPostRadius(level) * 100));
+}
+
+/** Symbol + Betrag/s — Einheit steckt im Währungs-Icon. */
+function yieldChipHtml(
+  kind: BuildingKind,
+  perSec: number,
+  opts?: { delta?: boolean; id?: string },
+): string {
+  const sign = opts?.delta ? (perSec >= 0 ? "+" : "") : "";
+  const id = opts?.id ? ` id="${opts.id}"` : "";
+  const deltaCls = opts?.delta ? " yield-delta" : "";
+  return `<span class="yield-chip${deltaCls}"${id}><img src="${buildingYieldCurrency(kind)}" alt=""><span class="yield-amt">${sign}${formatYieldPerSec(perSec)}/s</span></span>`;
+}
+
+function statChipHtml(
+  label: string,
+  value: string,
+  opts?: { delta?: boolean; id?: string },
+): string {
+  const id = opts?.id ? ` id="${opts.id}"` : "";
+  const deltaCls = opts?.delta ? " yield-delta" : "";
+  return `<span class="stat-chip${deltaCls}"${id}><span class="stat-label">${label}</span><span class="stat-amt">${value}</span></span>`;
+}
+
+/** Live Verb+Kosten über Button-Chrome (kein gebackenes Label). */
+function arCostBtnHtml(opts: {
+  kind: "bauen" | "kaufen" | "upgrade" | "senden";
+  full: string;
+  short: string;
+  amount: number | string;
+  currencySrc?: string;
+  payId?: string;
+  /** Echter Button (Personen-Rail); sonst dekoratives span (Build-Karten). */
+  asButton?: boolean;
+  btnId?: string;
+  btnAttrs?: string;
+}): string {
+  const cur = opts.currencySrc ?? UI_ICONS.currencyGold;
+  const payId = opts.payId ? ` id="${opts.payId}"` : "";
+  const inner = `<span class="inner"><span class="txt"><span class="full">${opts.full}</span><span class="short">${opts.short}</span></span><span class="pay"${payId}><img src="${cur}" alt=""><span class="amt">${opts.amount}</span></span></span>`;
+  if (opts.asButton) {
+    const id = opts.btnId ? ` id="${opts.btnId}"` : "";
+    const attrs = opts.btnAttrs ? ` ${opts.btnAttrs}` : "";
+    return `<button type="button" class="ar-cost-btn ${opts.kind}"${id}${attrs}>${inner}</button>`;
+  }
+  return `<span class="ar-cost-btn ${opts.kind}" aria-hidden="true">${inner}</span>`;
+}
+
+/** Personen-Titel-Meta: "(Lvl.1, x5)" — Lvl = Tech-Stufe (ändert sich bei UP) */
+function personMetaLabel(
+  m: Match,
+  kind: FanKind | "ordner",
+  count: number,
+): string {
+  return `(Lvl.${m.unitTechLevel(kind)}, x${count})`;
+}
+
+function setPayAmt(root: ParentNode, payId: string, amount: number | string): void {
+  const el = root.querySelector(`#${payId} .amt`) ?? root.querySelector(`#${payId}`);
+  if (el) el.textContent = String(amount);
+}
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -210,91 +306,135 @@ function renderMatchScreen(): void {
     <div class="match-shell matchday">
       <aside class="side-rail left-rail" aria-label="Personen">
         <header class="rail-banner">Personen</header>
-        <p class="freie-plaetze">Einheiten gesamt <b id="free-seats">0</b></p>
-        <div class="unit-rows">
-          <div class="ur-row" data-card-buy="normalos">
-            <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="normalos" src="${unitIconPath("normalos", tc, 1)}" alt="">
-              <div class="ur-meta">
-                <span class="ur-name">Fans <small class="ur-lv" data-unit-lv="normalos">Lv1</small></span>
-                <b class="ur-count" id="fb-n">0</b>
-                <p class="ur-cost">${BUY_COST.normalos.security} Sicherheit</p>
-              </div>
+        <div class="unit-rows person-cards">
+          <article class="person-card">
+            <div class="person-title">Fans <span class="meta" data-person-meta="normalos">(Lvl.1, x0)</span></div>
+            <div class="person-actions dual">
+              ${arCostBtnHtml({
+                kind: "kaufen",
+                full: "KAUFEN",
+                short: "KAUF",
+                amount: BUY_COST.normalos.security,
+                currencySrc: UI_ICONS.currencySicherheit,
+                asButton: true,
+                btnAttrs: 'data-quick-buy="normalos" title="Kaufen"',
+              })}
+              ${arCostBtnHtml({
+                kind: "upgrade",
+                full: "UPGRADE",
+                short: "UP",
+                amount: 22,
+                currencySrc: UI_ICONS.currencyGold,
+                payId: "up-pay-normalos",
+                asButton: true,
+                btnAttrs: 'data-unit-up="normalos" title="Upgrade"',
+              })}
             </div>
-            <div class="ur-actions ur-actions-dual">
-              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="normalos" title="Kaufen">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
-              <button type="button" class="ar-lv-btn" data-unit-up="normalos" title="Upgrade">▲</button>
+          </article>
+          <article class="person-card">
+            <div class="person-title">Ultras <span class="meta" data-person-meta="ultras">(Lvl.1, x0)</span></div>
+            <div class="person-actions triple">
+              ${arCostBtnHtml({
+                kind: "kaufen",
+                full: "KAUFEN",
+                short: "KAUF",
+                amount: BUY_COST.ultras.merch,
+                currencySrc: UI_ICONS.currencyFanartikel,
+                asButton: true,
+                btnAttrs: 'data-quick-buy="ultras" title="Kaufen"',
+              })}
+              ${arCostBtnHtml({
+                kind: "upgrade",
+                full: "UPGRADE",
+                short: "UP",
+                amount: 22,
+                currencySrc: UI_ICONS.currencyGold,
+                payId: "up-pay-ultras",
+                asButton: true,
+                btnAttrs: 'data-unit-up="ultras" title="Upgrade"',
+              })}
+              ${arCostBtnHtml({
+                kind: "senden",
+                full: "SENDEN",
+                short: "SEND",
+                amount: PYRO_FIGHT_MERCH,
+                currencySrc: UI_ICONS.currencyFanartikel,
+                asButton: true,
+                btnId: "btn-pyro-fight",
+                btnAttrs: 'title="Senden"',
+              })}
             </div>
-          </div>
-          <div class="ur-row" data-card-buy="ultras">
-            <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="ultras" src="${unitIconPath("ultras", tc, 1)}" alt="">
-              <div class="ur-meta">
-                <span class="ur-name">Ultras <small class="ur-lv" data-unit-lv="ultras">Lv1</small></span>
-                <b class="ur-count" id="fb-u">0</b>
-                <p class="ur-cost">${BUY_COST.ultras.merch} Fanartikel</p>
-              </div>
+          </article>
+          <article class="person-card">
+            <div class="person-title">Hooligans <span class="meta" data-person-meta="hooligans">(Lvl.1, x0)</span></div>
+            <div class="person-actions triple">
+              ${arCostBtnHtml({
+                kind: "kaufen",
+                full: "KAUFEN",
+                short: "KAUF",
+                amount: BUY_COST.hooligans.beer,
+                currencySrc: UI_ICONS.currencyBier,
+                asButton: true,
+                btnAttrs: 'data-quick-buy="hooligans" title="Kaufen"',
+              })}
+              ${arCostBtnHtml({
+                kind: "upgrade",
+                full: "UPGRADE",
+                short: "UP",
+                amount: 22,
+                currencySrc: UI_ICONS.currencyGold,
+                payId: "up-pay-hooligans",
+                asButton: true,
+                btnAttrs: 'data-unit-up="hooligans" title="Upgrade"',
+              })}
+              ${arCostBtnHtml({
+                kind: "senden",
+                full: "SENDEN",
+                short: "SEND",
+                amount: HOOLIGAN_ORDER_BEER,
+                currencySrc: UI_ICONS.currencyBier,
+                asButton: true,
+                btnId: "btn-hooligan",
+                btnAttrs: 'title="Senden"',
+              })}
             </div>
-            <div class="ur-actions ur-actions-triple">
-              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="ultras" title="Kaufen">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
-              <button class="ar-icon-btn ar-senden" id="btn-pyro-fight" type="button" title="Senden">
-                <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
-                <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
-              </button>
-              <button type="button" class="ar-lv-btn" data-unit-up="ultras" title="Upgrade">▲</button>
+          </article>
+          <article class="person-card">
+            <div class="person-title">Ordner <span class="meta" data-person-meta="ordner">(Lvl.1, x0)</span></div>
+            <div class="person-actions dual">
+              ${arCostBtnHtml({
+                kind: "kaufen",
+                full: "KAUFEN",
+                short: "KAUF",
+                amount: STEWARD_HIRE_GOLD,
+                currencySrc: UI_ICONS.currencyGold,
+                asButton: true,
+                btnId: "btn-hire-ordner",
+                btnAttrs: 'title="Kaufen"',
+              })}
+              ${arCostBtnHtml({
+                kind: "upgrade",
+                full: "UPGRADE",
+                short: "UP",
+                amount: 22,
+                currencySrc: UI_ICONS.currencyGold,
+                payId: "up-pay-ordner",
+                asButton: true,
+                btnAttrs: 'data-unit-up="ordner" title="Upgrade"',
+              })}
             </div>
-          </div>
-          <div class="ur-row" data-card-buy="hooligans">
-            <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="hooligans" src="${unitIconPath("hooligans", tc, 1)}" alt="">
-              <div class="ur-meta">
-                <span class="ur-name">Hooligans <small class="ur-lv" data-unit-lv="hooligans">Lv1</small></span>
-                <b class="ur-count" id="fb-h">0</b>
-                <p class="ur-cost">${BUY_COST.hooligans.beer} Bier</p>
-              </div>
-            </div>
-            <div class="ur-actions ur-actions-triple">
-              <button type="button" class="ar-icon-btn ar-kaufen" data-quick-buy="hooligans" title="Kaufen">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
-              <button class="ar-icon-btn ar-senden" id="btn-hooligan" type="button" title="Senden">
-                <img class="btn-ready" src="${UI_ICONS.btnSendenGreen}" alt="Senden">
-                <img class="btn-cd" src="${UI_ICONS.btnSendenGrey}" alt="Senden">
-              </button>
-              <button type="button" class="ar-lv-btn" data-unit-up="hooligans" title="Upgrade">▲</button>
-            </div>
-          </div>
-          <div class="ur-row ur-row-ordner" data-card-buy="ordner">
-            <div class="ur-top">
-              <img class="ur-icon" data-unit-icon="ordner" src="${unitIconPath("ordner", tc, 1)}" alt="">
-              <div class="ur-meta">
-                <span class="ur-name">Ordner <small class="ur-lv" data-unit-lv="ordner">Lv1</small></span>
-                <b class="ur-count" id="fb-o">0</b>
-                <p class="ur-cost">${STEWARD_HIRE_GOLD} Gold</p>
-              </div>
-            </div>
-            <div class="ur-actions ur-actions-dual">
-              <button type="button" class="ar-icon-btn ar-kaufen" id="btn-hire-ordner" title="Kaufen">
-                <img class="btn-ready" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-                <img class="btn-cd" src="${UI_ICONS.btnKaufenGrey}" alt="Kaufen">
-              </button>
-              <button type="button" class="ar-lv-btn" data-unit-up="ordner" title="Upgrade">▲</button>
-            </div>
-          </div>
+          </article>
         </div>
-        <div class="fanbase-col gast" aria-label="Gegner">
+        <div class="fanbase-col gast sr-only" aria-label="Gegner">
           <span class="fb"><i>N</i><b id="fb-en">0</b></span>
           <span class="fb"><i>U</i><b id="fb-eu">0</b></span>
           <span class="fb"><i>H</i><b id="fb-eh">0</b></span>
           <span class="fb"><i>O</i><b id="fb-eo">0</b></span>
         </div>
+        <span class="sr-only" id="fb-n">0</span>
+        <span class="sr-only" id="fb-u">0</span>
+        <span class="sr-only" id="fb-h">0</span>
+        <span class="sr-only" id="fb-o">0</span>
       </aside>
       <div id="game-wrap">
         <div class="top-hud" id="pitch-hud">
@@ -350,70 +490,68 @@ function renderMatchScreen(): void {
       </div>
       <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
         <header class="rail-banner" id="build-rail-title">Bauen</header>
-        <p class="rail-hint" id="build-hint">Gebäude wählen</p>
         <div class="build-rows" id="build-place-rows">
           <button type="button" class="build-card" data-pending-build="bier">
             <div class="build-top">
               <img class="build-preview" src="icons/stands/bier-${tc}-1.png" alt="">
               <div class="build-info">
-                <span>Bierstand</span>
-                <small>${BUILD_COST.bier} Gold</small>
+                <span class="build-name">Bierstand</span>
+                ${yieldChipHtml("bier", buildingYieldPerSec("bier", 1))}
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.bier })}
           </button>
           <button type="button" class="build-card" data-pending-build="fanshop">
             <div class="build-top">
               <img class="build-preview" src="icons/stands/fanshop-${tc}-1.png" alt="">
               <div class="build-info">
-                <span>Fanshop</span>
-                <small>${BUILD_COST.fanshop} Gold</small>
+                <span class="build-name">Fanshop</span>
+                ${yieldChipHtml("fanshop", buildingYieldPerSec("fanshop", 1))}
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.fanshop })}
           </button>
           <button type="button" class="build-card" data-pending-build="ordner">
             <div class="build-top">
               <img class="build-preview" src="icons/stands/ordner-${tc}-1.png" alt="">
               <div class="build-info">
-                <span>Ordnerposten</span>
-                <small>${BUILD_COST.ordner} Gold</small>
+                <span class="build-name">Ordnerposten</span>
+                ${yieldChipHtml("ordner", buildingYieldPerSec("ordner", 1))}
+                ${statChipHtml("HP", String(ordnerPostMaxHp(1)))}
+                ${statChipHtml("Radius", `${formatHealRadius(1)}%`)}
+                ${statChipHtml("Heilung", `${stewardHealPerSec(1)}/s`)}
               </div>
             </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            ${arCostBtnHtml({ kind: "bauen", full: "BAUEN", short: "BAU", amount: BUILD_COST.ordner })}
           </button>
         </div>
         <div class="build-rows hidden" id="build-upgrade-rows">
           <div class="upgrade-panel" id="upgrade-panel">
-            <p class="upgrade-title" id="upgrade-title">Dieses Haus</p>
+            <p class="upgrade-title" id="upgrade-title">Gebäude</p>
             <div class="upgrade-preview">
               <div class="up-stage">
                 <img id="upgrade-from-img" src="" alt="">
-                <span id="upgrade-from-lv">Lv1</span>
+                <span class="up-lv" id="upgrade-from-lv">Lv1</span>
+                <div class="up-stats" id="upgrade-from-stats">
+                  <span class="yield-chip" id="upgrade-from-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">0.41/s</span></span>
+                </div>
               </div>
               <div class="up-arrow" aria-hidden="true">→</div>
-              <div class="up-stage">
+              <div class="up-stage up-stage-next">
                 <img id="upgrade-to-img" src="" alt="">
-                <span id="upgrade-to-lv">Lv2</span>
+                <span class="up-lv" id="upgrade-to-lv">Lv2</span>
+                <div class="up-stats" id="upgrade-to-stats">
+                  <span class="yield-chip yield-delta" id="upgrade-to-yield"><img src="${UI_ICONS.currencyBier}" alt=""><span class="yield-amt">+0.17/s</span></span>
+                </div>
               </div>
             </div>
-            <p class="upgrade-blurb" id="upgrade-blurb">Besserer Ertrag & stärkeres Gebäude</p>
-            <button type="button" class="upgrade-buy" id="rail-upgrade">
-              <span id="rail-upgrade-label">Upgrade</span>
-              <small id="rail-upgrade-cost">—</small>
-              <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
+            <button type="button" class="ar-cost-btn upgrade" id="rail-upgrade">
+              <span class="inner">
+                <span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span>
+                <span class="pay" id="rail-upgrade-pay"><img src="${UI_ICONS.currencyGold}" alt=""><span id="rail-upgrade-cost">—</span></span>
+              </span>
             </button>
           </div>
-          <button type="button" class="build-card" id="rail-hire-ordner">
-            <div class="build-top">
-              <img class="build-preview" src="${unitIconPath("ordner", tc, 1)}" alt="">
-              <div class="build-info">
-                <span>Ordner anheuern</span>
-                <small>${STEWARD_HIRE_GOLD} Gold</small>
-              </div>
-            </div>
-            <img class="build-kaufen" src="${UI_ICONS.btnKaufenGreen}" alt="Kaufen">
-          </button>
         </div>
         <button type="button" class="rail-close" id="build-rail-close">Schließen</button>
       </aside>
@@ -453,6 +591,51 @@ function renderMatchScreen(): void {
     buildUpgradeRows.classList.add("hidden");
   };
 
+  const fillUpgradeStats = (
+    host: Element | null,
+    kind: BuildingKind,
+    level: number,
+    deltaFrom: number | null,
+  ) => {
+    if (!host) return;
+    const isDelta = deltaFrom != null;
+    const lv = isDelta ? level : level;
+    const parts: string[] = [];
+    if (kind === "ordner") {
+      const hp = ordnerPostMaxHp(lv);
+      const radius = formatHealRadius(lv);
+      const heal = stewardHealPerSec(lv);
+      if (isDelta) {
+        const dHp = hp - ordnerPostMaxHp(deltaFrom!);
+        const dR = Math.round(stewardPostRadius(lv) * 100) - Math.round(stewardPostRadius(deltaFrom!) * 100);
+        const dHeal = heal - stewardHealPerSec(deltaFrom!);
+        parts.push(statChipHtml("HP", `${dHp >= 0 ? "+" : ""}${dHp}`, { delta: true }));
+        parts.push(statChipHtml("Radius", `${dR >= 0 ? "+" : ""}${dR}%`, { delta: true }));
+        parts.push(statChipHtml("Heilung", `${dHeal >= 0 ? "+" : ""}${dHeal}/s`, { delta: true }));
+      } else {
+        parts.push(statChipHtml("HP", String(hp)));
+        parts.push(statChipHtml("Radius", `${radius}%`));
+        parts.push(statChipHtml("Heilung", `${heal}/s`));
+      }
+      // Sicherheit-Ertrag zusätzlich
+      const y = buildingYieldPerSec(kind, lv);
+      if (isDelta) {
+        const dY = y - buildingYieldPerSec(kind, deltaFrom!);
+        parts.push(yieldChipHtml(kind, dY, { delta: true }));
+      } else {
+        parts.push(yieldChipHtml(kind, y));
+      }
+    } else {
+      const y = buildingYieldPerSec(kind, lv);
+      if (isDelta) {
+        parts.push(yieldChipHtml(kind, y - buildingYieldPerSec(kind, deltaFrom!), { delta: true }));
+      } else {
+        parts.push(yieldChipHtml(kind, y));
+      }
+    }
+    host.innerHTML = parts.join("");
+  };
+
   const openBuildRail = (mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
     state.buildTarget = target;
     m.selectedSlot = target;
@@ -461,12 +644,10 @@ function renderMatchScreen(): void {
     buildRail.classList.add("open");
     shell.classList.add("build-open");
     const title = app.querySelector("#build-rail-title");
-    const hint = app.querySelector("#build-hint");
     if (mode === "place") {
       buildPlaceRows.classList.remove("hidden");
       buildUpgradeRows.classList.add("hidden");
       if (title) title.textContent = "Bauen";
-      if (hint) hint.textContent = "Gebäude für diesen Plot wählen";
       syncPendingBuildUi();
     } else {
       buildPlaceRows.classList.add("hidden");
@@ -480,17 +661,16 @@ function renderMatchScreen(): void {
       const cost = slot ? (UPGRADE_COST as readonly number[])[next] : null;
       const upBtn = app.querySelector<HTMLButtonElement>("#rail-upgrade")!;
       const costEl = app.querySelector("#rail-upgrade-cost");
-      const labelEl = app.querySelector("#rail-upgrade-label");
       const fromImg = app.querySelector<HTMLImageElement>("#upgrade-from-img");
       const toImg = app.querySelector<HTMLImageElement>("#upgrade-to-img");
       const fromLv = app.querySelector("#upgrade-from-lv");
       const toLv = app.querySelector("#upgrade-to-lv");
-      const blurb = app.querySelector("#upgrade-blurb");
+      const fromStats = app.querySelector("#upgrade-from-stats");
+      const toStats = app.querySelector("#upgrade-to-stats");
       const upTitle = app.querySelector("#upgrade-title");
       const kind = slot?.building;
-      const name =
-        kind === "bier" ? "Bierstand" : kind === "fanshop" ? "Fanshop" : kind === "ordner" ? "Ordnerposten" : "Gebäude";
-      if (upTitle) upTitle.textContent = `${name} upgraden`;
+      const name = kind ? BUILD_NAME[kind] : "Gebäude";
+      if (upTitle) upTitle.textContent = name;
       if (kind && fromImg && toImg) {
         const fromSrc = standIconPath(kind, tc, lv);
         const toSrc = standIconPath(kind, tc, Math.min(UPGRADE_MAX, next));
@@ -500,53 +680,36 @@ function renderMatchScreen(): void {
         toImg.alt = `${name} Lv${Math.min(UPGRADE_MAX, next)}`;
       }
       if (fromLv) fromLv.textContent = `Lv${lv}`;
-      if (toLv) toLv.textContent = slot && slot.level >= UPGRADE_MAX ? "Max" : `Lv${next}`;
-      if (blurb) {
-        blurb.textContent =
-          kind === "bier"
-            ? "Mehr Bier-Produktion & Kapazität"
-            : kind === "fanshop"
-              ? "Mehr Fanartikel & Stimmung"
-              : kind === "ordner"
-                ? "Stärkerer Posten & mehr Ordner-Power"
-                : "Gebäude verbessern";
+      const atMax = !!(slot && slot.level >= UPGRADE_MAX);
+      if (toLv) toLv.textContent = atMax ? "Max" : `Lv${next}`;
+      if (kind) {
+        fillUpgradeStats(fromStats, kind, lv, null);
+        if (atMax) {
+          if (toStats) toStats.innerHTML = "";
+        } else {
+          fillUpgradeStats(toStats, kind, next, lv);
+        }
       }
-      if (cost == null || !slot || slot.level >= UPGRADE_MAX) {
+      if (cost == null || !slot || atMax) {
         upBtn.disabled = true;
-        if (labelEl) labelEl.textContent = "Maximale Stufe";
-        if (costEl) costEl.textContent = `Lv${UPGRADE_MAX}`;
+        upBtn.classList.add("cd");
+        if (costEl) costEl.textContent = "—";
       } else {
-        upBtn.disabled = m.gold < cost;
-        if (labelEl) labelEl.textContent = `Upgrade auf Lv${next}`;
-        if (costEl) costEl.textContent = `${cost} Gold`;
-      }
-      const hireBtn = app.querySelector<HTMLButtonElement>("#rail-hire-ordner")!;
-      const canHire = !!(slot && m.canHireSteward(slot));
-      hireBtn.classList.toggle("hidden", slot?.building !== "ordner");
-      hireBtn.disabled = !canHire;
-      hireBtn.classList.toggle("cd", !canHire);
-      if (hint) {
-        hint.textContent =
-          slot?.building === "ordner"
-            ? "Genau dieses Haus: Upgrade oder Ordner"
-            : "Genau dieses Haus upgraden";
+        const broke = m.gold < cost;
+        upBtn.disabled = broke;
+        upBtn.classList.toggle("cd", broke);
+        if (costEl) costEl.textContent = String(cost);
       }
     }
   };
 
   const syncPendingBuildUi = () => {
-    const hint = app.querySelector("#build-hint");
     app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
       const kind = btn.dataset.pendingBuild as BuildingKind;
       const on = state.pendingBuild === kind;
       btn.classList.toggle("selected", on);
       btn.classList.toggle("cd", m.gold < BUILD_COST[kind]);
     });
-    if (hint && !buildPlaceRows.classList.contains("hidden")) {
-      hint.textContent = state.buildTarget
-        ? "Gebäude für diesen Plot wählen"
-        : "Plot tippen";
-    }
   };
 
   const resize = () => {
@@ -565,6 +728,7 @@ function renderMatchScreen(): void {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     m.width = cssW;
     m.height = cssH;
+    syncTribuneLayout(cssW, cssH);
     layoutHud();
     try {
       drawMatch(ctx, m);
@@ -675,11 +839,6 @@ function renderMatchScreen(): void {
       plus.classList.toggle("ready", ok);
       plus.classList.toggle("cd", !ok);
     });
-    const freeEl = app.querySelector("#free-seats");
-    if (freeEl) {
-      const o = m.countTeamFans(m.playerTeam);
-      freeEl.textContent = String(o.normalos + o.ultras + o.hooligans + o.ordner);
-    }
     syncPendingBuildUi();
   };
 
@@ -696,44 +855,18 @@ function renderMatchScreen(): void {
     syncOverlay();
   });
   app.querySelectorAll<HTMLButtonElement>("[data-quick-buy]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
+    btn.addEventListener("click", () => {
       m.tryBuyFanQuick(btn.dataset.quickBuy as FanKind);
       syncOverlay();
     });
   });
   app.querySelectorAll<HTMLButtonElement>("[data-unit-up]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
+    btn.addEventListener("click", () => {
       const kind = btn.dataset.unitUp as FanKind | "ordner";
       m.tryUpgradeUnit(kind);
       syncOverlay();
     });
   });
-  // Whole brown card is a Kaufen hit-target (Bloons-style); Senden/Upgrade stay own buttons
-  app.querySelectorAll<HTMLElement>("[data-card-buy]").forEach((card) => {
-    card.addEventListener("click", (e) => {
-      const t = e.target as HTMLElement | null;
-      if (t?.closest(".ar-senden, .ar-kaufen, .ar-lv-btn, button")) return;
-      const kind = card.dataset.cardBuy;
-      if (kind === "ordner") {
-        m.tryHireStewardQuick();
-      } else if (kind === "normalos" || kind === "ultras" || kind === "hooligans") {
-        m.tryBuyFanQuick(kind);
-      }
-      syncOverlay();
-    });
-  });
-  app.querySelector("#btn-hooligan")?.addEventListener(
-    "click",
-    (e) => e.stopPropagation(),
-    true,
-  );
-  app.querySelector("#btn-pyro-fight")?.addEventListener(
-    "click",
-    (e) => e.stopPropagation(),
-    true,
-  );
   app.querySelectorAll<HTMLButtonElement>("[data-pending-build]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const kind = btn.dataset.pendingBuild as BuildingKind;
@@ -758,15 +891,6 @@ function renderMatchScreen(): void {
       m.tryUpgrade();
     }
     closeBuildRail();
-    syncOverlay();
-  });
-  app.querySelector("#rail-hire-ordner")?.addEventListener("click", () => {
-    if (state.buildTarget) {
-      m.buildMenu = state.buildTarget;
-      m.selectedSlot = state.buildTarget;
-      m.tryHireSteward();
-      openBuildRail("upgrade", state.buildTarget);
-    }
     syncOverlay();
   });
   btnHire.addEventListener("click", () => {
@@ -816,8 +940,12 @@ function renderMatchScreen(): void {
       setFb("#fb-en", foe.normalos);
       setFb("#fb-eh", foe.hooligans);
       setFb("#fb-eo", foe.ordner);
-      // Sidebar icons / level badges follow central per-type level
-      const tcNow = teamColor(m.playerTeam);
+      const counts: Record<FanKind | "ordner", number> = {
+        normalos: own.normalos,
+        ultras: own.ultras,
+        hooligans: own.hooligans,
+        ordner: own.ordner,
+      };
       const kinds: (FanKind | "ordner")[] = [
         "normalos",
         "ultras",
@@ -825,16 +953,9 @@ function renderMatchScreen(): void {
         "ordner",
       ];
       for (const kind of kinds) {
-        const lv = m.unitLevelOf(m.playerTeam, kind);
-        const img = app.querySelector<HTMLImageElement>(
-          `[data-unit-icon="${kind}"]`,
-        );
-        if (img) {
-          const next = unitIconPath(kind, tcNow, Math.max(1, lv));
-          if (img.getAttribute("src") !== next) img.src = next;
-        }
-        const lvEl = app.querySelector(`[data-unit-lv="${kind}"]`);
-        if (lvEl) lvEl.textContent = m.unitLevelLabel(kind);
+        const lvMin = m.minUnitLevel(kind);
+        const meta = app.querySelector(`[data-person-meta="${kind}"]`);
+        if (meta) meta.textContent = personMetaLabel(m, kind, counts[kind]);
         const upBtn = app.querySelector<HTMLButtonElement>(
           `[data-unit-up="${kind}"]`,
         );
@@ -844,11 +965,11 @@ function renderMatchScreen(): void {
           upBtn.disabled = !ok;
           upBtn.classList.toggle("ready", ok);
           upBtn.classList.toggle("cd", !ok);
-          upBtn.textContent = cost != null ? `▲${cost}` : "▲";
+          setPayAmt(app, `up-pay-${kind}`, cost != null ? cost : "—");
           upBtn.title =
             cost == null
               ? "Max. Stufe"
-              : `Alle ${kind === "ordner" ? "Ordner" : kind} → Lv${lv + 1} · ${cost}€`;
+              : `Alle ${kind} → Lv${lvMin + 1} · ${cost}€`;
         }
       }
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
@@ -963,3 +1084,49 @@ function renderResult(): void {
 }
 
 render();
+
+/** Visual QA: `?demoStands=1` auto-starts a paused match with filled Bau-slots. */
+if (new URLSearchParams(location.search).has("demoStands")) {
+  state.settings = defaultSoloSettings();
+  state.setup = defaultSetup();
+  state.match = new Match({
+    settings: state.settings,
+    playerSetup: state.setup,
+    aiSetup: { mix: defaultMix() },
+  });
+  const m = state.match;
+  m.setSpeed(0);
+  m.gold = 9999;
+  const plan: Array<{
+    blockId: number;
+    index: number;
+    kind: BuildingKind;
+    owner: TeamId | "neutral";
+  }> = [
+    { blockId: 0, index: 0, kind: "bier", owner: "ksc" },
+    { blockId: 0, index: 1, kind: "fanshop", owner: "ksc" },
+    { blockId: 0, index: 2, kind: "ordner", owner: "ksc" },
+    { blockId: 0, index: 3, kind: "bier", owner: "ksc" },
+    { blockId: 1, index: 2, kind: "bier", owner: "neutral" },
+    { blockId: 1, index: 3, kind: "fanshop", owner: "neutral" },
+    { blockId: 2, index: 0, kind: "bier", owner: "vfb" },
+    { blockId: 2, index: 1, kind: "fanshop", owner: "vfb" },
+    { blockId: 2, index: 2, kind: "ordner", owner: "vfb" },
+    { blockId: 2, index: 3, kind: "bier", owner: "vfb" },
+  ];
+  for (const p of plan) {
+    const s = m.slots.find((x) => x.blockId === p.blockId && x.index === p.index);
+    if (!s) continue;
+    s.building = p.kind;
+    s.owner = p.owner;
+    s.greyNeutral = p.owner === "neutral";
+    s.level = 3;
+    s.stewardCd = 9999;
+    if (p.kind === "bier") s.beer = 40;
+    if (p.kind === "ordner") {
+      s.structMaxHp = 120;
+      s.structHp = 120;
+    }
+  }
+  go("match");
+}

@@ -1,10 +1,7 @@
 import {
   AI_SOFT_REGEN,
-  AI_START_BEER,
   AI_START_GOLD_BONUS,
-  AI_START_MERCH,
   BLOCK_META,
-  GANG_SPEED_BASE,
   BLOCK_HOME_PULL,
   BLOCK_HOME_RADIUS,
   BLOCK_SEPARATION_PUSH,
@@ -43,9 +40,10 @@ import {
   NEUTRAL_POST_GAST_INDEX,
   NEUTRAL_POST_HEIM_INDEX,
   NEUTRAL_STEWARD_RESPAWN,
-  ORDNER_POST_HP,
   ORDNER_POST_HP_PER_LEVEL,
-  PATH_WALK_SPEED,
+  ordnerPostMaxHp,
+  stewardHealPerSec,
+  stewardPostRadius,
   MOMENTUM_APPROACH,
   MOMENTUM_EPS,
   MOMENTUM_WEIGHT,
@@ -71,11 +69,9 @@ import {
   ULTRA_VS_POST_MUL,
   UPGRADE_COST,
   UPGRADE_MAX,
-  UNIT_UPGRADE_MAX,
   ANIM_DRINK_SEC,
   ANIM_SHOP_SEC,
   ANIM_THROW_SEC,
-  defaultUnitLevels,
   productionRate,
   unitLevelMul,
   unitUpgradeCost,
@@ -93,7 +89,6 @@ import {
   type SoloSettings,
   type SpeedMode,
   type TeamId,
-  type UnitUiKind,
 } from "./types";
 import { clamp, expandMix, slotKey, teamLabel } from "./util";
 import {
@@ -109,11 +104,14 @@ import {
   boothCenter,
   crowdHomePos,
   doorPos,
-  gangLanePos,
+  gangLanePosForUnit,
+  gangLaneYForUnit,
   gangMidY,
   gangXToWorld,
   plotGangX,
   slotIndicesForBlock,
+  STAND_WAIT_RADIUS,
+  syncTribuneLayout,
   worldXToGangX,
 } from "./layout";
 
@@ -188,7 +186,17 @@ export type PyroProjectile = {
 };
 
 export type MoodParticle = {
-  kind: "note" | "smoke" | "spark" | "flare";
+  kind:
+    | "note"
+    | "smoke"
+    | "spark"
+    | "flare"
+    | "mug"
+    | "rocket"
+    | "waitAnger"
+    | "waitAngerHot"
+    | "moodPlus"
+    | "moodMinus";
   x: number;
   y: number;
   vx: number;
@@ -234,12 +242,14 @@ export class Match {
   aiAcc = 0;
   defectAcc = 0;
   buildPulse = 0;
+  /** Cooldown before next mood +/− float (heim / gäste) */
+  moodFloatCd = { heim: 0, gast: 0 };
   captureAcc: Record<string, number> = {};
   aiGold = START_GOLD + AI_START_GOLD_BONUS;
   aiBuildRot = 0;
-  /** soft AI combat resources — same empty send wallets as player at kickoff */
-  aiMerch = AI_START_MERCH;
-  aiBeer = AI_START_BEER;
+  /** soft AI combat resources (not shared with player wallet) */
+  aiMerch = 40;
+  aiBeer = 40;
   aiSecurity = START_SECURITY;
   /** Penalty: whose kick is next (alternating) */
   pensNext: TeamId = "ksc";
@@ -253,20 +263,22 @@ export class Match {
   currency: Currencies = { beer: 0, merch: 0, security: START_SECURITY };
   blockOwner: (TeamId | "neutral" | null)[] = [null, null, null, null];
   floats: FloatFx[] = [];
+  /**
+   * Personen-Chrome-Stufe pro Kind (Sidebar „Lvl.N“).
+   * UP erhöht die Tech-Stufe und zieht alle lebenden Einheiten nach.
+   */
+  unitTech: Record<FanKind | "ordner", number> = {
+    normalos: 1,
+    ultras: 1,
+    hooligans: 1,
+    ordner: 1,
+  };
   /** Blocksturm hold timers */
   stormAccPlayer = 0;
   stormAccAi = 0;
   /** battle line gangX 0..1 (vorderster Ultra) */
   linePlayer = 0;
   lineAi = 1;
-  /**
-   * Central per-type unit levels (player + AI).
-   * One upgrade raises ALL living persons of that type for the team.
-   */
-  unitLevels: Record<TeamId, Record<UnitUiKind, number>> = {
-    ksc: defaultUnitLevels(),
-    vfb: defaultUnitLevels(),
-  };
 
   constructor(cfg: MatchConfig) {
     this.cfg = cfg;
@@ -336,11 +348,9 @@ export class Match {
     awayKinds.forEach((kind, i) => {
       this.fans.push(this.makeFan(kind, this.aiTeam, GAST_BLOCK, i));
     });
-    // Neutralblock: ¾ der Plätze besetzt (9/12), gemischt
-    for (let i = 0; i < 9; i++) {
-      const kind: FanKind =
-        i % 3 === 0 ? "normalos" : i % 3 === 1 ? "hooligans" : "ultras";
-      this.fans.push(this.makeFan(kind, "neutral", NEUTRAL_BLOCK, i));
+    // Neutralblock: ~20 Fans (nur Normalos) — shoppen an beliebigen Ständen
+    for (let i = 0; i < 20; i++) {
+      this.fans.push(this.makeFan("normalos", "neutral", NEUTRAL_BLOCK, i));
     }
 
     // Standarten start at cemented floors (grey mid buffer stays open)
@@ -349,12 +359,6 @@ export class Match {
 
     this.toast(`${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)}`);
     this.speed = 1;
-  }
-
-  unitLevelOf(team: TeamId | "neutral", kind: UnitUiKind): number {
-    if (team === "neutral") return 1;
-    const lv = this.unitLevels[team]?.[kind] ?? 1;
-    return Math.max(1, Math.min(UNIT_UPGRADE_MAX, lv));
   }
 
   private makeFan(
@@ -366,10 +370,14 @@ export class Match {
     const seat = Math.max(0, seatIndex | 0);
     // Roughly spread home slot; then micro-drift + cheer bob in place
     const p = crowdHomePos(blockId, seat);
-    const level = this.unitLevelOf(team, kind);
+    const level =
+      team === this.playerTeam ? this.unitTechLevel(kind) : 1;
     const beerIv = visitInterval(kind, "beer", level);
     const shopIv = visitInterval(kind, "shop", level);
     const maxHp = this.baseMaxHp(kind, level, false);
+    // Grey Fans: leave every 20–30s to shop at any Bier/Fanshop
+    const neutralTrip =
+      team === "neutral" ? 20 + Math.random() * 10 : null;
     return {
       id: uid(),
       kind,
@@ -382,13 +390,17 @@ export class Match {
       maxHp,
       thirst: 25 + Math.random() * 25,
       satisfiedUntil:
-        beerIv == null
+        neutralTrip != null
           ? 1e9
-          : this.realElapsed + beerIv * (0.35 + Math.random() * 0.55),
+          : beerIv == null
+            ? 1e9
+            : this.realElapsed + beerIv * (0.35 + Math.random() * 0.55),
       shopUntil:
-        shopIv == null
-          ? 1e9
-          : this.realElapsed + shopIv * (0.35 + Math.random() * 0.55),
+        neutralTrip != null
+          ? this.realElapsed + neutralTrip
+          : shopIv == null
+            ? 1e9
+            : this.realElapsed + shopIv * (0.35 + Math.random() * 0.55),
       aggro: kind === "hooligans" ? 40 : kind === "ultras" ? 30 : 10,
       lean: 0,
       captureProg: 0,
@@ -414,13 +426,16 @@ export class Match {
       _wanderTx: undefined,
       _wanderTy: undefined,
       _wanderCd: 0.2 + Math.random() * 1.2,
+      _standArriveAt: undefined,
+      _angerCd: 0,
     };
   }
 
   private makeSteward(team: TeamId | "neutral", stand: BuildSlot): FanUnit {
     const sp = this.stewardPostPos(stand);
     const gx = this.postGangX(stand);
-    const level = this.unitLevelOf(team, "ordner");
+    const level =
+      team === this.playerTeam ? this.unitTechLevel("ordner") : 1;
     const hp = this.stewardMaxHp(level);
     // Spawn already on gang — tickFans skips stewards, so a "moving" path
     // would never finish and they'd never patrol.
@@ -521,8 +536,7 @@ export class Match {
   }
 
   private initOrdnerPostHp(s: BuildSlot): void {
-    const lv = s.level || 1;
-    s.structMaxHp = ORDNER_POST_HP + (lv - 1) * ORDNER_POST_HP_PER_LEVEL;
+    s.structMaxHp = ordnerPostMaxHp(s.level || 1);
     s.structHp = s.structMaxHp;
   }
 
@@ -1103,7 +1117,7 @@ export class Match {
 
   private sendToGang(f: FanUnit): void {
     const door = doorPos(f.blockId);
-    const lane = gangLanePos(f.blockId);
+    const lane = gangLanePosForUnit(f.blockId, f.id);
     // Keep seatIndex reserved while alive on gang
     f._homeSeat = f.seatIndex;
     f.state = "moving";
@@ -1111,7 +1125,7 @@ export class Match {
     f.invading = false;
     f.onOffense = true;
     f.aggro = 40; // offense — keep pushing, don't auto-sit
-    // Always leave via center aisle → tunnel door → gang
+    // Always leave via center aisle → tunnel door → gang (personal lane Y)
     const path: { x: number; y: number }[] = [];
     if (f.y < door.y - 0.015 && Math.abs(f.x - door.x) > 0.018) {
       path.push({ x: door.x, y: f.y });
@@ -1276,26 +1290,77 @@ export class Match {
     return true;
   }
 
-  /** Central type level for sidebar (all units of that type share it). */
-  unitLevelLabel(kind: UnitUiKind, team: TeamId = this.playerTeam): string {
-    return `Lv${this.unitLevelOf(team, kind)}`;
+  /** Lowest-level living player unit of this kind (or Ordner if kind omitted via steward flag) */
+  lowestLevelUnit(
+    kind: FanKind | "ordner",
+    team: TeamId = this.playerTeam,
+  ): FanUnit | null {
+    let best: FanUnit | null = null;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.team !== team) continue;
+      if (kind === "ordner") {
+        if (!f.isSteward) continue;
+      } else {
+        if (f.isSteward || f.kind !== kind) continue;
+      }
+      if (!best || (f.level || 1) < (best.level || 1)) best = f;
+    }
+    return best;
   }
 
-  unitUpgradeCostFor(kind: UnitUiKind): number | null {
-    return unitUpgradeCost(this.unitLevelOf(this.playerTeam, kind));
+  /** Chrome / Sidebar Personen-Stufe (Tech), nicht Min der lebenden Units */
+  unitTechLevel(kind: FanKind | "ordner"): number {
+    return Math.max(1, Math.min(UPGRADE_MAX, this.unitTech[kind] || 1));
   }
 
-  canUpgradeUnit(kind: UnitUiKind): boolean {
+  minUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
+    if (team === this.playerTeam) return this.unitTechLevel(kind);
+    const u = this.lowestLevelUnit(kind, team);
+    return u ? u.level || 1 : 1;
+  }
+
+  maxUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
+    if (team === this.playerTeam) return this.unitTechLevel(kind);
+    let max = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.team !== team) continue;
+      if (kind === "ordner") {
+        if (!f.isSteward) continue;
+      } else if (f.isSteward || f.kind !== kind) continue;
+      max = Math.max(max, f.level || 1);
+    }
+    return max;
+  }
+
+  /** Sidebar label: "Lv3" — player uses Tech-Stufe */
+  unitLevelLabel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): string {
+    if (team === this.playerTeam) return `Lv${this.unitTechLevel(kind)}`;
+    const lo = this.minUnitLevel(kind, team);
+    const hi = this.maxUnitLevel(kind, team);
+    if (hi <= 0) return "Lv1";
+    if (lo === hi) return `Lv${lo}`;
+    return `Lv${lo}–${hi}`;
+  }
+
+  unitUpgradeCostFor(kind: FanKind | "ordner"): number | null {
+    return unitUpgradeCost(this.unitTechLevel(kind));
+  }
+
+  canUpgradeUnit(kind: FanKind | "ordner"): boolean {
     const cost = this.unitUpgradeCostFor(kind);
-    return cost != null && this.gold >= cost;
+    if (cost == null || this.gold < cost) return false;
+    // Mindestens eine lebende Einheit dieses Typs nötig
+    return this.lowestLevelUnit(kind, this.playerTeam) != null;
   }
 
-  /**
-   * Upgrade ALL living persons of this type for the player team.
-   * New buys spawn at the central type level via unitLevelOf.
-   */
-  tryUpgradeUnit(kind: UnitUiKind): boolean {
-    const cost = this.unitUpgradeCostFor(kind);
+  tryUpgradeUnit(kind: FanKind | "ordner"): boolean {
+    const living = this.lowestLevelUnit(kind, this.playerTeam);
+    if (!living) {
+      this.toast(kind === "ordner" ? "Kein Ordner" : "Keine Einheit");
+      return false;
+    }
+    const tech = this.unitTechLevel(kind);
+    const cost = unitUpgradeCost(tech);
     if (cost == null) {
       this.toast("Max. Stufe");
       return false;
@@ -1305,41 +1370,33 @@ export class Match {
       return false;
     }
     this.gold -= cost;
-    const prev = this.unitLevelOf(this.playerTeam, kind);
-    const next = prev + 1;
-    this.unitLevels[this.playerTeam][kind] = next;
-    this.applyUnitLevelBuff(this.playerTeam, kind, prev, next);
-    const label = kind === "ordner" ? "Ordner" : FAN_STATS[kind].label;
-    this.toast(`Alle ${label} → Lv${next}`);
+    const next = tech + 1;
+    this.unitTech[kind] = next;
+    let raised = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.team !== this.playerTeam) continue;
+      if (kind === "ordner") {
+        if (!f.isSteward) continue;
+      } else if (f.isSteward || f.kind !== kind) continue;
+      if ((f.level || 1) < next) {
+        f.level = next;
+        this.applyUnitLevelStats(f);
+        raised++;
+      }
+    }
+    const label =
+      kind === "ordner" ? "Ordner" : FAN_STATS[kind].label;
+    this.floatAt(living.x, living.y, `${label} Lv${next}`, true);
+    this.toast(
+      raised > 1
+        ? `${label} → Lv${next} (×${raised})`
+        : `${label} → Lv${next}`,
+    );
     return true;
   }
 
-  /** Scale HP of every living unit of this type when the central level rises. */
-  private applyUnitLevelBuff(
-    team: TeamId,
-    kind: UnitUiKind,
-    fromLv: number,
-    toLv: number,
-  ): void {
-    const fromMul = unitLevelMul(fromLv);
-    const toMul = unitLevelMul(toLv);
-    if (toMul <= fromMul) return;
-    const ratio = toMul / fromMul;
-    for (const f of this.fans) {
-      if (f.hp <= 0 || f.team !== team) continue;
-      const isOrdner = f.isSteward;
-      if (kind === "ordner" ? !isOrdner : isOrdner || f.kind !== kind) continue;
-      f.level = toLv;
-      if (isOrdner) {
-        this.applyUnitLevelStats(f);
-      } else {
-        f.maxHp = Math.round(f.maxHp * ratio);
-        f.hp = Math.min(f.maxHp, Math.round(f.hp * ratio));
-      }
-    }
-  }
-
   update(dt: number): void {
+    syncTribuneLayout(this.width, this.height);
     if (this.result || this.speed === 0) {
       this.tickFloats(dt);
       this.tickToasts(dt);
@@ -1387,6 +1444,10 @@ export class Match {
     for (const k of Object.keys(this.cd) as (keyof typeof this.cd)[]) {
       if (this.cd[k] > 0) this.cd[k] = Math.max(0, this.cd[k] - step);
     }
+    if (this.moodFloatCd.heim > 0)
+      this.moodFloatCd.heim = Math.max(0, this.moodFloatCd.heim - step);
+    if (this.moodFloatCd.gast > 0)
+      this.moodFloatCd.gast = Math.max(0, this.moodFloatCd.gast - step);
     if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - step * 1.15);
 
     this.tickEconomy(step);
@@ -1402,6 +1463,7 @@ export class Match {
     this.tickCombat(step);
     this.tickPyroShots(step);
     this.tickNeutralCapture(step);
+    this.tickFamilyFlight(step);
     this.tickJubelMomentum(step);
     this.tickBlockStorm(step);
     this.tickMatch(step);
@@ -1534,7 +1596,7 @@ export class Match {
     const nrm = this.countInBlock(this.playerTeam, HEIM_BLOCK, "normalos");
     this.gold += (1.0 + nrm * 0.2) * dt;
     const aiN = this.countInBlock(this.aiTeam, GAST_BLOCK, "normalos");
-    this.aiGold += (1.05 + aiN * 0.2) * dt;
+    this.aiGold += (1.1 + aiN * 0.22) * dt;
 
     // Steward upkeep €/s per person
     const stewards = this.fans.filter(
@@ -1781,11 +1843,12 @@ export class Match {
       }
 
       // Slow heal while inside the tight post radius (patrol bubble)
+      const postLv = stand.level || 1;
       if (
-        Math.abs(f.gangX - postGx) <= STEWARD_STATS.postRadius + 0.01 &&
+        Math.abs(f.gangX - postGx) <= stewardPostRadius(postLv) + 0.01 &&
         f.hp < f.maxHp
       ) {
-        f.hp = Math.min(f.maxHp, f.hp + STEWARD_STATS.healPerSec * dt);
+        f.hp = Math.min(f.maxHp, f.hp + stewardHealPerSec(postLv) * dt);
       }
 
       f.state = "gang";
@@ -1803,7 +1866,10 @@ export class Match {
   /** Always patrol in a tight bubble around the home Ordnerposten */
   private stewardPatrolBand(f: FanUnit): { min: number; max: number } {
     const postGx = this.stewardPostGangX(f);
-    const r = STEWARD_STATS.postRadius;
+    const stand = this.slots.find(
+      (s) => slotKey(s.blockId, s.index) === f.homeStandKey,
+    );
+    const r = stewardPostRadius(stand?.level || 1);
     return {
       min: clamp(postGx - r, 0.02, 0.98),
       max: clamp(postGx + r, 0.02, 0.98),
@@ -2004,27 +2070,80 @@ export class Match {
     return best;
   }
 
+  /** Any team Bier/Fanshop with stock — for grey Fans shopping trips. */
+  private anyOpenShopStands(): BuildSlot[] {
+    return this.slots.filter((s) => {
+      if (s.greyNeutral) return false;
+      if (s.owner !== this.playerTeam && s.owner !== this.aiTeam) return false;
+      if (s.building === "bier") return s.beer >= 1;
+      if (s.building === "fanshop") return true;
+      return false;
+    });
+  }
+
+  private queueDepthAt(stand: BuildSlot): number {
+    const key = slotKey(stand.blockId, stand.index);
+    let n = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.isSteward) continue;
+      if (f.standKey !== key) continue;
+      if (f.state === "stand" || f.state === "moving") n++;
+    }
+    return n;
+  }
+
+  /** Service time long enough that queue anger (5–10s+) can show. */
+  private standServiceSec(stand: BuildSlot): number {
+    const q = this.queueDepthAt(stand);
+    return Math.max(ANIM_DRINK_SEC, 4.5 + q * 2.2 + Math.random() * 1.5);
+  }
+
   private tickFans(dt: number): void {
     for (const f of this.fans) {
       if (f.hp <= 0 || f.isSteward) continue;
 
       if (f.state === "block") {
         this.tickBlockWander(f, dt);
-        // Team fans visit Bier + Fanshop on separate timers (gold into till)
-        if (f.team !== "neutral" && !f.onOffense) {
-          this.maybeStartStandVisit(f);
-        }
+        if (!f.onOffense) this.maybeStartStandVisit(f);
       } else if (f.state === "moving") {
         this.followPath(f, dt);
       } else if (f.state === "stand") {
-        // Hold drink / shop pose before resolving the visit
-        if (f.drinkT > 0 || f.shopT > 0) continue;
+        // Wait freely in stand radius while buying, then go home
+        if (f.drinkT > 0 || f.shopT > 0) {
+          this.tickStandWaitWander(f, dt);
+          this.tickWaitAnger(f, dt);
+          continue;
+        }
         this.finishStandVisit(f);
       } else if (f.state === "gang") {
         this.tickGangMove(f, dt);
       }
     }
     this.tickBlockSeparation(dt);
+    this.tickStandWaitSeparation(dt);
+  }
+
+  /** Orange (5–10s) / red (>10s) Nervsmilies — one per second while queued. */
+  private tickWaitAnger(f: FanUnit, dt: number): void {
+    const arrive = f._standArriveAt;
+    if (arrive == null) return;
+    const waited = this.realElapsed - arrive;
+    if (waited < 5) return;
+    f._angerCd = (f._angerCd ?? 0) - dt;
+    if ((f._angerCd ?? 0) > 0) return;
+    f._angerCd = 1;
+    const hot = waited > 10;
+    this.moodFx.push({
+      kind: hot ? "waitAngerHot" : "waitAnger",
+      x: f.x + (Math.random() - 0.5) * 0.012,
+      y: f.y - 0.03,
+      vx: (Math.random() - 0.5) * 0.02,
+      vy: -0.055 - Math.random() * 0.02,
+      color: hot ? "#ef4444" : "#f97316",
+      t: 0,
+      life: 0.85,
+      size: 0.02,
+    });
   }
 
   /** Micro-target near this fan's spread-out home slot (celebration idle). */
@@ -2108,8 +2227,13 @@ export class Match {
   /**
    * Pick Bier or Fanshop when timers are due.
    * Fans → Fanshop only · Hools → Bier only · Ultras → both (beer-first).
+   * Grey Fans → any team's Bier or Fanshop every 20–30s.
    */
   private maybeStartStandVisit(f: FanUnit): void {
+    if (f.team === "neutral") {
+      this.maybeStartNeutralShopTrip(f);
+      return;
+    }
     if (f.team !== this.playerTeam && f.team !== this.aiTeam) return;
     const team = f.team as TeamId;
     const wantsBeer = canVisit(f.kind, "beer");
@@ -2137,13 +2261,113 @@ export class Match {
     }
 
     const stand = pick === "beer" ? bier! : shop!;
-    const sp = this.standWorld(stand);
+    const wait = this.standWaitPos(stand, f.id);
     this.startPath(
       f,
-      this.pathViaDoors(f, stand.blockId, sp),
+      this.pathViaDoors(f, stand.blockId, wait),
       pick === "beer" ? "stand" : "shop",
     );
     f.standKey = slotKey(stand.blockId, stand.index);
+    f._wanderTx = wait.x;
+    f._wanderTy = wait.y;
+  }
+
+  /** Grey starter Fans leave the block every 20–30s to buy at any shop. */
+  private maybeStartNeutralShopTrip(f: FanUnit): void {
+    if (this.realElapsed < (f.shopUntil || 0)) return;
+    const stands = this.anyOpenShopStands();
+    if (!stands.length) {
+      f.shopUntil = this.realElapsed + 4 + Math.random() * 4;
+      return;
+    }
+    const stand = stands[Math.floor(Math.random() * stands.length)]!;
+    const wait = this.standWaitPos(stand, f.id);
+    const after = stand.building === "bier" ? "stand" : "shop";
+    this.startPath(f, this.pathViaDoors(f, stand.blockId, wait), after);
+    f.standKey = slotKey(stand.blockId, stand.index);
+    f._wanderTx = wait.x;
+    f._wanderTy = wait.y;
+  }
+
+  /** Stable distinct point inside the Bier/Fanshop wait radius (no pile-up). */
+  private standWaitPos(
+    stand: BuildSlot,
+    unitId: number,
+  ): { x: number; y: number } {
+    const sp = this.standWorld(stand);
+    // Golden-angle slots so waiters fan out around the building
+    const slot = unitId % 17;
+    const ang = slot * 2.399963229728653 + stand.blockId * 0.37 + stand.index;
+    const ring = 0.28 + ((slot * 5) % 7) / 7 * 0.62;
+    const r = STAND_WAIT_RADIUS * ring;
+    return {
+      x: sp.x + Math.cos(ang) * r,
+      y: sp.y + Math.sin(ang) * r * 0.72,
+    };
+  }
+
+  /** Soft push so queued fans don't share one pixel in the wait radius. */
+  private tickStandWaitSeparation(dt: number): void {
+    const waiting = this.fans.filter(
+      (f) => f.hp > 0 && !f.isSteward && f.state === "stand" && f.standKey,
+    );
+    const sep = STAND_WAIT_RADIUS * 0.35;
+    const r2 = sep * sep;
+    for (let i = 0; i < waiting.length; i++) {
+      const a = waiting[i]!;
+      for (let j = i + 1; j < waiting.length; j++) {
+        const b = waiting[j]!;
+        if (a.standKey !== b.standKey) continue;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 1e-8 || d2 > r2) continue;
+        const d = Math.sqrt(d2);
+        const push = ((sep - d) / sep) * 0.045 * dt;
+        const nx = dx / d;
+        const ny = dy / d;
+        a.x -= nx * push;
+        a.y -= ny * push;
+        b.x += nx * push;
+        b.y += ny * push;
+      }
+    }
+  }
+
+  /** Idle mill inside stand wait radius until drink/shop timer ends. */
+  private tickStandWaitWander(f: FanUnit, dt: number): void {
+    const stand = this.slots.find(
+      (s) => slotKey(s.blockId, s.index) === f.standKey,
+    );
+    if (!stand) return;
+    const sp = this.standWorld(stand);
+    if (f._wanderTx == null || f._wanderTy == null || (f._wanderCd ?? 0) <= 0) {
+      const ang = Math.random() * Math.PI * 2;
+      const r = STAND_WAIT_RADIUS * (0.2 + Math.random() * 0.8);
+      f._wanderTx = sp.x + Math.cos(ang) * r;
+      f._wanderTy = sp.y + Math.sin(ang) * r * 0.72;
+      f._wanderCd = 0.35 + Math.random() * 0.55;
+    } else {
+      f._wanderCd = (f._wanderCd ?? 0) - dt;
+    }
+    const tx = f._wanderTx!;
+    const ty = f._wanderTy!;
+    const speed = 0.07;
+    const d = dist(f.x, f.y, tx, ty);
+    if (d > 0.004) {
+      const step = Math.min(1, (speed * dt) / d);
+      f.x += (tx - f.x) * step;
+      f.y += (ty - f.y) * step;
+    }
+    // Soft clamp into radius
+    const dx = f.x - sp.x;
+    const dy = f.y - sp.y;
+    const rad = Math.hypot(dx, dy / 0.72);
+    if (rad > STAND_WAIT_RADIUS) {
+      const s = STAND_WAIT_RADIUS / rad;
+      f.x = sp.x + dx * s;
+      f.y = sp.y + dy * s;
+    }
   }
 
   private payVisitGold(stand: BuildSlot, amount: number): void {
@@ -2157,29 +2381,74 @@ export class Match {
     }
   }
 
+  /** Owner loses 1 Bier / Fanartikel from wallet when a visit completes. */
+  private consumeVisitStock(stand: BuildSlot): void {
+    const p = this.standWorld(stand);
+    if (stand.building === "bier") {
+      if (stand.owner === this.playerTeam) {
+        if (this.currency.beer >= 1) {
+          this.spend("beer", 1, p, "BIER");
+        } else {
+          this.floatAt(p.x, p.y - 0.01, "−1 BIER", false);
+        }
+      } else if (stand.owner === this.aiTeam) {
+        this.aiBeer = Math.max(0, this.aiBeer - 1);
+        this.floatAt(p.x, p.y - 0.01, "−1 BIER", false);
+      }
+    } else if (stand.building === "fanshop") {
+      if (stand.owner === this.playerTeam) {
+        if (this.currency.merch >= 1) {
+          this.spend("merch", 1, p, "FANARTIKEL");
+        } else {
+          this.floatAt(p.x, p.y - 0.01, "−1 FANARTIKEL", false);
+        }
+      } else if (stand.owner === this.aiTeam) {
+        this.aiMerch = Math.max(0, this.aiMerch - 1);
+        this.floatAt(p.x, p.y - 0.01, "−1 FANARTIKEL", false);
+      }
+    }
+  }
+
   private finishStandVisit(f: FanUnit): void {
     const stand = this.slots.find(
       (s) => slotKey(s.blockId, s.index) === f.standKey,
     );
     const lv = f.level || 1;
+    f._standArriveAt = undefined;
+    f._angerCd = 0;
     if (stand?.building === "bier" && stand.beer >= 1) {
       stand.beer -= 1;
       f.thirst = 5;
-      const beerIv = visitInterval(f.kind, "beer", lv);
-      f.satisfiedUntil =
-        beerIv == null ? 1e9 : this.realElapsed + beerIv;
+      if (f.team === "neutral") {
+        f.satisfiedUntil = 1e9;
+        f.shopUntil = this.realElapsed + 20 + Math.random() * 10;
+      } else {
+        const beerIv = visitInterval(f.kind, "beer", lv);
+        f.satisfiedUntil =
+          beerIv == null ? 1e9 : this.realElapsed + beerIv;
+      }
       const pay = visitGoldPayout("beer", lv);
       this.payVisitGold(stand, pay);
+      this.consumeVisitStock(stand);
       this.floatAtSlot(stand, "−1 Fass", false);
     } else if (stand?.building === "fanshop") {
-      const shopIv = visitInterval(f.kind, "shop", lv);
-      f.shopUntil = shopIv == null ? 1e9 : this.realElapsed + shopIv;
+      if (f.team === "neutral") {
+        f.shopUntil = this.realElapsed + 20 + Math.random() * 10;
+      } else {
+        const shopIv = visitInterval(f.kind, "shop", lv);
+        f.shopUntil = shopIv == null ? 1e9 : this.realElapsed + shopIv;
+      }
       const pay = visitGoldPayout("shop", lv);
       this.payVisitGold(stand, pay);
+      this.consumeVisitStock(stand);
     } else {
       // Visit failed (empty bier / missing stand) — short backoff
-      if (canVisit(f.kind, "beer")) f.satisfiedUntil = this.realElapsed + 8;
-      if (canVisit(f.kind, "shop")) f.shopUntil = this.realElapsed + 8;
+      if (f.team === "neutral") {
+        f.shopUntil = this.realElapsed + 8 + Math.random() * 4;
+      } else {
+        if (canVisit(f.kind, "beer")) f.satisfiedUntil = this.realElapsed + 8;
+        if (canVisit(f.kind, "shop")) f.shopUntil = this.realElapsed + 8;
+      }
     }
 
     const home =
@@ -2229,7 +2498,7 @@ export class Match {
     const fromBlock = f.blockId;
     const fromDoor = doorPos(fromBlock);
     const toDoor = doorPos(toBlock);
-    const midY = gangMidY();
+    const laneY = gangLaneYForUnit(f.id);
     const path: { x: number; y: number }[] = [];
 
     // Leave current stand via center aisle → tunnel
@@ -2241,11 +2510,11 @@ export class Match {
     }
 
     if (fromBlock !== toBlock) {
-      path.push(gangLanePos(fromBlock));
-      path.push(gangLanePos(toBlock));
+      path.push(gangLanePosForUnit(fromBlock, f.id));
+      path.push(gangLanePosForUnit(toBlock, f.id));
     } else if (end.y >= fromDoor.y - 0.01) {
-      // Same block, gang-level target (Bier/Shop): down the tunnel onto the gang
-      path.push({ x: fromDoor.x, y: midY });
+      // Same block, gang-level target (Bier/Shop): personal lane Y
+      path.push({ x: fromDoor.x, y: laneY });
     }
 
     // Enter destination stand up through its center door
@@ -2269,8 +2538,13 @@ export class Match {
       return;
     }
     const t = f.path[f.pathI];
+    const laneY = gangLaneYForUnit(f.id);
     const midY = gangMidY();
-    const onGangCorridor = Math.abs(f.y - midY) < 0.09 || Math.abs(t.y - midY) < 0.09;
+    const onGangCorridor =
+      Math.abs(f.y - midY) < 0.14 ||
+      Math.abs(f.y - laneY) < 0.12 ||
+      Math.abs(t.y - midY) < 0.14 ||
+      Math.abs(t.y - laneY) < 0.12;
 
     // Cannot walk past hostile units (to beer stand / home / invade)
     if (onGangCorridor && f.team !== "neutral") {
@@ -2281,12 +2555,12 @@ export class Match {
       if (blocker) {
         // Offense units: leave path-follow and enter gang combat so they
         // keep pushing / shooting instead of freezing mid-route.
-        if (f.onOffense && Math.abs(f.y - midY) < 0.1) {
+        if (f.onOffense && Math.abs(f.y - midY) < 0.14) {
           f.state = "gang";
           f.path = [];
           f.pathI = 0;
           this.setAfter(f, "");
-          f.y = midY;
+          f.y = laneY;
           this.syncGangFromWorld(f);
           if (f.aggro < 80) f.aggro = 40;
           return;
@@ -2297,7 +2571,7 @@ export class Match {
           const step = Math.min(gap - reach, 0.14 * dt);
           f.x += moveDir * step;
         }
-        f.y += (midY - f.y) * Math.min(1, 8 * dt);
+        f.y += (laneY - f.y) * Math.min(1, 8 * dt);
         this.syncGangFromWorld(f);
         // Don't promote attackers to "defender" mid-path — keeps Angriff pushing
         if (!f.onOffense) f.aggro = 100;
@@ -2306,7 +2580,7 @@ export class Match {
       }
     }
 
-    const speed = PATH_WALK_SPEED;
+    const speed = 0.22;
     const d = dist(f.x, f.y, t.x, t.y);
     if (d < 0.012) {
       f.x = t.x;
@@ -2318,7 +2592,7 @@ export class Match {
     const step = Math.min(1, (speed * dt) / d);
     f.x += (t.x - f.x) * step;
     f.y += (t.y - f.y) * step;
-    if (Math.abs(f.y - midY) < 0.06) {
+    if (Math.abs(f.y - laneY) < 0.08 || Math.abs(f.y - midY) < 0.08) {
       this.syncGangFromWorld(f);
     }
   }
@@ -2330,7 +2604,7 @@ export class Match {
     if (after === "gang") {
       f.state = "gang";
       f.gangX = blockIdToGangX(f.blockId);
-      f.y = gangMidY();
+      f.y = gangLaneYForUnit(f.id);
       f.x = gangXToWorld(f.gangX);
       // seat stays reserved
     } else if (after === "steward") {
@@ -2349,19 +2623,53 @@ export class Match {
       }
     } else if (after === "stand") {
       f.state = "stand";
-      f.drinkT = ANIM_DRINK_SEC;
+      f._standArriveAt = this.realElapsed;
+      f._angerCd = 0;
       f.armSwing = 0.85;
       if (f.standKey) {
         const [b] = f.standKey.split(":").map(Number);
         f.blockId = b;
+        const stand = this.slots.find(
+          (s) => slotKey(s.blockId, s.index) === f.standKey,
+        );
+        if (stand) {
+          f.drinkT = this.standServiceSec(stand);
+          const w = this.standWaitPos(stand, f.id);
+          f.x = w.x;
+          f.y = w.y;
+          f._wanderTx = w.x;
+          f._wanderTy = w.y;
+          f._wanderCd = 0.2;
+        } else {
+          f.drinkT = ANIM_DRINK_SEC;
+        }
+      } else {
+        f.drinkT = ANIM_DRINK_SEC;
       }
     } else if (after === "shop") {
       f.state = "stand";
-      f.shopT = ANIM_SHOP_SEC;
+      f._standArriveAt = this.realElapsed;
+      f._angerCd = 0;
       f.armSwing = 0.55;
       if (f.standKey) {
         const [b] = f.standKey.split(":").map(Number);
         f.blockId = b;
+        const stand = this.slots.find(
+          (s) => slotKey(s.blockId, s.index) === f.standKey,
+        );
+        if (stand) {
+          f.shopT = this.standServiceSec(stand);
+          const w = this.standWaitPos(stand, f.id);
+          f.x = w.x;
+          f.y = w.y;
+          f._wanderTx = w.x;
+          f._wanderTy = w.y;
+          f._wanderCd = 0.2;
+        } else {
+          f.shopT = ANIM_SHOP_SEC;
+        }
+      } else {
+        f.shopT = ANIM_SHOP_SEC;
       }
     } else if (after === "home") {
       f.state = "block";
@@ -2461,8 +2769,8 @@ export class Match {
   private tickGangMove(f: FanUnit, dt: number): void {
     if (f.isSteward) return;
     const dir = f.team === this.playerTeam ? 1 : -1;
-    const speed = GANG_SPEED_BASE * FAN_STATS[f.kind].fight;
-    const midY = gangMidY();
+    const speed = 0.065 * FAN_STATS[f.kind].fight;
+    const laneY = gangLaneYForUnit(f.id);
     const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
 
     // Angreifer (onOffense) pushen immer vorwärts. Nur echte Heim-Verteidiger
@@ -2499,7 +2807,7 @@ export class Match {
       if (f.rangedPyro) {
         const desired = blocker.x - moveDir * (RANGED_RANGE * 0.4);
         f.x += (desired - f.x) * Math.min(1, 5 * dt);
-        f.y += (midY - f.y) * Math.min(1, 8 * dt);
+        f.y += (laneY - f.y) * Math.min(1, 8 * dt);
       } else {
         const targetGap = MELEE_RANGE * 0.2;
         if (gapToBlocker > targetGap) {
@@ -2518,13 +2826,14 @@ export class Match {
       } else {
         f.x += (blocker.x - moveDir * targetGap - f.x) * Math.min(1, 6 * dt);
       }
-      f.y += (blocker.y - f.y) * Math.min(1, 8 * dt);
+      f.y += ((blocker.y + laneY) * 0.5 - f.y) * Math.min(1, 8 * dt);
       this.syncGangFromWorld(f);
       if (f.aggro < 80) f.aggro = 40;
     } else {
       f.gangX = clamp(f.gangX + moveDir * moveSpeed * dt, 0, 1);
       f.x = gangXToWorld(f.gangX);
-      f.y = midY + Math.sin(this.realElapsed * 3 + f.id) * 0.008;
+      // Personal lane in middle 80% + tiny bob (not all on one mid line)
+      f.y = laneY + Math.sin(this.realElapsed * 3 + f.id) * 0.006;
     }
 
     // Cement: soft damage/slow gate — creep up to breakthrough, not a hard wall
@@ -2558,7 +2867,7 @@ export class Match {
       const door = doorPos(goalBlock);
       f.blockId = goalBlock;
       f.path = [
-        { x: gangLanePos(goalBlock).x, y: gangLanePos(goalBlock).y },
+        gangLanePosForUnit(goalBlock, f.id),
         { x: door.x, y: door.y },
         { x: door.x, y: door.y + 0.05 },
       ];
@@ -2745,19 +3054,13 @@ export class Match {
   }
 
   private attackOf(f: FanUnit): number {
-    const kind: UnitUiKind = f.isSteward ? "ordner" : f.kind;
-    const lv =
-      f.team === "neutral" ? f.level || 1 : this.unitLevelOf(f.team, kind);
-    const mul = unitLevelMul(lv);
+    const mul = unitLevelMul(f.level || 1);
     if (f.isSteward) return STEWARD_STATS.attack * mul;
     return FAN_STATS[f.kind].attack * mul;
   }
 
   private defenseOf(f: FanUnit): number {
-    const kind: UnitUiKind = f.isSteward ? "ordner" : f.kind;
-    const lv =
-      f.team === "neutral" ? f.level || 1 : this.unitLevelOf(f.team, kind);
-    const mul = unitLevelMul(lv);
+    const mul = unitLevelMul(f.level || 1);
     if (f.isSteward) return STEWARD_STATS.defense * mul;
     return FAN_STATS[f.kind].defense * mul;
   }
@@ -3139,19 +3442,25 @@ export class Match {
         (f) =>
           f.hp > 0 &&
           !f.isSteward &&
+          f.team === "neutral" &&
           f.blockId === blockId &&
           f.state === "block" &&
           f.seatIndex != null,
       ).length;
-      const target = 9; // ¾ of 12
+      const target = 20; // grey starter crowd — Fans only
       if (seated >= target) continue;
       const seat = this.freeSeat(blockId);
-      // Only refill as neutral — converted seats stay team-colored
-      const kind: FanKind =
-        seated % 3 === 0 ? "normalos" : seated % 3 === 1 ? "hooligans" : "ultras";
-      this.fans.push(this.makeFan(kind, "neutral", blockId, seat));
+      this.fans.push(this.makeFan("normalos", "neutral", blockId, seat));
     }
     void dt;
+  }
+
+  /**
+   * Fans never flee / Abwanderung — they stay for Stimmung.
+   * Kept as a no-op hook so call sites remain stable.
+   */
+  private tickFamilyFlight(_dt: number): void {
+    void _dt;
   }
 
   /**
@@ -3166,8 +3475,8 @@ export class Match {
       if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
       // Only seated / returning-in-block counts — gang & stand visits drop out
       if (f.state !== "block" || f.blockId !== home) continue;
-      const lv = this.unitLevelOf(f.team, f.kind);
-      power += MOMENTUM_WEIGHT[f.kind] * unitLevelMul(lv);
+      power +=
+        MOMENTUM_WEIGHT[f.kind] * unitLevelMul(f.level || 1);
     }
     return power;
   }
@@ -3188,6 +3497,8 @@ export class Match {
     const targetHeim = clamp(0.35 + pHeim * MOOD_FROM_POWER, 0, 3);
     const targetGast = clamp(0.35 + pGast * MOOD_FROM_POWER, 0, 3);
     const moodApproach = 1 - Math.exp(-0.55 * dt);
+    const prevHeim = this.moodHeim;
+    const prevGast = this.moodGaeste;
     this.moodHeim = clamp(
       this.moodHeim + (targetHeim - this.moodHeim) * moodApproach,
       0,
@@ -3198,6 +3509,28 @@ export class Match {
       0,
       3,
     );
+    this.maybeMoodFloat(HEIM_BLOCK, this.moodHeim - prevHeim);
+    this.maybeMoodFloat(GAST_BLOCK, this.moodGaeste - prevGast);
+  }
+
+  /** Freigestellte Mood +/− when Stimmung moves enough (throttled). */
+  private maybeMoodFloat(blockId: number, delta: number): void {
+    const key = blockId === HEIM_BLOCK ? "heim" : "gast";
+    if (this.moodFloatCd[key] > 0) return;
+    if (Math.abs(delta) < 0.012) return;
+    this.moodFloatCd[key] = 1.8;
+    const good = delta > 0;
+    this.moodFx.push({
+      kind: good ? "moodPlus" : "moodMinus",
+      x: blockCenterX(blockId) + (Math.random() - 0.5) * 0.04,
+      y: blockTopY(blockId) + 0.1,
+      vx: (Math.random() - 0.5) * 0.02,
+      vy: -0.04 - Math.random() * 0.02,
+      color: good ? "#6bcb77" : "#f87171",
+      t: 0,
+      life: 1.0,
+      size: 0.022,
+    });
   }
 
   private tickBlockStorm(dt: number): void {
@@ -3274,44 +3607,114 @@ export class Match {
   }
 
   /**
-   * Scoring side's seated home crowd rushes the Bierstand to celebrate.
-   * They leave the block briefly → block power (and momentum) dips;
-   * beer buys still pay gold into the till.
+   * Tor-Jubel im eigenen Block:
+   * Fans → Konfetti weiß/Vereinsfarbe 50/50 · Ultras → Rauch 50/50 ·
+   * Hooligans → Bierkrug 50% / Feuerwerksrakete 50%.
    */
   private startGoalCelebration(team: TeamId): void {
     const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
-    const bier = this.nearestBierStand(team, home);
+    const white = "#f8fafc";
+    const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
+    let fanI = 0;
+    let ultraI = 0;
+    let hoolI = 0;
     let n = 0;
     for (const f of this.fans) {
       if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
-      if (f.onOffense) continue;
-      if (f.state !== "block" || f.blockId !== home) continue;
-      f.cheerT = 2.8;
-      if (!bier) continue;
-      const sp = this.standWorld(bier);
-      this.startPath(
-        f,
-        this.pathViaDoors(f, bier.blockId, sp),
-        "stand",
-      );
-      f.standKey = slotKey(bier.blockId, bier.index);
+      if (f.blockId !== home) continue;
+      if (f.state !== "block" && f.state !== "stand") continue;
+      f.cheerT = 3.2;
       n++;
+      if (f.kind === "normalos") {
+        const col = fanI++ % 2 === 0 ? white : club;
+        this.burstFanConfetti(f, col);
+      } else if (f.kind === "ultras") {
+        const col = ultraI++ % 2 === 0 ? white : club;
+        this.burstUltraSmoke(f, col);
+      } else if (f.kind === "hooligans") {
+        if (hoolI++ % 2 === 0) this.burstBeerMug(f);
+        else this.burstFireworkRocket(f, club);
+      }
     }
-    this.floatAt(
-      blockCenterX(home),
-      blockTopY(home) + 0.08,
-      bier && n > 0 ? "Kurve leer — Bierrunde" : "Jubel!",
-      true,
-    );
-    if (bier && n > 0) {
-      bier.beer = Math.min(bier.capacity, Math.max(bier.beer, n));
-      this.toast("Jubel — Bierrunde!", 4.2);
-      const p = this.standWorld(bier);
-      this.floatAt(p.x, p.y - 0.06, "Bierrunde!", true);
-    } else if (!bier) {
-      this.toast("Jubel! (noch kein Bierstand)", 3.5);
-    } else {
-      this.toast("Jubel!", 3.0);
+    this.floatAt(blockCenterX(home), blockTopY(home) + 0.08, "TOR-JUBEL!", true);
+    this.toast(n > 0 ? "Kurve feiert!" : "TOR!", 3.5);
+  }
+
+  private burstFanConfetti(f: FanUnit, color: string): void {
+    for (let i = 0; i < 10; i++) {
+      this.confetti.push({
+        x: f.x + (Math.random() - 0.5) * 0.04,
+        y: f.y - 0.02 - Math.random() * 0.03,
+        vx: (Math.random() - 0.5) * 0.22,
+        vy: -0.02 + Math.random() * 0.1,
+        rot: Math.random() * Math.PI * 2,
+        vr: (Math.random() - 0.5) * 10,
+        color,
+        t: 0,
+        life: 1.2 + Math.random() * 0.7,
+      });
+    }
+  }
+
+  private burstUltraSmoke(f: FanUnit, color: string): void {
+    for (let i = 0; i < 5; i++) {
+      this.moodFx.push({
+        kind: "smoke",
+        x: f.x + (Math.random() - 0.5) * 0.03,
+        y: f.y - 0.02,
+        vx: (Math.random() - 0.5) * 0.04,
+        vy: -0.06 - Math.random() * 0.05,
+        color,
+        t: 0,
+        life: 1.4 + Math.random() * 0.6,
+        size: 0.028 + Math.random() * 0.02,
+      });
+    }
+  }
+
+  private burstBeerMug(f: FanUnit): void {
+    f.throwT = Math.max(f.throwT, 0.55);
+    f.armSwing = 0.9;
+    this.moodFx.push({
+      kind: "mug",
+      x: f.x,
+      y: f.y - 0.02,
+      vx: (Math.random() - 0.5) * 0.12,
+      vy: -0.14 - Math.random() * 0.08,
+      color: "#b45309",
+      t: 0,
+      life: 1.1,
+      size: 0.018,
+    });
+  }
+
+  private burstFireworkRocket(f: FanUnit, club: string): void {
+    f.throwT = Math.max(f.throwT, 0.65);
+    f.armSwing = 1;
+    this.moodFx.push({
+      kind: "rocket",
+      x: f.x,
+      y: f.y - 0.02,
+      vx: (Math.random() - 0.5) * 0.06,
+      vy: -0.28 - Math.random() * 0.12,
+      color: club,
+      t: 0,
+      life: 1.35,
+      size: 0.016,
+    });
+    // Spark trail
+    for (let i = 0; i < 4; i++) {
+      this.moodFx.push({
+        kind: "spark",
+        x: f.x + (Math.random() - 0.5) * 0.02,
+        y: f.y - 0.01,
+        vx: (Math.random() - 0.5) * 0.05,
+        vy: -0.1 - Math.random() * 0.08,
+        color: Math.random() < 0.5 ? "#fde68a" : club,
+        t: 0,
+        life: 0.7 + Math.random() * 0.4,
+        size: 0.008,
+      });
     }
   }
 
@@ -3319,19 +3722,17 @@ export class Match {
     const blockId = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
     const cx = blockCenterX(blockId);
     const top = blockTopY(blockId);
-    const colors =
-      team === "ksc"
-        ? ["#1d4ed8", "#60a5fa", "#f3f0e7", "#93c5fd"]
-        : ["#b91c1c", "#f87171", "#f3f0e7", "#fecaca"];
-    for (let i = 0; i < 48; i++) {
+    const white = "#f8fafc";
+    const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
+    for (let i = 0; i < 36; i++) {
       this.confetti.push({
-        x: cx + (Math.random() - 0.5) * blockWidthNorm() * 0.85,
+        x: cx + (Math.random() - 0.5) * blockWidthNorm(blockId) * 0.85,
         y: top + 0.02 + Math.random() * 0.04,
         vx: (Math.random() - 0.5) * 0.18,
         vy: 0.04 + Math.random() * 0.12,
         rot: Math.random() * Math.PI * 2,
         vr: (Math.random() - 0.5) * 8,
-        color: colors[i % colors.length],
+        color: i % 2 === 0 ? white : club,
         t: 0,
         life: 1.4 + Math.random() * 0.8,
       });
@@ -3357,9 +3758,12 @@ export class Match {
       if (p.kind === "smoke") {
         p.vy -= 0.02 * dt;
         p.size += 0.012 * dt;
-      } else if (p.kind === "flare") {
-        p.vy -= 0.04 * dt;
-        p.vx *= 1 - dt * 0.15;
+      } else if (p.kind === "flare" || p.kind === "rocket") {
+        p.vy -= 0.05 * dt;
+        p.vx *= 1 - dt * 0.12;
+      } else if (p.kind === "mug") {
+        p.vy += 0.28 * dt; // arc down after throw
+        p.vx *= 1 - dt * 0.08;
       }
     }
     this.moodFx = this.moodFx.filter((p) => p.t < p.life);
@@ -3443,17 +3847,17 @@ export class Match {
     const trailing = this.aiTrailingCrowd();
     if (Math.random() > (trailing ? 0.55 : 0.4)) return;
     // When behind on Kurve, prioritize combat upgrades over Fans
-    const kinds: UnitUiKind[] = trailing
+    const kinds: (FanKind | "ordner")[] = trailing
       ? ["hooligans", "ultras", "ordner", "normalos"]
       : ["hooligans", "ultras", "normalos", "ordner"];
     for (const kind of kinds) {
-      const lv = this.unitLevelOf(this.aiTeam, kind);
-      const cost = unitUpgradeCost(lv);
+      const u = this.lowestLevelUnit(kind, this.aiTeam);
+      if (!u) continue;
+      const cost = unitUpgradeCost(u.level || 1);
       if (cost == null || this.aiGold < cost) continue;
       this.aiGold -= cost;
-      const next = lv + 1;
-      this.unitLevels[this.aiTeam][kind] = next;
-      this.applyUnitLevelBuff(this.aiTeam, kind, lv, next);
+      u.level = (u.level || 1) + 1;
+      this.applyUnitLevelStats(u);
       return;
     }
   }

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Personen Action Card — Vergleich A/B</title>
+<style>
+  :root { --wood-deep: #3d2414; --ink: #1c120a; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #141414;
+    color: #f0f0f0;
+    padding: 16px 18px 40px;
+  }
+  h1 { font-size: 1.15rem; margin: 0 0 6px; }
+  .nav { margin-bottom: 12px; font-size: 0.85rem; }
+  .nav a { color: #fde68a; margin-right: 14px; }
+  .lead {
+    color: #bbb;
+    font-size: 0.9rem;
+    max-width: 920px;
+    line-height: 1.45;
+    margin-bottom: 18px;
+  }
+  .pair {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin-bottom: 22px;
+  }
+  .col { min-width: 0; }
+  .col h2 {
+    margin: 0 0 8px;
+    font-size: 0.95rem;
+    color: #fde68a;
+  }
+  .col .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    color: #1c120a;
+    background: #fde68a;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  iframe {
+    width: 360px;
+    height: 520px;
+    border: 2px solid #333;
+    border-radius: 12px;
+    background: #1a1a1a;
+  }
+
+  .assess {
+    max-width: 920px;
+    background: #222;
+    border: 1px solid #3a3a3a;
+    border-radius: 12px;
+    padding: 16px 18px 18px;
+    line-height: 1.5;
+  }
+  .assess h2 {
+    margin: 0 0 10px;
+    font-size: 1rem;
+    color: #fde68a;
+  }
+  .assess h3 {
+    margin: 14px 0 6px;
+    font-size: 0.92rem;
+    color: #fff;
+  }
+  .assess p, .assess li { color: #ccc; font-size: 0.88rem; }
+  .assess ul { margin: 0 0 0 1.1em; padding: 0; }
+  .assess li { margin-bottom: 4px; }
+  .verdict {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: #2a2418;
+    border-left: 3px solid #fde68a;
+    border-radius: 0 8px 8px 0;
+    color: #f5f0e0;
+    font-size: 0.9rem;
+  }
+  .verdict strong { color: #fde68a; }
+  code { color: #fde68a; }
+</style>
+</head>
+<body>
+  <h1>Personen-Action-Card — Vergleich A vs. B</h1>
+  <p class="nav">
+    <a href="index.html">Vorschlag A</a>
+    <a href="index-b.html">Vorschlag B</a>
+    <a href="compare.html">Vergleich A/B</a>
+  </p>
+  <p class="lead">
+    Zwei Layout-Varianten mit denselben Holz-Chrome-Buttons und Rail-Assets.
+    Links die Live-Mocks (skaliert). Darunter Bewertung zur Nutzbarkeit und
+    Einschätzung, ob das im umgesetzten Spiel genauso aussehen würde.
+  </p>
+
+  <div class="pair">
+    <div class="col">
+      <h2>A — ohne Icons, Original-Buttons <span class="tag">horizontal</span></h2>
+      <iframe src="index.html" title="Vorschlag A" loading="lazy"></iframe>
+    </div>
+    <div class="col">
+      <h2>B — Buttons untereinander <span class="tag">vertikal</span></h2>
+      <iframe src="index-b.html" title="Vorschlag B" loading="lazy"></iframe>
+    </div>
+  </div>
+
+  <section class="assess">
+    <h2>Bewertung Nutzbarkeit</h2>
+
+    <h3>Vorschlag A (ohne Icons, Original-Buttons horizontal)</h3>
+    <ul>
+      <li><b>Plus:</b> Keine Personen-Icons → volle Breite für die Original-Holzbuttons (Umrandung + gebackenes Label).</li>
+      <li><b>Plus:</b> Titel wie B (<code>Ultras (Lvl.1, x3)</code>); Reihenfolge Kauf → Upgrade → Send.</li>
+      <li><b>Plus:</b> Alle Aktionen in einer Zeile — Kosten schnell nebeneinander vergleichbar; Touch-Höhe großzügig.</li>
+      <li><b>Minus:</b> Gebackene Labels im PNG + Live-Kosten — bei sehr schmaler Rail können Labels eng wirken (weniger als früher ohne Icons).</li>
+      <li><b>Minus:</b> Einheit ohne Portrait — Wiedererkennung nur über Name/Farbe der Buttons.</li>
+    </ul>
+
+    <h3>Vorschlag B (Buttons untereinander)</h3>
+    <ul>
+      <li><b>Plus:</b> Jede Action-Zeile ist breit → volle Wörter (KAUFEN/SENDEN/UPGRADE) + Kosten mit Luft; näher am Icon-UI-Querformat 320×96.</li>
+      <li><b>Plus:</b> Titelzeile <code>Ultras (Lvl.1, x3)</code> bündelt Name/Level/Anzahl — weniger visuelle Konkurrenz neben dem Icon.</li>
+      <li><b>Plus:</b> Sehr kleine Gaps (2px), Buttons füllen die Kartenhöhe → klare „Aktionsliste“, leicht mit dem Daumen abzufahren.</li>
+      <li><b>Minus:</b> Einzelne Buttons sind flacher (~28–36px bei 3 Aktionen) — Touch ok, aber knapper als A in der Höhe.</li>
+      <li><b>Minus:</b> Kosten nicht mehr horizontal nebeneinander vergleichbar; man liest eher von oben nach unten.</li>
+    </ul>
+
+    <h3>Einschätzung: sieht das im Spiel genauso aus?</h3>
+    <ul>
+      <li><b>Chrome/Assets:</b> Ja — beide Varianten nutzen dieselben freigegebenen / pending Holz-Buttons (<code>btn-*-chrome</code>) und das Rail-Tile. Im Runtime-UI (DOM/CSS wie die bestehenden Sidebars) lassen sich beide Layouts 1:1 nachbauen.</li>
+      <li><b>Live-Werte:</b> Ja — Labels und Kosten bleiben Live-Text (STORAGE_CANON), nicht ins PNG gebacken. Zahlen/Währungen kommen aus denselben Sources wie heute.</li>
+      <li><b>Abweichungsrisiko A:</b> Mittel. Drei horizontale Buttons in schmaler Rail sind empfindlich gegenüber Font-Metriken, Safe-Area und skalierter UI. Wenn die Spiel-Rail schmaler als ~36–40% wird, weicht A stärker vom Mock ab (Labels kürzen oder Stauchen).</li>
+      <li><b>Abweichungsrisiko B:</b> Niedriger. Breite Button-Zeilen verzeihen Schrift/Padding besser; das Querformat der Holz-Assets bleibt erhalten. Flachere Buttons brauchen aber einen festen Min-Tap (~28px+) — das ist im Mock drin und im Spiel genauso setzbar.</li>
+      <li><b>Figur/Icon:</b> Beide nutzen getrimmte Unit-Icons in der Karte. Soft-Bind auf <code>unitIconPath</code> wie bisher — Aussehen der Köpfe entspricht den freigegebenen Personen-Assets.</li>
+    </ul>
+
+    <div class="verdict">
+      <strong>Empfehlung:</strong> Nach dem A-Update (ohne Icons, Original-Buttons) sind beide nah beieinander.
+      <strong>A</strong> gewinnt beim horizontalen Kosten-Vergleich und zeigt die echten Icon-UI-Buttons mit Umrandung.
+      <strong>B</strong> bleibt stärker bei Portrait-Wiedererkennung und Live-Labels ohne gebackenen Text.
+      Beide sind im Spiel nachbaubar; A nutzt die Original-PNGs direkt, B die Chrome-Variante + Live-Verb.
+    </div>
+  </section>
+</body>
+</html>
