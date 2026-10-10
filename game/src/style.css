@@ -262,10 +262,10 @@ select {
   min-height: 0;
   height: 100%;
   max-height: 100%;
-  /* Rahmenlogik: schmaler Innenrand ~1–2% der Railbreite */
-  --rail-inset: 1.5%;
+  /* Rahmenlogik: Karten ~volle Rail — Innenrand 1–2% (nicht safe-area) */
+  --rail-inset: 1%;
   padding: var(--rail-inset);
-  padding-bottom: max(var(--rail-inset), env(safe-area-inset-bottom));
+  padding-bottom: var(--rail-inset);
   overflow: hidden;
   overflow-x: hidden;
   pointer-events: auto;
@@ -283,29 +283,32 @@ select {
 /* Personen-Rail = fertige Card-A (Mockup + abgelegtes ui-final Chrome) */
 .match-shell.matchday .left-rail {
   padding: var(--rail-inset);
-  padding-left: max(var(--rail-inset), env(safe-area-inset-left));
+  /* Safe-area weitet die Rail, nicht den Karten-Inset */
+  padding-left: var(--rail-inset);
+  margin-left: env(safe-area-inset-left, 0px);
   gap: 3px;
   border-right-width: 4px;
 }
 
 .match-shell.matchday .right-rail,
 .match-shell.matchday .build-rail {
-  padding-right: max(var(--rail-inset), env(safe-area-inset-right));
+  padding-right: var(--rail-inset);
+  margin-right: env(safe-area-inset-right, 0px);
   border-left-width: 4px;
 }
 
 .match-shell.matchday .build-rail {
   --br-gap: 2%;
-  --br-pad: 1.5%;
+  --br-pad: 1%;
   --br-icon: 26%;
   position: relative;
   z-index: 8;
   min-width: 0;
   container-type: size;
   gap: 2%;
-  /* Karten fast volle Railbreite — Innenrand ~1.5% */
+  /* Karten fast volle Railbreite — Innenrand 1% */
   padding: var(--rail-inset);
-  padding-right: max(var(--rail-inset), env(safe-area-inset-right));
+  padding-right: var(--rail-inset);
   animation: build-rail-in 0.22s ease-out;
 }
 
@@ -465,9 +468,9 @@ select {
   gap: 0;
 }
 
-/* Button-Gutter ~1.5% Card-Breite (Rahmenlogik: schmaler Innenrand) */
+/* Button-Gutter ~1% Card-Breite (Rahmenlogik: schmaler Innenrand) */
 .match-shell.matchday .person-actions.dual {
-  grid-template-columns: 1.5% 47% 3% 47% 1.5%;
+  grid-template-columns: 1% 48% 2% 48% 1%;
 }
 .match-shell.matchday .person-actions.dual .ar-cost-btn:nth-child(1) {
   grid-column: 2;
@@ -477,7 +480,7 @@ select {
 }
 
 .match-shell.matchday .person-actions.triple {
-  grid-template-columns: 1.5% 31% 2% 31% 2% 31% 1.5%;
+  grid-template-columns: 1% 32% 1% 32% 1% 32% 1%;
 }
 .match-shell.matchday .person-actions.triple .ar-cost-btn:nth-child(1) {
   grid-column: 2;

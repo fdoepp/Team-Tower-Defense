@@ -249,6 +249,16 @@ export class Match {
   currency: Currencies = { beer: 0, merch: 0, security: START_SECURITY };
   blockOwner: (TeamId | "neutral" | null)[] = [null, null, null, null];
   floats: FloatFx[] = [];
+  /**
+   * Personen-Chrome-Stufe pro Kind (Sidebar „Lvl.N“).
+   * UP erhöht die Tech-Stufe und zieht alle lebenden Einheiten nach.
+   */
+  unitTech: Record<FanKind | "ordner", number> = {
+    normalos: 1,
+    ultras: 1,
+    hooligans: 1,
+    ordner: 1,
+  };
   /** Blocksturm hold timers */
   stormAccPlayer = 0;
   stormAccAi = 0;
@@ -348,7 +358,8 @@ export class Match {
     const seat = Math.max(0, seatIndex | 0);
     // Roughly spread home slot; then micro-drift + cheer bob in place
     const p = crowdHomePos(blockId, seat);
-    const level = 1;
+    const level =
+      team === this.playerTeam ? this.unitTechLevel(kind) : 1;
     const beerIv = visitInterval(kind, "beer", level);
     const shopIv = visitInterval(kind, "shop", level);
     const maxHp = this.baseMaxHp(kind, level, false);
@@ -402,7 +413,8 @@ export class Match {
   private makeSteward(team: TeamId | "neutral", stand: BuildSlot): FanUnit {
     const sp = this.stewardPostPos(stand);
     const gx = this.postGangX(stand);
-    const level = 1;
+    const level =
+      team === this.playerTeam ? this.unitTechLevel("ordner") : 1;
     const hp = this.stewardMaxHp(level);
     // Spawn already on gang — tickFans skips stewards, so a "moving" path
     // would never finish and they'd never patrol.
@@ -1275,12 +1287,19 @@ export class Match {
     return best;
   }
 
+  /** Chrome / Sidebar Personen-Stufe (Tech), nicht Min der lebenden Units */
+  unitTechLevel(kind: FanKind | "ordner"): number {
+    return Math.max(1, Math.min(UPGRADE_MAX, this.unitTech[kind] || 1));
+  }
+
   minUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
+    if (team === this.playerTeam) return this.unitTechLevel(kind);
     const u = this.lowestLevelUnit(kind, team);
     return u ? u.level || 1 : 1;
   }
 
   maxUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
+    if (team === this.playerTeam) return this.unitTechLevel(kind);
     let max = 0;
     for (const f of this.fans) {
       if (f.hp <= 0 || f.team !== team) continue;
@@ -1292,8 +1311,9 @@ export class Match {
     return max;
   }
 
-  /** Sidebar label: "Lv3" or "Lv1–3" when the squad is mixed */
+  /** Sidebar label: "Lv3" — player uses Tech-Stufe */
   unitLevelLabel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): string {
+    if (team === this.playerTeam) return `Lv${this.unitTechLevel(kind)}`;
     const lo = this.minUnitLevel(kind, team);
     const hi = this.maxUnitLevel(kind, team);
     if (hi <= 0) return "Lv1";
@@ -1302,23 +1322,24 @@ export class Match {
   }
 
   unitUpgradeCostFor(kind: FanKind | "ordner"): number | null {
-    const u = this.lowestLevelUnit(kind, this.playerTeam);
-    if (!u) return null;
-    return unitUpgradeCost(u.level || 1);
+    return unitUpgradeCost(this.unitTechLevel(kind));
   }
 
   canUpgradeUnit(kind: FanKind | "ordner"): boolean {
     const cost = this.unitUpgradeCostFor(kind);
-    return cost != null && this.gold >= cost;
+    if (cost == null || this.gold < cost) return false;
+    // Mindestens eine lebende Einheit dieses Typs nötig
+    return this.lowestLevelUnit(kind, this.playerTeam) != null;
   }
 
   tryUpgradeUnit(kind: FanKind | "ordner"): boolean {
-    const u = this.lowestLevelUnit(kind, this.playerTeam);
-    if (!u) {
+    const living = this.lowestLevelUnit(kind, this.playerTeam);
+    if (!living) {
       this.toast(kind === "ordner" ? "Kein Ordner" : "Keine Einheit");
       return false;
     }
-    const cost = unitUpgradeCost(u.level || 1);
+    const tech = this.unitTechLevel(kind);
+    const cost = unitUpgradeCost(tech);
     if (cost == null) {
       this.toast("Max. Stufe");
       return false;
@@ -1328,12 +1349,28 @@ export class Match {
       return false;
     }
     this.gold -= cost;
-    u.level = (u.level || 1) + 1;
-    this.applyUnitLevelStats(u);
+    const next = tech + 1;
+    this.unitTech[kind] = next;
+    let raised = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.team !== this.playerTeam) continue;
+      if (kind === "ordner") {
+        if (!f.isSteward) continue;
+      } else if (f.isSteward || f.kind !== kind) continue;
+      if ((f.level || 1) < next) {
+        f.level = next;
+        this.applyUnitLevelStats(f);
+        raised++;
+      }
+    }
     const label =
       kind === "ordner" ? "Ordner" : FAN_STATS[kind].label;
-    this.floatAt(u.x, u.y, `${label} Lv${u.level}`, true);
-    this.toast(`${label} → Lv${u.level}`);
+    this.floatAt(living.x, living.y, `${label} Lv${next}`, true);
+    this.toast(
+      raised > 1
+        ? `${label} → Lv${next} (×${raised})`
+        : `${label} → Lv${next}`,
+    );
     return true;
   }
 

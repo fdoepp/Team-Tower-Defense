@@ -6,7 +6,7 @@
     "h": 900
   },
   "background": "game/public/assets/stadium-floodlight-derby-bg.jpg",
-  "notes": "Verbindliche Rahmenlogik für Match-Gesamtsicht. Alle Werte relativ (0–1) zur Bild- bzw. Pitch-Box. Scoreboard + Wallet je ×1.15 gegenüber Compose v6-Baseline.",
+  "notes": "Verbindliche Rahmenlogik für Match-Gesamtsicht. Alle Werte relativ (0–1) zur Bild- bzw. Pitch-Box. Scoreboard + Wallet je ×1.15 gegenüber Compose v6-Baseline. Scoreboard: keine Live-Wimpel (Logos im Chrome). Personen-Lvl = Tech-Stufe. Währungs-±-Buttons fehlen in UI Final — nur Symbol-Icons.",
   "rails": {
     "left_w": 0.21,
     "right_w": 0.15,
@@ -19,7 +19,8 @@
       "h_of_screen": 0.1725,
       "align": "center",
       "scale_vs_baseline": 1.15,
-      "slots": "docs/icons/ui-final/scoreboard-slots.json"
+      "slots": "docs/icons/ui-final/scoreboard-slots.json",
+      "livePennants": false
     },
     "wallet": {
       "inset_x_of_pitch": 0.02,
@@ -32,22 +33,23 @@
         "currencyBier",
         "currencyFanartikel",
         "currencySicherheit"
-      ]
+      ],
+      "plusMinusButtonsInDb": false
     }
   },
   "scene": {
     "tribune_y0": 0.3,
     "tribune_y1": 0.5,
     "tribune_gap_of_pitch": 0.005,
-    "slot_top_y": 0.52,
-    "combat_y0": 0.64,
-    "combat_y1": 0.8,
-    "slot_bot_y": 0.84
+    "slot_top_y": 0.58,
+    "combat_y0": 0.695,
+    "combat_y1": 0.86,
+    "slot_bot_y": 0.975
   },
   "personCard": {
-    "railInset": 0.015,
-    "dual": "1.5%·47%·3%·47%·1.5%",
-    "triple": "1.5%·31%·2%·31%·2%·31%·1.5%",
+    "railInset": 0.01,
+    "dual": "1%·48%·2%·48%·1%",
+    "triple": "1%·32%·1%·32%·1%·32%·1%",
     "liveTextInset": 0.02,
     "wood": {
       "x": 0.0641,
@@ -59,7 +61,8 @@
     "scoreboardAsset": "scoreboardChrome",
     "slotEmptyOrientation": "persp",
     "tribuneLabels": false,
-    "walletAlign": "top-left"
+    "walletAlign": "top-left",
+    "unitTechLevelChrome": true
   },
   "tokensFlat": {
     "left_rail_w": 0.21,
@@ -76,10 +79,11 @@
     "tribune_y0": 0.3,
     "tribune_y1": 0.5,
     "tribune_gap": 0.005,
-    "slot_top_y": 0.52,
-    "combat_y0": 0.64,
-    "combat_y1": 0.8,
-    "slot_bot_y": 0.84,
-    "pitch_w": 0.64
+    "slot_top_y": 0.58,
+    "combat_y0": 0.695,
+    "combat_y1": 0.86,
+    "slot_bot_y": 0.975,
+    "pitch_w": 0.64,
+    "rail_inset": 0.01
   }
 }

@@ -53,13 +53,13 @@ export const L = {
 };
 
 /**
- * Native tribune PNG sizes + floor-face transparent pads (px).
- * Facing pads are overlapped so platform floors meet flush.
+ * Native tribune PNG sizes + opaque floor-face pads (px, measured).
+ * Transparent side pads are overlapped so visible platforms sit 0.5% apart.
  */
 export const TRIBUNE_NATIVE = [
-  { w: 426, h: 309, faceL: 6, faceR: 48 }, // Heim blue
-  { w: 386, h: 308, faceL: 14, faceR: 14 }, // Neutral grey
-  { w: 426, h: 309, faceL: 48, faceR: 6 }, // Gäste red
+  { w: 426, h: 309, faceL: 6, faceR: 29 }, // Heim blue
+  { w: 386, h: 308, faceL: 6, faceR: 6 }, // Neutral grey
+  { w: 426, h: 309, faceL: 28, faceR: 6 }, // Gäste red
 ] as const;
 
 export type TribuneRectNorm = { x: number; y: number; w: number; h: number };
@@ -77,36 +77,44 @@ let _pack: TribunePack | null = null;
 
 /**
  * Recompute flush tribune strip for the current canvas aspect (W/H).
- * Grey is centered; blue/red abut it; uniform scale per PNG (no distort).
+ * Native aspect per PNG (no distort); opaque faces spaced by tribuneGap (0.5%).
  */
 export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack {
   const aspect = canvasW / Math.max(1, canvasH);
   if (_pack && Math.abs(_pack.aspect - aspect) < 1e-5) return _pack;
 
   const edge = L.blocksLeft;
-  const avail = Math.max(0.2, 1 - edge * 2);
-  // Füße auf 50%-Linie; Bandhöhe hart auf 20% (nicht die volle Shelf bis Gang)
   const shelfBottom = L.blockTop + L.blockBodyH; // 0.50
-  const maxH = L.blockBodyH; // 0.20 — warum vorher zu hoch: Shelf ging bis Floor-Row (~0.4+)
+  const maxH = L.blockBodyH; // 0.20
+  const gap = L.tribuneGap;
 
-  const packAt = (_hNorm: number) => {
-    const gap = L.tribuneGap;
-    // Equal visual cells with 0.5% gaps; stretch widths to fill pitch
-    const cell = (avail - 2 * gap) / 3;
-    const ws = [cell, cell, cell];
-    const xs = [edge, edge + cell + gap, edge + 2 * (cell + gap)];
-    return {
-      xs,
-      ws,
-      leftC: xs[0]!,
-      rightC: xs[2]! + ws[2]!,
-      span: avail,
-    };
+  const packAt = (hNorm: number) => {
+    const ws = TRIBUNE_NATIVE.map(
+      (n) => (hNorm * (n.w / n.h)) / Math.max(1e-6, aspect),
+    );
+    const faceL = TRIBUNE_NATIVE.map((n, i) => (n.faceL / n.w) * ws[i]!);
+    const faceR = TRIBUNE_NATIVE.map((n, i) => (n.faceR / n.w) * ws[i]!);
+    const xs = [0, 0, 0];
+    // Place so opaque content edges are exactly `gap` apart
+    xs[0] = 0;
+    const contentR0 = xs[0]! + ws[0]! - faceR[0]!;
+    xs[1] = contentR0 + gap - faceL[1]!;
+    const contentR1 = xs[1]! + ws[1]! - faceR[1]!;
+    xs[2] = contentR1 + gap - faceL[2]!;
+    const leftC = xs[0]!;
+    const rightC = xs[2]! + ws[2]!;
+    return { xs, ws, leftC, rightC, span: rightC - leftC };
   };
 
-  const hNorm = maxH;
-  const packed = packAt(hNorm);
+  let hNorm = maxH;
+  let packed = packAt(hNorm);
+  const maxSpan = Math.max(0.2, 1 - edge * 2);
+  if (packed.span > maxSpan) {
+    hNorm *= maxSpan / packed.span;
+    packed = packAt(hNorm);
+  }
 
+  // Center grey; keep strip inside pitch edges
   const greyCx = packed.xs[1]! + packed.ws[1]! / 2;
   let shift = 0.5 - greyCx;
   if (packed.leftC + shift < edge) shift = edge - packed.leftC;

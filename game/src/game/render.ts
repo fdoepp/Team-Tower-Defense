@@ -31,6 +31,7 @@ import {
   SCENE_ASSETS,
   UI_ICONS,
   drawIcon,
+  drawIconQuad,
   drawToyIcon,
   drawToyProp,
   getIcon,
@@ -42,7 +43,7 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
-import { boothFacadeQuad, scaleQuad } from "./floorGrid";
+import { boothFacadeQuad, scaleQuad, type ScreenQuad } from "./floorGrid";
 
 export { SEATS_PER_BLOCK } from "./layout";
 export { L, blockCenterX, blockWidthNorm, gangXToWorld, blockIdToGangX, gangY } from "./layout";
@@ -276,6 +277,7 @@ function drawBlocks(
     ctx.fill();
 
     const tribSrc = tribuneIconPath(b.id);
+    // Cell already native-aspect packed — pad 0 so faces stay 0.5% apart
     const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
     if (!drew) {
       ctx.fillStyle =
@@ -367,13 +369,7 @@ function drawScoreboard(
     };
   };
 
-  // Live logos in chrome mulden
-  {
-    const lh = slot("logoHeim");
-    const lg = slot("logoGast");
-    drawIcon(ctx, UI_ICONS.pennantKsc, lh.x, lh.y, lh.w, lh.h, 0.02);
-    drawIcon(ctx, UI_ICONS.pennantVfb, lg.x, lg.y, lg.w, lg.h, 0.02);
-  }
+  // Logos are baked into scoreboardChrome — no live Wimpel overlays
 
   ctx.save();
   ctx.textAlign = "center";
@@ -645,11 +641,8 @@ function drawBaustelle(
   let drew = false;
   if (FLOOR_GRID_COUPLE) {
     const q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    const minX = Math.min(q.tl.x, q.tr.x, q.br.x, q.bl.x);
-    const maxX = Math.max(q.tl.x, q.tr.x, q.br.x, q.bl.x);
-    const minY = Math.min(q.tl.y, q.tr.y, q.br.y, q.bl.y);
-    const maxY = Math.max(q.tl.y, q.tr.y, q.br.y, q.bl.y);
-    drew = drawIcon(ctx, src, minX, minY, maxX - minX, maxY - minY, 0.02);
+    // Warp persp chrome into floor trapezoid (equal ground cells, readable depth)
+    drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
     if (sel) {
       ctx.strokeStyle = "#22c55e";
       ctx.lineWidth = 3.5;
@@ -1502,6 +1495,18 @@ function drawSteward(
   ctx.fillRect(x - bw / 2, y + s * 1.25, bw * Math.max(0, f.hp / f.maxHp), 3);
 }
 
+/** Map float labels → wallet currency icon (no +/- button assets in UI Final). */
+function floatCurrencyIcon(text: string): string | null {
+  const t = text.toLowerCase();
+  if (t.includes("bier")) return UI_ICONS.currencyBier;
+  if (t.includes("sicherheit") || t.includes("sec")) return UI_ICONS.currencySicherheit;
+  if (t.includes("fanartikel") || t.includes("merch") || t.includes("shop")) {
+    return UI_ICONS.currencyFanartikel;
+  }
+  if (t.includes("€") || t.includes("gold")) return UI_ICONS.currencyGold;
+  return null;
+}
+
 function drawFloats(
   ctx: CanvasRenderingContext2D,
   m: Match,
@@ -1511,17 +1516,33 @@ function drawFloats(
   for (const f of m.floats) {
     const alpha = Math.min(1, f.t / 0.35);
     ctx.globalAlpha = alpha;
-    ctx.font = `700 ${Math.floor(h * 0.026)}px Manrope, sans-serif`;
+    const fontPx = Math.max(12, Math.floor(h * 0.026));
+    ctx.font = `700 ${fontPx}px Outfit, Manrope, sans-serif`;
     ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(0,0,0,0.55)";
     ctx.fillStyle = f.good ? "#6bcb77" : "#f87171";
     const x = f.x * w;
     const y = f.y * h;
-    ctx.strokeText(f.text, x, y);
-    ctx.fillText(f.text, x, y);
+    const icon = floatCurrencyIcon(f.text);
+    if (icon) {
+      const ih = fontPx * 1.15;
+      const tw = ctx.measureText(f.text).width;
+      const gap = 4;
+      const total = ih + gap + tw;
+      const ix = x - total / 2;
+      drawIcon(ctx, icon, ix, y - ih / 2, ih, ih, 0.02);
+      const tx = ix + ih + gap + tw / 2;
+      ctx.strokeText(f.text, tx, y);
+      ctx.fillText(f.text, tx, y);
+    } else {
+      ctx.strokeText(f.text, x, y);
+      ctx.fillText(f.text, x, y);
+    }
   }
   ctx.globalAlpha = 1;
+  ctx.textBaseline = "alphabetic";
 }
 
 function drawConfetti(
@@ -1598,23 +1619,54 @@ function drawMoodParticles(
   ctx.globalAlpha = 1;
 }
 
+function pointInQuad(q: ScreenQuad, mx: number, my: number): boolean {
+  const pts = [q.tl, q.tr, q.br, q.bl];
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const yi = pts[i]!.y;
+    const yj = pts[j]!.y;
+    const xi = pts[i]!.x;
+    const xj = pts[j]!.x;
+    const intersect =
+      yi > my !== yj > my &&
+      mx < ((xj - xi) * (my - yi)) / (yj - yi + 1e-9) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
 export function hitSlot(
   m: Match,
   mx: number,
   my: number,
 ): { blockId: number; index: number } | null {
   let best: { blockId: number; index: number; d: number } | null = null;
+  /** Minimum touch target — far row was tiny with AABB-only hits */
+  const minPad = Math.max(18, Math.min(m.width, m.height) * 0.028);
   for (const s of m.slots) {
     // AI home plots are not clickable for the player
     if (s.blockId === GAST_BLOCK && s.owner === m.aiTeam && s.building) continue;
     const r = boothRect(s.blockId, s.index);
-    const x0 = r.x * m.width;
-    const y0 = r.y * m.height;
-    const x1 = (r.x + r.w) * m.width;
-    const y1 = (r.y + r.h) * m.height;
-    if (mx >= x0 && mx <= x1 && my >= y0 && my <= y1) {
-      const cx = (x0 + x1) / 2;
-      const cy = (y0 + y1) / 2;
+    let x0 = r.x * m.width;
+    let y0 = r.y * m.height;
+    let x1 = (r.x + r.w) * m.width;
+    let y1 = (r.y + r.h) * m.height;
+    const cx = (x0 + x1) / 2;
+    const cy = (y0 + y1) / 2;
+    if (x1 - x0 < minPad * 2) {
+      x0 = cx - minPad;
+      x1 = cx + minPad;
+    }
+    if (y1 - y0 < minPad * 2) {
+      y0 = cy - minPad;
+      y1 = cy + minPad;
+    }
+    let hit = mx >= x0 && mx <= x1 && my >= y0 && my <= y1;
+    if (FLOOR_GRID_COUPLE) {
+      const q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+      if (pointInQuad(q, mx, my)) hit = true;
+    }
+    if (hit) {
       const d = Math.hypot(mx - cx, my - cy);
       if (!best || d < best.d) best = { blockId: s.blockId, index: s.index, d };
     }

@@ -42,8 +42,9 @@ Alles, was sich ändert (Score, Minute, Momentum-%, Kosten, Level), gehört **ni
 | Regel | Wert |
 | --- | --- |
 | Layout | Titel `Fans (Lvl.1, xN)` · keine Unit-Icons · KAUF → UP → SEND |
-| Dual-Grid | `3%·46%·2%·46%·3%` (Fans, Ordner) |
-| Triple-Grid | `3%·30%·2%·30%·2%·30%·3%` (Ultras, Hooligans) |
+| Dual-Grid | `1%·48%·2%·48%·1%` (Fans, Ordner) |
+| Triple-Grid | `1%·32%·1%·32%·1%·32%·1%` (Ultras, Hooligans) |
+| Rail-Inset | `1%` der Rail-Innenbreite (safe-area weitet die Rail, nicht den Inset) |
 | Chrome | Holz + eine Fläche; Live-Text Holz-Innen + **2%** |
 | Banner | Braun (`#6b4428`→`#4a2c18`), nicht blau |
 
@@ -70,6 +71,8 @@ Runtime: `.build-rail .ar-cost-btn` — Holz + eine Face-Fläche; Live-Text Holz
 | `currencySicherheit` | Schild mit Haken |
 
 Nur Symbol-PNG; Zahl live im Wallet-Chip / Button-Pay-Zeile.
+
+**Keine `+`/`−` Live-Währungsbuttons** in der finalen DB — weder als Chrome noch als Overlay-Asset. Floats bei Erzeugen/Verbrauch nutzen Symbol-Icon + Text (`+1 Bier`). Neue ±-Button-Assets wären Pending/Freigabe.
 
 ## Match-Rahmenlogik
 

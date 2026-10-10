@@ -127,17 +127,13 @@ function arCostBtnHtml(opts: {
   return `<span class="ar-cost-btn ${opts.kind}" aria-hidden="true">${inner}</span>`;
 }
 
-/** Personen-Titel-Meta: "(Lvl.1, x5)" */
+/** Personen-Titel-Meta: "(Lvl.1, x5)" — Lvl = Tech-Stufe (ändert sich bei UP) */
 function personMetaLabel(
   m: Match,
   kind: FanKind | "ordner",
   count: number,
 ): string {
-  const lo = m.minUnitLevel(kind);
-  const hi = m.maxUnitLevel(kind);
-  const lv =
-    hi <= 0 ? "1" : lo === hi ? String(lo) : `${lo}–${hi}`;
-  return `(Lvl.${lv}, x${count})`;
+  return `(Lvl.${m.unitTechLevel(kind)}, x${count})`;
 }
 
 function setPayAmt(root: ParentNode, payId: string, amount: number | string): void {
@@ -973,7 +969,7 @@ function renderMatchScreen(): void {
           upBtn.title =
             cost == null
               ? "Max. Stufe"
-              : `Schwächste Einheit → Lv${lvMin + 1} · ${cost}€`;
+              : `Alle ${kind} → Lv${lvMin + 1} · ${cost}€`;
         }
       }
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
