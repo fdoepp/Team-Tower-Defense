@@ -446,15 +446,28 @@ select {
   border-radius: calc(var(--person-card-radius, 3.6cqw) * 0.9);
 }
 
-.match-shell.matchday .build-rail .building-cards,
-.match-shell.matchday .attack-rail .attack-cards {
+.match-shell.matchday .build-rail .building-cards {
   flex: 1 1 0;
   min-height: 0;
+}
+
+/* Angriff: 2 Karten ≤ 66% Rail-Höhe, 1 Karte ≤ 33% */
+.match-shell.matchday .attack-rail .attack-cards {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 66cqh;
+  justify-content: flex-start;
+  align-content: flex-start;
+}
+
+.match-shell.matchday .attack-rail .attack-cards:has(> .attack-card:only-child) {
+  max-height: 33cqh;
 }
 
 .match-shell.matchday .attack-rail .attack-card {
   flex: 1 1 0;
   min-height: 0;
+  max-height: 33cqh;
 }
 
 .match-shell.matchday .rail-close {
