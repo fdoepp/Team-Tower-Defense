@@ -1605,6 +1605,32 @@ function drawMoodParticles(
       ctx.beginPath();
       ctx.arc(px, py, rad, 0, Math.PI * 2);
       ctx.fill();
+    } else if (p.kind === "flame") {
+      const rad = Math.max(5, p.size * h);
+      const g = ctx.createRadialGradient(px, py + rad * 0.2, 0, px, py - rad * 0.4, rad);
+      g.addColorStop(0, "#fff7ed");
+      g.addColorStop(0.35, p.color);
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.moveTo(px, py + rad * 0.55);
+      ctx.quadraticCurveTo(px + rad * 0.7, py, px, py - rad * 0.95);
+      ctx.quadraticCurveTo(px - rad * 0.7, py, px, py + rad * 0.55);
+      ctx.fill();
+      ctx.fillStyle = "rgba(253, 224, 71, 0.7)";
+      ctx.beginPath();
+      ctx.arc(px, py - rad * 0.15, rad * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (p.kind === "rubble") {
+      const rad = Math.max(3, p.size * h);
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate((p.t * 9 + p.vx * 40) % (Math.PI * 2));
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-rad * 0.7, -rad * 0.45, rad * 1.4, rad * 0.9);
+      ctx.fillStyle = "rgba(0,0,0,0.25)";
+      ctx.fillRect(-rad * 0.35, -rad * 0.2, rad * 0.55, rad * 0.35);
+      ctx.restore();
     } else if (p.kind === "flare" || p.kind === "rocket") {
       ctx.strokeStyle = p.color;
       ctx.lineWidth = Math.max(2, p.size * h * 2);

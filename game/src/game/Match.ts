@@ -196,7 +196,9 @@ export type MoodParticle = {
     | "waitAnger"
     | "waitAngerHot"
     | "moodPlus"
-    | "moodMinus";
+    | "moodMinus"
+    | "flame"
+    | "rubble";
   x: number;
   y: number;
   vx: number;
@@ -206,6 +208,10 @@ export type MoodParticle = {
   life: number;
   size: number;
 };
+
+/** Matches Ordnerpost HP-bar colors in render (green → orange → red). */
+const POST_FX_ORANGE = 0.45;
+const POST_FX_RED = 0.2;
 
 export class Match {
   readonly cfg: MatchConfig;
@@ -230,6 +236,8 @@ export class Match {
   confetti: ConfettiBit[] = [];
   moodFx: MoodParticle[] = [];
   pyroShots: PyroProjectile[] = [];
+  /** Last damage FX band per Ordnerpost slotKey: 0 ok · 1 orange · 2 red */
+  private postFxBand = new Map<string, 0 | 1 | 2>();
   speed: SpeedMode = 0;
   toasts: { text: string; t: number }[] = [];
   result: MatchResult | null = null;
@@ -538,6 +546,7 @@ export class Match {
   private initOrdnerPostHp(s: BuildSlot): void {
     s.structMaxHp = ordnerPostMaxHp(s.level || 1);
     s.structHp = s.structMaxHp;
+    this.postFxBand.set(slotKey(s.blockId, s.index), 0);
   }
 
   private ordnerPostGangPos(s: BuildSlot): { x: number; y: number } {
@@ -595,6 +604,8 @@ export class Match {
 
   private destroyOrdnerPost(s: BuildSlot): void {
     const key = slotKey(s.blockId, s.index);
+    const pos = this.standWorld(s);
+    this.burstPostRubble(pos.x, pos.y);
     for (const f of this.fans) {
       if (f.isSteward && f.homeStandKey === key) f.hp = 0;
     }
@@ -603,6 +614,7 @@ export class Match {
     s.structMaxHp = 0;
     s.stewardCd = 0;
     s.autoLevelAcc = 0;
+    this.postFxBand.delete(key);
     this.floatAtSlot(s, "Posten zerstört", false);
   }
 
@@ -612,14 +624,176 @@ export class Match {
     at: FanUnit,
   ): void {
     if (s.structHp <= 0) return;
+    const key = slotKey(s.blockId, s.index);
+    const prevBand = this.postDamageBand(s);
     s.structHp = Math.max(0, s.structHp - dmg);
     s.prodFlash = 1;
-    if (s.structHp <= 0) this.destroyOrdnerPost(s);
-    else if (Math.random() < 0.35) {
+    if (s.structHp <= 0) {
+      this.destroyOrdnerPost(s);
+      return;
+    }
+    const nextBand = this.postDamageBand(s);
+    if ((nextBand === 1 || nextBand === 2) && nextBand > prevBand) {
+      this.burstPostDamageTransition(s, nextBand);
+      this.postFxBand.set(key, nextBand);
+    }
+    if (Math.random() < 0.35) {
       const p = this.ordnerPostGangPos(s);
       this.floatAt(p.x, p.y, `−${Math.round(dmg)}`, false);
     }
     void at;
+  }
+
+  /** 0 healthy · 1 orange (<45%) · 2 red (<20%) — mirrors HP-bar colors. */
+  private postDamageBand(s: BuildSlot): 0 | 1 | 2 {
+    if (s.building !== "ordner" || s.structMaxHp <= 0 || s.structHp <= 0) return 0;
+    const pct = s.structHp / s.structMaxHp;
+    if (pct <= POST_FX_RED) return 2;
+    if (pct <= POST_FX_ORANGE) return 1;
+    return 0;
+  }
+
+  private burstPostDamageTransition(s: BuildSlot, band: 1 | 2): void {
+    const p = this.standWorld(s);
+    if (band === 1) {
+      // Crossing into orange: dense smoke plume
+      for (let i = 0; i < 14; i++) {
+        this.moodFx.push({
+          kind: "smoke",
+          x: p.x + (Math.random() - 0.5) * 0.04,
+          y: p.y - 0.01 + (Math.random() - 0.5) * 0.02,
+          vx: (Math.random() - 0.5) * 0.06,
+          vy: -0.05 - Math.random() * 0.06,
+          color: Math.random() < 0.5 ? "#94a3b8" : "#64748b",
+          t: 0,
+          life: 1.1 + Math.random() * 0.5,
+          size: 0.022 + Math.random() * 0.02,
+        });
+      }
+      return;
+    }
+    // Crossing into red: smoke + fire tongues
+    for (let i = 0; i < 10; i++) {
+      this.moodFx.push({
+        kind: "smoke",
+        x: p.x + (Math.random() - 0.5) * 0.045,
+        y: p.y - 0.01,
+        vx: (Math.random() - 0.5) * 0.07,
+        vy: -0.06 - Math.random() * 0.07,
+        color: "#57534e",
+        t: 0,
+        life: 1.2 + Math.random() * 0.5,
+        size: 0.024 + Math.random() * 0.022,
+      });
+    }
+    for (let i = 0; i < 16; i++) {
+      this.moodFx.push({
+        kind: "flame",
+        x: p.x + (Math.random() - 0.5) * 0.035,
+        y: p.y + 0.005 + (Math.random() - 0.5) * 0.015,
+        vx: (Math.random() - 0.5) * 0.04,
+        vy: -0.08 - Math.random() * 0.1,
+        color: Math.random() < 0.45 ? "#f97316" : Math.random() < 0.5 ? "#ef4444" : "#fde68a",
+        t: 0,
+        life: 0.55 + Math.random() * 0.45,
+        size: 0.014 + Math.random() * 0.016,
+      });
+    }
+  }
+
+  /** Short large rubble / debris cloud when a post collapses → empty plot. */
+  private burstPostRubble(x: number, y: number): void {
+    for (let i = 0; i < 28; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const spd = 0.04 + Math.random() * 0.14;
+      this.moodFx.push({
+        kind: "rubble",
+        x: x + (Math.random() - 0.5) * 0.03,
+        y: y + (Math.random() - 0.5) * 0.02,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd * 0.55 - 0.06 - Math.random() * 0.08,
+        color:
+          Math.random() < 0.35
+            ? "#78716c"
+            : Math.random() < 0.5
+              ? "#a8a29e"
+              : "#57534e",
+        t: 0,
+        life: 0.7 + Math.random() * 0.55,
+        size: 0.01 + Math.random() * 0.018,
+      });
+    }
+    for (let i = 0; i < 18; i++) {
+      this.moodFx.push({
+        kind: "smoke",
+        x: x + (Math.random() - 0.5) * 0.05,
+        y: y + (Math.random() - 0.5) * 0.03,
+        vx: (Math.random() - 0.5) * 0.1,
+        vy: -0.04 - Math.random() * 0.08,
+        color: Math.random() < 0.5 ? "#d6d3d1" : "#a8a29e",
+        t: 0,
+        life: 0.9 + Math.random() * 0.6,
+        size: 0.03 + Math.random() * 0.035,
+      });
+    }
+    for (let i = 0; i < 10; i++) {
+      this.moodFx.push({
+        kind: "flame",
+        x: x + (Math.random() - 0.5) * 0.04,
+        y: y,
+        vx: (Math.random() - 0.5) * 0.05,
+        vy: -0.1 - Math.random() * 0.08,
+        color: Math.random() < 0.5 ? "#fb923c" : "#facc15",
+        t: 0,
+        life: 0.45 + Math.random() * 0.35,
+        size: 0.012 + Math.random() * 0.014,
+      });
+    }
+  }
+
+  /** Ongoing smoke (orange) / fire (red) while Ordnerpost is damaged. */
+  private tickOrdnerPostDamageFx(dt: number): void {
+    for (const s of this.slots) {
+      if (s.building !== "ordner" || s.structMaxHp <= 0 || s.structHp <= 0) continue;
+      const band = this.postDamageBand(s);
+      const key = slotKey(s.blockId, s.index);
+      this.postFxBand.set(key, band);
+      if (band === 0) continue;
+      const p = this.standWorld(s);
+      // Orange: steady smoke; red: denser smoke + flames
+      const smokeRate = band === 2 ? 7 : 4;
+      if (Math.random() < smokeRate * dt) {
+        this.moodFx.push({
+          kind: "smoke",
+          x: p.x + (Math.random() - 0.5) * 0.03,
+          y: p.y - 0.005,
+          vx: (Math.random() - 0.5) * 0.035,
+          vy: -0.045 - Math.random() * 0.04,
+          color: band === 2 ? "#57534e" : "#94a3b8",
+          t: 0,
+          life: 0.9 + Math.random() * 0.5,
+          size: 0.018 + Math.random() * 0.016,
+        });
+      }
+      if (band === 2 && Math.random() < 9 * dt) {
+        this.moodFx.push({
+          kind: "flame",
+          x: p.x + (Math.random() - 0.5) * 0.028,
+          y: p.y + 0.008,
+          vx: (Math.random() - 0.5) * 0.03,
+          vy: -0.07 - Math.random() * 0.09,
+          color:
+            Math.random() < 0.4
+              ? "#f97316"
+              : Math.random() < 0.5
+                ? "#ef4444"
+                : "#fde68a",
+          t: 0,
+          life: 0.4 + Math.random() * 0.35,
+          size: 0.012 + Math.random() * 0.014,
+        });
+      }
+    }
   }
 
   /** Nur echte Bedrohung im/am Heimblock — nicht die Kampf-Frontlinie weit draußen */
@@ -1462,6 +1636,7 @@ export class Match {
     this.tickOrdnerPostCombat(step);
     this.tickCombat(step);
     this.tickPyroShots(step);
+    this.tickOrdnerPostDamageFx(step);
     this.tickNeutralCapture(step);
     this.tickFamilyFlight(step);
     this.tickJubelMomentum(step);
@@ -3744,6 +3919,13 @@ export class Match {
       if (p.kind === "smoke") {
         p.vy -= 0.02 * dt;
         p.size += 0.012 * dt;
+      } else if (p.kind === "flame") {
+        p.vy -= 0.04 * dt;
+        p.vx *= 1 - dt * 0.25;
+        p.size *= 1 - dt * 0.35;
+      } else if (p.kind === "rubble") {
+        p.vy += 0.32 * dt;
+        p.vx *= 1 - dt * 0.15;
       } else if (p.kind === "flare" || p.kind === "rocket") {
         p.vy -= 0.05 * dt;
         p.vx *= 1 - dt * 0.12;
