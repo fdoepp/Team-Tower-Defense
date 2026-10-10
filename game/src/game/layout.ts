@@ -390,9 +390,11 @@ export function gangLanePosForUnit(
 }
 
 /**
- * Wait / queue radius around Bier- & Fanshop-Ständen (normalized 0–1 field).
- * ~half a booth width; kept larger than a single sprite so queues don't pixel-stack.
+ * Wait / queue band outside the building footprint (normalized 0–1 field).
+ * Starts at the booth outer edge and covers the next ~5% of free field space.
  */
+export const STAND_WAIT_BAND = 0.05;
+/** @deprecated use STAND_WAIT_BAND + booth footprint; kept for separation scale */
 export const STAND_WAIT_RADIUS = 0.06;
 
 export function slotIndicesForBlock(_blockId: number): readonly number[] {

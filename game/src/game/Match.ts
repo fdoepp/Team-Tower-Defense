@@ -105,6 +105,7 @@ import {
   blockWidthNorm,
   blockCrowdRect,
   boothCenter,
+  boothRect,
   crowdHomePos,
   doorPos,
   gangLanePosForUnit,
@@ -113,6 +114,7 @@ import {
   gangXToWorld,
   plotGangX,
   slotIndicesForBlock,
+  STAND_WAIT_BAND,
   STAND_WAIT_RADIUS,
   syncTribuneLayout,
   worldXToGangX,
@@ -232,6 +234,12 @@ export class Match {
   momentum = 0;
   moodHeim = 1;
   moodGaeste = 1;
+  /** Football overlay spin on Torwahrscheinlichkeit bar (radians) */
+  torBallAngle = 0;
+  private prevTorPHeim = 0.5;
+  /** Temporary defense call-out along gang (own Ordner rush here) */
+  private defenseCallGx: Partial<Record<TeamId, number>> = {};
+  private defenseCallT: Partial<Record<TeamId, number>> = {};
   /** UI: scoreboard punch after goal (0..1) */
   scorePulse = 0;
   /** last team that scored — for crest flash */
@@ -616,6 +624,9 @@ export class Match {
     const prevBand = this.postDamageBand(s);
     s.structHp = Math.max(0, s.structHp - dmg);
     s.prodFlash = 1;
+    if (s.owner === this.playerTeam || s.owner === this.aiTeam) {
+      this.alertTeamDefense(s.owner as TeamId, this.postGangX(s));
+    }
     if (s.structHp <= 0) {
       this.destroyOrdnerPost(s);
       const killer =
@@ -1343,6 +1354,15 @@ export class Match {
   }
 
   private sendToGang(f: FanUnit): void {
+    this.leaveSeatToGang(f, true);
+  }
+
+  /** Exit block/stand onto the gang for defense — not an offensive push. */
+  private sendToDefend(f: FanUnit): void {
+    this.leaveSeatToGang(f, false);
+  }
+
+  private leaveSeatToGang(f: FanUnit, offense: boolean): void {
     const door = doorPos(f.blockId);
     const lane = gangLanePosForUnit(f.blockId, f.id);
     // Keep seatIndex reserved while alive on gang
@@ -1350,8 +1370,8 @@ export class Match {
     f.state = "moving";
     f.standKey = null;
     f.invading = false;
-    f.onOffense = true;
-    f.aggro = 40; // offense — keep pushing, don't auto-sit
+    f.onOffense = offense;
+    f.aggro = offense ? 40 : 100;
     // Always leave via center aisle → tunnel door → gang (personal lane Y)
     const path: { x: number; y: number }[] = [];
     if (f.y < door.y - 0.015 && Math.abs(f.x - door.x) > 0.018) {
@@ -1362,6 +1382,13 @@ export class Match {
     f.path = path;
     f.pathI = 0;
     this.setAfter(f, "gang");
+  }
+
+  /** Mark a gang X so own Ordner rush to help (gang only). */
+  private alertTeamDefense(team: TeamId, gx: number): void {
+    if (team !== this.playerTeam && team !== this.aiTeam) return;
+    this.defenseCallGx[team] = gx;
+    this.defenseCallT[team] = 5;
   }
 
   private setAfter(f: FanUnit, mode: string): void {
@@ -2017,6 +2044,12 @@ export class Match {
       this.toast("Neutraler Ordner");
     }
 
+    for (const team of [this.playerTeam, this.aiTeam] as TeamId[]) {
+      const tLeft = (this.defenseCallT[team] ?? 0) - dt;
+      this.defenseCallT[team] = Math.max(0, tLeft);
+      if (tLeft <= 0) delete this.defenseCallGx[team];
+    }
+
     for (const f of this.fans) {
       if (!f.isSteward || f.hp <= 0 || f.state === "moving") continue;
       const stand = this.slots.find(
@@ -2026,11 +2059,22 @@ export class Match {
 
       const postGx = this.stewardPostGangX(f);
       const band = this.stewardPatrolBand(f);
-      const chaseBand = {
-        min: clamp(postGx - STEWARD_STATS.chaseRadius, 0.02, 0.98),
-        max: clamp(postGx + STEWARD_STATS.chaseRadius, 0.02, 0.98),
-      };
+      // Team Ordner: help across own territory; neutrals stay near post
+      const chaseBand =
+        f.team === "neutral"
+          ? {
+              min: clamp(postGx - STEWARD_STATS.chaseRadius, 0.02, 0.98),
+              max: clamp(postGx + STEWARD_STATS.chaseRadius, 0.02, 0.98),
+            }
+          : {
+              min: clamp(band.min - 0.06, 0.02, 0.98),
+              max: clamp(band.max + 0.06, 0.02, 0.98),
+            };
       const threat = this.stewardThreat(f, chaseBand);
+      const helpGx =
+        f.team === this.playerTeam || f.team === this.aiTeam
+          ? this.defenseCallGx[f.team as TeamId]
+          : undefined;
       const midY = gangMidY();
       // Always on gang lane — never stuck on the booth sprite
       f.y = midY + Math.sin(this.realElapsed * 2.2 + f.id) * 0.006;
@@ -2041,8 +2085,17 @@ export class Match {
         const step = Math.sign(dx) * Math.min(Math.abs(dx), speed * dt);
         f.x += step;
         this.syncGangFromWorld(f);
-        // Never chase beyond post neighborhood
         f.gangX = clamp(f.gangX, chaseBand.min, chaseBand.max);
+        f.x = gangXToWorld(f.gangX);
+        f.aggro = 100;
+      } else if (helpGx != null) {
+        const speed = STEWARD_STATS.chaseSpeed;
+        const dir = Math.sign(helpGx - f.gangX) || 0;
+        f.gangX = clamp(
+          f.gangX + dir * speed * dt,
+          chaseBand.min,
+          chaseBand.max,
+        );
         f.x = gangXToWorld(f.gangX);
         f.aggro = 100;
       } else {
@@ -2058,7 +2111,7 @@ export class Match {
         f.x = gangXToWorld(f.gangX);
       }
 
-      // Slow heal while inside the tight post radius (patrol bubble)
+      // Slow heal while inside the tight post radius
       const postLv = stand.level || 1;
       if (
         Math.abs(f.gangX - postGx) <= stewardPostRadius(postLv) + 0.01 &&
@@ -2079,16 +2132,36 @@ export class Match {
     return stand ? this.postGangX(stand) : blockIdToGangX(b);
   }
 
-  /** Always patrol in a tight bubble around the home Ordnerposten */
+  /**
+   * Team Ordner patrol the whole own cemented/build frontier on the gang.
+   * Neutral Ordner stay in a tight bubble around their post.
+   */
   private stewardPatrolBand(f: FanUnit): { min: number; max: number } {
     const postGx = this.stewardPostGangX(f);
-    const stand = this.slots.find(
-      (s) => slotKey(s.blockId, s.index) === f.homeStandKey,
-    );
-    const r = stewardPostRadius(stand?.level || 1);
+    if (f.team === "neutral") {
+      const stand = this.slots.find(
+        (s) => slotKey(s.blockId, s.index) === f.homeStandKey,
+      );
+      const r = stewardPostRadius(stand?.level || 1);
+      return {
+        min: clamp(postGx - r, 0.02, 0.98),
+        max: clamp(postGx + r, 0.02, 0.98),
+      };
+    }
+    const homeGx =
+      f.team === this.playerTeam
+        ? blockIdToGangX(HEIM_BLOCK)
+        : blockIdToGangX(GAST_BLOCK);
+    const frontier = this.buildFrontierGx(f.team as TeamId);
+    if (f.team === this.playerTeam) {
+      return {
+        min: clamp(Math.min(homeGx, postGx) - 0.03, 0.02, 0.98),
+        max: clamp(Math.max(frontier, postGx) + 0.03, 0.02, 0.98),
+      };
+    }
     return {
-      min: clamp(postGx - r, 0.02, 0.98),
-      max: clamp(postGx + r, 0.02, 0.98),
+      min: clamp(Math.min(frontier, postGx) - 0.03, 0.02, 0.98),
+      max: clamp(Math.max(homeGx, postGx) + 0.03, 0.02, 0.98),
     };
   }
 
@@ -2491,17 +2564,22 @@ export class Match {
     f._wanderTy = wait.y;
   }
 
-  /** Stable distinct point inside the Bier/Fanshop wait radius (no pile-up). */
+  /**
+   * Wait points start at the building outer edge and fan through the next
+   * STAND_WAIT_BAND (~5% Freifläche) — never inside the booth footprint.
+   */
   private standWaitPos(
     stand: BuildSlot,
     unitId: number,
   ): { x: number; y: number } {
     const sp = this.standWorld(stand);
+    const rect = boothRect(stand.blockId, stand.index);
+    const edge = Math.max(rect.w, rect.h) * 0.55;
     // Golden-angle slots so waiters fan out around the building
     const slot = unitId % 17;
     const ang = slot * 2.399963229728653 + stand.blockId * 0.37 + stand.index;
-    const ring = 0.28 + ((slot * 5) % 7) / 7 * 0.62;
-    const r = STAND_WAIT_RADIUS * ring;
+    const ring = 0.12 + ((slot * 5) % 7) / 7 * 0.88;
+    const r = edge + STAND_WAIT_BAND * ring;
     return {
       x: sp.x + Math.cos(ang) * r,
       y: sp.y + Math.sin(ang) * r * 0.72,
@@ -3308,7 +3386,7 @@ export class Match {
     );
   }
 
-  /** Own ultras leave seats to defend when enemy Ultra is in / approaching home */
+  /** Own ultras/hools leave seats to defend when enemy Ultra is in / approaching home */
   private tickAutoDefend(dt: number): void {
     void dt;
     for (const team of [this.playerTeam, this.aiTeam] as TeamId[]) {
@@ -3325,21 +3403,22 @@ export class Match {
         (f) =>
           f.hp > 0 &&
           f.team === team &&
-          f.kind === "ultras" &&
+          (f.kind === "ultras" || f.kind === "hooligans") &&
           f.state === "block" &&
           !f.invading &&
+          !f.onOffense &&
           f.blockId === home,
       );
-      // Send up to 2 ultras out when threatened
+      // Send defenders out when threatened (no SENDEN needed)
       let sent = 0;
       for (const u of defenders) {
-        if (sent >= 2) break;
+        if (sent >= 4) break;
         if (underAttack) {
-          // Stay in block and fight — they'll engage via combat; nudge toward invader
+          // Fight in block if invader is there; also step onto gang
           const inv = this.fans.find(
             (e) =>
               e.hp > 0 &&
-              e.kind === "ultras" &&
+              (e.kind === "ultras" || e.kind === "hooligans") &&
               e.team !== team &&
               e.blockId === home &&
               (e.invading || e.state === "block"),
@@ -3349,8 +3428,10 @@ export class Match {
             u.y += (inv.y - u.y) * 0.15;
             u.aggro = 100;
           }
+          this.sendToDefend(u);
+          sent++;
         } else if (lineThreat) {
-          this.sendToGang(u);
+          this.sendToDefend(u);
           sent++;
         }
       }
@@ -3530,6 +3611,7 @@ export class Match {
         (HIT_DAMAGE * HIT_DAMAGE_SCALE * rangedMul * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
         Math.max(0.35, this.defenseOf(target) * defMul);
       target.hp -= dmg * 0.55;
+      this.reactToBeingAttacked(target, attacker);
       if (target.hp <= 0) {
         target.hp = 0;
         if (attacker.team === this.playerTeam || attacker.team === this.aiTeam) {
@@ -3542,12 +3624,7 @@ export class Match {
       (HIT_DAMAGE * HIT_DAMAGE_SCALE * rangedMul * this.attackOf(attacker) * this.neighborBonus(attacker) * atkMul) /
       Math.max(0.35, (this.defenseOf(target) * defMul) / this.neighborBonus(target));
     target.hp -= dmg;
-    // Hitting an attacker must not cancel their push (aggro→100 used to recall them)
-    if (!target.onOffense) {
-      target.aggro = clamp(target.aggro + 12, 0, 100);
-    } else if (target.aggro < 80) {
-      target.aggro = 40;
-    }
+    this.reactToBeingAttacked(target, attacker);
     if (target.hp <= 0) {
       target.hp = 0;
       if (attacker.team === this.playerTeam || attacker.team === this.aiTeam) {
@@ -3559,6 +3636,40 @@ export class Match {
       } else {
         this.toast(`${FAN_STATS[target.kind].label} besiegt`);
       }
+    }
+  }
+
+  /**
+   * Attacked units always step up to defend — no SENDEN required.
+   * Offensive pushers keep pushing; everyone else leaves the seat to the gang.
+   */
+  private reactToBeingAttacked(target: FanUnit, attacker: FanUnit): void {
+    if (target.hp <= 0) return;
+    if (target.team !== this.playerTeam && target.team !== this.aiTeam) return;
+    if (target.isSteward) {
+      target.aggro = 100;
+      this.alertTeamDefense(target.team as TeamId, target.gangX);
+      return;
+    }
+    // Hitting an attacker must not cancel their push
+    if (target.onOffense) {
+      if (target.aggro < 80) target.aggro = 40;
+      return;
+    }
+    target.aggro = 100;
+    this.alertTeamDefense(
+      target.team as TeamId,
+      attacker.state === "gang" || attacker.invading
+        ? attacker.gangX
+        : worldXToGangX(attacker.x),
+    );
+    if (
+      (target.state === "block" || target.state === "stand") &&
+      (target.kind === "ultras" ||
+        target.kind === "hooligans" ||
+        target.kind === "normalos")
+    ) {
+      this.sendToDefend(target);
     }
   }
 
@@ -3625,6 +3736,12 @@ export class Match {
       -1,
       1,
     );
+
+    // Roll the Torwahrscheinlichkeit football toward the gaining side
+    const ch = this.goalChance();
+    const dP = ch.pHeim - this.prevTorPHeim;
+    this.torBallAngle += dP * 14 + this.momentum * dt * 1.8;
+    this.prevTorPHeim = ch.pHeim;
 
     // Mood display mirrors block power (not shops / not goals)
     const targetHeim = clamp(0.35 + pHeim * MOOD_FROM_POWER, 0, 3);
@@ -3746,7 +3863,7 @@ export class Match {
       if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
       if (f.blockId !== home) continue;
       if (f.state !== "block" && f.state !== "stand") continue;
-      f.cheerT = 3.2;
+      f.cheerT = 6.4; // doppelte Jubel-Länge
       n++;
       if (f.kind === "normalos") {
         const col = fanI++ % 2 === 0 ? white : club;
@@ -3754,7 +3871,7 @@ export class Match {
       } else if (f.kind === "ultras") {
         const col = ultraI++ % 2 === 0 ? white : club;
         // Raise pyro prop in hand while smoke show plays
-        f.throwT = Math.max(f.throwT, 1.2);
+        f.throwT = Math.max(f.throwT, 2.4);
         f.armSwing = 0.85;
         this.burstUltraSmoke(f, col);
       } else if (f.kind === "hooligans") {
@@ -3763,7 +3880,7 @@ export class Match {
       }
     }
     this.floatAt(blockCenterX(home), blockTopY(home) + 0.08, "TOR-JUBEL!", true);
-    this.toast(n > 0 ? "Kurve feiert!" : "TOR!", 3.5);
+    this.toast(n > 0 ? "Kurve feiert!" : "TOR!", 7);
   }
 
   private burstFanConfetti(f: FanUnit, color: string): void {
