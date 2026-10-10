@@ -224,13 +224,14 @@ select {
   height: 100%;
 }
 
-/* Matchday Comic — Rahmenlogik MATCH_LAYOUT_TOKENS.json
-   left 21% · pitch 64% · right 15% (build-open). */
+/* Matchday: Pitch + rechte Toolbar; linke Rail nur bei Klick. */
 .match-shell.matchday {
-  /* +10% left / +30% right vs 21%/15% Rahmen-Baseline */
-  --rail-left-w: 25.41%;
-  --rail-right-w: 29.25%;
-  --rail-w: var(--rail-left-w);
+  --rail-action-w: 25.41%;
+  --rail-left-w: var(--rail-action-w); /* alias */
+  /* Fixed-ish tool column — never squash below touch size */
+  --rail-tool-w: clamp(84px, 11vw, 110px);
+  --rail-tool-btn: clamp(68px, 9vw, 92px);
+  --rail-w: var(--rail-action-w);
   --rail-btn-h: clamp(42px, 10vh, 54px);
   --rail-icon: clamp(40px, 7vh, 52px);
   --wallet-icon: 25px; /* ×1.15 vs 22px baseline */
@@ -240,8 +241,9 @@ select {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) var(--rail-tool-w);
   grid-template-rows: 1fr;
+  grid-template-areas: "pitch tools";
   gap: 0;
   position: relative;
   background: #1a1410;
@@ -249,8 +251,98 @@ select {
   overflow: hidden;
 }
 
+/* Aktionsrail rechts statt Toolbar — Toolbar ausgeblendet */
+.match-shell.matchday.rail-open,
 .match-shell.matchday.build-open {
-  grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
+  grid-template-columns: minmax(0, 1fr) var(--rail-action-w);
+  grid-template-areas: "pitch rail";
+}
+
+.match-shell.matchday.rail-open .rail-toolbar,
+.match-shell.matchday.build-open .rail-toolbar {
+  display: none !important;
+}
+
+.match-shell.matchday .rail-slot {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.match-shell.matchday .rail-slot[hidden] {
+  display: none !important;
+}
+
+.match-shell.matchday .rail-slot > .side-rail {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.match-shell.matchday .rail-slot > .side-rail[hidden] {
+  display: none !important;
+}
+
+/* Rechte Toolbar: Gebäude · Personen · Angriff */
+.match-shell.matchday .rail-toolbar {
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 2.5vh, 18px);
+  padding: 10px 6px;
+  padding-right: max(6px, env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+  width: 100%;
+  min-width: var(--rail-tool-w);
+  min-height: 0;
+  height: 100%;
+  background:
+    linear-gradient(180deg, rgba(255, 236, 200, 0.18), rgba(80, 45, 18, 0.22)),
+    url("/icons/ui/menu-rail-brown-tile.png") center / cover;
+  border-left: 3px solid #5c3418;
+  box-shadow: inset 2px 0 0 rgba(255, 230, 180, 0.25);
+}
+
+.match-shell.matchday .rail-tool-btn {
+  display: grid;
+  place-items: center;
+  width: var(--rail-tool-btn);
+  height: var(--rail-tool-btn);
+  min-width: 64px;
+  min-height: 64px;
+  flex: 0 0 auto;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 18%;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.28));
+  transition: transform 0.08s ease, filter 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.match-shell.matchday .rail-tool-btn img {
+  display: block;
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.match-shell.matchday .rail-tool-btn:active {
+  transform: translateY(2px) scale(0.96);
+}
+
+.match-shell.matchday .rail-tool-btn.active {
+  outline: 3px solid #fbbf24;
+  outline-offset: -2px;
+  filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.28));
 }
 
 .match-shell.matchday .side-rail {
@@ -281,51 +373,116 @@ select {
     0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
-/* Personen-Rail = fertige Card-A (Mockup + abgelegtes ui-final Chrome) */
-.match-shell.matchday .left-rail {
-  padding: var(--rail-inset);
-  /* Safe-area weitet die Rail, nicht den Karten-Inset */
-  padding-left: var(--rail-inset);
-  margin-left: env(safe-area-inset-left, 0px);
-  gap: 3px;
-  border-right-width: 4px;
-}
-
+/* Aktionsrails rechts (Personen / Gebäude / Angriff) — Card-A Tokens */
 .match-shell.matchday .right-rail,
-.match-shell.matchday .build-rail {
-  padding-right: var(--rail-inset);
-  margin-right: env(safe-area-inset-right, 0px);
-  border-left-width: 4px;
-}
-
-.match-shell.matchday .build-rail {
+.match-shell.matchday .left-rail,
+.match-shell.matchday .build-rail,
+.match-shell.matchday .attack-rail,
+.match-shell.matchday .person-rail {
+  container-type: size;
+  --person-gap: 0.75cqh;
+  --person-card-pad-y: 1.05cqh;
+  --person-card-radius: 3.6cqw;
+  --person-title-size: clamp(9px, 5.4cqw, 13px);
+  --person-banner-size: clamp(9px, 5.2cqw, 13px);
+  --person-banner-pad-y: 0.9cqh;
+  --person-banner-pad-x: 2.4cqw;
+  --person-close-gap: 0.55cqh;
   --br-gap: 2%;
   --br-pad: 1%;
   --br-icon: 26%;
   position: relative;
   z-index: 8;
   min-width: 0;
-  container-type: size;
-  gap: 2%;
-  /* Karten fast volle Railbreite — Innenrand 1% */
+  gap: var(--person-gap);
   padding: var(--rail-inset);
   padding-right: var(--rail-inset);
-  animation: build-rail-in 0.22s ease-out;
+  margin-right: env(safe-area-inset-right, 0px);
+  border-left-width: 4px;
 }
 
-.match-shell.matchday .build-rail[hidden] {
-  display: none !important;
+/* Gebäude-Banner — Bau-Amber (#e08f22) */
+.match-shell.matchday .build-rail .rail-banner {
+  padding: var(--person-banner-pad-y) var(--person-banner-pad-x);
+  border-radius: calc(var(--person-card-radius) * 0.7);
+  background: linear-gradient(180deg, #f0a94a, #e08f22 55%, #c47818);
+  border: 2px solid #3d2414;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+  color: #fff;
+  font-size: var(--person-banner-size);
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
 }
 
-@keyframes build-rail-in {
-  from {
-    opacity: 0;
-    transform: translateX(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* Angriff-Banner — Rot wie btnIconAngriffRed */
+.match-shell.matchday .attack-rail .rail-banner {
+  padding: var(--person-banner-pad-y) var(--person-banner-pad-x);
+  border-radius: calc(var(--person-card-radius) * 0.7);
+  background: linear-gradient(180deg, #e04545, #c42a2a 55%, #9f1f1f);
+  border: 2px solid #3d2414;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+  color: #fff;
+  font-size: var(--person-banner-size);
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+.match-shell.matchday .build-rail .rail-close,
+.match-shell.matchday .attack-rail .rail-close,
+.match-shell.matchday .person-rail .rail-close {
+  flex: 0 0 auto;
+  width: 100%;
+  margin-top: var(--person-close-gap, 0.55cqh);
+  font-size: clamp(9px, 4.8cqw, 12px);
+  padding: 0.85cqh 2.5cqw;
+  border-radius: calc(var(--person-card-radius, 3.6cqw) * 0.9);
+}
+
+.match-shell.matchday .build-rail .building-cards {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+/* Angriff: verfügbare Höhe = Fläche zwischen Banner und Schließen */
+.match-shell.matchday .attack-rail .attack-body {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+/* 2 Karten ≤ 66% der verfügbaren Höhe, 1 Karte ≤ 33% */
+.match-shell.matchday .attack-rail .attack-cards {
+  flex: 0 0 66%;
+  width: 100%;
+  min-height: 0;
+  height: 66%;
+  max-height: 66%;
+  justify-content: flex-start;
+  align-content: stretch;
+  overflow: hidden;
+}
+
+.match-shell.matchday .attack-rail .attack-cards:has(> .attack-card:only-child) {
+  flex-basis: 33%;
+  height: 33%;
+  max-height: 33%;
+}
+
+.match-shell.matchday .attack-rail .attack-card {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: none;
 }
 
 .match-shell.matchday .rail-close {
@@ -374,18 +531,23 @@ select {
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
 }
 
-/* Card-A Banner — exakt Mockup */
-.match-shell.matchday .left-rail .rail-banner {
-  padding: 4px 6px;
-  border-radius: 7px;
-  background: linear-gradient(180deg, #6b4428, #4a2c18);
+/* Card-A Banner — gleiches Blau wie btnIconUltraBlue Face (#3184ca) */
+.match-shell.matchday .right-rail.person-rail .rail-banner,
+.match-shell.matchday .left-rail .rail-banner,
+.match-shell.matchday .person-rail .rail-banner {
+  padding: var(--person-banner-pad-y) var(--person-banner-pad-x);
+  border-radius: calc(var(--person-card-radius) * 0.7);
+  background: linear-gradient(180deg, #4a9be0, #3184ca 55%, #2769a8);
   border: 2px solid #3d2414;
-  box-shadow: none;
-  color: #f8e7c0;
-  font-size: 12px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+  color: #fff;
+  font-size: var(--person-banner-size);
+  font-weight: 900;
   letter-spacing: 0;
   text-transform: none;
-  text-shadow: none;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
 }
 
 .rail-hint {
@@ -405,7 +567,7 @@ select {
 .match-shell.matchday .person-cards {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--person-gap, 0.75cqh);
   flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
@@ -413,26 +575,25 @@ select {
 }
 
 /*
- * Card A — dynamische Abstände aus fertigem Mockup
- * (docs/mockups/personen-action-card + ui-final Chrome).
- * Dual 3%·46%·2%·46%·3% / Triple 3%·30%·2%·30%·2%·30%·3%.
+ * Card A — dynamische Abstände (Dual 1%·48%·2%·48%·1%).
+ * Card-Innen: %- / cqh-Tokens der linken Rail.
  */
 .match-shell.matchday .person-card {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--person-gap, 0.75cqh);
   flex: 1 1 0;
   min-height: 0;
   min-width: 0;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  padding: 4px 0 5px;
+  padding: var(--person-card-pad-y, 1.05cqh) 0;
   overflow: hidden;
   color: #1c120a;
   background: linear-gradient(180deg, #f7ebcf, #e5cf9f);
   border: 2px solid #3d2414;
-  border-radius: 10px;
+  border-radius: var(--person-card-radius, 3.6cqw);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
     0 1px 0 rgba(0, 0, 0, 0.25);
@@ -443,7 +604,7 @@ select {
   flex: 0 0 auto;
   font-family: var(--display), "Segoe UI", system-ui, sans-serif;
   font-weight: 900;
-  font-size: 12px;
+  font-size: var(--person-title-size, clamp(9px, 5.4cqw, 13px));
   line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
@@ -470,6 +631,13 @@ select {
 }
 
 /* Button-Gutter ~1% Card-Breite (Rahmenlogik: schmaler Innenrand) */
+.match-shell.matchday .person-actions.single {
+  grid-template-columns: 2% minmax(0, 1fr) 2%;
+}
+.match-shell.matchday .person-actions.single .ar-cost-btn {
+  grid-column: 2;
+}
+
 .match-shell.matchday .person-actions.dual {
   grid-template-columns: 1% 48% 2% 48% 1%;
 }
@@ -508,6 +676,164 @@ select {
   gap: 0.3em;
   font-family: inherit;
   font-size: clamp(9px, 12cqw, 14px);
+}
+
+/*
+ * Action-Card Alt D (Personen + Gebäude, skalierbar, %-Tokens der Face):
+ *  left inset 2.5% · unit-col 36% · gap 4% · pay flex · right inset 2%
+ *  Icon oben in unit-col, Ertrag darunter; Kosten groß rechts.
+ */
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .inner.person-btn-inner {
+  --face-left: 2.5%;
+  --face-right: 2%;
+  --face-top: 2%;
+  --face-bot: 2%;
+  --unit-w: 36%;
+  --col-gap: 4%;
+  --yield-gap: 4%;
+  --pay-gap: 0.2em;
+  left: calc(var(--wood-x) + var(--face-left));
+  right: calc(var(--wood-x) + var(--face-right));
+  top: calc(var(--wood-y-top) + var(--face-top));
+  bottom: calc(var(--wood-y-bot) + var(--face-bot));
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--col-gap);
+  font-size: clamp(8px, 11cqw, 13px);
+}
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--yield-gap);
+  width: var(--unit-w);
+  max-width: var(--unit-w);
+  min-width: 0;
+  height: 100%;
+  flex: 0 0 var(--unit-w);
+  overflow: hidden;
+}
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-ico {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 68%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  flex: 0 1 auto;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-col .yield-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15em;
+  max-width: 100%;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  border: 0;
+  color: #fff;
+  font-size: clamp(7px, 9.5cqw, 11px);
+  line-height: 1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+  white-space: nowrap;
+}
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-col .yield-chip img {
+  width: 1em;
+  height: 1em;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .unit-col .yield-chip.yield-delta .yield-amt {
+  color: #bbf7d0;
+}
+
+/* Angriff: Anzahl · HP · Atk(+Faust/Pyro) unter dem Unit-Icon */
+.match-shell.matchday .attack-rail .atk-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12em;
+  width: 100%;
+  min-width: 0;
+  line-height: 1.05;
+}
+.match-shell.matchday .attack-rail .atk-stat {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2em;
+  max-width: 100%;
+  color: #fff;
+  font-size: clamp(7px, 9cqw, 11px);
+  font-weight: 800;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+  white-space: nowrap;
+}
+.match-shell.matchday .attack-rail .atk-stat .atk-lbl {
+  font-size: 0.85em;
+  font-weight: 700;
+  opacity: 0.9;
+  letter-spacing: 0.02em;
+}
+.match-shell.matchday .attack-rail .atk-stat img {
+  width: 1.15em;
+  height: 1.15em;
+  object-fit: contain;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
+}
+.match-shell.matchday .attack-rail .person-card .ar-cost-btn.rail-action .unit-ico {
+  max-height: 48%;
+}
+/* Kosten deutlich größer, rechts neben dem Icon */
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .pay.pay-lg {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pay-gap);
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  font-size: clamp(12px, 18cqw, 24px);
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  overflow: hidden;
+}
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .pay.pay-lg img {
+  width: 0.9em;
+  height: 0.9em;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+.match-shell.matchday .person-card .ar-cost-btn.rail-action .pay.pay-lg .amt {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Gebäude Bau-Button: selected-Ring wenn pending */
+.match-shell.matchday .building-card .ar-cost-btn.bauen.selected {
+  outline: 2px solid #fbbf24;
+  outline-offset: -2px;
+}
+
+/* Personen-Rail: Schließen analog Baumenu (.rail-close) */
+.match-shell.matchday .left-rail .rail-close {
+  flex: 0 0 auto;
+  width: 100%;
+  margin-top: var(--person-close-gap, 0.55cqh);
+  font-size: clamp(9px, 4.8cqw, 12px);
+  padding: 0.85cqh 2.5cqw;
+  border-radius: calc(var(--person-card-radius, 3.6cqw) * 0.9);
 }
 
 .match-shell.matchday .ar-icon-btn {
@@ -780,6 +1106,11 @@ select {
 .match-shell.matchday .ar-cost-btn.senden {
   background-image: url("/icons/ui-final/btn-senden-blue.png");
 }
+/* Angriff-Rail: rote Senden-Fläche (statt Blau) */
+.match-shell.matchday .attack-rail .ar-cost-btn.senden,
+.match-shell.matchday .ar-cost-btn.senden.senden-red {
+  background-image: url("/icons/ui-final/btn-senden-red.png");
+}
 .match-shell.matchday .build-card.cd .ar-cost-btn.bauen,
 .match-shell.matchday .ar-cost-btn.bauen.cd {
   background-image: url("/icons/ui-final/btn-bauen-grey.png");
@@ -795,7 +1126,11 @@ select {
   background-image: url("/icons/ui-final/btn-upgrade-grey.png");
 }
 .match-shell.matchday .ar-cost-btn.senden.cd,
-.match-shell.matchday .ar-cost-btn.senden:disabled {
+.match-shell.matchday .ar-cost-btn.senden:disabled,
+.match-shell.matchday .attack-rail .ar-cost-btn.senden.cd,
+.match-shell.matchday .attack-rail .ar-cost-btn.senden:disabled,
+.match-shell.matchday .ar-cost-btn.senden.senden-red.cd,
+.match-shell.matchday .ar-cost-btn.senden.senden-red:disabled {
   background-image: url("/icons/ui-final/btn-senden-grey.png");
 }
 .match-shell.matchday .ar-cost-btn .inner {
@@ -986,8 +1321,14 @@ select {
   height: 100%;
   min-width: 0;
   min-height: 0;
-  grid-column: 2;
+  grid-area: pitch;
   background: #1e293b;
+}
+.match-shell.matchday .rail-slot {
+  grid-area: rail;
+}
+.match-shell.matchday .rail-toolbar {
+  grid-area: tools;
 }
 
 .match-shell.matchday #game-wrap.placing {
@@ -1074,10 +1415,15 @@ select {
   .match-shell.matchday {
     --rail-btn-h: clamp(40px, 11vh, 52px);
     --rail-icon: clamp(36px, 8vh, 48px);
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
+    --rail-tool-w: clamp(76px, 16vw, 96px);
+    --rail-tool-btn: clamp(64px, 14vw, 80px);
+    grid-template-columns: minmax(0, 1fr) var(--rail-tool-w);
+    grid-template-areas: "pitch tools";
   }
+  .match-shell.matchday.rail-open,
   .match-shell.matchday.build-open {
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
+    grid-template-columns: minmax(0, 1fr) var(--rail-action-w);
+    grid-template-areas: "pitch rail";
   }
 }
 
@@ -1093,12 +1439,9 @@ select {
   .match-shell.matchday .freie-plaetze {
     font-size: 0.5rem;
   }
-  .match-shell.matchday .left-rail .rail-banner {
-    font-size: 11px;
-    padding: 3px 5px;
-  }
-  .match-shell.matchday .person-title {
-    font-size: 11px;
+  .match-shell.matchday .left-rail {
+    --person-banner-size: clamp(8px, 5cqw, 12px);
+    --person-title-size: clamp(8px, 5.2cqw, 12px);
   }
 }
 
@@ -1978,11 +2321,14 @@ select {
   }
   .match-shell.matchday {
     display: grid !important;
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) var(--rail-tool-w);
+    grid-template-areas: "pitch tools";
     pointer-events: auto;
   }
+  .match-shell.matchday.rail-open,
   .match-shell.matchday.build-open {
-    grid-template-columns: var(--rail-left-w) minmax(0, 1fr) var(--rail-right-w);
+    grid-template-columns: minmax(0, 1fr) var(--rail-action-w);
+    grid-template-areas: "pitch rail";
   }
 }
 

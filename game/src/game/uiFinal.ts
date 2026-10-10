@@ -7,6 +7,14 @@
 export type UiFinalId =
   | "btnBauenAmber"
   | "btnBauenGrey"
+  | "btnIconAngriffRed"
+  | "btnIconBierAmber"
+  | "btnIconSquareAmber"
+  | "btnIconSquareBlue"
+  | "btnIconSquareRed"
+  | "btnIconUltraBlue"
+  | "btnIconUpgradeBuilding"
+  | "btnIconUpgradePerson"
   | "btnSendenBlue"
   | "btnUpgradeGrey"
   | "btnUpgradePurple"
@@ -52,6 +60,8 @@ export type UiFinalId =
   | "hooliganRed3"
   | "hooliganRed4"
   | "hooliganRed5"
+  | "iconAngriffBlocksturm"
+  | "iconUpgradeArrow"
   | "menuRail"
   | "menuRailTile"
   | "moodMinus"
@@ -167,6 +177,70 @@ export const UI_FINAL_PATHS = {
     path: "icons/ui-final/btn-bauen-grey.png",
     native: { w: 320, h: 96 },
     aspectRatio: 3.333333,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnIconAngriffRed": {
+    file: "btn-icon-angriff-red.png",
+    path: "icons/ui-final/btn-icon-angriff-red.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnIconBierAmber": {
+    file: "btn-icon-bier-amber.png",
+    path: "icons/ui-final/btn-icon-bier-amber.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnIconSquareAmber": {
+    file: "btn-icon-square-amber.png",
+    path: "icons/ui-final/btn-icon-square-amber.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnIconSquareBlue": {
+    file: "btn-icon-square-blue.png",
+    path: "icons/ui-final/btn-icon-square-blue.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnIconSquareRed": {
+    file: "btn-icon-square-red.png",
+    path: "icons/ui-final/btn-icon-square-red.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnIconUltraBlue": {
+    file: "btn-icon-ultra-blue.png",
+    path: "icons/ui-final/btn-icon-ultra-blue.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnIconUpgradeBuilding": {
+    file: "btn-icon-upgrade-building.png",
+    path: "icons/ui-final/btn-icon-upgrade-building.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "btnIconUpgradePerson": {
+    file: "btn-icon-upgrade-person.png",
+    path: "icons/ui-final/btn-icon-upgrade-person.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
   },
@@ -525,6 +599,22 @@ export const UI_FINAL_PATHS = {
   "hooliganRed5": {
     file: "hooligan-red-5.png",
     path: "icons/ui-final/hooligan-red-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "iconAngriffBlocksturm": {
+    file: "icon-angriff-blocksturm.png",
+    path: "icons/ui-final/icon-angriff-blocksturm.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "iconUpgradeArrow": {
+    file: "icon-upgrade-arrow.png",
+    path: "icons/ui-final/icon-upgrade-arrow.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,

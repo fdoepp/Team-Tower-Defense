@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Personen-Rail — ohne Senden (Vorschlag C)</title>
+<style>
+  :root { --wood-deep: #3d2414; --ink: #1c120a; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #1a1a1a;
+    color: #f5f5f5;
+    padding: 16px;
+  }
+  h1 { font-size: 1.15rem; margin: 0 0 6px; }
+  h2 { font-size: 1rem; margin: 22px 0 8px; color: #fde68a; }
+  .note { color: #bbb; font-size: 0.85rem; max-width: 1100px; margin-bottom: 14px; line-height: 1.45; }
+  .nav a { color: #fde68a; margin-right: 14px; font-size: 0.85rem; }
+  .stage { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; }
+
+  .phone {
+    width: 844px;
+    height: 470px;
+    border-radius: 18px;
+    border: 3px solid #333;
+    box-shadow: 0 12px 40px rgba(0,0,0,.55);
+    display: grid;
+    grid-template-columns: 25.41% 1fr;
+    overflow: hidden;
+  }
+  .pitch-fake {
+    background:
+      radial-gradient(ellipse at 50% 20%, rgba(255,250,220,.15), transparent 50%),
+      repeating-linear-gradient(90deg, #2f6b2f 0 40px, #2a622a 40px 80px);
+    position: relative;
+  }
+  .pitch-fake::after {
+    content: "Stadion (Querformat)";
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    color: rgba(255,255,255,.35);
+    font-weight: 800;
+  }
+
+  .rail {
+    background: url("rail-tile.png") center / cover;
+    padding: 1%;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+    min-height: 0;
+  }
+  .banner {
+    background: linear-gradient(180deg, #6b4428, #4a2c18);
+    color: #f8e7c0;
+    font-weight: 900;
+    font-size: 12px;
+    text-align: center;
+    border-radius: 7px;
+    padding: 4px 6px;
+    border: 2px solid var(--wood-deep);
+    flex: 0 0 auto;
+  }
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .card {
+    flex: 1 1 0;
+    min-height: 0;
+    background: linear-gradient(180deg, #f7ebcf, #e5cf9f);
+    border: 2px solid var(--wood-deep);
+    border-radius: 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 1px 0 rgba(0,0,0,.25);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 4px 0 5px;
+    color: var(--ink);
+    overflow: hidden;
+  }
+  .title {
+    flex: 0 0 auto;
+    font-weight: 900;
+    font-size: 12px;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 1.5%;
+  }
+  .title .meta { font-weight: 700; color: #6b4e2e; }
+
+  /* Alle Karten dual — kein Senden */
+  .actions {
+    flex: 1 1 0;
+    display: grid;
+    grid-template-columns: 1% 48% 2% 48% 1%;
+    align-items: stretch;
+    min-height: 0;
+    width: 100%;
+  }
+  .actions .cost-btn:nth-child(1) { grid-column: 2; }
+  .actions .cost-btn:nth-child(2) { grid-column: 4; }
+
+  .cost-btn {
+    --wood-x: 6.41%;
+    --wood-y-top: 13.54%;
+    --wood-y-bot: 18.75%;
+    --inset: 2%;
+    appearance: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 52px;
+    border-radius: 8px;
+    background: transparent center / 100% 100% no-repeat;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .cost-btn.kaufen { background-image: url("btn-kaufen-chrome.png"); }
+  .cost-btn.upgrade { background-image: url("btn-upgrade-chrome.png"); }
+  .cost-btn .inner {
+    position: absolute;
+    left: calc(var(--wood-x) + var(--inset));
+    right: calc(var(--wood-x) + var(--inset));
+    top: calc(var(--wood-y-top) + var(--inset));
+    bottom: calc(var(--wood-y-bot) + var(--inset));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+    color: #fff;
+    font-weight: 900;
+    text-shadow: 0 1px 1px rgba(0,0,0,.55);
+    container-type: inline-size;
+    font-size: clamp(9px, 12cqw, 14px);
+  }
+  .cost-btn .txt .short { display: none; }
+  @container (max-width: 100px) {
+    .cost-btn .txt .full { display: none; }
+    .cost-btn .txt .short { display: inline; }
+  }
+  .cost-btn .pay {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2em;
+  }
+  .cost-btn .pay img {
+    width: 1.15em;
+    height: 1.15em;
+    object-fit: contain;
+  }
+
+  .zoom {
+    background: #2a2a2a;
+    border-radius: 12px;
+    padding: 12px;
+    width: min(560px, 100%);
+  }
+  .zoom .card { height: 110px; }
+  .legend { margin-top: 10px; font-size: 0.8rem; color: #ccc; line-height: 1.45; }
+  .legend code { color: #fde68a; }
+
+  .sq-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4%;
+    padding: 2%;
+    background: #2a2a2a;
+    border-radius: 12px;
+    max-width: 520px;
+  }
+  .sq-row figure {
+    margin: 0;
+    text-align: center;
+  }
+  .sq-row img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    image-rendering: auto;
+  }
+  .sq-row figcaption {
+    margin-top: 6px;
+    font-size: 0.78rem;
+    color: #ddd;
+  }
+  .sheet {
+    margin-top: 18px;
+    max-width: 960px;
+    width: 100%;
+    border-radius: 10px;
+    background: #fff;
+  }
+</style>
+</head>
+<body>
+  <h1>Personen-Rail — ohne Senden (Vorschlag C)</h1>
+  <p class="nav">
+    <a href="../personen-action-card/index.html">← Vorschlag A (mit Senden)</a>
+  </p>
+  <p class="note">
+    Alle vier Karten nur noch <strong>KAUFEN + UPGRADE</strong> (Dual-Grid
+    <code>1%·48%·2%·48%·1%</code>). Keine Senden-Buttons in der Personen-Rail.
+    Angriff/Blocksturm wandert auf separate Quadrat-Icon-Buttons (Holzrand, %-Skala).
+  </p>
+
+  <div class="stage">
+    <div class="phone">
+      <aside class="rail" aria-label="Personen ohne Senden">
+        <div class="banner">Personen</div>
+        <div class="cards">
+          <article class="card">
+            <div class="title">Fans <span class="meta">(Lvl.1, x5)</span></div>
+            <div class="actions">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-sec.png" alt="">12</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+            </div>
+          </article>
+          <article class="card">
+            <div class="title">Ultras <span class="meta">(Lvl.1, x3)</span></div>
+            <div class="actions">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-merch.png" alt="">12</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+            </div>
+          </article>
+          <article class="card">
+            <div class="title">Hooligans <span class="meta">(Lvl.1, x2)</span></div>
+            <div class="actions">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-bier.png" alt="">12</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+            </div>
+          </article>
+          <article class="card">
+            <div class="title">Ordner <span class="meta">(Lvl.1, x1)</span></div>
+            <div class="actions">
+              <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+              <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+            </div>
+          </article>
+        </div>
+      </aside>
+      <div class="pitch-fake"></div>
+    </div>
+
+    <div class="zoom">
+      <h2 style="margin-top:0;color:#fde68a">Detail · Ultras (nur Dual)</h2>
+      <article class="card">
+        <div class="title">Ultras <span class="meta">(Lvl.1, x3)</span></div>
+        <div class="actions">
+          <button class="cost-btn kaufen" type="button"><span class="inner"><span class="txt"><span class="full">KAUFEN</span><span class="short">KAUF</span></span><span class="pay"><img src="cur-merch.png" alt="">12</span></span></button>
+          <button class="cost-btn upgrade" type="button"><span class="inner"><span class="txt"><span class="full">UPGRADE</span><span class="short">UP</span></span><span class="pay"><img src="cur-gold.png" alt="">22</span></span></button>
+        </div>
+      </article>
+      <div class="legend">
+        Kein Triple-Grid mehr. Dual durchgängig:
+        <code>1% · 48% · 2% · 48% · 1%</code>. Live-Text Holz + <code>2%</code>.
+      </div>
+    </div>
+  </div>
+
+  <h2>Quadrat-Icon-Buttons (Holzrand, skalierbar)</h2>
+  <p class="note">
+    256×256, native AR 1:1, freigestellt. Icon füllt ~72–78&nbsp;% der Face-Fläche.
+    Holzrand ~7,5&nbsp;% der Kantenlänge. Blau = Ultra Lv5 · Amber = Bierstand Lv5 · Rot = Angriff/Blocksturm.
+  </p>
+  <div class="sq-row">
+    <figure>
+      <img src="../../icons/ui-final/pending/btn-icon-ultra-blue.png" alt="Blau Ultra Lv5">
+      <figcaption>btnIconUltraBlue</figcaption>
+    </figure>
+    <figure>
+      <img src="../../icons/ui-final/pending/btn-icon-bier-amber.png" alt="Amber Bier Lv5">
+      <figcaption>btnIconBierAmber</figcaption>
+    </figure>
+    <figure>
+      <img src="../../icons/ui-final/pending/btn-icon-angriff-red.png" alt="Rot Angriff">
+      <figcaption>btnIconAngriffRed</figcaption>
+    </figure>
+  </div>
+
+  <h2>Freigestelltes Angriff/Blocksturm-Symbol</h2>
+  <p class="note">Nur Symbol (ohne Holz) — für Compose in den roten Button / spätere Live-Overlays.</p>
+  <img class="sheet" src="../../icons/ui-final/pending/icon-angriff-blocksturm.png" alt="Angriff Blocksturm Icon" style="max-width:220px;background:repeating-conic-gradient(#ddd 0% 25%,#fff 0% 50%) 0 0/16px 16px">
+
+  <h2>Übersichtsblatt</h2>
+  <img class="sheet" src="square-icon-buttons-sheet.png" alt="Square icon buttons sheet">
+</body>
+</html>

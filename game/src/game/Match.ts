@@ -1213,79 +1213,88 @@ export class Match {
     }
   }
 
-  hooliganOrderReady(): boolean {
-    return (
-      this.currency.beer >= HOOLIGAN_ORDER_BEER &&
-      this.fans.some(
-        (f) =>
-          f.team === this.playerTeam &&
-          f.kind === "hooligans" &&
-          f.hp > 0 &&
-          f.state === "block",
-      )
-    );
-  }
-
-  tryHooliganOrder(): boolean {
-    const list = this.fans.filter(
+  /** Spieler-Einheiten einer Art, die im Block bereit zum Angriff sind. */
+  attackReadyList(kind: "ultras" | "hooligans"): FanUnit[] {
+    return this.fans.filter(
       (f) =>
         f.team === this.playerTeam &&
-        f.kind === "hooligans" &&
+        f.kind === kind &&
         f.hp > 0 &&
         f.state === "block",
     );
-    if (!list.length) {
+  }
+
+  attackReadyCount(kind: "ultras" | "hooligans"): number {
+    return this.attackReadyList(kind).length;
+  }
+
+  hooliganOrderReady(count: number | "all" = 1): boolean {
+    const ready = this.attackReadyCount("hooligans");
+    const n = count === "all" ? ready : Math.max(0, Math.floor(count));
+    if (n < 1 || ready < n) return false;
+    return this.currency.beer >= HOOLIGAN_ORDER_BEER * n;
+  }
+
+  /**
+   * Hooligans in den Gang schicken.
+   * @param count 1 = eine Figur; "all" = alle bereiten (Kosten × Anzahl)
+   */
+  tryHooliganOrder(count: number | "all" = 1): boolean {
+    const list = this.attackReadyList("hooligans");
+    const n = count === "all" ? list.length : Math.max(0, Math.floor(count));
+    if (n < 1 || list.length < n) {
       this.toast("Keine Hooligans im Block");
       return false;
     }
+    const cost = HOOLIGAN_ORDER_BEER * n;
     const door = doorPos(this.homeBlockOf(list[0]));
-    if (!this.spend("beer", HOOLIGAN_ORDER_BEER, door, "BIER")) {
-      this.toast(`Kampf braucht ${HOOLIGAN_ORDER_BEER} Bier`);
+    if (!this.spend("beer", cost, door, "BIER")) {
+      this.toast(`Kampf braucht ${cost} Bier`);
       return false;
     }
-    list[0].rangedPyro = false;
-    this.sendToGang(list[0]);
+    for (let i = 0; i < n; i++) {
+      list[i].rangedPyro = false;
+      this.sendToGang(list[i]);
+    }
     this.cd.hooliganOrder = 0;
-    this.toast("Hooligan → Angriff (Nahkampf)");
+    this.toast(
+      n === 1 ? "Hooligan → Angriff (Nahkampf)" : `${n} Hooligans → Nahkampf`,
+    );
     return true;
   }
 
-  pyroFightReady(): boolean {
-    return (
-      this.currency.merch >= PYRO_FIGHT_MERCH &&
-      this.fans.some(
-        (f) =>
-          f.team === this.playerTeam &&
-          f.kind === "ultras" &&
-          f.hp > 0 &&
-          f.state === "block",
-      )
-    );
+  pyroFightReady(count: number | "all" = 1): boolean {
+    const ready = this.attackReadyCount("ultras");
+    const n = count === "all" ? ready : Math.max(0, Math.floor(count));
+    if (n < 1 || ready < n) return false;
+    return this.currency.merch >= PYRO_FIGHT_MERCH * n;
   }
 
-  tryPyroFight(): boolean {
-    const list = this.fans.filter(
-      (f) =>
-        f.team === this.playerTeam &&
-        f.kind === "ultras" &&
-        f.hp > 0 &&
-        f.state === "block",
-    );
-    if (!list.length) {
+  /**
+   * Ultras mit Pyro in den Gang schicken.
+   * @param count 1 = eine Figur; "all" = alle bereiten (Kosten × Anzahl)
+   */
+  tryPyroFight(count: number | "all" = 1): boolean {
+    const list = this.attackReadyList("ultras");
+    const n = count === "all" ? list.length : Math.max(0, Math.floor(count));
+    if (n < 1 || list.length < n) {
       this.toast("Keine Ultras im Block");
       return false;
     }
+    const cost = PYRO_FIGHT_MERCH * n;
     const door = doorPos(this.homeBlockOf(list[0]));
-    if (!this.spend("merch", PYRO_FIGHT_MERCH, door, "FANARTIKEL")) {
-      this.toast(`Pyro-Kampf braucht ${PYRO_FIGHT_MERCH} Fanartikel`);
+    if (!this.spend("merch", cost, door, "FANARTIKEL")) {
+      this.toast(`Pyro-Kampf braucht ${cost} Fanartikel`);
       return false;
     }
-    const u = list[0];
-    u.rangedPyro = true;
-    this.applyUnitLevelStats(u);
-    this.sendToGang(u);
+    for (let i = 0; i < n; i++) {
+      const u = list[i];
+      u.rangedPyro = true;
+      this.applyUnitLevelStats(u);
+      this.sendToGang(u);
+    }
     this.cd.pyroFight = 0;
-    this.toast("Ultra → Pyro Wurf");
+    this.toast(n === 1 ? "Ultra → Pyro Wurf" : `${n} Ultras → Pyro Wurf`);
     return true;
   }
 

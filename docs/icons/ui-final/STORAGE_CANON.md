@@ -50,6 +50,29 @@ Alles, was sich ändert (Score, Minute, Momentum-%, Kosten, Level), gehört **ni
 
 Runtime: `.left-rail .person-card` + `.ar-cost-btn` — **nicht** neu nachbauen; Abstände und Chrome aus dieser Ablage.
 
+### Vorschlag C — ohne Senden (pending Freigabe)
+
+**Quelle:** `docs/mockups/personen-rail-no-senden/`
+
+| Regel | Wert |
+| --- | --- |
+| Layout | Alle Karten nur KAUF → UP (kein SENDEN) |
+| Dual-Grid | `1%·48%·2%·48%·1%` für Fans, Ultras, Hooligans, Ordner |
+| Triple-Grid | entfällt |
+| Angriff | separater Quadrat-Icon-Button (`btnIconAngriffRed`) |
+
+### Quadrat-Icon-Buttons (freigegeben)
+
+Holzrand + eine Face-Farbe, 256×256 AR 1:1, freigestellt. Icon füllt ~72–78 % der Face; Holz ~7,5 % der Kante. Runtime: `UI_ICONS.btnIcon*` / `iconAngriffBlocksturm`.
+
+| ID | Motiv |
+| --- | --- |
+| `btnIconUltraBlue` | Blau · Ultra Lv5 |
+| `btnIconBierAmber` | Bau-Amber · Bierstand Lv5 |
+| `btnIconAngriffRed` | Rot · Angriff/Blocksturm |
+| `btnIconSquareRed/Blue/Amber` | leere Face-Chrome |
+| `iconAngriffBlocksturm` | Symbol allein (freigestellt) |
+
 ## Gebäude-Rail (rechts — freigegeben 2026-10-09)
 
 | Asset | Rolle |

@@ -1,10 +1,12 @@
 # UI Final — Freigabe-Status
 
-**pending=30** · **released=124**
+**pending=21** · **released=143**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
 Ablage-Regel: [`STORAGE_CANON.md`](./STORAGE_CANON.md) — Chrome vs Live-Werte. Scoreboard-Slots: [`scoreboard-slots.json`](./scoreboard-slots.json).
+
+Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../mockups/personen-rail-no-senden/).
 
 ## Pending
 
@@ -31,22 +33,19 @@ Ablage-Regel: [`STORAGE_CANON.md`](./STORAGE_CANON.md) — Chrome vs Live-Werte.
 138. `slotEmptyPerspBlue` — `slot-empty-persp-blue.png`
 139. `slotEmptyPerspRed` — `slot-empty-persp-red.png`
 
-### live-fx (Zuwachs / Abnahme / Wartezeit) — Freigabe offen
-
-144. `currencyGoldPlus` — `currency-gold-plus.png` — Gold erzeugt
-145. `currencyGoldMinus` — `currency-gold-minus.png` — Gold verbraucht
-146. `currencyBierPlus` — `currency-bier-plus.png` — Bier erzeugt
-147. `currencyBierMinus` — `currency-bier-minus.png` — Bier verbraucht
-148. `currencyFanartikelPlus` — `currency-fanartikel-plus.png` — Fanartikel erzeugt
-149. `currencyFanartikelMinus` — `currency-fanartikel-minus.png` — Fanartikel verbraucht
-150. `currencySicherheitPlus` — `currency-sicherheit-plus.png` — Sicherheit erzeugt
-151. `currencySicherheitMinus` — `currency-sicherheit-minus.png` — Sicherheit verbraucht
-152. `moodPlus` — `mood-plus.png` — Stimmung/Momentum ↑
-153. `moodMinus` — `mood-minus.png` — Stimmung/Momentum ↓
-154. `waitAnger` — `wait-anger.png` — Wutsmiley Wartezeit
-155. `waitAngerHot` — `wait-anger-hot.png` — Wutsmiley Wartezeit (stark)
 
 ## Released (diese Runde)
+
+- **163** `btnIconUpgradePerson` — `btn-icon-upgrade-person.png` — **Quadrat blau · Ultra + Upgrade-Pfeil freigegeben**
+- **164** `btnIconUpgradeBuilding` — `btn-icon-upgrade-building.png` — **Quadrat Bau-Amber · Bier + Upgrade-Pfeil freigegeben**
+- **165** `iconUpgradeArrow` — `icon-upgrade-arrow.png` — **Upgrade-Pfeil freigestellt freigegeben**
+- **156** `btnIconUltraBlue` — `btn-icon-ultra-blue.png` — **Quadrat blau · Ultra Lv5 freigegeben**
+- **157** `btnIconBierAmber` — `btn-icon-bier-amber.png` — **Quadrat Bau-Farbe · Bierstand Lv5 freigegeben**
+- **158** `btnIconAngriffRed` — `btn-icon-angriff-red.png` — **Quadrat rot · Angriff/Blocksturm freigegeben**
+- **159** `btnIconSquareRed` — `btn-icon-square-red.png` — **Quadrat rot Chrome freigegeben**
+- **160** `btnIconSquareBlue` — `btn-icon-square-blue.png` — **Quadrat blau Chrome freigegeben**
+- **161** `btnIconSquareAmber` — `btn-icon-square-amber.png` — **Quadrat amber Chrome freigegeben**
+- **162** `iconAngriffBlocksturm` — `icon-angriff-blocksturm.png` — **Angriff/Blocksturm-Symbol freigegeben**
 - **117** `currencyGold` — `currency-gold.png` — **Währung + Counter freigegeben**
 - **115** `currencyBier` — `currency-bier.png` — **Währung + Counter freigegeben**
 - **116** `currencyFanartikel` — `currency-fanartikel.png` — **Währung + Counter freigegeben**
