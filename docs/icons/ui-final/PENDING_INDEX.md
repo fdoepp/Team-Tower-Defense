@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=33** · **released=140**
+**pending=30** · **released=143**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -48,15 +48,14 @@ Ablage-Regel: [`STORAGE_CANON.md`](./STORAGE_CANON.md) — Chrome vs Live-Werte.
 
 ### live-fx (Kampf) — Freigabe offen
 
-161. `fxPyroShotBlue` — `fx-pyro-shot-blue.png` — Pyro ein Ende brennt, blauer Rauch (KSC)
-162. `fxPyroShotRed` — `fx-pyro-shot-red.png` — Pyro ein Ende brennt, roter Rauch (VfB)
-163. `fxPyroShotGrey` — `fx-pyro-shot-grey.png` — Pyro ein Ende brennt, grauer Rauch (Neutral)
-
 ## Released (diese Runde)
 - **156** `fxFistBlue` — `fx-fist-blue.png` — **Nahkampf Faust blau freigegeben**
 - **157** `fxFistRed` — `fx-fist-red.png` — **Nahkampf Faust rot freigegeben**
 - **158** `fxFistGrey` — `fx-fist-grey.png` — **Nahkampf Faust grau freigegeben**
 - **159** `fxHeal` — `fx-heal.png` — **Heilungssymbol freigegeben**
+- **161** `fxPyroShotBlue` — `fx-pyro-shot-blue.png` — **Pyro blauer Rauch freigegeben**
+- **162** `fxPyroShotRed` — `fx-pyro-shot-red.png` — **Pyro roter Rauch freigegeben**
+- **163** `fxPyroShotGrey` — `fx-pyro-shot-grey.png` — **Pyro grauer Rauch freigegeben**
 
 - **117** `currencyGold` — `currency-gold.png` — **Währung + Counter freigegeben**
 - **115** `currencyBier` — `currency-bier.png` — **Währung + Counter freigegeben**
