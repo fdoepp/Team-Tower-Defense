@@ -36,6 +36,7 @@ import {
   getIcon,
   type ToyAnimMode,
   baustelleSchildIconPath,
+  pyroShotIconPath,
   slotEmptyIconPath,
   standarteSizePx,
   standIconPath,
@@ -456,21 +457,30 @@ function drawPyroShots(
   for (const p of m.pyroShots) {
     const x = p.x * w;
     const y = p.y * h;
-    const glow = ctx.createRadialGradient(x, y, 1, x, y, 10);
-    glow.addColorStop(0, "#fff7ed");
-    glow.addColorStop(0.35, "#fb923c");
-    glow.addColorStop(1, "rgba(251,146,60,0)");
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(x, y, 8, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#1c1917";
-    ctx.fillRect(x - 1.5, y - 2, 3, 10);
-    ctx.fillStyle = "rgba(148,163,184,0.45)";
-    ctx.beginPath();
-    ctx.ellipse(x - 4, y - 6, 7, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
+    const life = 1 - p.t / Math.max(0.01, p.life);
+    const ih = Math.max(26, Math.min(w, h) * 0.058) * (0.92 + 0.12 * life);
+    const ang = Math.atan2(p.vy * h, p.vx * w);
+    const src = pyroShotIconPath(teamColor(p.team));
+    ctx.save();
+    ctx.translate(x, y);
+    // Icon burns at the tip (upper-right in asset); align tip with velocity.
+    ctx.rotate(ang - Math.PI / 4);
+    ctx.globalAlpha = 0.75 + 0.25 * life;
+    if (!drawIcon(ctx, src, -ih / 2, -ih / 2, ih, ih, 0.02)) {
+      const glow = ctx.createRadialGradient(0, 0, 1, 0, 0, 10);
+      glow.addColorStop(0, "#fff7ed");
+      glow.addColorStop(0.35, "#fb923c");
+      glow.addColorStop(1, "rgba(251,146,60,0)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#1c1917";
+      ctx.fillRect(-1.5, -2, 3, 10);
+    }
+    ctx.restore();
   }
+  ctx.globalAlpha = 1;
 }
 
 function drawSlots(
@@ -935,6 +945,7 @@ function drawMannchen(
       facing,
       m.realElapsed + phase,
       anim.propI,
+      teamColor(f.team),
     );
   }
   if (!drew) {
