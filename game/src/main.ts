@@ -1092,13 +1092,14 @@ function renderMatchScreen(): void {
     closeBuildRail();
     syncOverlay();
   });
-  app.querySelector("#person-rail-close")?.addEventListener("click", () => {
+  // Personen/Angriff: Schließen über Delegation (zuverlässig trotz Rail-Swap)
+  railSlot.addEventListener("click", (e) => {
+    const t = (e.target as HTMLElement | null)?.closest?.("button.rail-close");
+    if (!t || !railSlot.contains(t)) return;
+    if (t.id === "build-rail-close") return; // eigener Handler
     closeActionRail();
     syncOverlay();
-  });
-  app.querySelector("#attack-rail-close")?.addEventListener("click", () => {
-    closeActionRail();
-    syncOverlay();
+    requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
   });
 
   app.querySelectorAll<HTMLButtonElement>(".rail-tool-btn").forEach((btn) => {
