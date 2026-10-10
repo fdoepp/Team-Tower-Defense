@@ -167,6 +167,166 @@ def checker(w: int, h: int, s: int = 16) -> Image.Image:
     return img
 
 
+# Upgrade arrow — thick purple, no white tip dot, no dark outline
+PURPLE_L = (186, 120, 255, 255)
+PURPLE_R = (132, 58, 220, 255)
+
+
+def make_upgrade_arrow(size: int = SIZE) -> Image.Image:
+    """Freigestellter Upgrade-Pfeil: ohne Spitzenpunkt, ohne dunklen Rand."""
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    cx = size / 2
+    top = size * 0.12
+    bot = size * 0.88
+    head_bot = size * 0.46
+    head_half = size * 0.38
+    shaft_half = size * 0.16
+    tip_x, tip_y = cx, top
+    r = shaft_half
+
+    shadow = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow)
+    pts_s = [
+        (tip_x + 2, tip_y + 5),
+        (cx - head_half + 2, head_bot + 5),
+        (cx - shaft_half + 2, head_bot + 5),
+        (cx - shaft_half + 2, bot + 5),
+        (cx + shaft_half + 2, bot + 5),
+        (cx + shaft_half + 2, head_bot + 5),
+        (cx + head_half + 2, head_bot + 5),
+    ]
+    sd.polygon(pts_s, fill=(40, 10, 60, 85))
+    sd.ellipse(
+        (cx - r + 2, bot - r + 5, cx + r + 2, bot + r * 0.15 + 5),
+        fill=(40, 10, 60, 85),
+    )
+    canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(3.2)))
+
+    body = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    bd = ImageDraw.Draw(body)
+    pts = [
+        (tip_x, tip_y),
+        (cx - head_half, head_bot),
+        (cx - shaft_half, head_bot),
+        (cx - shaft_half, bot),
+        (cx + shaft_half, bot),
+        (cx + shaft_half, head_bot),
+        (cx + head_half, head_bot),
+    ]
+    bd.polygon(pts, fill=PURPLE_R)
+    bd.ellipse((cx - r, bot - r, cx + r, bot + r * 0.15), fill=PURPLE_R)
+
+    left = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    ld = ImageDraw.Draw(left)
+    ld.polygon(pts, fill=PURPLE_L)
+    ld.ellipse((cx - r, bot - r, cx + r, bot + r * 0.15), fill=PURPLE_L)
+    mask = Image.new("L", (size, size), 0)
+    ImageDraw.Draw(mask).rectangle((0, 0, int(cx), size), fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(2))
+    body = Image.composite(left, body, mask)
+
+    hi = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    hd = ImageDraw.Draw(hi)
+    hd.line(
+        [(tip_x, tip_y + 6), (cx - head_half * 0.5, head_bot - 6)],
+        fill=(255, 230, 255, 65),
+        width=3,
+    )
+    body = Image.alpha_composite(body, hi.filter(ImageFilter.GaussianBlur(1.2)))
+    canvas.alpha_composite(body)
+
+    arr = np.array(canvas)
+    dark = (arr[:, :, :3].max(axis=2) < 50) & (arr[:, :, 3] > 0)
+    arr[dark, 3] = 0
+    return Image.fromarray(arr, "RGBA")
+
+
+def paste_arrow_upper_right(
+    btn: Image.Image,
+    arrow: Image.Image,
+    face_frac: float = 0.34,
+) -> Image.Image:
+    """Arrow centered in upper-right face quadrant, foreground over build icon."""
+    out = btn.copy().convert("RGBA")
+    size = out.width
+    fi = int(round(size * 0.075))
+    face0, face1 = fi, size - fi
+    face = face1 - face0
+    qx0, qy0 = face0 + face // 2, face0
+    qw = qh = face // 2
+    qcx, qcy = qx0 + qw // 2, qy0 + qh // 2
+
+    ar = arrow.convert("RGBA")
+    x0, y0, x1, y1 = opaque_bbox(ar)
+    cropped = ar.crop((x0, y0, x1, y1))
+    target = max(8, int(round(face * face_frac)))
+    cw, ch = cropped.size
+    scale = target / max(cw, ch)
+    nw = max(1, int(round(cw * scale)))
+    nh = max(1, int(round(ch * scale)))
+    resized = cropped.resize((nw, nh), Image.Resampling.LANCZOS)
+    ox = qcx - nw // 2
+    oy = qcy - nh // 2 - int(qh * 0.03)
+
+    a = resized.split()[-1]
+    sh = Image.new("RGBA", resized.size, (30, 10, 50, 0))
+    sh.putalpha(a.point(lambda v: int(v * 0.4)))
+    out.alpha_composite(sh.filter(ImageFilter.GaussianBlur(2.2)), (ox + 2, oy + 3))
+    out.alpha_composite(resized, (ox, oy))
+    return out
+
+
+def make_upgrade_menu_buttons() -> None:
+    """Pending Freigabe: person/building upgrade squares + freigestellter Pfeil."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    MOCK.mkdir(parents=True, exist_ok=True)
+    ART.mkdir(parents=True, exist_ok=True)
+
+    arrow = make_upgrade_arrow()
+    arrow.save(OUT / "icon-upgrade-arrow.png")
+
+    # Same center icons as the released Bau-buttons
+    person_base = Image.open(ROOT / "game/public/icons/ui-final/btn-icon-ultra-blue.png")
+    building_base = Image.open(ROOT / "game/public/icons/ui-final/btn-icon-bier-amber.png")
+    btn_person = paste_arrow_upper_right(person_base, arrow)
+    btn_building = paste_arrow_upper_right(building_base, arrow)
+    btn_person.save(OUT / "btn-icon-upgrade-person.png")
+    btn_building.save(OUT / "btn-icon-upgrade-building.png")
+
+    pad, cell, label_h = 18, 200, 30
+    cols = 3
+    W = pad + cols * (cell + pad)
+    H = 36 + pad + cell + label_h + pad
+    sheet = Image.new("RGBA", (W, H), (40, 42, 48, 255))
+    d = ImageDraw.Draw(sheet)
+    d.text(
+        (pad, 8),
+        "Upgrade: Bau-Icon mittig · Pfeil UR-Quadrant · o. Punkt/Rand",
+        fill=(255, 255, 255, 255),
+    )
+    y0 = 36
+    for i, (im, lab) in enumerate(
+        [
+            (btn_person, "Personen-Upgrade"),
+            (btn_building, "Gebäude-Upgrade"),
+            (arrow, "Pfeil freigestellt"),
+        ]
+    ):
+        x = pad + i * (cell + pad)
+        if im is arrow:
+            bg = checker(cell, cell, 10)
+            sheet.paste(bg, (x, y0))
+            ic = im.resize((cell, cell), Image.Resampling.LANCZOS)
+            sheet.paste(ic, (x, y0), ic)
+        else:
+            ic = im.resize((cell, cell), Image.Resampling.LANCZOS)
+            sheet.paste(ic, (x, y0), ic)
+        d.text((x + 2, y0 + cell + 6), lab, fill=(230, 230, 230, 255))
+    sheet.save(ART / "upgrade-menu-buttons-sheet.png")
+    sheet.save(MOCK / "upgrade-menu-buttons-sheet.png")
+    print("upgrade buttons →", OUT)
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     MOCK.mkdir(parents=True, exist_ok=True)
@@ -220,6 +380,8 @@ def main() -> None:
     sheet.save(sheet_path)
     sheet.save(MOCK / "square-icon-buttons-sheet.png")
     print("sheet", sheet_path)
+
+    make_upgrade_menu_buttons()
 
 
 if __name__ == "__main__":

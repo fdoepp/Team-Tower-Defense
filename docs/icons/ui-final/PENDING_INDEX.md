@@ -36,9 +36,9 @@ Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../
 
 ### upgrade-menu buttons (Freigabe offen)
 
-163. `btnIconUpgradePerson` — `btn-icon-upgrade-person.png` — Blau · dicker lila Upgrade-Pfeil
-164. `btnIconUpgradeBuilding` — `btn-icon-upgrade-building.png` — Bau-Amber · dicker lila Upgrade-Pfeil
-165. `iconUpgradeArrow` — `icon-upgrade-arrow.png` — Upgrade-Pfeil freigestellt
+163. `btnIconUpgradePerson` — `btn-icon-upgrade-person.png` — Blau · Ultra wie Baubutton mittig · lila Pfeil UR-Quadrant Vordergrund
+164. `btnIconUpgradeBuilding` — `btn-icon-upgrade-building.png` — Bau-Amber · Bier wie Baubutton mittig · lila Pfeil UR-Quadrant Vordergrund
+165. `iconUpgradeArrow` — `icon-upgrade-arrow.png` — Lila Pfeil freigestellt (ohne Spitzenpunkt, ohne dunklen Rand)
 
 ## Released (diese Runde)
 

@@ -6193,7 +6193,7 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-10T09:14:30.091274+00:00"
+        "checkedAt": "2026-10-10T09:44:50.874714+00:00"
       },
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     },
@@ -6229,7 +6229,7 @@
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-10T09:14:30.295938+00:00"
+        "checkedAt": "2026-10-10T09:44:51.014142+00:00"
       },
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     },
@@ -6253,19 +6253,19 @@
           "h": 256
         },
         "aspectRatio": 1,
-        "alphaCoverage": 0.7665,
+        "alphaCoverage": 0.7292,
         "opaqueCornerRatio": 0,
         "contentBBox": [
           30,
-          35,
-          230,
-          228
+          30,
+          225,
+          233
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-10T09:14:30.496470+00:00"
+        "checkedAt": "2026-10-10T09:44:51.137641+00:00"
       },
       "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
     }
