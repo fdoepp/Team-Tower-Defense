@@ -37,6 +37,13 @@ export type UiFinalId =
   | "fanRed3"
   | "fanRed4"
   | "fanRed5"
+  | "fxFistBlue"
+  | "fxFistGrey"
+  | "fxFistRed"
+  | "fxHeal"
+  | "fxPyroShotBlue"
+  | "fxPyroShotGrey"
+  | "fxPyroShotRed"
   | "hooliganBlue1"
   | "hooliganBlue2"
   | "hooliganBlue3"
@@ -405,6 +412,62 @@ export const UI_FINAL_PATHS = {
   "fanRed5": {
     file: "fan-red-5.png",
     path: "icons/ui-final/fan-red-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fxFistBlue": {
+    file: "fx-fist-blue.png",
+    path: "icons/ui-final/fx-fist-blue.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fxFistGrey": {
+    file: "fx-fist-grey.png",
+    path: "icons/ui-final/fx-fist-grey.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fxFistRed": {
+    file: "fx-fist-red.png",
+    path: "icons/ui-final/fx-fist-red.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fxHeal": {
+    file: "fx-heal.png",
+    path: "icons/ui-final/fx-heal.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fxPyroShotBlue": {
+    file: "fx-pyro-shot-blue.png",
+    path: "icons/ui-final/fx-pyro-shot-blue.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fxPyroShotGrey": {
+    file: "fx-pyro-shot-grey.png",
+    path: "icons/ui-final/fx-pyro-shot-grey.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "fxPyroShotRed": {
+    file: "fx-pyro-shot-red.png",
+    path: "icons/ui-final/fx-pyro-shot-red.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,

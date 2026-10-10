@@ -5208,6 +5208,265 @@
       "approvedBy": "user",
       "approvedAt": "2026-10-10T06:33:29.001Z",
       "notes": "Live-FX: Wutsmiley bei langer Wartezeit (stark). Freigestellt 256²."
+    },
+    "fxFistBlue": {
+      "id": "fxFistBlue",
+      "file": "fx-fist-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-fist-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6655,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          30,
+          38,
+          234,
+          210
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:03:07.116188+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:03:07.130Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxFistRed": {
+      "id": "fxFistRed",
+      "file": "fx-fist-red.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-fist-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7263,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          28,
+          46,
+          225,
+          201
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:03:07.296382+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:03:07.331Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxFistGrey": {
+      "id": "fxFistGrey",
+      "file": "fx-fist-grey.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-fist-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6944,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          21,
+          50,
+          234,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:03:07.570537+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:03:07.595Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxHeal": {
+      "id": "fxHeal",
+      "file": "fx-heal.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-heal.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5769,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          26,
+          21,
+          229,
+          231
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:03:07.762902+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:03:07.781Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxPyroShotBlue": {
+      "id": "fxPyroShotBlue",
+      "file": "fx-pyro-shot-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8504,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          14,
+          19,
+          241,
+          235
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:08:45.405034+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:08:45.419Z",
+      "notes": "Pyro: ein Ende brennt, blauer Teamrauch. Freigestellt 256²."
+    },
+    "fxPyroShotRed": {
+      "id": "fxPyroShotRed",
+      "file": "fx-pyro-shot-red.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8289,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          14,
+          20,
+          242,
+          233
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:08:45.552109+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:08:45.566Z",
+      "notes": "Pyro: ein Ende brennt, roter Teamrauch. Freigestellt 256²."
+    },
+    "fxPyroShotGrey": {
+      "id": "fxPyroShotGrey",
+      "file": "fx-pyro-shot-grey.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8161,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          14,
+          27,
+          241,
+          227
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:08:45.703504+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:08:45.716Z",
+      "notes": "Pyro: ein Ende brennt, grauer Teamrauch. Freigestellt 256²."
     }
   },
   "pending": {
