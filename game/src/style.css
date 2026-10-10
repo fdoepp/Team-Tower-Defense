@@ -228,8 +228,8 @@ select {
    left 21% · pitch 64% · right 15% (build-open). */
 .match-shell.matchday {
   /* +10% left / +30% right vs 21%/15% Rahmen-Baseline */
-  --rail-left-w: 23.1%;
-  --rail-right-w: 19.5%;
+  --rail-left-w: 25.41%;
+  --rail-right-w: 29.25%;
   --rail-w: var(--rail-left-w);
   --rail-btn-h: clamp(42px, 10vh, 54px);
   --rail-icon: clamp(40px, 7vh, 52px);

@@ -429,15 +429,7 @@ function drawGang(
   const px = left + span * m.linePlayer;
   const ax = left + span * m.lineAi;
 
-  // Soft open concourse — light territory wash only
-  const pEdge = Math.min(px, ax);
-  const aEdge = Math.max(px, ax);
-  ctx.fillStyle = "rgba(59,130,246,0.18)";
-  ctx.fillRect(left, y, Math.max(0, pEdge - left), gh);
-  ctx.fillStyle = "rgba(239,68,68,0.18)";
-  ctx.fillRect(aEdge, y, left + span - aEdge, gh);
-
-  // Front lines (thicker so territory edge is obvious)
+  // Front lines mark territory — no gang color wash
   ctx.save();
   ctx.setLineDash([7, 5]);
   ctx.lineWidth = 3.5;
@@ -718,12 +710,13 @@ function drawBuilding(
   // sets foot position + size from the VP facade math — no icon warp/yaw.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
-  let size = Math.min(bw, bh) * 0.98 * 1.5;
+  // Gebäude ×1.2 vs baseline (20% smaller than prior ×1.5)
+  const BUILD_SCALE = 1.2;
+  let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    // Gebäude ×1.5 — besser klickbar/erkennbar
     facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, {
       widthScale: 1.35,
       heightScale: 1.92,
@@ -744,16 +737,15 @@ function drawBuilding(
     const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
     const topY = (facade.tl.y + facade.tr.y) / 2;
     const facadeH = Math.max(1, footY - topY);
-    // Facade math drives size; ×1.5 vs prior baseline
-    size = Math.max(48, Math.min(baseW * 1.05, facadeH) * 1.5);
+    size = Math.max(40, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
     ctx.fillStyle = "rgba(15,23,42,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
     ctx.fill();
     drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
-      t: m.realElapsed,
-      phase: s.blockId * 1.7 + s.index * 0.9,
-      mode: "idle",
+      t: 0,
+      phase: 0,
+      mode: "planted",
       facing: 1,
       hop: 0,
     });
@@ -764,9 +756,9 @@ function drawBuilding(
     ctx.ellipse(cx, footY + size * 0.04, size * 0.3, size * 0.075, 0, 0, Math.PI * 2);
     ctx.fill();
     drew = drawToyIcon(ctx, iconSrc, cx, footY, size, {
-      t: m.realElapsed,
-      phase: s.blockId * 1.7 + s.index * 0.9,
-      mode: "idle",
+      t: 0,
+      phase: 0,
+      mode: "planted",
       facing: 1,
       hop: 0,
     });
@@ -1505,15 +1497,26 @@ function drawSteward(
   ctx.fillRect(x - bw / 2, y + s * 1.25, bw * Math.max(0, f.hp / f.maxHp), 3);
 }
 
-/** Map float labels → wallet currency icon (no +/- button assets in UI Final). */
-function floatCurrencyIcon(text: string): string | null {
+/** Map float labels → freigestellte Zuwachs/Abnahme-Icons. */
+function floatCurrencyIcon(text: string, good: boolean): string | null {
   const t = text.toLowerCase();
-  if (t.includes("bier")) return UI_ICONS.currencyBier;
-  if (t.includes("sicherheit") || t.includes("sec")) return UI_ICONS.currencySicherheit;
-  if (t.includes("fanartikel") || t.includes("merch") || t.includes("shop")) {
-    return UI_ICONS.currencyFanartikel;
+  if (t.includes("bier") || t.includes("fass")) {
+    return good ? UI_ICONS.currencyBierPlus : UI_ICONS.currencyBierMinus;
   }
-  if (t.includes("€") || t.includes("gold")) return UI_ICONS.currencyGold;
+  if (t.includes("sicherheit") || t.includes("sec")) {
+    return good ? UI_ICONS.currencySicherheitPlus : UI_ICONS.currencySicherheitMinus;
+  }
+  if (t.includes("fanartikel") || t.includes("merch") || t.includes("shop")) {
+    return good
+      ? UI_ICONS.currencyFanartikelPlus
+      : UI_ICONS.currencyFanartikelMinus;
+  }
+  if (t.includes("€") || t.includes("gold")) {
+    return good ? UI_ICONS.currencyGoldPlus : UI_ICONS.currencyGoldMinus;
+  }
+  if (t.includes("stimmung") || t.includes("mood") || t.includes("momentum")) {
+    return good ? UI_ICONS.moodPlus : UI_ICONS.moodMinus;
+  }
   return null;
 }
 
@@ -1535,7 +1538,7 @@ function drawFloats(
     ctx.fillStyle = f.good ? "#6bcb77" : "#f87171";
     const x = f.x * w;
     const y = f.y * h;
-    const icon = floatCurrencyIcon(f.text);
+    const icon = floatCurrencyIcon(f.text, f.good);
     if (icon) {
       const ih = fontPx * 1.15;
       const tw = ctx.measureText(f.text).width;
@@ -1621,6 +1624,22 @@ function drawMoodParticles(
     } else if (p.kind === "mug") {
       const ih = Math.max(10, p.size * h * 2.2);
       drawIcon(ctx, UI_ICONS.currencyBier, px - ih / 2, py - ih / 2, ih, ih, 0.02);
+    } else if (
+      p.kind === "waitAnger" ||
+      p.kind === "waitAngerHot" ||
+      p.kind === "moodPlus" ||
+      p.kind === "moodMinus"
+    ) {
+      const src =
+        p.kind === "waitAnger"
+          ? UI_ICONS.waitAnger
+          : p.kind === "waitAngerHot"
+            ? UI_ICONS.waitAngerHot
+            : p.kind === "moodPlus"
+              ? UI_ICONS.moodPlus
+              : UI_ICONS.moodMinus;
+      const ih = Math.max(14, p.size * h * 2.4);
+      drawIcon(ctx, src, px - ih / 2, py - ih / 2, ih, ih, 0.02);
     } else {
       ctx.fillStyle = p.color;
       ctx.beginPath();

@@ -6,11 +6,11 @@
     "h": 900
   },
   "background": "game/public/assets/stadium-floodlight-derby-bg.jpg",
-  "notes": "Verbindliche Rahmenlogik. Rails: left +10% / right +30% vs 21%/15%. Scoreboard ohne Live-Wimpel. Far-slots ≥0.5% Gap. Gebäude ×1.5. Gang: mittlere 80% gestaffelt. Stand-Wait-Radius. Tor-FX: Fans Konfetti / Ultras Rauch / Hools Bier|Rakete.",
+  "notes": "Verbindliche Rahmenlogik. Rails: left +10% / right +50% vs 23.1%/19.5%. Scoreboard ohne Live-Wimpel. Far-slots ≥0.5% Gap. Gebäude ×1.2 (fixiert, kein Idle-Wobble). Gang ohne Territorium-Wash. Stand-Wait-Radius + Queue-Wutsmileys. Grau-Starter ~20 Fans shoppen. Tor-FX: Fans Konfetti / Ultras Rauch / Hools Bier|Rakete.",
   "rails": {
-    "left_w": 0.231,
-    "right_w": 0.195,
-    "pitch_w": 0.574
+    "left_w": 0.2541,
+    "right_w": 0.2925,
+    "pitch_w": 0.4534
   },
   "hud": {
     "top": 0.03,
@@ -34,7 +34,7 @@
         "currencyFanartikel",
         "currencySicherheit"
       ],
-      "plusMinusButtonsInDb": false
+      "plusMinusButtonsInDb": true
     }
   },
   "scene": {
@@ -46,9 +46,10 @@
     "combat_y1": 0.86,
     "slot_bot_y": 0.975,
     "far_slot_gap_of_width": 0.005,
-    "building_scale": 1.5,
+    "building_scale": 1.2,
     "gang_lane_use": 0.8,
-    "stand_wait_radius": 0.032
+    "stand_wait_radius": 0.032,
+    "gang_territory_wash": false
   },
   "personCard": {
     "railInset": 0.01,
@@ -69,8 +70,8 @@
     "unitTechLevelChrome": true
   },
   "tokensFlat": {
-    "left_rail_w": 0.231,
-    "right_rail_w": 0.195,
+    "left_rail_w": 0.2541,
+    "right_rail_w": 0.2925,
     "hud_top": 0.03,
     "scoreboard_max_w_of_pitch": 0.598,
     "scoreboard_h": 0.1725,
@@ -87,9 +88,9 @@
     "combat_y0": 0.695,
     "combat_y1": 0.86,
     "slot_bot_y": 0.975,
-    "pitch_w": 0.574,
+    "pitch_w": 0.4534,
     "rail_inset": 0.01,
     "far_slot_gap": 0.005,
-    "building_scale": 1.5
+    "building_scale": 1.2
   }
 }

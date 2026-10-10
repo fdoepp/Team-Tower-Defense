@@ -186,7 +186,17 @@ export type PyroProjectile = {
 };
 
 export type MoodParticle = {
-  kind: "note" | "smoke" | "spark" | "flare" | "mug" | "rocket";
+  kind:
+    | "note"
+    | "smoke"
+    | "spark"
+    | "flare"
+    | "mug"
+    | "rocket"
+    | "waitAnger"
+    | "waitAngerHot"
+    | "moodPlus"
+    | "moodMinus";
   x: number;
   y: number;
   vx: number;
@@ -232,6 +242,8 @@ export class Match {
   aiAcc = 0;
   defectAcc = 0;
   buildPulse = 0;
+  /** Cooldown before next mood +/− float (heim / gäste) */
+  moodFloatCd = { heim: 0, gast: 0 };
   captureAcc: Record<string, number> = {};
   aiGold = START_GOLD + AI_START_GOLD_BONUS;
   aiBuildRot = 0;
@@ -336,11 +348,9 @@ export class Match {
     awayKinds.forEach((kind, i) => {
       this.fans.push(this.makeFan(kind, this.aiTeam, GAST_BLOCK, i));
     });
-    // Neutralblock: ¾ der Plätze besetzt (9/12), gemischt
-    for (let i = 0; i < 9; i++) {
-      const kind: FanKind =
-        i % 3 === 0 ? "normalos" : i % 3 === 1 ? "hooligans" : "ultras";
-      this.fans.push(this.makeFan(kind, "neutral", NEUTRAL_BLOCK, i));
+    // Neutralblock: ~20 Fans (nur Normalos) — shoppen an beliebigen Ständen
+    for (let i = 0; i < 20; i++) {
+      this.fans.push(this.makeFan("normalos", "neutral", NEUTRAL_BLOCK, i));
     }
 
     // Standarten start at cemented floors (grey mid buffer stays open)
@@ -365,6 +375,9 @@ export class Match {
     const beerIv = visitInterval(kind, "beer", level);
     const shopIv = visitInterval(kind, "shop", level);
     const maxHp = this.baseMaxHp(kind, level, false);
+    // Grey Fans: leave every 20–30s to shop at any Bier/Fanshop
+    const neutralTrip =
+      team === "neutral" ? 20 + Math.random() * 10 : null;
     return {
       id: uid(),
       kind,
@@ -377,13 +390,17 @@ export class Match {
       maxHp,
       thirst: 25 + Math.random() * 25,
       satisfiedUntil:
-        beerIv == null
+        neutralTrip != null
           ? 1e9
-          : this.realElapsed + beerIv * (0.35 + Math.random() * 0.55),
+          : beerIv == null
+            ? 1e9
+            : this.realElapsed + beerIv * (0.35 + Math.random() * 0.55),
       shopUntil:
-        shopIv == null
-          ? 1e9
-          : this.realElapsed + shopIv * (0.35 + Math.random() * 0.55),
+        neutralTrip != null
+          ? this.realElapsed + neutralTrip
+          : shopIv == null
+            ? 1e9
+            : this.realElapsed + shopIv * (0.35 + Math.random() * 0.55),
       aggro: kind === "hooligans" ? 40 : kind === "ultras" ? 30 : 10,
       lean: 0,
       captureProg: 0,
@@ -409,6 +426,8 @@ export class Match {
       _wanderTx: undefined,
       _wanderTy: undefined,
       _wanderCd: 0.2 + Math.random() * 1.2,
+      _standArriveAt: undefined,
+      _angerCd: 0,
     };
   }
 
@@ -1425,6 +1444,10 @@ export class Match {
     for (const k of Object.keys(this.cd) as (keyof typeof this.cd)[]) {
       if (this.cd[k] > 0) this.cd[k] = Math.max(0, this.cd[k] - step);
     }
+    if (this.moodFloatCd.heim > 0)
+      this.moodFloatCd.heim = Math.max(0, this.moodFloatCd.heim - step);
+    if (this.moodFloatCd.gast > 0)
+      this.moodFloatCd.gast = Math.max(0, this.moodFloatCd.gast - step);
     if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - step * 1.15);
 
     this.tickEconomy(step);
@@ -2047,22 +2070,48 @@ export class Match {
     return best;
   }
 
+  /** Any team Bier/Fanshop with stock — for grey Fans shopping trips. */
+  private anyOpenShopStands(): BuildSlot[] {
+    return this.slots.filter((s) => {
+      if (s.greyNeutral) return false;
+      if (s.owner !== this.playerTeam && s.owner !== this.aiTeam) return false;
+      if (s.building === "bier") return s.beer >= 1;
+      if (s.building === "fanshop") return true;
+      return false;
+    });
+  }
+
+  private queueDepthAt(stand: BuildSlot): number {
+    const key = slotKey(stand.blockId, stand.index);
+    let n = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.isSteward) continue;
+      if (f.standKey !== key) continue;
+      if (f.state === "stand" || f.state === "moving") n++;
+    }
+    return n;
+  }
+
+  /** Service time long enough that queue anger (5–10s+) can show. */
+  private standServiceSec(stand: BuildSlot): number {
+    const q = this.queueDepthAt(stand);
+    return Math.max(ANIM_DRINK_SEC, 4.5 + q * 2.2 + Math.random() * 1.5);
+  }
+
   private tickFans(dt: number): void {
     for (const f of this.fans) {
       if (f.hp <= 0 || f.isSteward) continue;
 
       if (f.state === "block") {
         this.tickBlockWander(f, dt);
-        // Team fans visit Bier + Fanshop on separate timers (gold into till)
-        if (f.team !== "neutral" && !f.onOffense) {
-          this.maybeStartStandVisit(f);
-        }
+        if (!f.onOffense) this.maybeStartStandVisit(f);
       } else if (f.state === "moving") {
         this.followPath(f, dt);
       } else if (f.state === "stand") {
         // Wait freely in stand radius while buying, then go home
         if (f.drinkT > 0 || f.shopT > 0) {
           this.tickStandWaitWander(f, dt);
+          this.tickWaitAnger(f, dt);
           continue;
         }
         this.finishStandVisit(f);
@@ -2071,6 +2120,30 @@ export class Match {
       }
     }
     this.tickBlockSeparation(dt);
+    this.tickStandWaitSeparation(dt);
+  }
+
+  /** Orange (5–10s) / red (>10s) Nervsmilies — one per second while queued. */
+  private tickWaitAnger(f: FanUnit, dt: number): void {
+    const arrive = f._standArriveAt;
+    if (arrive == null) return;
+    const waited = this.realElapsed - arrive;
+    if (waited < 5) return;
+    f._angerCd = (f._angerCd ?? 0) - dt;
+    if ((f._angerCd ?? 0) > 0) return;
+    f._angerCd = 1;
+    const hot = waited > 10;
+    this.moodFx.push({
+      kind: hot ? "waitAngerHot" : "waitAnger",
+      x: f.x + (Math.random() - 0.5) * 0.012,
+      y: f.y - 0.03,
+      vx: (Math.random() - 0.5) * 0.02,
+      vy: -0.055 - Math.random() * 0.02,
+      color: hot ? "#ef4444" : "#f97316",
+      t: 0,
+      life: 0.85,
+      size: 0.02,
+    });
   }
 
   /** Micro-target near this fan's spread-out home slot (celebration idle). */
@@ -2154,8 +2227,13 @@ export class Match {
   /**
    * Pick Bier or Fanshop when timers are due.
    * Fans → Fanshop only · Hools → Bier only · Ultras → both (beer-first).
+   * Grey Fans → any team's Bier or Fanshop every 20–30s.
    */
   private maybeStartStandVisit(f: FanUnit): void {
+    if (f.team === "neutral") {
+      this.maybeStartNeutralShopTrip(f);
+      return;
+    }
     if (f.team !== this.playerTeam && f.team !== this.aiTeam) return;
     const team = f.team as TeamId;
     const wantsBeer = canVisit(f.kind, "beer");
@@ -2194,18 +2272,66 @@ export class Match {
     f._wanderTy = wait.y;
   }
 
-  /** Random point inside the Bier/Fanshop wait radius. */
+  /** Grey starter Fans leave the block every 20–30s to buy at any shop. */
+  private maybeStartNeutralShopTrip(f: FanUnit): void {
+    if (this.realElapsed < (f.shopUntil || 0)) return;
+    const stands = this.anyOpenShopStands();
+    if (!stands.length) {
+      f.shopUntil = this.realElapsed + 4 + Math.random() * 4;
+      return;
+    }
+    const stand = stands[Math.floor(Math.random() * stands.length)]!;
+    const wait = this.standWaitPos(stand, f.id);
+    const after = stand.building === "bier" ? "stand" : "shop";
+    this.startPath(f, this.pathViaDoors(f, stand.blockId, wait), after);
+    f.standKey = slotKey(stand.blockId, stand.index);
+    f._wanderTx = wait.x;
+    f._wanderTy = wait.y;
+  }
+
+  /** Stable distinct point inside the Bier/Fanshop wait radius (no pile-up). */
   private standWaitPos(
     stand: BuildSlot,
     unitId: number,
   ): { x: number; y: number } {
     const sp = this.standWorld(stand);
-    const ang = (unitId * 2.399 + this.realElapsed * 0.7) % (Math.PI * 2);
-    const r = STAND_WAIT_RADIUS * (0.35 + ((unitId * 17) % 100) / 100 * 0.65);
+    // Golden-angle slots so waiters fan out around the building
+    const slot = unitId % 17;
+    const ang = slot * 2.399963229728653 + stand.blockId * 0.37 + stand.index;
+    const ring = 0.28 + ((slot * 5) % 7) / 7 * 0.62;
+    const r = STAND_WAIT_RADIUS * ring;
     return {
       x: sp.x + Math.cos(ang) * r,
       y: sp.y + Math.sin(ang) * r * 0.72,
     };
+  }
+
+  /** Soft push so queued fans don't share one pixel in the wait radius. */
+  private tickStandWaitSeparation(dt: number): void {
+    const waiting = this.fans.filter(
+      (f) => f.hp > 0 && !f.isSteward && f.state === "stand" && f.standKey,
+    );
+    const sep = STAND_WAIT_RADIUS * 0.35;
+    const r2 = sep * sep;
+    for (let i = 0; i < waiting.length; i++) {
+      const a = waiting[i]!;
+      for (let j = i + 1; j < waiting.length; j++) {
+        const b = waiting[j]!;
+        if (a.standKey !== b.standKey) continue;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < 1e-8 || d2 > r2) continue;
+        const d = Math.sqrt(d2);
+        const push = ((sep - d) / sep) * 0.045 * dt;
+        const nx = dx / d;
+        const ny = dy / d;
+        a.x -= nx * push;
+        a.y -= ny * push;
+        b.x += nx * push;
+        b.y += ny * push;
+      }
+    }
   }
 
   /** Idle mill inside stand wait radius until drink/shop timer ends. */
@@ -2255,29 +2381,74 @@ export class Match {
     }
   }
 
+  /** Owner loses 1 Bier / Fanartikel from wallet when a visit completes. */
+  private consumeVisitStock(stand: BuildSlot): void {
+    const p = this.standWorld(stand);
+    if (stand.building === "bier") {
+      if (stand.owner === this.playerTeam) {
+        if (this.currency.beer >= 1) {
+          this.spend("beer", 1, p, "BIER");
+        } else {
+          this.floatAt(p.x, p.y - 0.01, "−1 BIER", false);
+        }
+      } else if (stand.owner === this.aiTeam) {
+        this.aiBeer = Math.max(0, this.aiBeer - 1);
+        this.floatAt(p.x, p.y - 0.01, "−1 BIER", false);
+      }
+    } else if (stand.building === "fanshop") {
+      if (stand.owner === this.playerTeam) {
+        if (this.currency.merch >= 1) {
+          this.spend("merch", 1, p, "FANARTIKEL");
+        } else {
+          this.floatAt(p.x, p.y - 0.01, "−1 FANARTIKEL", false);
+        }
+      } else if (stand.owner === this.aiTeam) {
+        this.aiMerch = Math.max(0, this.aiMerch - 1);
+        this.floatAt(p.x, p.y - 0.01, "−1 FANARTIKEL", false);
+      }
+    }
+  }
+
   private finishStandVisit(f: FanUnit): void {
     const stand = this.slots.find(
       (s) => slotKey(s.blockId, s.index) === f.standKey,
     );
     const lv = f.level || 1;
+    f._standArriveAt = undefined;
+    f._angerCd = 0;
     if (stand?.building === "bier" && stand.beer >= 1) {
       stand.beer -= 1;
       f.thirst = 5;
-      const beerIv = visitInterval(f.kind, "beer", lv);
-      f.satisfiedUntil =
-        beerIv == null ? 1e9 : this.realElapsed + beerIv;
+      if (f.team === "neutral") {
+        f.satisfiedUntil = 1e9;
+        f.shopUntil = this.realElapsed + 20 + Math.random() * 10;
+      } else {
+        const beerIv = visitInterval(f.kind, "beer", lv);
+        f.satisfiedUntil =
+          beerIv == null ? 1e9 : this.realElapsed + beerIv;
+      }
       const pay = visitGoldPayout("beer", lv);
       this.payVisitGold(stand, pay);
+      this.consumeVisitStock(stand);
       this.floatAtSlot(stand, "−1 Fass", false);
     } else if (stand?.building === "fanshop") {
-      const shopIv = visitInterval(f.kind, "shop", lv);
-      f.shopUntil = shopIv == null ? 1e9 : this.realElapsed + shopIv;
+      if (f.team === "neutral") {
+        f.shopUntil = this.realElapsed + 20 + Math.random() * 10;
+      } else {
+        const shopIv = visitInterval(f.kind, "shop", lv);
+        f.shopUntil = shopIv == null ? 1e9 : this.realElapsed + shopIv;
+      }
       const pay = visitGoldPayout("shop", lv);
       this.payVisitGold(stand, pay);
+      this.consumeVisitStock(stand);
     } else {
       // Visit failed (empty bier / missing stand) — short backoff
-      if (canVisit(f.kind, "beer")) f.satisfiedUntil = this.realElapsed + 8;
-      if (canVisit(f.kind, "shop")) f.shopUntil = this.realElapsed + 8;
+      if (f.team === "neutral") {
+        f.shopUntil = this.realElapsed + 8 + Math.random() * 4;
+      } else {
+        if (canVisit(f.kind, "beer")) f.satisfiedUntil = this.realElapsed + 8;
+        if (canVisit(f.kind, "shop")) f.shopUntil = this.realElapsed + 8;
+      }
     }
 
     const home =
@@ -2452,7 +2623,8 @@ export class Match {
       }
     } else if (after === "stand") {
       f.state = "stand";
-      f.drinkT = ANIM_DRINK_SEC;
+      f._standArriveAt = this.realElapsed;
+      f._angerCd = 0;
       f.armSwing = 0.85;
       if (f.standKey) {
         const [b] = f.standKey.split(":").map(Number);
@@ -2461,17 +2633,23 @@ export class Match {
           (s) => slotKey(s.blockId, s.index) === f.standKey,
         );
         if (stand) {
+          f.drinkT = this.standServiceSec(stand);
           const w = this.standWaitPos(stand, f.id);
           f.x = w.x;
           f.y = w.y;
           f._wanderTx = w.x;
           f._wanderTy = w.y;
           f._wanderCd = 0.2;
+        } else {
+          f.drinkT = ANIM_DRINK_SEC;
         }
+      } else {
+        f.drinkT = ANIM_DRINK_SEC;
       }
     } else if (after === "shop") {
       f.state = "stand";
-      f.shopT = ANIM_SHOP_SEC;
+      f._standArriveAt = this.realElapsed;
+      f._angerCd = 0;
       f.armSwing = 0.55;
       if (f.standKey) {
         const [b] = f.standKey.split(":").map(Number);
@@ -2480,13 +2658,18 @@ export class Match {
           (s) => slotKey(s.blockId, s.index) === f.standKey,
         );
         if (stand) {
+          f.shopT = this.standServiceSec(stand);
           const w = this.standWaitPos(stand, f.id);
           f.x = w.x;
           f.y = w.y;
           f._wanderTx = w.x;
           f._wanderTy = w.y;
           f._wanderCd = 0.2;
+        } else {
+          f.shopT = ANIM_SHOP_SEC;
         }
+      } else {
+        f.shopT = ANIM_SHOP_SEC;
       }
     } else if (after === "home") {
       f.state = "block";
@@ -3259,17 +3442,15 @@ export class Match {
         (f) =>
           f.hp > 0 &&
           !f.isSteward &&
+          f.team === "neutral" &&
           f.blockId === blockId &&
           f.state === "block" &&
           f.seatIndex != null,
       ).length;
-      const target = 9; // ¾ of 12
+      const target = 20; // grey starter crowd — Fans only
       if (seated >= target) continue;
       const seat = this.freeSeat(blockId);
-      // Only refill as neutral — converted seats stay team-colored
-      const kind: FanKind =
-        seated % 3 === 0 ? "normalos" : seated % 3 === 1 ? "hooligans" : "ultras";
-      this.fans.push(this.makeFan(kind, "neutral", blockId, seat));
+      this.fans.push(this.makeFan("normalos", "neutral", blockId, seat));
     }
     void dt;
   }
@@ -3316,6 +3497,8 @@ export class Match {
     const targetHeim = clamp(0.35 + pHeim * MOOD_FROM_POWER, 0, 3);
     const targetGast = clamp(0.35 + pGast * MOOD_FROM_POWER, 0, 3);
     const moodApproach = 1 - Math.exp(-0.55 * dt);
+    const prevHeim = this.moodHeim;
+    const prevGast = this.moodGaeste;
     this.moodHeim = clamp(
       this.moodHeim + (targetHeim - this.moodHeim) * moodApproach,
       0,
@@ -3326,6 +3509,28 @@ export class Match {
       0,
       3,
     );
+    this.maybeMoodFloat(HEIM_BLOCK, this.moodHeim - prevHeim);
+    this.maybeMoodFloat(GAST_BLOCK, this.moodGaeste - prevGast);
+  }
+
+  /** Freigestellte Mood +/− when Stimmung moves enough (throttled). */
+  private maybeMoodFloat(blockId: number, delta: number): void {
+    const key = blockId === HEIM_BLOCK ? "heim" : "gast";
+    if (this.moodFloatCd[key] > 0) return;
+    if (Math.abs(delta) < 0.012) return;
+    this.moodFloatCd[key] = 1.8;
+    const good = delta > 0;
+    this.moodFx.push({
+      kind: good ? "moodPlus" : "moodMinus",
+      x: blockCenterX(blockId) + (Math.random() - 0.5) * 0.04,
+      y: blockTopY(blockId) + 0.1,
+      vx: (Math.random() - 0.5) * 0.02,
+      vy: -0.04 - Math.random() * 0.02,
+      color: good ? "#6bcb77" : "#f87171",
+      t: 0,
+      life: 1.0,
+      size: 0.022,
+    });
   }
 
   private tickBlockStorm(dt: number): void {

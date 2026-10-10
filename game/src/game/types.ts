@@ -75,6 +75,10 @@ export type FanUnit = {
   _wanderTy?: number;
   /** Seconds until next wander retarget */
   _wanderCd?: number;
+  /** Real-time when this unit arrived at a Bier/Fanshop queue */
+  _standArriveAt?: number;
+  /** Seconds until next wait-anger smiley */
+  _angerCd?: number;
 };
 
 export type BuildSlot = {

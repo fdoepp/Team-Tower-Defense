@@ -11,9 +11,17 @@ export type UiFinalId =
   | "btnUpgradeGrey"
   | "btnUpgradePurple"
   | "currencyBier"
+  | "currencyBierMinus"
+  | "currencyBierPlus"
   | "currencyFanartikel"
+  | "currencyFanartikelMinus"
+  | "currencyFanartikelPlus"
   | "currencyGold"
+  | "currencyGoldMinus"
+  | "currencyGoldPlus"
   | "currencySicherheit"
+  | "currencySicherheitMinus"
+  | "currencySicherheitPlus"
   | "fanBlue1"
   | "fanBlue2"
   | "fanBlue3"
@@ -46,6 +54,8 @@ export type UiFinalId =
   | "hooliganRed5"
   | "menuRail"
   | "menuRailTile"
+  | "moodMinus"
+  | "moodPlus"
   | "ordnerBlue1"
   | "ordnerBlue2"
   | "ordnerBlue3"
@@ -129,6 +139,8 @@ export type UiFinalId =
   | "ultraRed3"
   | "ultraRed4"
   | "ultraRed5"
+  | "waitAnger"
+  | "waitAngerHot"
 ;
 
 export type UiFinalEntry = {
@@ -190,9 +202,41 @@ export const UI_FINAL_PATHS = {
     preserveAspect: true,
     freigestellt: true,
   },
+  "currencyBierMinus": {
+    file: "currency-bier-minus.png",
+    path: "icons/ui-final/currency-bier-minus.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "currencyBierPlus": {
+    file: "currency-bier-plus.png",
+    path: "icons/ui-final/currency-bier-plus.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
   "currencyFanartikel": {
     file: "currency-fanartikel.png",
     path: "icons/ui-final/currency-fanartikel.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "currencyFanartikelMinus": {
+    file: "currency-fanartikel-minus.png",
+    path: "icons/ui-final/currency-fanartikel-minus.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "currencyFanartikelPlus": {
+    file: "currency-fanartikel-plus.png",
+    path: "icons/ui-final/currency-fanartikel-plus.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
@@ -206,9 +250,41 @@ export const UI_FINAL_PATHS = {
     preserveAspect: true,
     freigestellt: true,
   },
+  "currencyGoldMinus": {
+    file: "currency-gold-minus.png",
+    path: "icons/ui-final/currency-gold-minus.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "currencyGoldPlus": {
+    file: "currency-gold-plus.png",
+    path: "icons/ui-final/currency-gold-plus.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
   "currencySicherheit": {
     file: "currency-sicherheit.png",
     path: "icons/ui-final/currency-sicherheit.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "currencySicherheitMinus": {
+    file: "currency-sicherheit-minus.png",
+    path: "icons/ui-final/currency-sicherheit-minus.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "currencySicherheitPlus": {
+    file: "currency-sicherheit-plus.png",
+    path: "icons/ui-final/currency-sicherheit-plus.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
@@ -469,6 +545,22 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 0.492188,
     preserveAspect: true,
     freigestellt: false,
+  },
+  "moodMinus": {
+    file: "mood-minus.png",
+    path: "icons/ui-final/mood-minus.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "moodPlus": {
+    file: "mood-plus.png",
+    path: "icons/ui-final/mood-plus.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
   },
   "ordnerBlue1": {
     file: "ordner-blue-1.png",
@@ -1129,6 +1221,22 @@ export const UI_FINAL_PATHS = {
   "ultraRed5": {
     file: "ultra-red-5.png",
     path: "icons/ui-final/ultra-red-5.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "waitAnger": {
+    file: "wait-anger.png",
+    path: "icons/ui-final/wait-anger.png",
+    native: { w: 256, h: 256 },
+    aspectRatio: 1,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "waitAngerHot": {
+    file: "wait-anger-hot.png",
+    path: "icons/ui-final/wait-anger-hot.png",
     native: { w: 256, h: 256 },
     aspectRatio: 1,
     preserveAspect: true,
