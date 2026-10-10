@@ -36,6 +36,7 @@ import {
   drawToyIcon,
   drawToyProp,
   fistIconPath,
+  pyroShotIconPath,
   getIcon,
   type ToyAnimMode,
   slotEmptyIconPath,
@@ -484,11 +485,13 @@ function drawPyroShots(
     const life = 1 - p.t / Math.max(0.01, p.life);
     const ih = Math.max(26, Math.min(w, h) * 0.058) * (0.92 + 0.12 * life);
     const ang = Math.atan2(p.vy * h, p.vx * w);
+    const src = pyroShotIconPath(teamColor(p.team));
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(ang + Math.PI / 2);
+    // Icon burns at the tip (upper-right in asset); align tip with velocity.
+    ctx.rotate(ang - Math.PI / 4);
     ctx.globalAlpha = 0.75 + 0.25 * life;
-    if (!drawIcon(ctx, UI_ICONS.fxPyroShot, -ih / 2, -ih / 2, ih, ih, 0.02)) {
+    if (!drawIcon(ctx, src, -ih / 2, -ih / 2, ih, ih, 0.02)) {
       const glow = ctx.createRadialGradient(0, 0, 1, 0, 0, 10);
       glow.addColorStop(0, "#fff7ed");
       glow.addColorStop(0.35, "#fb923c");

@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=35** · **released=124**
+**pending=33** · **released=140**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -46,15 +46,18 @@ Ablage-Regel: [`STORAGE_CANON.md`](./STORAGE_CANON.md) — Chrome vs Live-Werte.
 154. `waitAnger` — `wait-anger.png` — Wutsmiley Wartezeit
 155. `waitAngerHot` — `wait-anger-hot.png` — Wutsmiley Wartezeit (stark)
 
-### live-fx (Kampf / Heilung) — Freigabe offen
+### live-fx (Kampf) — Freigabe offen
 
-156. `fxFistBlue` — `fx-fist-blue.png` — Nahkampf Faust blau (KSC)
-157. `fxFistRed` — `fx-fist-red.png` — Nahkampf Faust rot (VfB)
-158. `fxFistGrey` — `fx-fist-grey.png` — Nahkampf Faust grau (Neutral/Ordner)
-159. `fxHeal` — `fx-heal.png` — Ordner-Heilung am Posten
-160. `fxPyroShot` — `fx-pyro-shot.png` — Pyro-Projektil im Flug
+161. `fxPyroShotBlue` — `fx-pyro-shot-blue.png` — Pyro ein Ende brennt, blauer Rauch (KSC)
+162. `fxPyroShotRed` — `fx-pyro-shot-red.png` — Pyro ein Ende brennt, roter Rauch (VfB)
+163. `fxPyroShotGrey` — `fx-pyro-shot-grey.png` — Pyro ein Ende brennt, grauer Rauch (Neutral)
 
 ## Released (diese Runde)
+- **156** `fxFistBlue` — `fx-fist-blue.png` — **Nahkampf Faust blau freigegeben**
+- **157** `fxFistRed` — `fx-fist-red.png` — **Nahkampf Faust rot freigegeben**
+- **158** `fxFistGrey` — `fx-fist-grey.png` — **Nahkampf Faust grau freigegeben**
+- **159** `fxHeal` — `fx-heal.png` — **Heilungssymbol freigegeben**
+
 - **117** `currencyGold` — `currency-gold.png` — **Währung + Counter freigegeben**
 - **115** `currencyBier` — `currency-bier.png` — **Währung + Counter freigegeben**
 - **116** `currencyFanartikel` — `currency-fanartikel.png` — **Währung + Counter freigegeben**

@@ -120,7 +120,10 @@ export const UI_ICONS = {
   fxFistRed: uiPath("fxFistRed", "icons/ui-final/fx-fist-red.png"),
   fxFistGrey: uiPath("fxFistGrey", "icons/ui-final/fx-fist-grey.png"),
   fxHeal: uiPath("fxHeal", "icons/ui-final/fx-heal.png"),
-  fxPyroShot: uiPath("fxPyroShot", "icons/ui-final/fx-pyro-shot.png"),
+  /** Live-FX pending Freigabe — Pyro einseitig brennend, Rauch = Teamfarbe */
+  fxPyroShotBlue: uiPath("fxPyroShotBlue", "icons/ui-final/fx-pyro-shot-blue.png"),
+  fxPyroShotRed: uiPath("fxPyroShotRed", "icons/ui-final/fx-pyro-shot-red.png"),
+  fxPyroShotGrey: uiPath("fxPyroShotGrey", "icons/ui-final/fx-pyro-shot-grey.png"),
   btnKaufenGrey: uiPath("btnKaufenGrey", "icons/ui/btn-kaufen-grey.png"),
   btnKaufenGreen: uiPath("btnKaufenGreen", "icons/ui/btn-kaufen-green.png"),
   btnSendenGrey: uiPath("btnSendenGrey", "icons/ui/btn-senden-grey.png"),
@@ -529,6 +532,12 @@ export function fistIconPath(color: TeamColor): string {
   return UI_ICONS.fxFistGrey;
 }
 
+export function pyroShotIconPath(color: TeamColor): string {
+  if (color === "blue") return UI_ICONS.fxPyroShotBlue;
+  if (color === "red") return UI_ICONS.fxPyroShotRed;
+  return UI_ICONS.fxPyroShotGrey;
+}
+
 /** Small action prop overlay next to a toy unit (drink / throw / fight). */
 export function drawToyProp(
   ctx: CanvasRenderingContext2D,
@@ -571,7 +580,7 @@ export function drawToyProp(
     if (
       !drawIcon(
         ctx,
-        UI_ICONS.fxPyroShot,
+        pyroShotIconPath(color),
         px - ih / 2,
         py - ih / 2,
         ih,
