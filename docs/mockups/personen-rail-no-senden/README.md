@@ -1,6 +1,6 @@
 # Personen-Rail ohne Senden + Quadrat-Icon-Buttons
 
-**Status:** Runtime Alt D live · Icon-Buttons freigegeben  
+**Status:** Personen-Rail Alt D **freigegeben** (Runtime) · Icon-/Upgrade-Buttons freigegeben  
 **Mocks:** [index.html](./index.html) (C) · [index-alt-d.html](./index-alt-d.html) (D — Ertrag unter Icon, große Kosten)
 
 ## 1. Personen-Rail ohne „Senden“ (Alt D)
@@ -44,4 +44,4 @@ Generator: `scripts/ui-final/make-square-icon-btns.py`
 
 Quadrat-Icon-Buttons + Angriff-Symbol: **freigegeben** (`game/public/icons/ui-final/`, `UI_ICONS`).  
 Upgrade-Buttons + Pfeil (`btnIconUpgradePerson` / `btnIconUpgradeBuilding` / `iconUpgradeArrow`): **freigegeben**.  
-Personen-Rail Alt D (ohne Senden, Ertrag unter Icon, große Kosten, Schließen): **live in Runtime**.
+Personen-Rail Alt D: **freigegeben** — Abstände/Größen relativ (`cqw`/`cqh`/%-Tokens der Rail/Face); Texte live (Lvl, Anzahl, Icons, Ertrag `/s`, Kauf-/Upgradekosten, ready/cd).

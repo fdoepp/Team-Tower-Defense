@@ -281,13 +281,23 @@ select {
     0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
-/* Personen-Rail = fertige Card-A (Mockup + abgelegtes ui-final Chrome) */
+/* Personen-Rail = fertige Card-A (Mockup + abgelegtes ui-final Chrome)
+ * Alle Abstände/Größen %- / cqw/cqh-relativ zur Rail (skalierbar). */
 .match-shell.matchday .left-rail {
+  container-type: size;
+  --person-gap: 0.75cqh;
+  --person-card-pad-y: 1.05cqh;
+  --person-card-radius: 3.6cqw;
+  --person-title-size: clamp(9px, 5.4cqw, 13px);
+  --person-banner-size: clamp(9px, 5.2cqw, 13px);
+  --person-banner-pad-y: 0.9cqh;
+  --person-banner-pad-x: 2.4cqw;
+  --person-close-gap: 0.55cqh;
   padding: var(--rail-inset);
   /* Safe-area weitet die Rail, nicht den Karten-Inset */
   padding-left: var(--rail-inset);
   margin-left: env(safe-area-inset-left, 0px);
-  gap: 3px;
+  gap: var(--person-gap);
   border-right-width: 4px;
 }
 
@@ -376,15 +386,15 @@ select {
 
 /* Card-A Banner — gleiches Blau wie btnIconUltraBlue Face (#3184ca) */
 .match-shell.matchday .left-rail .rail-banner {
-  padding: 4px 6px;
-  border-radius: 7px;
+  padding: var(--person-banner-pad-y) var(--person-banner-pad-x);
+  border-radius: calc(var(--person-card-radius) * 0.7);
   background: linear-gradient(180deg, #4a9be0, #3184ca 55%, #2769a8);
   border: 2px solid #3d2414;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
     inset 0 -2px 0 rgba(0, 0, 0, 0.12);
   color: #fff;
-  font-size: 12px;
+  font-size: var(--person-banner-size);
   font-weight: 900;
   letter-spacing: 0;
   text-transform: none;
@@ -408,7 +418,7 @@ select {
 .match-shell.matchday .person-cards {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--person-gap, 0.75cqh);
   flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
@@ -416,26 +426,25 @@ select {
 }
 
 /*
- * Card A — dynamische Abstände aus fertigem Mockup
- * (docs/mockups/personen-action-card + ui-final Chrome).
- * Dual 3%·46%·2%·46%·3% / Triple 3%·30%·2%·30%·2%·30%·3%.
+ * Card A — dynamische Abstände (Dual 1%·48%·2%·48%·1%).
+ * Card-Innen: %- / cqh-Tokens der linken Rail.
  */
 .match-shell.matchday .person-card {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--person-gap, 0.75cqh);
   flex: 1 1 0;
   min-height: 0;
   min-width: 0;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  padding: 4px 0 5px;
+  padding: var(--person-card-pad-y, 1.05cqh) 0;
   overflow: hidden;
   color: #1c120a;
   background: linear-gradient(180deg, #f7ebcf, #e5cf9f);
   border: 2px solid #3d2414;
-  border-radius: 10px;
+  border-radius: var(--person-card-radius, 3.6cqw);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.4),
     0 1px 0 rgba(0, 0, 0, 0.25);
@@ -446,7 +455,7 @@ select {
   flex: 0 0 auto;
   font-family: var(--display), "Segoe UI", system-ui, sans-serif;
   font-weight: 900;
-  font-size: 12px;
+  font-size: var(--person-title-size, clamp(9px, 5.4cqw, 13px));
   line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
@@ -619,7 +628,10 @@ select {
 .match-shell.matchday .left-rail .rail-close {
   flex: 0 0 auto;
   width: 100%;
-  margin-top: 2px;
+  margin-top: var(--person-close-gap, 0.55cqh);
+  font-size: clamp(9px, 4.8cqw, 12px);
+  padding: 0.85cqh 2.5cqw;
+  border-radius: calc(var(--person-card-radius, 3.6cqw) * 0.9);
 }
 
 .match-shell.matchday .ar-icon-btn {
@@ -1205,12 +1217,9 @@ select {
   .match-shell.matchday .freie-plaetze {
     font-size: 0.5rem;
   }
-  .match-shell.matchday .left-rail .rail-banner {
-    font-size: 11px;
-    padding: 3px 5px;
-  }
-  .match-shell.matchday .person-title {
-    font-size: 11px;
+  .match-shell.matchday .left-rail {
+    --person-banner-size: clamp(8px, 5cqw, 12px);
+    --person-title-size: clamp(8px, 5.2cqw, 12px);
   }
 }
 

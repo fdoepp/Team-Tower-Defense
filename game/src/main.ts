@@ -1022,10 +1022,24 @@ function renderMatchScreen(): void {
             next,
           );
         }
+        const buy = personBuyCost(kind);
+        setPayAmt(app, `buy-pay-${kind}`, buy.amount);
+        const buyPayImg = app.querySelector<HTMLImageElement>(
+          `#buy-pay-${kind} img`,
+        );
+        if (buyPayImg) buyPayImg.src = buy.currencySrc;
+        const buyYieldImg = app.querySelector<HTMLImageElement>(
+          `#buy-yield-${kind} img`,
+        );
+        if (buyYieldImg) buyYieldImg.src = personYieldCurrency(kind);
         const buyYield = app.querySelector(`#buy-yield-${kind} .yield-amt`);
         if (buyYield) {
           buyYield.textContent = `${formatYieldPerSec(personYieldPerSec(kind, tech))}/s`;
         }
+        const upYieldImg = app.querySelector<HTMLImageElement>(
+          `#up-yield-${kind} img`,
+        );
+        if (upYieldImg) upYieldImg.src = personYieldCurrency(kind);
         const upYield = app.querySelector(`#up-yield-${kind} .yield-amt`);
         if (upYield) {
           const delta =
@@ -1048,6 +1062,10 @@ function renderMatchScreen(): void {
           upBtn.classList.toggle("ready", ok);
           upBtn.classList.toggle("cd", !ok);
           setPayAmt(app, `up-pay-${kind}`, cost != null ? cost : "—");
+          const upPayImg = app.querySelector<HTMLImageElement>(
+            `#up-pay-${kind} img`,
+          );
+          if (upPayImg) upPayImg.src = UI_ICONS.currencyGold;
           upBtn.title =
             cost == null
               ? "Max. Stufe"
