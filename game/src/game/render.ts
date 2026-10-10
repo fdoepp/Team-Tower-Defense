@@ -387,7 +387,7 @@ function drawScoreboard(
   ctx.font = `800 ${Math.max(10, Math.floor(ck.h * 0.55))}px Outfit, Manrope, sans-serif`;
   ctx.fillText(`${min}′`, ck.x + ck.w / 2, ck.y + ck.h / 2);
 
-  // Momentum in track slot
+  // Torwahrscheinlichkeit — Parteienbalken + rollender Ball an der Grenze
   const mt = slot("momentumTrack");
   const ch = m.goalChance();
   const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
@@ -402,15 +402,62 @@ function drawScoreboard(
   roundRect(ctx, split, mt.y, Math.max(4, mt.x + mt.w - split), mt.h, 6);
   ctx.fill();
   ctx.fillStyle = "#f8fafc";
-  ctx.font = `800 ${Math.max(9, Math.floor(mt.h * 0.45))}px Outfit, Manrope, sans-serif`;
+  ctx.font = `800 ${Math.max(9, Math.floor(mt.h * 0.42))}px Outfit, Manrope, sans-serif`;
   ctx.textAlign = "left";
   ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 6, mt.y + mt.h / 2);
   ctx.textAlign = "right";
   ctx.fillText(`Gast ${Math.round((1 - heimPct) * 100)}%`, mt.x + mt.w - 6, mt.y + mt.h / 2);
   ctx.textAlign = "center";
   ctx.fillStyle = "#e2e8f0";
-  ctx.font = `700 ${Math.max(8, Math.floor(mt.h * 0.38))}px Outfit, Manrope, sans-serif`;
-  ctx.fillText("nächstes Tor", w * 0.5, mt.y + mt.h / 2);
+  ctx.font = `700 ${Math.max(8, Math.floor(mt.h * 0.34))}px Outfit, Manrope, sans-serif`;
+  ctx.fillText("Torwahrscheinlichkeit", w * 0.5, mt.y - mt.h * 0.55);
+  drawTorBall(ctx, split, mt.y + mt.h / 2, mt.h * 1.15, m.torBallAngle);
+  ctx.restore();
+}
+
+/** Classic football overlay on the Torwahrscheinlichkeit split. */
+function drawTorBall(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  angle: number,
+): void {
+  const r = Math.max(5, size * 0.48);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.fillStyle = "#f8fafc";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(15,23,42,0.85)";
+  ctx.lineWidth = Math.max(1.2, r * 0.12);
+  ctx.stroke();
+  // Simple panel seams
+  ctx.strokeStyle = "rgba(15,23,42,0.75)";
+  ctx.lineWidth = Math.max(1, r * 0.08);
+  ctx.beginPath();
+  ctx.arc(0, 0, r * 0.35, 0, Math.PI * 2);
+  ctx.stroke();
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * r * 0.2, Math.sin(a) * r * 0.2);
+    ctx.lineTo(Math.cos(a) * r * 0.92, Math.sin(a) * r * 0.92);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "#0f172a";
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2 - Math.PI / 2;
+    const px = Math.cos(a) * r * 0.22;
+    const py = Math.sin(a) * r * 0.22;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
   ctx.restore();
 }
 
@@ -628,8 +675,8 @@ function drawBuilding(
   // sets foot position + size from the VP facade math — no icon warp/yaw.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
-  // Gebäude ×1.40625 vs prior ×1.125 (+25% Darstellung)
-  const BUILD_SCALE = 1.40625;
+  // Gebäude ×2.8125 vs prior ×1.40625 (nochmals verdoppelt)
+  const BUILD_SCALE = 2.8125;
   let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
@@ -687,26 +734,15 @@ function drawBuilding(
     ctx.fill();
   }
 
-  if (s.prodFlash > 0.05) {
-    const flash = s.prodFlash;
-    ctx.save();
-    ctx.globalAlpha = 0.35 + flash * 0.55;
-    ctx.strokeStyle =
-      s.building === "bier" ? "#fbbf24" : s.building === "ordner" ? "#60a5fa" : "#c084fc";
-    ctx.lineWidth = 3 + flash * 4;
-    if (pq) {
-      ctx.beginPath();
-      ctx.moveTo(pq.tl.x, pq.tl.y);
-      ctx.lineTo(pq.tr.x, pq.tr.y);
-      ctx.lineTo(pq.br.x, pq.br.y);
-      ctx.lineTo(pq.bl.x, pq.bl.y);
-      ctx.closePath();
-      ctx.stroke();
-    } else {
-      roundRect(ctx, x + 2, y + 2, bw - 4, bh - 4, r);
-      ctx.stroke();
+  // Affordable upgrade cue — purple arrow at upper-right of building
+  if (player && s.building && !grey) {
+    const upCost = m.upgradeCost(s);
+    if (upCost != null && m.gold >= upCost) {
+      const ah = Math.max(16, size * 0.28);
+      const ax = cx + size * 0.28;
+      const ay = footY - size * 0.92;
+      drawIcon(ctx, UI_ICONS.iconUpgradeArrow, ax - ah / 2, ay - ah / 2, ah, ah, 0.02);
     }
-    ctx.restore();
   }
 
   if (s.convertBy && s.convertAcc > 0.15) {
@@ -1403,7 +1439,8 @@ function drawFloats(
     const icon = floatCurrencyIcon(f.text, f.good);
     if (icon) {
       // Currency / mood deltas: change icon only — no amount/label text.
-      const ih = fontPx * 1.55;
+      // ≥2× prior size (was fontPx * 1.55)
+      const ih = fontPx * 3.2;
       drawIcon(ctx, icon, x - ih / 2, y - ih / 2, ih, ih, 0.02);
     } else {
       ctx.strokeText(f.text, x, y);

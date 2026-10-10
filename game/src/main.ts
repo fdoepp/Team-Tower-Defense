@@ -421,6 +421,8 @@ const state = {
   pendingBuild: null as BuildingKind | null,
   /** Plot selected for place/upgrade (build rail open) */
   buildTarget: null as { blockId: number; index: number } | null,
+  /** place = Bau-Karten · upgrade = nur Upgrade-Card für geklicktes Gebäude */
+  buildRailMode: "place" as "place" | "upgrade",
 };
 
 document.documentElement.classList.toggle("standalone", isStandalone());
@@ -603,19 +605,19 @@ function renderMatchScreen(): void {
         <aside class="side-rail right-rail build-rail" id="build-rail" aria-label="Gebäude" hidden>
           <header class="rail-banner" id="build-rail-title">Gebäude</header>
           <div class="unit-rows person-cards building-cards" id="build-place-rows">
-            <article class="person-card building-card">
+            <article class="person-card building-card" data-build-card="bier">
               <div class="person-title">Bierstand <span class="meta" data-build-meta="bier">(Lvl.1, x0)</span></div>
               <div class="person-actions dual">
                 ${buildingBuyUpHtml(m, "bier", tc)}
               </div>
             </article>
-            <article class="person-card building-card">
+            <article class="person-card building-card" data-build-card="fanshop">
               <div class="person-title">Fanshop <span class="meta" data-build-meta="fanshop">(Lvl.1, x0)</span></div>
               <div class="person-actions dual">
                 ${buildingBuyUpHtml(m, "fanshop", tc)}
               </div>
             </article>
-            <article class="person-card building-card">
+            <article class="person-card building-card" data-build-card="ordner">
               <div class="person-title">Ordnerposten <span class="meta" data-build-meta="ordner">(Lvl.1, x0)</span></div>
               <div class="person-actions dual">
                 ${buildingBuyUpHtml(m, "ordner", tc)}
@@ -669,14 +671,14 @@ function renderMatchScreen(): void {
             <b id="hud-score">0:0</b>
             <span id="hud-minute">0′</span>
           </div>
-          <div class="pitch-momentum sr-only" aria-label="Momentum">
+          <div class="pitch-momentum sr-only" aria-label="Torwahrscheinlichkeit">
             <div class="momentum-bar" id="momentum-bar">
               <div class="mom-fill heim" id="mom-heim"></div>
               <div class="mom-fill gast" id="mom-gast"></div>
               <div class="mom-knob" id="mom-knob"></div>
             </div>
             <span id="mom-p-heim">Stimmung Heim 1.0</span>
-            <span id="mom-p-tor">nächstes Tor Heim 50%</span>
+            <span id="mom-p-tor">Torwahrscheinlichkeit Heim 50%</span>
             <span id="mom-p-gast">Stimmung Gast 1.0</span>
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
@@ -853,6 +855,7 @@ function renderMatchScreen(): void {
   const closeBuildRail = () => {
     state.pendingBuild = null;
     state.buildTarget = null;
+    state.buildRailMode = "place";
     m.buildMenu = null;
     m.selectedSlot = null;
     wrap.classList.remove("placing");
@@ -860,9 +863,13 @@ function renderMatchScreen(): void {
     else syncBuildingRailUi();
   };
 
+  const buildingKindLabel = (kind: BuildingKind): string =>
+    kind === "bier" ? "Bierstand" : kind === "ordner" ? "Ordnerposten" : "Fanshop";
+
   /** Plot gewählt → Gebäude-Rail öffnen + Target setzen (kein Toggle-Zu). */
-  const openBuildRail = (_mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
+  const openBuildRail = (mode: "place" | "upgrade", target: { blockId: number; index: number }) => {
     state.buildTarget = target;
+    state.buildRailMode = mode;
     m.selectedSlot = target;
     m.buildMenu = target;
     if (openRail !== "build") {
@@ -879,6 +886,108 @@ function renderMatchScreen(): void {
 
   const syncBuildingRailUi = () => {
     const kinds: BuildingKind[] = ["bier", "fanshop", "ordner"];
+    const placeRows = app.querySelector<HTMLElement>("#build-place-rows");
+    const upRows = app.querySelector<HTMLElement>("#build-upgrade-rows");
+    const title = app.querySelector("#build-rail-title");
+    const upgradeMode = state.buildRailMode === "upgrade" && !!state.buildTarget;
+    const targetSlot = state.buildTarget
+      ? m.slots.find(
+          (s) =>
+            s.blockId === state.buildTarget!.blockId &&
+            s.index === state.buildTarget!.index,
+        )
+      : null;
+
+    if (placeRows) placeRows.classList.toggle("hidden", upgradeMode);
+    if (upRows) {
+      upRows.classList.toggle("hidden", !upgradeMode);
+      upRows.setAttribute("aria-hidden", upgradeMode ? "false" : "true");
+    }
+    if (title) {
+      title.textContent = upgradeMode
+        ? targetSlot?.building
+          ? `${buildingKindLabel(targetSlot.building)} Upgrade`
+          : "Upgrade"
+        : "Gebäude";
+    }
+
+    if (upgradeMode && upRows && targetSlot?.building) {
+      const kind = targetSlot.building;
+      const lv = targetSlot.level || 1;
+      const next = Math.min(UPGRADE_MAX, lv + 1);
+      const upCost = m.upgradeCost(targetSlot);
+      const upDelta =
+        lv < UPGRADE_MAX
+          ? buildingYieldPerSec(kind, next) - buildingYieldPerSec(kind, lv)
+          : 0;
+      const curIcon = standIconPath(kind, tc, lv);
+      const nextIcon = standIconPath(kind, tc, next);
+      const ok = upCost != null && m.gold >= upCost;
+      upRows.innerHTML = `
+        <div class="upgrade-panel" data-build-upgrade-panel="${kind}">
+          <p class="upgrade-title">${buildingKindLabel(kind)} · Lv${lv}${lv < UPGRADE_MAX ? ` → Lv${next}` : " (Max)"}</p>
+          <div class="upgrade-preview">
+            <div class="up-stage">
+              <img src="${curIcon.startsWith("/") ? curIcon : `/${curIcon}`}" alt="">
+              <span class="up-lv">Lv${lv}</span>
+              ${yieldChipHtml(kind, buildingYieldPerSec(kind, lv))}
+            </div>
+            <span class="up-arrow" aria-hidden="true">→</span>
+            <div class="up-stage">
+              <img src="${nextIcon.startsWith("/") ? nextIcon : `/${nextIcon}`}" alt="">
+              <span class="up-lv">${lv < UPGRADE_MAX ? `Lv${next}` : "Max"}</span>
+              ${
+                lv < UPGRADE_MAX
+                  ? yieldChipHtml(kind, upDelta, { delta: true })
+                  : `<span class="yield-chip"><span class="yield-amt">—</span></span>`
+              }
+            </div>
+          </div>
+          ${railActionBtnHtml({
+            kind: "upgrade",
+            unitSrc: nextIcon,
+            unitId: "build-up-ico-focus",
+            amount: upCost != null ? upCost : "—",
+            currencySrc: UI_ICONS.currencyGold,
+            payId: "build-up-pay-focus",
+            yieldHtml: yieldChipHtml(kind, upDelta, {
+              delta: true,
+              id: "build-up-yield-focus",
+            }),
+            btnAttrs: `data-build-up-focus="${kind}" title="Upgrade"`,
+            extraClass: ok ? "ready" : "cd",
+          }).replace(
+            'class="ar-cost-btn upgrade',
+            `class="ar-cost-btn upgrade${ok ? " ready" : " cd"}`,
+          )}
+        </div>`;
+      const focusBtn = upRows.querySelector<HTMLButtonElement>("[data-build-up-focus]");
+      if (focusBtn) {
+        focusBtn.disabled = !ok;
+        focusBtn.onclick = () => {
+          m.buildMenu = state.buildTarget;
+          m.selectedSlot = state.buildTarget;
+          m.tryUpgrade();
+          // Stay on this building if still upgradable
+          if (state.buildTarget) {
+            const s = m.slots.find(
+              (x) =>
+                x.blockId === state.buildTarget!.blockId &&
+                x.index === state.buildTarget!.index,
+            );
+            if (s?.building && (s.level || 1) < UPGRADE_MAX) {
+              openBuildRail("upgrade", state.buildTarget);
+            } else {
+              closeBuildRail();
+            }
+          }
+          syncOverlay();
+        };
+      }
+    } else if (upRows) {
+      upRows.innerHTML = "";
+    }
+
     for (const kind of kinds) {
       const owned = ownedBuildingSlots(m, kind);
       const meta = app.querySelector(`[data-build-meta="${kind}"]`);
@@ -938,6 +1047,7 @@ function renderMatchScreen(): void {
       if (bauBtn) {
         const canBau =
           !!state.buildTarget &&
+          state.buildRailMode === "place" &&
           m.gold >= BUILD_COST[kind] &&
           (() => {
             const t = state.buildTarget!;
@@ -1043,6 +1153,7 @@ function renderMatchScreen(): void {
     buildMenu.classList.add("hidden");
     state.pendingBuild = null;
     state.buildTarget = null;
+    state.buildRailMode = "place";
     m.buildMenu = null;
     m.selectedSlot = null;
     closeActionRail();
@@ -1395,7 +1506,7 @@ function renderMatchScreen(): void {
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
       if (lpH) lpH.textContent = `Kurve Heim ${m.moodHeim.toFixed(1)}`;
-      if (lpT) lpT.textContent = `nächstes Tor Heim ${Math.round(ch.pHeim * 100)}%`;
+      if (lpT) lpT.textContent = `Torwahrscheinlichkeit Heim ${Math.round(ch.pHeim * 100)}%`;
       if (lpG) lpG.textContent = `Kurve Gast ${m.moodGaeste.toFixed(1)}`;
       const bar = app.querySelector("#momentum-bar");
       if (bar) {
