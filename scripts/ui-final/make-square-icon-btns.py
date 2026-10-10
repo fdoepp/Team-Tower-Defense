@@ -174,36 +174,16 @@ PURPLE_R = (132, 58, 220, 255)
 
 def make_upgrade_arrow(size: int = SIZE) -> Image.Image:
     """Freigestellter Upgrade-Pfeil: ohne Spitzenpunkt, ohne dunklen Rand."""
-    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    cx = size / 2
-    top = size * 0.12
-    bot = size * 0.88
-    head_bot = size * 0.46
-    head_half = size * 0.38
-    shaft_half = size * 0.16
+    # 2× then downscale → purple AA edge (no black outline)
+    S = size * 2
+    cx = S / 2
+    top = S * 0.12
+    bot = S * 0.88
+    head_bot = S * 0.46
+    head_half = S * 0.38
+    shaft_half = S * 0.16
     tip_x, tip_y = cx, top
     r = shaft_half
-
-    shadow = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    sd = ImageDraw.Draw(shadow)
-    pts_s = [
-        (tip_x + 2, tip_y + 5),
-        (cx - head_half + 2, head_bot + 5),
-        (cx - shaft_half + 2, head_bot + 5),
-        (cx - shaft_half + 2, bot + 5),
-        (cx + shaft_half + 2, bot + 5),
-        (cx + shaft_half + 2, head_bot + 5),
-        (cx + head_half + 2, head_bot + 5),
-    ]
-    sd.polygon(pts_s, fill=(40, 10, 60, 85))
-    sd.ellipse(
-        (cx - r + 2, bot - r + 5, cx + r + 2, bot + r * 0.15 + 5),
-        fill=(40, 10, 60, 85),
-    )
-    canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(3.2)))
-
-    body = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    bd = ImageDraw.Draw(body)
     pts = [
         (tip_x, tip_y),
         (cx - head_half, head_bot),
@@ -213,32 +193,43 @@ def make_upgrade_arrow(size: int = SIZE) -> Image.Image:
         (cx + shaft_half, head_bot),
         (cx + head_half, head_bot),
     ]
-    bd.polygon(pts, fill=PURPLE_R)
-    bd.ellipse((cx - r, bot - r, cx + r, bot + r * 0.15), fill=PURPLE_R)
 
-    left = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    body = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    bd = ImageDraw.Draw(body)
+    bd.polygon(pts, fill=PURPLE_R)
+    bd.ellipse((cx - r, bot - r, cx + r, bot + r * 0.12), fill=PURPLE_R)
+
+    left = Image.new("RGBA", (S, S), (0, 0, 0, 0))
     ld = ImageDraw.Draw(left)
     ld.polygon(pts, fill=PURPLE_L)
-    ld.ellipse((cx - r, bot - r, cx + r, bot + r * 0.15), fill=PURPLE_L)
-    mask = Image.new("L", (size, size), 0)
-    ImageDraw.Draw(mask).rectangle((0, 0, int(cx), size), fill=255)
-    mask = mask.filter(ImageFilter.GaussianBlur(2))
+    ld.ellipse((cx - r, bot - r, cx + r, bot + r * 0.12), fill=PURPLE_L)
+    mask = Image.new("L", (S, S), 0)
+    ImageDraw.Draw(mask).rectangle((0, 0, int(cx), S), fill=255)
+    mask = mask.filter(ImageFilter.GaussianBlur(3))
     body = Image.composite(left, body, mask)
 
-    hi = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    hi = Image.new("RGBA", (S, S), (0, 0, 0, 0))
     hd = ImageDraw.Draw(hi)
     hd.line(
-        [(tip_x, tip_y + 6), (cx - head_half * 0.5, head_bot - 6)],
-        fill=(255, 230, 255, 65),
-        width=3,
+        [(tip_x + 2, tip_y + 14), (cx - head_half * 0.45, head_bot - 10)],
+        fill=(220, 190, 255, 55),
+        width=5,
     )
-    body = Image.alpha_composite(body, hi.filter(ImageFilter.GaussianBlur(1.2)))
-    canvas.alpha_composite(body)
+    body = Image.alpha_composite(body, hi.filter(ImageFilter.GaussianBlur(2)))
+    body = body.resize((size, size), Image.Resampling.LANCZOS)
 
-    arr = np.array(canvas)
-    dark = (arr[:, :, :3].max(axis=2) < 50) & (arr[:, :, 3] > 0)
+    arr = np.array(body).astype(np.float32)
+    rgb = arr[:, :, :3]
+    a = arr[:, :, 3]
+    dark = (rgb.max(axis=2) < 90) & (a > 0)
     arr[dark, 3] = 0
-    return Image.fromarray(arr, "RGBA")
+    edge = (a > 5) & (a < 200)
+    mid = np.array([158, 88, 238], dtype=np.float32)
+    for c in range(3):
+        arr[:, :, c] = np.where(edge, mid[c] * 0.65 + rgb[:, :, c] * 0.35, arr[:, :, c])
+    dark2 = (arr[:, :, :3].max(axis=2) < 100) & (arr[:, :, 3] > 0)
+    arr[dark2, 3] = 0
+    return Image.fromarray(arr.clip(0, 255).astype(np.uint8), "RGBA")
 
 
 def paste_arrow_upper_right(
@@ -268,10 +259,11 @@ def paste_arrow_upper_right(
     ox = qcx - nw // 2
     oy = qcy - nh // 2 - int(qh * 0.03)
 
+    # Soft purple-tinted shadow only (no black rim)
     a = resized.split()[-1]
-    sh = Image.new("RGBA", resized.size, (30, 10, 50, 0))
-    sh.putalpha(a.point(lambda v: int(v * 0.4)))
-    out.alpha_composite(sh.filter(ImageFilter.GaussianBlur(2.2)), (ox + 2, oy + 3))
+    sh = Image.new("RGBA", resized.size, (90, 40, 150, 0))
+    sh.putalpha(a.point(lambda v: int(v * 0.28)))
+    out.alpha_composite(sh.filter(ImageFilter.GaussianBlur(2.0)), (ox + 2, oy + 3))
     out.alpha_composite(resized, (ox, oy))
     return out
 
