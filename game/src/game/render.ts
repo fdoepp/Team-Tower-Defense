@@ -421,33 +421,12 @@ function drawScoreboard(
 }
 
 function drawGang(
-  ctx: CanvasRenderingContext2D,
-  m: Match,
-  w: number,
-  h: number,
+  _ctx: CanvasRenderingContext2D,
+  _m: Match,
+  _w: number,
+  _h: number,
 ): void {
-  const y = h * gangY();
-  const gh = h * gangHeight();
-  const left = w * blocksLeftNorm();
-  const span = w * (blocksRightNorm() - blocksLeftNorm());
-  const px = left + span * m.linePlayer;
-  const ax = left + span * m.lineAi;
-
-  // Front lines mark territory — no gang color wash
-  ctx.save();
-  ctx.setLineDash([7, 5]);
-  ctx.lineWidth = 3.5;
-  ctx.strokeStyle = "rgba(59,130,246,0.95)";
-  ctx.beginPath();
-  ctx.moveTo(px, y + 4);
-  ctx.lineTo(px, y + gh - 4);
-  ctx.stroke();
-  ctx.strokeStyle = "rgba(239,68,68,0.95)";
-  ctx.beginPath();
-  ctx.moveTo(ax, y + 4);
-  ctx.lineTo(ax, y + gh - 4);
-  ctx.stroke();
-  ctx.restore();
+  // Territory is marked by front standards only — no colored helper lines in the gang.
 }
 
 /** Big flag standards planted at each team's frontmost battle line */

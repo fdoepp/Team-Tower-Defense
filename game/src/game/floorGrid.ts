@@ -33,57 +33,41 @@ export const FLOOR_SIDE_MARGIN = 0.15;
  */
 export const FLOOR_COL_XS_NEAR = [
   // Heim: both plots left of Heim door (~0.36) so the exit lane stays open
-  0.15, 0.185, 0.195, 0.235,
+  0.15, 0.175, 0.185, 0.215,
   // inter → Neutral: plots flank mid door (~0.50), wide intra = exit lane
   0.4, 0.455, 0.545, 0.6,
   // inter → Gäste: both plots right of Gäste door (~0.64)
-  0.76, 0.8, 0.81, 0.85,
+  0.78, 0.81, 0.82, 0.85,
 ] as const;
 
 /** Depth of the near column anchors (normalized). */
 export const FLOOR_Y_NEAR = 0.985;
 
 /**
- * Row lines far → near (normalized).
- * Far Bau row sits ~10% screen-height below the block door (y≈0.50),
- * so the exit drop from tribüne → gang stays free of Bauplätze.
+ * Row lines far → near (normalized): [farTop, gangTop, gangBot, nearBot].
+ * Far Bau starts ~8–10% below the block door (y≈0.50).
+ * Plots stay clear of the gang by GANG_PLOT_BUFFER on both edges.
  */
-export const FLOOR_ROW_YS = [0.64, 0.72, 0.86, 0.975] as const;
+export const FLOOR_ROW_YS = [0.58, 0.7, 0.84, 0.975] as const;
+
+/**
+ * Minimum clear space between Bau plots and the fight gang (normalized height).
+ * Far plots end at gangTop − buffer; near plots start at gangBot + buffer.
+ */
+export const GANG_PLOT_BUFFER = 0.05;
 
 /** Shrink plot chrome toward cell center (0 = full cell, 0.3 ≈ 70% footprint). */
 export const PLOT_DRAW_INSET = 0.3;
 
-/** Bau-row r ∈ {0,1} → starting index into FLOOR_ROW_YS (skips the Gang). */
-const BAU_ROW_LINE = [0, 2] as const;
-
 /** When true, empty plots are drawn warped into floor-grid quads. */
 export const FLOOR_GRID_COUPLE = true;
 
-function invDepth(y: number): number {
-  return 1 / (y - FLOOR_VP.y);
-}
-
-function yFromInv(id: number): number {
-  return FLOOR_VP.y + 1 / id;
-}
-
 /**
- * Rebuild row ys: equal inv-depth steps inside each Bau band, keep the
- * middle Gang band's relative inv-depth width from FLOOR_ROW_YS.
+ * Layout anchors: farTop · gangTop · gangBot · nearBot.
+ * Kept literal so the gang buffer is not collapsed by inv-depth averaging.
  */
 export function floorRowYs(): readonly number[] {
-  const raw = FLOOR_ROW_YS;
-  const id = raw.map(invDepth);
-  const cellFar = id[0]! - id[1]!;
-  const gang = id[1]! - id[2]!;
-  const cellNear = id[2]! - id[3]!;
-  // Average the two Bau cell depths so far/near rows feel equal on the ground.
-  const cell = (cellFar + cellNear) / 2;
-  const idNear = id[3]!;
-  const idNearTop = idNear + cell;
-  const idFarBot = idNearTop + gang;
-  const idFarTop = idFarBot + cell;
-  return [yFromInv(idFarTop), yFromInv(idFarBot), yFromInv(idNearTop), yFromInv(idNear)];
+  return FLOOR_ROW_YS;
 }
 
 /** Fight corridor between the two Bau rows (normalized y). */
@@ -94,6 +78,22 @@ export function floorGangBand(): { y0: number; y1: number; mid: number; h: numbe
   return { y0, y1, mid: (y0 + y1) / 2, h: y1 - y0 };
 }
 
+/** Bau band edges with gang buffer applied (r=0 far, r=1 near). */
+export function floorBauBand(r: number): { yTop: number; yBot: number } {
+  const rows = floorRowYs();
+  const gangTop = rows[1]!;
+  const gangBot = rows[2]!;
+  const buf = GANG_PLOT_BUFFER;
+  if ((r | 0) === 0) {
+    const yTop = rows[0]!;
+    const yBot = Math.max(yTop + 0.035, gangTop - buf);
+    return { yTop, yBot };
+  }
+  const yBot = rows[3]!;
+  const yTop = Math.min(yBot - 0.035, gangBot + buf);
+  return { yTop, yBot };
+}
+
 function xAtDepth(xNear: number, y: number): number {
   return (
     FLOOR_VP.x +
@@ -101,12 +101,9 @@ function xAtDepth(xNear: number, y: number): number {
   );
 }
 
-/** Cell (c,r) with c∈0..7, r∈0..1 → perspective quad (skips Gang line). */
+/** Cell (c,r) with c∈0..7, r∈0..1 → perspective quad (skips Gang + buffer). */
 export function floorCellQuad(c: number, r: number): QuadNorm {
-  const rows = floorRowYs();
-  const li = BAU_ROW_LINE[Math.max(0, Math.min(1, r | 0))]!;
-  const yTop = rows[li]!;
-  const yBot = rows[li + 1]!;
+  const { yTop, yBot } = floorBauBand(r);
   const maxC = FLOOR_COL_XS_NEAR.length - 2;
   const cc = Math.max(0, Math.min(maxC, c | 0));
   const xlN = FLOOR_COL_XS_NEAR[cc]!;
@@ -125,6 +122,16 @@ export function floorCellQuad(c: number, r: number): QuadNorm {
  */
 const BLOCK_COL0 = [0, 4, 8] as const;
 
+/**
+ * Screen-space door lanes (with pad) that far-row plots must not cover.
+ * Mirrors tribune door centers ± width so block exits stay walkable.
+ */
+const DOOR_CLEAR_LANES = [
+  { L: 0.338, R: 0.388 }, // Heim
+  { L: 0.475, R: 0.525 }, // Neutral
+  { L: 0.612, R: 0.662 }, // Gäste
+] as const;
+
 /** Inset a floor quad toward its centroid (visual breathing room). */
 export function insetQuad(q: QuadNorm, inset: number): QuadNorm {
   const t = Math.max(0, Math.min(0.45, inset));
@@ -137,6 +144,20 @@ export function insetQuad(q: QuadNorm, inset: number): QuadNorm {
   return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
 }
 
+/** Nudge a far-row plot horizontally out of its block door lane. */
+function clearDoorLane(q: QuadNorm, blockId: number): QuadNorm {
+  const lane = DOOR_CLEAR_LANES[Math.max(0, Math.min(2, blockId))]!;
+  const xs = [q.tl.x, q.tr.x, q.br.x, q.bl.x];
+  const x0 = Math.min(...xs);
+  const x1 = Math.max(...xs);
+  if (x1 <= lane.L || x0 >= lane.R) return q;
+  const mid = (x0 + x1) / 2;
+  const doorMid = (lane.L + lane.R) / 2;
+  const dx = mid <= doorMid ? lane.L - x1 : lane.R - x0;
+  const map = (p: { x: number; y: number }) => ({ x: p.x + dx, y: p.y });
+  return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
+}
+
 export function boothQuad(blockId: number, index: number): QuadNorm {
   const b = Math.max(0, Math.min(2, blockId | 0));
   const i = Math.max(0, Math.min(3, index | 0));
@@ -144,7 +165,8 @@ export function boothQuad(blockId: number, index: number): QuadNorm {
   // Skip intra-gap column between the two plots of a block.
   const dc = (i % 2) * 2;
   const r = i < 2 ? 0 : 1;
-  return floorCellQuad(c0 + dc, r);
+  const q = floorCellQuad(c0 + dc, r);
+  return r === 0 ? clearDoorLane(q, b) : q;
 }
 
 export function quadToRect(q: QuadNorm): {
