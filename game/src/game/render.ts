@@ -640,7 +640,11 @@ function drawBaustelle(
   const src = slotEmptyIconPath(control, "persp", false);
   let drew = false;
   if (FLOOR_GRID_COUPLE) {
-    const q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+    let q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+    // Far Bau-row (index 0–1) was tiny — scale up to near-row screen size
+    if (s.index < 2) {
+      q = enlargeQuadToNearSlot(q, m);
+    }
     // Warp persp chrome into floor trapezoid (equal ground cells, readable depth)
     drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
     if (sel) {
@@ -1619,6 +1623,41 @@ function drawMoodParticles(
   ctx.globalAlpha = 1;
 }
 
+/** Scale a far-row floor quad up to the average near-row screen size. */
+function enlargeQuadToNearSlot(q: ScreenQuad, m: Match): ScreenQuad {
+  let tw = 0;
+  let th = 0;
+  let n = 0;
+  for (const s of m.slots) {
+    if (s.index < 2) continue;
+    const r = boothRect(s.blockId, s.index);
+    tw += r.w * m.width;
+    th += r.h * m.height;
+    n++;
+  }
+  if (n < 1) return q;
+  tw /= n;
+  th /= n;
+  const xs = [q.tl.x, q.tr.x, q.br.x, q.bl.x];
+  const ys = [q.tl.y, q.tr.y, q.br.y, q.bl.y];
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const curW = Math.max(1, maxX - minX);
+  const curH = Math.max(1, maxY - minY);
+  const scale = Math.max(1, Math.min(2.2, Math.max(tw / curW, th / curH)));
+  if (scale <= 1.05) return q;
+  // Grow from bottom-center so the plot stays planted on the floor
+  const cx = (q.bl.x + q.br.x) / 2;
+  const cy = (q.bl.y + q.br.y) / 2;
+  const map = (p: { x: number; y: number }) => ({
+    x: cx + (p.x - cx) * scale,
+    y: cy + (p.y - cy) * scale,
+  });
+  return { tl: map(q.tl), tr: map(q.tr), br: map(q.br), bl: map(q.bl) };
+}
+
 function pointInQuad(q: ScreenQuad, mx: number, my: number): boolean {
   const pts = [q.tl, q.tr, q.br, q.bl];
   let inside = false;
@@ -1663,7 +1702,8 @@ export function hitSlot(
     }
     let hit = mx >= x0 && mx <= x1 && my >= y0 && my <= y1;
     if (FLOOR_GRID_COUPLE) {
-      const q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+      let q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
+      if (s.index < 2) q = enlargeQuadToNearSlot(q, m);
       if (pointInQuad(q, mx, my)) hit = true;
     }
     if (hit) {
