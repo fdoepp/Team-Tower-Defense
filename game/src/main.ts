@@ -724,7 +724,7 @@ function renderMatchScreen(): void {
       const payOne = app.querySelector(`#atk-pay-${prefix}-one .amt`);
       if (payOne) payOne.textContent = String(unitCost);
       const payAll = app.querySelector(`#atk-pay-${prefix}-all .amt`);
-      if (payAll) payAll.textContent = String(unitCost * Math.max(1, ready));
+      if (payAll) payAll.textContent = String(unitCost * ready);
 
       const yOne = app.querySelector(`#atk-yield-${prefix}-one .yield-amt`);
       if (yOne) yOne.textContent = "1×";
