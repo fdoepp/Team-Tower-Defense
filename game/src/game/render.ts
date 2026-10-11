@@ -770,7 +770,7 @@ function drawBuilding(
   // Mid-gang Ordner sits in the fight corridor — keep it compact vs Bau-row stands
   const midGang = s.blockId === 1 && s.index === 4;
   // Gebäude ×2.8125 on Bau rows; mid-gang much smaller so it doesn't dominate the Gang
-  const BUILD_SCALE = midGang ? 0.95 : 2.8125;
+  const BUILD_SCALE = midGang ? 0.72 : 2.8125;
   let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
@@ -797,7 +797,7 @@ function drawBuilding(
     const topY = (facade.tl.y + facade.tr.y) / 2;
     const facadeH = Math.max(1, footY - topY);
     const raw = Math.min(baseW * 1.05, facadeH) * BUILD_SCALE;
-    size = midGang ? Math.max(28, Math.min(52, raw)) : Math.max(34, raw);
+    size = midGang ? Math.max(24, Math.min(40, raw)) : Math.max(34, raw);
     ctx.fillStyle = "rgba(15,23,42,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
@@ -1058,6 +1058,10 @@ function personAnimMode(m: Match, f: FanUnit): {
 function personDrawSize(f: FanUnit, h: number): number {
   const onGang = f.state === "gang" || f.invading;
   const moving = f.state === "moving" || onGang;
+  // Mid-gang Ordner steward sits on the post sprite — keep him compact
+  if (f.isSteward && f.homeStandKey?.startsWith("1:4")) {
+    return Math.max(22, h * 0.048);
+  }
   return Math.max(26, h * (moving ? 0.085 : 0.068));
 }
 
