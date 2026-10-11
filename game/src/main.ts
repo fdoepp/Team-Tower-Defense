@@ -1521,22 +1521,11 @@ function renderMatchScreen(): void {
       if (bar) {
         bar.classList.remove("kick");
       }
+      // Extra mid-screen hint strips off — only the LIVE ticker under momentum
       const banner = app.querySelector("#combat-banner");
-      if (banner) {
-        const st = m.combatStatus();
-        if (st) {
-          banner.textContent = st;
-          banner.classList.remove("hidden");
-        } else banner.classList.add("hidden");
-      }
+      if (banner) banner.classList.add("hidden");
       const toast = app.querySelector("#toast");
-      if (toast) {
-        const t = m.toasts[0];
-        if (t) {
-          toast.textContent = t.text;
-          toast.classList.add("show");
-        } else toast.classList.remove("show");
-      }
+      if (toast) toast.classList.remove("show");
       if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
       if (m.result) {
         unFs();

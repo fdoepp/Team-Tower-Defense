@@ -222,18 +222,21 @@ function evenSlotQuad(slot: number, r: number): QuadNorm {
   };
 }
 
-/** Mid-gang Ordnerpost — centered in the fight corridor. */
+/** Mid-gang Ordnerpost — same footprint as a near-row (bottom) Bau plot. */
 function midGangOrdnerQuad(): QuadNorm {
   const band = floorGangBand();
+  const ref = evenSlotQuad(0, 1);
+  const half = Math.abs(ref.br.x - ref.bl.x) / 2;
+  const h = Math.abs(ref.br.y - ref.tr.y);
   const cx = 0.5;
-  const half = 0.03;
   const mid = band.mid;
-  const h = Math.min(0.05, band.h * 0.62);
+  const topHalf = half * 0.95;
+  const botHalf = half * 1.03;
   return {
-    tl: { x: cx - half * 0.88, y: mid - h / 2 },
-    tr: { x: cx + half * 0.88, y: mid - h / 2 },
-    br: { x: cx + half, y: mid + h / 2 },
-    bl: { x: cx - half, y: mid + h / 2 },
+    tl: { x: cx - topHalf, y: mid - h / 2 },
+    tr: { x: cx + topHalf, y: mid - h / 2 },
+    br: { x: cx + botHalf, y: mid + h / 2 },
+    bl: { x: cx - botHalf, y: mid + h / 2 },
   };
 }
 

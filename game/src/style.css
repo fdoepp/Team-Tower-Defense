@@ -2494,25 +2494,7 @@ select {
 }
 
 .toast {
-  position: absolute;
-  left: 50%;
-  top: 22%;
-  transform: translate(-50%, -50%);
-  background: rgba(15, 23, 42, 0.88);
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 14px;
-  font-weight: 700;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 6;
-  font-size: 0.85rem;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(12px);
-}
-
-.toast.show {
-  opacity: 1;
+  display: none; /* LIVE ticker only — no mid-screen hint toast */
 }
 
 .rotate-hint {

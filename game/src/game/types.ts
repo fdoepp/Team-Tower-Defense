@@ -106,6 +106,8 @@ export type BuildSlot = {
   bannerHoldAcc: number;
   /** Seconds a non-Ordner building has spent in enemy Standarte territory */
   enemyZoneAcc: number;
+  /** Beers stolen from this stand toward Leer-trinken takeover */
+  beerStealAcc: number;
 };
 
 export type Currencies = {
@@ -233,10 +235,12 @@ export const BANNER_RETREAT_SPEED = 0.012;
 export const BANNER_MIN_GAP = 0.05;
 /** Standarte / build rights stop this far before an enemy Ordnerpost. */
 export const BANNER_POST_STANDOFF = 0.035;
-/** Empty/enemy Bauplatz is claimed after this many seconds behind a Standarte */
+/** Empty/Fanshop Bauplatz is claimed after this many seconds behind a Standarte */
 export const BANNER_PLOT_CAPTURE_SEC = 20;
 /** Non-Ordner buildings break after this many seconds in enemy Standarte zone */
 export const ENEMY_ZONE_BUILDING_BREAK_SEC = 30;
+/** Fremde Bierstände: Übernahme nach so vielen geklauten Bieren (ohne Zahlung) */
+export const BEER_STEAL_CAPTURE = 50;
 
 export const STEWARD_HIRE_GOLD = 22;
 export const STEWARD_CAP = 2;

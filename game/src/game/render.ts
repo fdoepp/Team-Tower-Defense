@@ -3,7 +3,9 @@ import {
   ANIM_DRINK_SEC,
   ANIM_SHOP_SEC,
   ANIM_THROW_SEC,
+  BEER_STEAL_CAPTURE,
   BLOCK_META,
+  NEUTRAL_MID_GANG_INDEX,
   STAND_CONVERT_SEC,
   type BuildSlot,
   type FanUnit,
@@ -12,6 +14,7 @@ import {
   GAST_BLOCK,
   HEIM_BLOCK,
   L,
+  NEUTRAL_BLOCK,
   SEATS_PER_BLOCK,
   FLOOR_GRID_COUPLE,
   blockCenterX,
@@ -757,16 +760,19 @@ function drawBuilding(
   let footY = y + bh * 0.78;
   // Same Gebäude scale for Bau-row stands and mid-gang Ordner
   const BUILD_SCALE = 2.8125;
+  const facadeOpts = {
+    widthScale: 1.35,
+    heightScale: 1.92,
+    taper: 0.32,
+  };
+  const isMidGang =
+    s.blockId === NEUTRAL_BLOCK && s.index === NEUTRAL_MID_GANG_INDEX;
   let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, {
-      widthScale: 1.35,
-      heightScale: 1.92,
-      taper: 0.32,
-    });
+    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, facadeOpts);
   }
 
   const color = teamColor(
@@ -775,6 +781,16 @@ function drawBuilding(
   const lv = Math.max(1, Math.min(5, s.level || 1));
   const iconSrc = standIconPath(s.building, color, lv);
 
+  /** Pixel size matching a near-row (bottom) Bau building. */
+  const nearRowIconSize = (): number => {
+    const ref = boothFacadeQuad(HEIM_BLOCK, 3, m.width, m.height, facadeOpts);
+    const refW = Math.hypot(ref.br.x - ref.bl.x, ref.br.y - ref.bl.y);
+    const refFoot = (ref.bl.y + ref.br.y) / 2;
+    const refTop = (ref.tl.y + ref.tr.y) / 2;
+    const refH = Math.max(1, refFoot - refTop);
+    return Math.max(34, Math.min(refW * 1.05, refH) * BUILD_SCALE);
+  };
+
   let drew = false;
   if (facade && pq) {
     cx = (facade.bl.x + facade.br.x) / 2;
@@ -782,7 +798,9 @@ function drawBuilding(
     const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
     const topY = (facade.tl.y + facade.tr.y) / 2;
     const facadeH = Math.max(1, footY - topY);
-    size = Math.max(34, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
+    size = isMidGang
+      ? nearRowIconSize()
+      : Math.max(34, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
     ctx.fillStyle = "rgba(15,23,42,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
@@ -825,7 +843,7 @@ function drawBuilding(
     }
   }
 
-  if (s.convertBy && s.convertAcc > 0.15) {
+  if (s.convertBy && s.convertAcc > 0.15 && s.building === "fanshop") {
     const pct = Math.min(1, s.convertAcc / STAND_CONVERT_SEC);
     const left = Math.max(0, STAND_CONVERT_SEC - s.convertAcc);
     const col = s.convertBy === "ksc" ? "#3b82f6" : "#ef4444";
@@ -847,6 +865,36 @@ function drawBuilding(
     ctx.textBaseline = "middle";
     ctx.fillText(`${Math.ceil(left)}`, cx, y + bh * 0.14 + 1);
     ctx.textBaseline = "alphabetic";
+    ctx.restore();
+  }
+
+  // Leer-trinken Fortschritt an fremden Bierständen
+  if (s.building === "bier" && s.beerStealAcc > 0.5) {
+    const pct = Math.min(1, s.beerStealAcc / BEER_STEAL_CAPTURE);
+    const barW = Math.max(36, size * 0.85);
+    const barH = Math.max(11, Math.floor(size * 0.12));
+    const barX = cx - barW / 2;
+    const barY = footY - size * 1.05;
+    ctx.save();
+    ctx.fillStyle = "rgba(15,23,42,0.9)";
+    ctx.fillRect(barX - 2, barY - 14, barW + 4, barH + 16);
+    ctx.fillStyle = "#fde68a";
+    ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.95))}px Outfit, Manrope, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("Leer trinken", cx, barY - 2);
+    ctx.fillStyle = "rgba(30,41,59,0.98)";
+    ctx.fillRect(barX, barY, barW, barH);
+    ctx.fillStyle = "#f59e0b";
+    ctx.fillRect(barX, barY, barW * pct, barH);
+    ctx.fillStyle = "#fff7ed";
+    ctx.font = `700 ${Math.max(8, Math.floor(barH * 0.8))}px Outfit, Manrope, sans-serif`;
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+      `${Math.floor(s.beerStealAcc)}/${BEER_STEAL_CAPTURE}`,
+      cx,
+      barY + barH / 2 + 0.5,
+    );
     ctx.restore();
   }
 
