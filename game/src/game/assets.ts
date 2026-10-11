@@ -5,18 +5,31 @@ export type TeamColor = "blue" | "red" | "grey";
 
 /**
  * Resolve a public/ asset for GitHub Pages project sites and local Vite.
- * Never use a leading "/" alone — that breaks under /Team-Tower-Defense/.
+ * Prefer document-relative paths (no leading "/") so project Pages
+ * (`/Team-Tower-Defense/`) never fetch `https://…/icons/…` from the host root.
+ *
+ * Note: Vite sets `import.meta.env.BASE_URL` to `/` in dev even when
+ * `base: "./"` — we still emit relative paths so img/src and fetch match prod.
  */
 export function assetUrl(path: string): string {
   const clean = path.replace(/^\.\//, "").replace(/^\//, "");
-  // Vite `base: "./"` → keep document-relative paths (Pages uses trailing /).
-  // Never emit a root-absolute "/icons/…" — that 404s under /Team-Tower-Defense/.
   const base = import.meta.env.BASE_URL || "./";
-  if (base.startsWith("/") || base.startsWith("http")) {
+  // Absolute http(s) base (unusual) — keep join behavior
+  if (base.startsWith("http")) {
     const b = base.endsWith("/") ? base : `${base}/`;
     return `${b}${clean}`;
   }
+  // `base: "./"` (prod) or `/` (vite dev): always document-relative for public/
   return clean;
+}
+
+/** Absolute URL for CSS `url(...)` (resolved vs document, not the stylesheet). */
+export function cssAssetUrl(path: string): string {
+  const rel = assetUrl(path);
+  if (typeof document !== "undefined" && document.baseURI) {
+    return new URL(rel, document.baseURI).href;
+  }
+  return rel;
 }
 
 /** Prefer Final-UI DB when released; else legacy icons/ui/. */
@@ -193,11 +206,47 @@ export const UI_ICONS = {
     "icons/ui-final/baustelle-schild-neutral.png",
   ),
   menuRail: uiPath("menuRail", "icons/ui/menu-rail-brown.png"),
+  menuRailTile: assetUrl("icons/ui/menu-rail-brown-tile.png"),
+  btnBauenAmberFinal: assetUrl("icons/ui-final/btn-bauen-amber.png"),
+  btnBauenGreyFinal: assetUrl("icons/ui-final/btn-bauen-grey.png"),
+  btnKaufenGreenFinal: assetUrl("icons/ui-final/btn-kaufen-green.png"),
+  btnKaufenGreyFinal: assetUrl("icons/ui-final/btn-kaufen-grey.png"),
+  btnUpgradePurpleFinal: assetUrl("icons/ui-final/btn-upgrade-purple.png"),
+  btnUpgradeGreyFinal: assetUrl("icons/ui-final/btn-upgrade-grey.png"),
+  btnSendenBlueFinal: assetUrl("icons/ui-final/btn-senden-blue.png"),
+  btnSendenRedFinal: assetUrl("icons/ui-final/btn-senden-red.png"),
+  btnSendenGreyFinal: assetUrl("icons/ui-final/btn-senden-grey.png"),
   /** Referenz-Demo — nicht Runtime-Default */
   scoreboard: uiPath("scoreboard", "icons/ui/scoreboard-momentum.png"),
   /** Leeres Chrome — Runtime-Default (STORAGE_CANON) */
   scoreboardChrome: uiPath("scoreboardChrome", "icons/ui-final/scoreboard-chrome.png"),
 } as const;
+
+/**
+ * Wire CSS `url(/icons/…)` replacements via custom properties so GitHub Pages
+ * (`base: "./"`) does not 404 on root-absolute paths.
+ * Call once before first paint of match UI.
+ */
+export function applyCssIconUrls(root: HTMLElement = document.documentElement): void {
+  const set = (name: string, src: string) => {
+    // Resolve against document.baseURI — CSS url() in stylesheets is NOT
+    // relative to the HTML document, so bare "icons/…" would 404 from /assets/.
+    const abs = typeof document !== "undefined" && document.baseURI
+      ? new URL(src, document.baseURI).href
+      : src;
+    root.style.setProperty(name, `url("${abs}")`);
+  };
+  set("--icon-menu-rail-tile", UI_ICONS.menuRailTile);
+  set("--icon-btn-bauen-amber", UI_ICONS.btnBauenAmberFinal);
+  set("--icon-btn-bauen-grey", UI_ICONS.btnBauenGreyFinal);
+  set("--icon-btn-kaufen-green", UI_ICONS.btnKaufenGreenFinal);
+  set("--icon-btn-kaufen-grey", UI_ICONS.btnKaufenGreyFinal);
+  set("--icon-btn-upgrade-purple", UI_ICONS.btnUpgradePurpleFinal);
+  set("--icon-btn-upgrade-grey", UI_ICONS.btnUpgradeGreyFinal);
+  set("--icon-btn-senden-blue", UI_ICONS.btnSendenBlueFinal);
+  set("--icon-btn-senden-red", UI_ICONS.btnSendenRedFinal);
+  set("--icon-btn-senden-grey", UI_ICONS.btnSendenGreyFinal);
+}
 
 /**
  * Leerer Bauplatz je Kontrolle — Deploy-Default = Perspektive (nicht Ortho).

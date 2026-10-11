@@ -13,6 +13,7 @@ import { drawMatch, hitSlot } from "./game/render";
 import { syncTribuneLayout } from "./game/layout";
 import {
   UI_ICONS,
+  applyCssIconUrls,
   preloadIcons,
   standIconPath,
   teamColor,
@@ -455,6 +456,7 @@ const state = {
   highscoreDiff: "normal" as SoloSettings["difficulty"],
 };
 
+applyCssIconUrls();
 document.documentElement.classList.toggle("standalone", isStandalone());
 
 async function goFullscreen(): Promise<boolean> {
