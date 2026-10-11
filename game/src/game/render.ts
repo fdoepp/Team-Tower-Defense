@@ -395,14 +395,9 @@ function drawBlocks(
     ctx.fillStyle = g;
     ctx.fillRect(left - 10, top - 8, bw + 20, bh + 20);
 
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.beginPath();
-    ctx.ellipse(cx, top + bh * 0.92, bw * 0.42, bh * 0.08, 0, 0, Math.PI * 2);
-    ctx.fill();
-
+    // No under-block ellipse/cover — freigegebene Tribünen show open exits.
     const tribSrc = tribuneIconPath(b.id);
     // Cell already native-aspect packed — pad 0 so faces stay 0.5% apart
-    // Tribune assets have solid fronts (no arch tunnels); exit pathing unchanged.
     const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
     if (!drew) {
       ctx.fillStyle =
