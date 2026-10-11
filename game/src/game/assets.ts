@@ -229,7 +229,8 @@ export function baustelleSchildIconPath(
 
 /** Standarte reference size (gang mid) — baustelle signs scale from this. */
 export function standarteSizePx(canvasW: number, canvasH: number): number {
-  return Math.min(canvasW * 0.075, canvasH * 0.1);
+  // +10% vs prior baseline
+  return Math.min(canvasW * 0.075, canvasH * 0.1) * 1.1;
 }
 
 function loadOne(src: string): Promise<HTMLImageElement> {

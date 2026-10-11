@@ -102,6 +102,10 @@ export type BuildSlot = {
   structMaxHp: number;
   /** Contested-time accumulator for neutral mid post auto-level */
   autoLevelAcc: number;
+  /** Seconds this plot has been behind a colored Standarte (capture clock) */
+  bannerHoldAcc: number;
+  /** Seconds a non-Ordner building has spent in enemy Standarte territory */
+  enemyZoneAcc: number;
 };
 
 export type Currencies = {
@@ -229,6 +233,10 @@ export const BANNER_RETREAT_SPEED = 0.012;
 export const BANNER_MIN_GAP = 0.05;
 /** Standarte / build rights stop this far before an enemy Ordnerpost. */
 export const BANNER_POST_STANDOFF = 0.035;
+/** Empty/enemy Bauplatz is claimed after this many seconds behind a Standarte */
+export const BANNER_PLOT_CAPTURE_SEC = 20;
+/** Non-Ordner buildings break after this many seconds in enemy Standarte zone */
+export const ENEMY_ZONE_BUILDING_BREAK_SEC = 30;
 
 export const STEWARD_HIRE_GOLD = 22;
 export const STEWARD_CAP = 2;
@@ -237,12 +245,18 @@ export const NEUTRAL_STEWARD_CAP = 4;
 export const NEUTRAL_STEWARD_RESPAWN = 32;
 /**
  * CANONICAL neutral mid layout:
- * one Level-2 Ordnerpost mid-gang + empty grey Bau plots; no grey Bier/Shop seed.
- * Auto-level over time; produce Ordner up to NEUTRAL_STEWARD_CAP.
+ * one Level-3 Ordnerpost mid-gang + empty grey Bau plots; no grey Bier/Shop seed.
+ * Grey AI builds/levels when unbothered; produce Ordner up to NEUTRAL_STEWARD_CAP.
  */
 export const NEUTRAL_POST_AUTO_LEVEL_CAP = 3;
 /** Real seconds between auto-levels on grey Ordnerposts */
 export const NEUTRAL_POST_AUTO_LEVEL_SEC = 60;
+/** Kickoff Ordner count at the central L3 post */
+export const NEUTRAL_MID_START_STEWARDS = 3;
+/** Grey builds/upgrades only while unbothered this long between actions */
+export const GREY_AI_BUILD_SEC = 28;
+/** How close colored fighters must be to count as “bothering” grey */
+export const GREY_BOTHER_RADIUS_GX = 0.14;
 /** Single mid-gang Ordnerpost index in the neutral block */
 export const NEUTRAL_MID_GANG_INDEX = 4;
 /** @deprecated use NEUTRAL_MID_GANG_INDEX — dual outer posts removed */

@@ -375,7 +375,7 @@ function drawScoreboard(
   ctx.font = `800 ${Math.max(10, Math.floor(ck.h * 0.55))}px Outfit, Manrope, sans-serif`;
   ctx.fillText(`${min}′`, ck.x + ck.w / 2, ck.y + ck.h / 2);
 
-  // Torwahrscheinlichkeit — höhere Leiste: Titel oben, %, Ball unten
+  // Momentum bar only (Torwahrscheinlichkeit label removed — LIVE ticker below)
   const mt = slot("momentumTrack");
   const ch = m.goalChance();
   const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
@@ -383,9 +383,8 @@ function drawScoreboard(
   ctx.fillStyle = "rgba(15,23,42,0.8)";
   ctx.fill();
   const split = mt.x + mt.w * heimPct;
-  // Party fills occupy lower band so the title stays readable
-  const fillY = mt.y + mt.h * 0.38;
-  const fillH = mt.h * 0.56;
+  const fillY = mt.y + mt.h * 0.18;
+  const fillH = mt.h * 0.72;
   ctx.fillStyle = "#2563eb";
   roundRect(ctx, mt.x, fillY, Math.max(4, split - mt.x), fillH, 5);
   ctx.fill();
@@ -393,25 +392,14 @@ function drawScoreboard(
   roundRect(ctx, split, fillY, Math.max(4, mt.x + mt.w - split), fillH, 5);
   ctx.fill();
 
-  const title = "Torwahrscheinlichkeit";
-  const titlePx = Math.max(11, Math.floor(mt.h * 0.34));
-  ctx.font = `900 ${titlePx}px Outfit, Manrope, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "#f8fafc";
-  ctx.strokeStyle = "rgba(15,23,42,0.85)";
-  ctx.lineWidth = Math.max(2, titlePx * 0.16);
-  const titleY = mt.y + mt.h * 0.2;
-  ctx.strokeText(title, w * 0.5, titleY);
-  ctx.fillText(title, w * 0.5, titleY);
-
   const pctY = fillY + fillH / 2;
-  const sidePx = Math.max(10, Math.floor(fillH * 0.55));
+  const sidePx = Math.max(10, Math.floor(fillH * 0.48));
   ctx.font = `800 ${sidePx}px Outfit, Manrope, sans-serif`;
   ctx.lineWidth = Math.max(2, sidePx * 0.16);
   ctx.strokeStyle = "rgba(15,23,42,0.75)";
   ctx.fillStyle = "#f8fafc";
   ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
   ctx.strokeText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
   ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
   ctx.textAlign = "right";
@@ -426,7 +414,7 @@ function drawScoreboard(
     pctY,
   );
 
-  drawTorBall(ctx, split, pctY, fillH * 1.25, m.torBallAngle);
+  drawTorBall(ctx, split, pctY, fillH * 1.15, m.torBallAngle);
 
   // Prominent LIVE ticker directly under the momentum bar
   drawLiveTicker(ctx, m, bx, by, boardW, boardH, mt);
@@ -565,7 +553,7 @@ function drawFrontStandards(
   for (const pole of poles) {
     const src = pole.team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
     const baseY = y + gh * 0.88;
-    const size = Math.min(w * 0.075, h * 0.1);
+    const size = standarteSizePx(w, h);
     const bob = Math.sin(m.realElapsed * 3.5 + (pole.team === "ksc" ? 0 : 1)) * 2;
     // Full standarte asset (includes pole) — upright billboard, no duplicate stroke pole.
     drawPennantUpright(ctx, src, pole.x, baseY + bob, size);
@@ -767,19 +755,17 @@ function drawBuilding(
   // sets foot position + size from the VP facade math — no icon warp/yaw.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
-  // Mid-gang Ordner sits in the fight corridor — keep it compact vs Bau-row stands
-  const midGang = s.blockId === 1 && s.index === 4;
-  // Gebäude ×2.8125 on Bau rows; mid-gang much smaller so it doesn't dominate the Gang
-  const BUILD_SCALE = midGang ? 0.72 : 2.8125;
+  // Same Gebäude scale for Bau-row stands and mid-gang Ordner
+  const BUILD_SCALE = 2.8125;
   let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
     facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, {
-      widthScale: midGang ? 0.7 : 1.35,
-      heightScale: midGang ? 0.95 : 1.92,
-      taper: midGang ? 0.15 : 0.32,
+      widthScale: 1.35,
+      heightScale: 1.92,
+      taper: 0.32,
     });
   }
 
@@ -796,8 +782,7 @@ function drawBuilding(
     const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
     const topY = (facade.tl.y + facade.tr.y) / 2;
     const facadeH = Math.max(1, footY - topY);
-    const raw = Math.min(baseW * 1.05, facadeH) * BUILD_SCALE;
-    size = midGang ? Math.max(24, Math.min(40, raw)) : Math.max(34, raw);
+    size = Math.max(34, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
     ctx.fillStyle = "rgba(15,23,42,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
@@ -1058,11 +1043,8 @@ function personAnimMode(m: Match, f: FanUnit): {
 function personDrawSize(f: FanUnit, h: number): number {
   const onGang = f.state === "gang" || f.invading;
   const moving = f.state === "moving" || onGang;
-  // Mid-gang Ordner steward sits on the post sprite — keep him compact
-  if (f.isSteward && f.homeStandKey?.startsWith("1:4")) {
-    return Math.max(22, h * 0.048);
-  }
-  return Math.max(26, h * (moving ? 0.085 : 0.068));
+  // +10% vs prior baseline
+  return Math.max(28, h * (moving ? 0.0935 : 0.0748));
 }
 
 function drawMannchen(

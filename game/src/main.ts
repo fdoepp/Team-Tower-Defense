@@ -679,14 +679,14 @@ function renderMatchScreen(): void {
             <b id="hud-score">0:0</b>
             <span id="hud-minute">0′</span>
           </div>
-          <div class="pitch-momentum sr-only" aria-label="Torwahrscheinlichkeit">
+          <div class="pitch-momentum sr-only" aria-label="Momentum">
             <div class="momentum-bar" id="momentum-bar">
               <div class="mom-fill heim" id="mom-heim"></div>
               <div class="mom-fill gast" id="mom-gast"></div>
               <div class="mom-knob" id="mom-knob"></div>
             </div>
             <span id="mom-p-heim">Stimmung Heim 1.0</span>
-            <span id="mom-p-tor">Torwahrscheinlichkeit Heim 50%</span>
+            <span id="mom-p-tor">Momentum Heim 50%</span>
             <span id="mom-p-gast">Stimmung Gast 1.0</span>
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
@@ -1515,7 +1515,7 @@ function renderMatchScreen(): void {
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
       if (lpH) lpH.textContent = `Kurve Heim ${m.moodHeim.toFixed(1)}`;
-      if (lpT) lpT.textContent = `Torwahrscheinlichkeit Heim ${Math.round(ch.pHeim * 100)}%`;
+      if (lpT) lpT.textContent = `Momentum Heim ${Math.round(ch.pHeim * 100)}%`;
       if (lpG) lpG.textContent = `Kurve Gast ${m.moodGaeste.toFixed(1)}`;
       const bar = app.querySelector("#momentum-bar");
       if (bar) {

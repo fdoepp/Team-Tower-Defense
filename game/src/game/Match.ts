@@ -17,8 +17,12 @@ import {
   BANNER_ADVANCE_SPEED,
   BANNER_CATCHUP,
   BANNER_MIN_GAP,
+  BANNER_PLOT_CAPTURE_SEC,
   BANNER_POST_STANDOFF,
   BANNER_RETREAT_SPEED,
+  ENEMY_ZONE_BUILDING_BREAK_SEC,
+  GREY_AI_BUILD_SEC,
+  GREY_BOTHER_RADIUS_GX,
   CEMENT_BREAKTHROUGH,
   CEMENT_DOT_PER_SEC,
   CEMENT_SLOW_MUL,
@@ -38,6 +42,7 @@ import {
   NEUTRAL_POST_AUTO_LEVEL_CAP,
   NEUTRAL_POST_AUTO_LEVEL_SEC,
   NEUTRAL_MID_GANG_INDEX,
+  NEUTRAL_MID_START_STEWARDS,
   NEUTRAL_STEWARD_RESPAWN,
   ORDNER_POST_HP_PER_LEVEL,
   ordnerPostMaxHp,
@@ -273,6 +278,8 @@ export class Match {
   captureAcc: Record<string, number> = {};
   aiGold = START_GOLD + AI_START_GOLD_BONUS;
   aiBuildRot = 0;
+  /** Grey economy cadence while unbothered */
+  greyBuildAcc = 0;
   /** soft AI combat resources (same start as player; regen still applies) */
   aiMerch = 0;
   aiBeer = 0;
@@ -332,14 +339,16 @@ export class Match {
           structHp: 0,
           structMaxHp: 0,
           autoLevelAcc: 0,
+          bannerHoldAcc: 0,
+          enemyZoneAcc: 0,
         });
       }
     }
 
     /**
      * CANONICAL neutral mid:
-     * - One Level-2 Ordnerpost exactly mid-gang
-     * - Empty grey Bau plots (far/near) for claim once territory reaches them
+     * - One Level-3 Ordnerpost exactly mid-gang with starting Ordner
+     * - Empty grey Bau plots (far/near); grey AI builds when unbothered
      * - Never seed Bier/Shop on grey — only Ordner on the mid slot
      */
     this.placeBuilding(NEUTRAL_BLOCK, NEUTRAL_MID_GANG_INDEX, "ordner", true, "neutral");
@@ -349,21 +358,24 @@ export class Match {
     if (midPost) {
       midPost.greyNeutral = false;
       midPost.owner = "neutral";
-      midPost.level = 2;
+      midPost.level = 3;
       this.initOrdnerPostHp(midPost);
       midPost.stewardCd = NEUTRAL_STEWARD_RESPAWN;
       midPost.autoLevelAcc = 0;
-      const sp = this.stewardPostPos(midPost);
-      const st = this.makeSteward("neutral", midPost);
-      st.state = "gang";
-      st.path = [];
-      st.pathI = 0;
-      this.setAfter(st, "");
-      st.x = sp.x;
-      st.y = sp.y;
-      st.gangX = this.postGangX(midPost);
-      st.patrolDir = 1;
-      this.fans.push(st);
+      const nStart = Math.min(NEUTRAL_MID_START_STEWARDS, NEUTRAL_STEWARD_CAP);
+      for (let i = 0; i < nStart; i++) {
+        const st = this.makeSteward("neutral", midPost);
+        st.state = "gang";
+        st.path = [];
+        st.pathI = 0;
+        this.setAfter(st, "");
+        const sp = this.stewardPostPos(midPost);
+        st.x = sp.x + (i - (nStart - 1) / 2) * 0.018;
+        st.y = sp.y;
+        st.gangX = this.postGangX(midPost) + (i - (nStart - 1) / 2) * 0.012;
+        st.patrolDir = i % 2 === 0 ? 1 : -1;
+        this.fans.push(st);
+      }
     }
 
     const homeKinds = expandMix(cfg.playerSetup.mix);
@@ -557,6 +569,8 @@ export class Match {
     s.convertBy = null;
     s.prodFlash = 0;
     s.autoLevelAcc = 0;
+    s.bannerHoldAcc = 0;
+    s.enemyZoneAcc = 0;
     if (kind === "bier") s.beer = 40;
     if (kind === "fanshop") s.merch = 40;
     if (kind === "ordner") this.initOrdnerPostHp(s);
@@ -596,8 +610,29 @@ export class Match {
     s.structMaxHp = 0;
     s.stewardCd = 0;
     s.autoLevelAcc = 0;
+    s.bannerHoldAcc = 0;
+    s.enemyZoneAcc = 0;
     this.postFxBand.delete(key);
     this.floatAtSlot(s, "Posten zerstört", false);
+  }
+
+  /** Razed non-Ordner building (enemy-zone decay) */
+  private destroyNonOrdnerBuilding(s: BuildSlot): void {
+    if (!s.building || s.building === "ordner") return;
+    const pos = this.standWorld(s);
+    this.burstPostRubble(pos.x, pos.y);
+    s.building = null;
+    s.beer = 0;
+    s.merch = 0;
+    s.level = 1;
+    s.owner = s.blockId === NEUTRAL_BLOCK ? "neutral" : null;
+    s.greyNeutral = false;
+    s.convertAcc = 0;
+    s.convertBy = null;
+    s.bannerHoldAcc = 0;
+    s.enemyZoneAcc = 0;
+    s.prodFlash = 0;
+    this.floatAtSlot(s, "Gebäude kaputt", false);
   }
 
   private damageOrdnerPost(
@@ -1933,7 +1968,9 @@ export class Match {
     this.tickRecallForDefense(step);
     this.tickAutoDefend(step);
     this.updateBattleLines(step);
+    this.tickBannerTerritory(step);
     this.tickCaptureConvert(step);
+    this.tickGreyEconomy(step);
     this.tickOrdnerPostCombat(step);
     this.tickCombat(step);
     this.tickPyroShots(step);
@@ -3428,8 +3465,8 @@ export class Match {
       return;
     }
 
-    // Offense: always march toward the enemy block across the full gang.
-    // Cement slows + DoTs but never hard-stops (gang stays permeable).
+    // Offense: march toward the enemy. Intact Ordnerposts hard-stop advance;
+    // cement only slows + DoTs. Must destroy the post before pushing past.
     const cementWall = this.cementWallAhead(f);
     const pressingCement =
       cementWall != null &&
@@ -3456,6 +3493,15 @@ export class Match {
     }
 
     f.gangX = clamp(f.gangX + dir * moveSpeed * dt, 0, 1);
+    // Hard wall: never pass an intact hostile Ordnerpost (incl. central)
+    if (team === this.playerTeam || team === this.aiTeam) {
+      const postWall = this.hostilePostWallGx(team);
+      if (postWall != null) {
+        const limit = postWall - dir * 0.012;
+        f.gangX =
+          dir > 0 ? Math.min(f.gangX, limit) : Math.max(f.gangX, limit);
+      }
+    }
     f.x = gangXToWorld(f.gangX);
     let aimY = laneY;
     if (inContact && blocker && Math.abs(blocker.y - laneY) < 0.07) {
@@ -3465,6 +3511,18 @@ export class Match {
       (aimY + Math.sin(this.realElapsed * 3 + f.id) * 0.006 - f.y) *
       Math.min(1, 7 * dt);
     if (inContact) this.applySkirmishSeparation(f, dt);
+
+    // Cannot enter the far block while a hostile Ordnerpost still blocks the way
+    if (team === this.playerTeam || team === this.aiTeam) {
+      const postWall = this.hostilePostWallGx(team);
+      if (postWall != null) {
+        const pastWall =
+          dir > 0
+            ? f.gangX >= postWall - 0.01
+            : f.gangX <= postWall + 0.01;
+        if (pastWall) return;
+      }
+    }
 
     const goalGx = blockIdToGangX(goalBlock);
     const reached =
@@ -3602,10 +3660,195 @@ export class Match {
     return this.seatCountInBlock(blockId, team) > total / 2;
   }
 
+  /** Which colored Standarte currently covers this plot (if any). */
+  private bannerHolderAt(gx: number): TeamId | null {
+    if (this.linePlayer > gx && this.linePlayer >= this.lineAi - BANNER_MIN_GAP) {
+      return this.playerTeam;
+    }
+    if (this.lineAi < gx && this.lineAi <= this.linePlayer + BANNER_MIN_GAP) {
+      return this.aiTeam;
+    }
+    return null;
+  }
+
+  /**
+   * Standarte territory clocks:
+   * - Empty / neutral Bauplätze → claimed after BANNER_PLOT_CAPTURE_SEC
+   * - Non-Ordner buildings in enemy zone → break after ENEMY_ZONE_BUILDING_BREAK_SEC
+   * Ordnerposts are never auto-captured or auto-razed (must be fought).
+   */
+  private tickBannerTerritory(dt: number): void {
+    for (const s of this.slots) {
+      const gx = plotGangX(s.blockId, s.index);
+      const holder = this.bannerHolderAt(gx);
+
+      // --- 20s plot capture (empty / neutral; never Ordner) ---
+      const emptyClaim =
+        !s.building &&
+        holder != null &&
+        (s.owner == null ||
+          s.owner === "neutral" ||
+          s.greyNeutral ||
+          s.owner !== holder);
+      const neutralBldgClaim =
+        !!s.building &&
+        s.building !== "ordner" &&
+        holder != null &&
+        (s.owner === "neutral" || s.greyNeutral);
+
+      if (holder && (emptyClaim || neutralBldgClaim)) {
+        s.bannerHoldAcc += dt;
+        if (s.bannerHoldAcc >= BANNER_PLOT_CAPTURE_SEC) {
+          s.owner = holder;
+          s.greyNeutral = false;
+          s.bannerHoldAcc = 0;
+          s.convertAcc = 0;
+          s.convertBy = null;
+          this.floatAtSlot(s, "Bauplatz", true);
+          this.toast(
+            holder === this.playerTeam
+              ? "Bauplatz eingenommen"
+              : "KI nimmt Bauplatz",
+            2.2,
+            "build",
+          );
+        }
+      } else {
+        s.bannerHoldAcc = Math.max(0, s.bannerHoldAcc - dt * 0.8);
+      }
+
+      // --- 30s enemy-zone break (non-Ordner only) ---
+      if (
+        s.building &&
+        s.building !== "ordner" &&
+        holder &&
+        s.owner &&
+        s.owner !== "neutral" &&
+        s.owner !== holder
+      ) {
+        s.enemyZoneAcc += dt;
+        if (s.enemyZoneAcc >= ENEMY_ZONE_BUILDING_BREAK_SEC) {
+          const was = s.building;
+          this.destroyNonOrdnerBuilding(s);
+          this.toast(
+            was === "bier"
+              ? "Bierstand im Feindgebiet zerstört"
+              : "Fanshop im Feindgebiet zerstört",
+            2.2,
+            "build",
+          );
+        }
+      } else {
+        s.enemyZoneAcc = Math.max(0, s.enemyZoneAcc - dt * 0.9);
+      }
+    }
+  }
+
+  /** True when no colored pressure is contesting the grey mid. */
+  private greyUnbothered(): boolean {
+    const mid = this.slots.find(
+      (s) => s.blockId === NEUTRAL_BLOCK && s.index === NEUTRAL_MID_GANG_INDEX,
+    );
+    if (mid?.building === "ordner" && mid.structHp > 0) {
+      if (mid.structHp < mid.structMaxHp * 0.92) return false;
+    }
+    const midGx = plotGangX(NEUTRAL_BLOCK, NEUTRAL_MID_GANG_INDEX);
+    if (this.linePlayer > midGx - 0.08) return false;
+    if (this.lineAi < midGx + 0.08) return false;
+    for (const f of this.fans) {
+      if (f.hp <= 0) continue;
+      if (f.team !== this.playerTeam && f.team !== this.aiTeam) continue;
+      if (!(f.state === "gang" || f.invading || f.isSteward)) continue;
+      if (Math.abs(f.gangX - midGx) < GREY_BOTHER_RADIUS_GX) return false;
+    }
+    return true;
+  }
+
+  /**
+   * Grey party slowly develops empty mid plots + levels buildings when left alone.
+   */
+  private tickGreyEconomy(dt: number): void {
+    if (!this.greyUnbothered()) {
+      this.greyBuildAcc = Math.max(0, this.greyBuildAcc - dt * 0.5);
+      return;
+    }
+    this.greyBuildAcc += dt;
+    if (this.greyBuildAcc < GREY_AI_BUILD_SEC) return;
+    this.greyBuildAcc = 0;
+
+    // Prefer upgrading existing grey Bier/Shop
+    const greyOwned = this.slots.filter(
+      (s) =>
+        s.blockId === NEUTRAL_BLOCK &&
+        (s.owner === "neutral" || s.greyNeutral) &&
+        !!s.building &&
+        s.building !== "ordner" &&
+        s.level < UPGRADE_MAX,
+    );
+    if (greyOwned.length) {
+      const s = greyOwned.sort((a, b) => a.level - b.level)[0]!;
+      s.level++;
+      this.floatAtSlot(s, `Grau Lv${s.level}`, true);
+      this.toast("Neutral baut aus", 2.0, "build");
+      return;
+    }
+
+    // Place on empty mid plots still outside colored Standarten
+    const empty = this.slots
+      .filter(
+        (s) =>
+          s.blockId === NEUTRAL_BLOCK &&
+          !s.building &&
+          s.index !== NEUTRAL_MID_GANG_INDEX &&
+          (s.owner === "neutral" || s.owner == null || s.greyNeutral) &&
+          !this.inPlayerTerritory(s.blockId, s.index) &&
+          !this.inAiTerritory(s.blockId, s.index),
+      )
+      .sort(
+        (a, b) =>
+          Math.abs(plotGangX(a.blockId, a.index) - 0.5) -
+          Math.abs(plotGangX(b.blockId, b.index) - 0.5),
+      );
+    if (empty.length) {
+      const kinds: BuildingKind[] = ["bier", "fanshop", "ordner"];
+      const kind =
+        kinds[Math.floor(this.realElapsed / GREY_AI_BUILD_SEC) % kinds.length]!;
+      const s = empty[0]!;
+      this.placeBuilding(s.blockId, s.index, kind, true, "neutral");
+      s.greyNeutral = false;
+      s.owner = "neutral";
+      this.floatAtSlot(
+        s,
+        kind === "ordner"
+          ? "Grau Ordner"
+          : kind === "bier"
+            ? "Grau Bier"
+            : "Grau Shop",
+        true,
+      );
+      this.toast("Neutral bebaut Bauplatz", 2.0, "build");
+      return;
+    }
+
+    // No empty plots: nudge Ordner auto-level under cap
+    for (const s of this.slots) {
+      if (
+        s.building === "ordner" &&
+        s.owner === "neutral" &&
+        s.structHp > 0 &&
+        s.level < NEUTRAL_POST_AUTO_LEVEL_CAP
+      ) {
+        s.autoLevelAcc += GREY_AI_BUILD_SEC * 0.45;
+      }
+    }
+  }
+
   /** Stand conversion: battle-line zone + seat majority required */
   private tickCaptureConvert(dt: number): void {
     for (const s of this.slots) {
       if (!s.building) continue;
+      // Ordnerposts must be fought — never soft-converted
+      if (s.building === "ordner") continue;
       const mid = blockIdToGangX(s.blockId);
       let dominant: TeamId | null = null;
       // Booth is in a team's "colored zone" when their battle line has passed the booth's block
