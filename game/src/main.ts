@@ -598,7 +598,7 @@ function renderHighscores(): void {
     if (!rows.length) return `<p class="tiny">${title}: noch leer</p>`;
     return `<h3>${title}</h3><ol class="hs-list">${rows
       .map(
-        (e, i) =>
+        (e) =>
           `<li><b>${escapeHtml(e.name)}</b> <span class="hs-team ${e.team === "ksc" || e.team === "vfb" ? e.team : ""}">${teamShort(e.team)}</span> — ${fmt(e)}</li>`,
       )
       .join("")}</ol>`;
