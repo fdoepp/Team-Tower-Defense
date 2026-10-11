@@ -14,11 +14,11 @@ export const HEIM_BLOCK = 0;
 export const NEUTRAL_BLOCK = 1;
 export const GAST_BLOCK = 2;
 export const NEUTRAL_BLOCKS = [NEUTRAL_BLOCK] as const;
-export const SEATS_PER_BLOCK = 12;
-export const SEAT_COLS = 3;
-export const SEAT_ROWS = 4;
+export const SEATS_PER_BLOCK = 15;
+export const SEAT_COLS = 5;
+export const SEAT_ROWS = 3;
 /** Soft visual packing — gameplay can exceed; positions wrap into this density. */
-export const VISUAL_CROWD_SOFT_CAP = 20;
+export const VISUAL_CROWD_SOFT_CAP = 24;
 
 /**
  * Vertical pack (~thirds):
@@ -57,12 +57,13 @@ export const L = {
 
 /**
  * Native tribune PNG sizes + opaque floor-face pads (px, measured).
- * Transparent side pads are overlapped so visible platforms sit 0.5% apart.
+ * Runtime: freigegebene wide150 (+50 % Breite). Transparent side pads overlap
+ * so visible platforms sit ~0.5% apart.
  */
 export const TRIBUNE_NATIVE = [
-  { w: 426, h: 309, faceL: 6, faceR: 29 }, // Heim blue
-  { w: 386, h: 308, faceL: 6, faceR: 6 }, // Neutral grey
-  { w: 426, h: 309, faceL: 28, faceR: 6 }, // Gäste red
+  { w: 639, h: 309, faceL: 8, faceR: 8 }, // Heim blue wide150
+  { w: 579, h: 308, faceL: 8, faceR: 8 }, // Neutral grey wide150
+  { w: 639, h: 309, faceL: 8, faceR: 8 }, // Gäste red wide150
 ] as const;
 export type TribuneRectNorm = { x: number; y: number; w: number; h: number };
 
@@ -78,7 +79,7 @@ type TribunePack = {
 
 let _pack: TribunePack | null = null;
 /** Bump when tribune packing rules change (invalidates hot-reload cache). */
-const TRIBUNE_LAYOUT_REV = 3;
+const TRIBUNE_LAYOUT_REV = 4;
 
 /**
  * Recompute flush tribune strip for the current canvas aspect (W/H).
@@ -292,11 +293,12 @@ export function blockCrowdRect(blockId: number): {
   height: number;
 } {
   const r = tribuneRect(blockId);
+  // wide150 floor: slightly tighter side walls, keep clear of front exits
   return {
-    left: r.x + r.w * 0.12,
-    top: r.y + r.h * 0.18,
-    width: r.w * 0.76,
-    height: r.h * 0.72,
+    left: r.x + r.w * 0.1,
+    top: r.y + r.h * 0.16,
+    width: r.w * 0.8,
+    height: r.h * 0.62,
   };
 }
 
@@ -319,7 +321,7 @@ export function crowdHomePos(
   index: number,
 ): { x: number; y: number } {
   const r = blockCrowdRect(blockId);
-  const cols = 4;
+  const cols = 5;
   const rows = 3;
   const cells = cols * rows;
   const idx = Math.max(0, index | 0);

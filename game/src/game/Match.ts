@@ -1013,19 +1013,42 @@ export class Match {
       });
     }
     const M = this.momentum;
-    if (Math.abs(M) > 0.42) {
+    // Torchance-Güte: Abstand zum Threshold (GOAL_MOMENTUM_EDGE)
+    const edgeFrac = Math.abs(M) / GOAL_MOMENTUM_EDGE;
+    const ourSide = M > 0;
+    if (edgeFrac >= 0.92 && this.goalLockT <= 0) {
       cands.push({
-        key: M > 0 ? "mom-up" : "mom-down",
-        text:
-          M > 0.55
-            ? "Momentum auf unserer Seite"
-            : M < -0.55
-              ? "Das Momentum kippt"
-              : M > 0
-                ? "Kurve zieht an"
-                : "Gegnerische Kurve kommt",
+        key: ourSide ? "tor-imminent-us" : "tor-imminent-them",
+        text: ourSide
+          ? "Tor steht bevor — Kurve drückt voll durch!"
+          : "Gegner-Tor droht — Stimmung kippt!",
+        channel: "match",
+        prio: 88,
+      });
+    } else if (edgeFrac >= 0.7) {
+      cands.push({
+        key: ourSide ? "tor-hot-us" : "tor-hot-them",
+        text: ourSide
+          ? "Sehr gute Torchance — Ball fast im Torraum"
+          : "Gefährliche Torchance für den Gegner",
+        channel: "match",
+        prio: 78,
+      });
+    } else if (edgeFrac >= 0.45) {
+      cands.push({
+        key: ourSide ? "tor-ok-us" : "tor-ok-them",
+        text: ourSide
+          ? "Torchance wächst — Kurve zieht an"
+          : "Gegnerische Kurve kommt gefährlich nah",
         channel: "crowd",
-        prio: 60 + Math.round(Math.abs(M) * 20),
+        prio: 62,
+      });
+    } else if (Math.abs(M) > 0.28) {
+      cands.push({
+        key: ourSide ? "mom-up" : "mom-down",
+        text: ourSide ? "Momentum auf unserer Seite" : "Das Momentum kippt",
+        channel: "crowd",
+        prio: 50 + Math.round(Math.abs(M) * 15),
       });
     }
     const home = HEIM_BLOCK;

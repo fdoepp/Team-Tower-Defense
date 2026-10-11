@@ -50,9 +50,10 @@ export type SlotEmptyOrientation = "parallel" | "iso" | "persp";
 export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "persp";
 
 export const SCENE_ASSETS = {
-  tribuneBlue: uiPath("tribuneBlue", "assets/tribune-block-blue.png"),
-  tribuneGrey: uiPath("tribuneGrey", "assets/tribune-block-grey.png"),
-  tribuneRed: uiPath("tribuneRed", "assets/tribune-block-red.png"),
+  /** Runtime uses freigegebene wide150 (+50 % Breite); Normalmaß remains in DB. */
+  tribuneBlue: uiPath("tribuneBlueWide150", "icons/ui-final/tribune-block-blue-wide150.png"),
+  tribuneGrey: uiPath("tribuneGreyWide150", "icons/ui-final/tribune-block-grey-wide150.png"),
+  tribuneRed: uiPath("tribuneRedWide150", "icons/ui-final/tribune-block-red-wide150.png"),
   /** Binding match backdrop — see MATCH_LAYOUT_TOKENS.json / stadium-background rule */
   stadiumFloodlightDerby: "assets/stadium-floodlight-derby-bg.jpg",
 } as const;
