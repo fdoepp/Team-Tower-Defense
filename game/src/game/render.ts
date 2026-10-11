@@ -19,7 +19,6 @@ import {
   blocksRightNorm,
   boothQuad,
   boothRect,
-  doorPos,
   gangHeight,
   gangY,
   seatPos,
@@ -277,6 +276,7 @@ function drawBlocks(
 
     const tribSrc = tribuneIconPath(b.id);
     // Cell already native-aspect packed — pad 0 so faces stay 0.5% apart
+    // Tribune assets have solid fronts (no arch tunnels); exit pathing unchanged.
     const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
     if (!drew) {
       ctx.fillStyle =
@@ -285,15 +285,6 @@ function drawBlocks(
       ctx.fill();
     }
     // Keine Heim/Neutral/Gäste-Überschriften auf den Tribünen
-
-    const d = doorPos(b.id);
-    const doorW = bw * L.doorFrac * 0.85;
-    const corridorTop = d.y * h;
-    const corridorH = Math.max(8, h * gangY() - corridorTop + 4);
-    const dx = d.x * w - doorW / 2;
-    ctx.fillStyle = "rgba(2,6,23,0.55)";
-    roundRect(ctx, dx, corridorTop - 2, doorW, corridorH + 4, 6);
-    ctx.fill();
   }
 }
 

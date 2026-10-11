@@ -369,14 +369,14 @@ function unitLaneHash(unitId: number): number {
 }
 
 /**
- * Personal gang Y in the middle 80% of the fight corridor (not exact mid).
- * Slight stagger so stacked units stay readable.
+ * Personal gang Y across nearly the full fight corridor (between Bau rows).
+ * Stagger so stacked attackers fill the strip, not a single mid-lane.
  */
 export function gangLaneYForUnit(unitId: number): number {
   const y0 = gangY();
   const h = Math.max(0.02, gangHeight());
   const u = unitLaneHash(unitId);
-  return y0 + h * (0.1 + u * 0.8);
+  return y0 + h * (0.04 + u * 0.92);
 }
 
 export function gangLanePosForUnit(

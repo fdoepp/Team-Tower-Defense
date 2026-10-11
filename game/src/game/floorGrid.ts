@@ -69,12 +69,16 @@ export function floorRowYs(): readonly number[] {
   return FLOOR_ROW_YS;
 }
 
-/** Fight corridor between the two Bau rows (normalized y). */
+/**
+ * Fight corridor = full clear span between the two Bau rows
+ * (far plot bottom → near plot top), including the former plot buffers.
+ */
 export function floorGangBand(): { y0: number; y1: number; mid: number; h: number } {
-  const rows = floorRowYs();
-  const y0 = rows[1]!;
-  const y1 = rows[2]!;
-  return { y0, y1, mid: (y0 + y1) / 2, h: y1 - y0 };
+  const far = floorBauBand(0);
+  const near = floorBauBand(1);
+  const y0 = far.yBot;
+  const y1 = near.yTop;
+  return { y0, y1, mid: (y0 + y1) / 2, h: Math.max(0.02, y1 - y0) };
 }
 
 /** Bau band edges with gang buffer applied (r=0 far, r=1 near). */

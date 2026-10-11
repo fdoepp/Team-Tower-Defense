@@ -234,8 +234,8 @@ select {
   --rail-w: var(--rail-action-w);
   --rail-btn-h: clamp(42px, 10vh, 54px);
   --rail-icon: clamp(40px, 7vh, 52px);
-  --wallet-icon: 38px; /* ×1.5 vs prior 25px */
-  --hud-scale: 1.725; /* wallet text ×1.5 vs prior 1.15 */
+  --wallet-icon: 23px; /* 40% smaller than 38px wallet enlarge */
+  --hud-scale: 1.035; /* 40% smaller than 1.725 wallet enlarge */
   flex: 1;
   min-height: 0;
   width: 100%;
