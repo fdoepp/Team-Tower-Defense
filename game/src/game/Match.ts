@@ -2198,8 +2198,12 @@ export class Match {
     this.aiGold = Math.max(0, this.aiGold - aiStewards * STEWARD_GOLD_PER_SEC * dt);
 
     this.buildPulse += dt;
+    // Cache once per economy tick — used for gain + float (must stay in sync)
+    const secThreatened = this.playerSecurityThreatened();
     for (const s of this.slots) {
       if (!s.building || s.greyNeutral) continue;
+      // Razed Ordnerposten must not keep minting Sicherheit
+      if (s.building === "ordner" && s.structHp <= 0) continue;
       const rate = productionRate(s.level || 1);
       if (s.building === "bier") {
         s.beer = clamp(s.beer + 0.85 * rate * dt, 0, s.capacity);
@@ -2207,18 +2211,16 @@ export class Match {
         s.merch = clamp(s.merch + 0.85 * rate * dt, 0, s.capacity);
       }
       if (s.owner === this.playerTeam) {
-        const p = this.standWorld(s);
         if (s.building === "bier") {
           this.gain("beer", PROD_BEER * rate * dt, undefined, "BIER");
         } else if (s.building === "ordner") {
           // Own posts only raise Sicherheit above the base floor while territory is safe
-          if (!this.playerSecurityThreatened()) {
+          if (!secThreatened) {
             this.gain("security", PROD_SECURITY * rate * dt, undefined, "SICHERHEIT");
           }
         } else if (s.building === "fanshop") {
           this.gain("merch", PROD_MERCH * rate * dt, undefined, "FANARTIKEL");
         }
-        void p;
       } else if (s.owner === this.aiTeam) {
         this.aiGold += 0.12 * rate * dt;
         // Mirror player production into AI send/buy wallets
@@ -2240,6 +2242,15 @@ export class Match {
       for (const s of this.slots) {
         if (!s.building || s.greyNeutral) continue;
         if (s.owner !== this.playerTeam && s.owner !== this.aiTeam) continue;
+        if (s.building === "ordner" && s.structHp <= 0) continue;
+        // Player Sicherheit float only when the wallet actually gains
+        if (
+          s.owner === this.playerTeam &&
+          s.building === "ordner" &&
+          secThreatened
+        ) {
+          continue;
+        }
         const n = Math.max(1, Math.round(productionRate(s.level || 1)));
         s.prodFlash = 1;
         if (s.owner === this.playerTeam) {
