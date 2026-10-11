@@ -323,7 +323,7 @@ const SB_SLOTS = {
   logoGast: { x: 0.74, y: 0.28, w: 0.18, h: 0.44 },
   score: { x: 0.32, y: 0.3, w: 0.36, h: 0.36 },
   clock: { x: 0.45, y: 0.17, w: 0.1, h: 0.14 },
-  momentumTrack: { x: 0.1, y: 0.78, w: 0.8, h: 0.14 },
+  momentumTrack: { x: 0.1, y: 0.7, w: 0.8, h: 0.24 },
 } as const;
 
 /** Empty chrome + live overlays (STORAGE_CANON). Sizes: MATCH_LAYOUT_TOKENS. */
@@ -387,65 +387,58 @@ function drawScoreboard(
   ctx.font = `800 ${Math.max(10, Math.floor(ck.h * 0.55))}px Outfit, Manrope, sans-serif`;
   ctx.fillText(`${min}′`, ck.x + ck.w / 2, ck.y + ck.h / 2);
 
-  // Torwahrscheinlichkeit — Parteienbalken + Label in der Leiste + Ball
+  // Torwahrscheinlichkeit — höhere Leiste: Titel oben, %, Ball unten
   const mt = slot("momentumTrack");
   const ch = m.goalChance();
   const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
-  roundRect(ctx, mt.x, mt.y, mt.w, mt.h, 6);
-  ctx.fillStyle = "rgba(15,23,42,0.75)";
+  roundRect(ctx, mt.x, mt.y, mt.w, mt.h, 7);
+  ctx.fillStyle = "rgba(15,23,42,0.8)";
   ctx.fill();
   const split = mt.x + mt.w * heimPct;
+  // Party fills occupy lower band so the title stays readable
+  const fillY = mt.y + mt.h * 0.38;
+  const fillH = mt.h * 0.56;
   ctx.fillStyle = "#2563eb";
-  roundRect(ctx, mt.x, mt.y, Math.max(4, split - mt.x), mt.h, 6);
+  roundRect(ctx, mt.x, fillY, Math.max(4, split - mt.x), fillH, 5);
   ctx.fill();
   ctx.fillStyle = "#dc2626";
-  roundRect(ctx, split, mt.y, Math.max(4, mt.x + mt.w - split), mt.h, 6);
+  roundRect(ctx, split, fillY, Math.max(4, mt.x + mt.w - split), fillH, 5);
   ctx.fill();
 
-  const barMidY = mt.y + mt.h / 2;
-  const sidePx = Math.max(9, Math.floor(mt.h * 0.4));
+  const title = "Torwahrscheinlichkeit";
+  const titlePx = Math.max(11, Math.floor(mt.h * 0.34));
+  ctx.font = `900 ${titlePx}px Outfit, Manrope, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#f8fafc";
+  ctx.strokeStyle = "rgba(15,23,42,0.85)";
+  ctx.lineWidth = Math.max(2, titlePx * 0.16);
+  const titleY = mt.y + mt.h * 0.2;
+  ctx.strokeText(title, w * 0.5, titleY);
+  ctx.fillText(title, w * 0.5, titleY);
+
+  const pctY = fillY + fillH / 2;
+  const sidePx = Math.max(10, Math.floor(fillH * 0.55));
   ctx.font = `800 ${sidePx}px Outfit, Manrope, sans-serif`;
-  ctx.lineWidth = Math.max(2, sidePx * 0.18);
+  ctx.lineWidth = Math.max(2, sidePx * 0.16);
   ctx.strokeStyle = "rgba(15,23,42,0.75)";
   ctx.fillStyle = "#f8fafc";
   ctx.textAlign = "left";
-  ctx.strokeText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 6, barMidY);
-  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 6, barMidY);
+  ctx.strokeText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
+  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
   ctx.textAlign = "right";
   ctx.strokeText(
     `Gast ${Math.round((1 - heimPct) * 100)}%`,
-    mt.x + mt.w - 6,
-    barMidY,
+    mt.x + mt.w - 7,
+    pctY,
   );
   ctx.fillText(
     `Gast ${Math.round((1 - heimPct) * 100)}%`,
-    mt.x + mt.w - 6,
-    barMidY,
+    mt.x + mt.w - 7,
+    pctY,
   );
 
-  // Title chip centered in the bar (readable over both party fills)
-  const title = "Torwahrscheinlichkeit";
-  const titlePx = Math.max(10, Math.floor(mt.h * 0.48));
-  ctx.font = `900 ${titlePx}px Outfit, Manrope, sans-serif`;
-  ctx.textAlign = "center";
-  const tw = ctx.measureText(title).width;
-  const padX = Math.max(8, titlePx * 0.45);
-  const padY = Math.max(2, titlePx * 0.18);
-  const chipW = tw + padX * 2;
-  const chipH = titlePx + padY * 2;
-  const chipX = w * 0.5 - chipW / 2;
-  const chipY = barMidY - chipH / 2;
-  ctx.fillStyle = "rgba(15,23,42,0.72)";
-  roundRect(ctx, chipX, chipY, chipW, chipH, Math.min(8, chipH * 0.45));
-  ctx.fill();
-  ctx.strokeStyle = "rgba(248,250,252,0.35)";
-  ctx.lineWidth = 1;
-  roundRect(ctx, chipX, chipY, chipW, chipH, Math.min(8, chipH * 0.45));
-  ctx.stroke();
-  ctx.fillStyle = "#f8fafc";
-  ctx.fillText(title, w * 0.5, barMidY);
-
-  drawTorBall(ctx, split, barMidY, mt.h * 1.35, m.torBallAngle);
+  drawTorBall(ctx, split, pctY, fillH * 1.25, m.torBallAngle);
   ctx.restore();
 }
 
