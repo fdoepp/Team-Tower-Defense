@@ -110,7 +110,6 @@ import {
   blockCenterX,
   blockIdToGangX,
   blockTopY,
-  blockWidthNorm,
   blockCrowdRect,
   boothCenter,
   boothRect,
@@ -141,6 +140,8 @@ export type MatchResult = {
   reason: "score" | "et" | "pens" | "invade";
   score: [number, number];
   detail: string;
+  minute: number;
+  difficulty: AiDifficulty;
 };
 
 let nextId = 1;
@@ -180,6 +181,8 @@ export type ConfettiBit = {
   color: string;
   t: number;
   life: number;
+  /** Keep celebration confetti inside this block's platform */
+  blockId?: number;
 };
 
 export type PyroProjectile = {
@@ -323,6 +326,10 @@ export class Match {
   private stormFxCd = 0;
   /** Post-goal lock so Bierrunde can swing momentum the other way */
   private goalLockT = 0;
+  /** Team currently celebrating a Tor in-block (no stand trips yet) */
+  private goalPartyTeam: TeamId | null = null;
+  /** Remaining celebration time before Glücksbiergang */
+  private goalPartyT = 0;
   /** battle line gangX 0..1 (vorderster Ultra) */
   linePlayer = 0;
   lineAi = 1;
@@ -1994,6 +2001,7 @@ export class Match {
     this.tickJubelMomentum(step);
     this.tickBlockStorm(step);
     this.tickMatch(step);
+    this.tickGoalParty(step);
     this.tickAi(step);
     this.tickFloats(step);
     this.tickToasts(step);
@@ -2030,25 +2038,26 @@ export class Match {
             else this.burstFireworkRocket(f, club);
           }
         }
-        if (Math.random() < 0.7 * step * 12) {
+        // Sparse in-block sparkle only (no full-pitch confetti rain)
+        if (Math.random() < 0.22 * step * 6) {
           const isPyro = f.kind === "ultras";
           const isHool = f.kind === "hooligans";
           const color =
             f.team === "ksc" ? "#3b82f6" : f.team === "vfb" ? "#ef4444" : "#9ca3af";
           this.moodFx.push({
             kind: isPyro ? "smoke" : isHool ? "spark" : "note",
-            x: f.x + (Math.random() - 0.5) * 0.04,
+            x: f.x + (Math.random() - 0.5) * 0.03,
             y: f.y - 0.03,
-            vx: (Math.random() - 0.5) * 0.055,
-            vy: -0.06 - Math.random() * 0.05,
+            vx: (Math.random() - 0.5) * 0.04,
+            vy: -0.05 - Math.random() * 0.04,
             color: isPyro
               ? color
               : Math.random() < 0.5
                 ? color
                 : "#fde68a",
             t: 0,
-            life: isPyro ? 1.5 : 1.1,
-            size: isPyro ? 0.028 : isHool ? 0.01 : 0.014,
+            life: isPyro ? 1.1 : 0.85,
+            size: isPyro ? 0.022 : isHool ? 0.009 : 0.012,
           });
         }
       }
@@ -2828,6 +2837,9 @@ export class Match {
    * Grey Fans → any team's Bier or Fanshop every 20–30s.
    */
   private maybeStartStandVisit(f: FanUnit): void {
+    // During Torjubel stay in the block — Glücksbiergang starts after the party
+    if (f.cheerT > 0) return;
+    if (this.goalPartyT > 0 && f.team === this.goalPartyTeam) return;
     if (f.team === "neutral") {
       this.maybeStartNeutralShopTrip(f);
       return;
@@ -4555,25 +4567,24 @@ export class Match {
       else this.burstFireworkRocket(f, club);
     }
 
-    // Small ambient rain only when someone is celebrating
+    // Small in-block rain only (never full-pitch)
     if (holders.length && (opening || ultras.length + hools.length > 0)) {
-      const cx = blockCenterX(blockId);
-      const top = blockTopY(blockId);
-      const w = blockWidthNorm(blockId);
+      const r = blockCrowdRect(blockId);
       const n = opening
-        ? 8 + ultras.length * 4 + hools.length * 3
-        : 2 + Math.min(4, ultras.length + hools.length);
+        ? 6 + Math.min(8, ultras.length + hools.length)
+        : 2 + Math.min(3, ultras.length + hools.length);
       for (let i = 0; i < n; i++) {
         this.confetti.push({
-          x: cx + (Math.random() - 0.5) * w * 0.9,
-          y: top + 0.02 + Math.random() * 0.1,
-          vx: (Math.random() - 0.5) * 0.22,
-          vy: 0.02 + Math.random() * 0.12,
+          x: r.left + Math.random() * r.width,
+          y: r.top + Math.random() * r.height * 0.5,
+          vx: (Math.random() - 0.5) * 0.12,
+          vy: 0.02 + Math.random() * 0.08,
           rot: Math.random() * Math.PI * 2,
-          vr: (Math.random() - 0.5) * 10,
+          vr: (Math.random() - 0.5) * 8,
           color: i % 2 === 0 ? white : club,
           t: 0,
-          life: 1.5 + Math.random() * 1.0,
+          life: 1.1 + Math.random() * 0.7,
+          blockId,
         });
       }
     }
@@ -4606,14 +4617,54 @@ export class Match {
   private scoreGoal(team: TeamId): void {
     if (team === "ksc") this.scoreKsc++;
     else this.scoreVfb++;
-    // Reset bar to mid — Bierrunde pulls scorers out of the block
+    // Reset bar to mid — Glücksbiergang starts only after in-block party ends
     this.momentum = 0;
     this.goalLockT = GOAL_LOCK_SEC;
     this.lastGoalTeam = team;
     this.scorePulse = 2.6; // longer scoreboard flash for Torjubel
     this.spawnGoalConfetti(team);
     this.startGoalCelebration(team);
+    this.goalPartyTeam = team;
+    this.goalPartyT = 11.5;
     this.toast(`TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`, 10);
+  }
+
+  /** Keep celebrating in-block; when the timer ends → Glücksbiergang. */
+  private tickGoalParty(dt: number): void {
+    if (this.goalPartyT <= 0 || !this.goalPartyTeam) return;
+    this.goalPartyT = Math.max(0, this.goalPartyT - dt);
+    if (this.goalPartyT > 0) return;
+    const team = this.goalPartyTeam;
+    this.goalPartyTeam = null;
+    this.startGluecksBiergang(team);
+  }
+
+  /** After Torjubel: scorers leave for a celebratory Bierstand trip. */
+  private startGluecksBiergang(team: TeamId): void {
+    const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+    let n = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
+      if (f.blockId !== home) continue;
+      if (f.state !== "block" && f.state !== "stand") continue;
+      if (!canVisit(f.kind, "beer")) continue;
+      f.cheerT = 0;
+      f.satisfiedUntil = 0;
+      const stand =
+        this.pickOwnVisitStand(team, home, "bier") ??
+        this.pickHostileBeerBehindBanner(team, home);
+      if (!stand) continue;
+      const wait = this.standWaitPos(stand, f.id);
+      this.startPath(f, this.pathViaDoors(f, stand.blockId, wait), "stand");
+      f.standKey = slotKey(stand.blockId, stand.index);
+      f._wanderTx = wait.x;
+      f._wanderTy = wait.y;
+      n++;
+    }
+    if (n > 0) {
+      this.pushTicker("Glücksbiergang — die Kurve trinkt!", "crowd", 4.2);
+      this.toast("Glücksbiergang!", 3.5, "crowd");
+    }
   }
 
   /**
@@ -4657,17 +4708,18 @@ export class Match {
   }
 
   private burstFanConfetti(f: FanUnit, color: string): void {
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 10; i++) {
       this.confetti.push({
-        x: f.x + (Math.random() - 0.5) * 0.055,
-        y: f.y - 0.02 - Math.random() * 0.04,
-        vx: (Math.random() - 0.5) * 0.28,
-        vy: -0.04 + Math.random() * 0.14,
+        x: f.x + (Math.random() - 0.5) * 0.04,
+        y: f.y - 0.02 - Math.random() * 0.03,
+        vx: (Math.random() - 0.5) * 0.16,
+        vy: -0.03 + Math.random() * 0.1,
         rot: Math.random() * Math.PI * 2,
-        vr: (Math.random() - 0.5) * 12,
+        vr: (Math.random() - 0.5) * 10,
         color,
         t: 0,
-        life: 1.6 + Math.random() * 1.1,
+        life: 1.2 + Math.random() * 0.8,
+        blockId: f.blockId,
       });
     }
   }
@@ -4736,21 +4788,21 @@ export class Match {
 
   private spawnGoalConfetti(team: TeamId): void {
     const blockId = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
-    const cx = blockCenterX(blockId);
-    const top = blockTopY(blockId);
+    const r = blockCrowdRect(blockId);
     const white = "#f8fafc";
     const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
-    for (let i = 0; i < 64; i++) {
+    for (let i = 0; i < 22; i++) {
       this.confetti.push({
-        x: cx + (Math.random() - 0.5) * blockWidthNorm(blockId) * 0.95,
-        y: top + 0.01 + Math.random() * 0.06,
-        vx: (Math.random() - 0.5) * 0.24,
-        vy: 0.03 + Math.random() * 0.16,
+        x: r.left + Math.random() * r.width,
+        y: r.top + Math.random() * r.height * 0.55,
+        vx: (Math.random() - 0.5) * 0.12,
+        vy: 0.02 + Math.random() * 0.1,
         rot: Math.random() * Math.PI * 2,
-        vr: (Math.random() - 0.5) * 10,
+        vr: (Math.random() - 0.5) * 8,
         color: i % 2 === 0 ? white : club,
         t: 0,
-        life: 2.1 + Math.random() * 1.2,
+        life: 1.4 + Math.random() * 0.8,
+        blockId,
       });
     }
   }
@@ -4762,6 +4814,16 @@ export class Match {
       c.y += c.vy * dt;
       c.vy += 0.22 * dt;
       c.rot += c.vr * dt;
+      if (c.blockId != null) {
+        const r = blockCrowdRect(c.blockId);
+        c.x = clamp(c.x, r.left, r.left + r.width);
+        c.y = clamp(c.y, r.top, r.top + r.height);
+        if (c.x <= r.left || c.x >= r.left + r.width) c.vx *= -0.4;
+        if (c.y >= r.top + r.height) {
+          c.vy *= -0.25;
+          c.y = r.top + r.height;
+        }
+      }
     }
     this.confetti = this.confetti.filter((c) => c.t < c.life);
   }
@@ -5102,6 +5164,8 @@ export class Match {
       reason,
       score: [this.scoreKsc, this.scoreVfb],
       detail,
+      minute: this.minute,
+      difficulty: this.cfg.settings.difficulty,
     };
     this.speed = 0;
     this.toast(detail);

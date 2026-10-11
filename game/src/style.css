@@ -71,6 +71,60 @@ button {
   justify-content: center;
 }
 
+.tutorial-screen {
+  max-width: 720px;
+  overflow: auto;
+}
+
+.tutorial-card {
+  text-align: left;
+  max-height: min(58vh, 420px);
+  overflow: auto;
+}
+
+.tutorial-card h2 {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  margin: 0 0 6px;
+}
+
+.tutorial-card section + section {
+  margin-top: 12px;
+}
+
+.tutorial-card ul {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.tutorial-card li + li {
+  margin-top: 6px;
+}
+
+.tutorial-card b {
+  color: var(--ink);
+}
+
+.hs-list {
+  margin: 0 0 12px;
+  padding-left: 1.2rem;
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.hs-list b {
+  color: var(--ink);
+}
+
+.hs-note {
+  color: var(--ok) !important;
+  font-weight: 600;
+}
+
 .setup-actions {
   width: 100%;
   flex-wrap: nowrap;
