@@ -933,7 +933,7 @@ select {
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
 }
 
-/* Gebäude-Upgrade-Panel: lila Chrome sichtbar (nicht transparent strippen) */
+/* Gebäude-Upgrade-Panel: lila Chrome + gleiches Action-Layout wie Personen-Karten */
 .match-shell.matchday .upgrade-panel .ar-cost-btn.upgrade {
   background-color: #6d28d9;
   background-image: url("/icons/ui-final/btn-upgrade-purple.png") !important;
@@ -946,14 +946,80 @@ select {
   flex: 0 0 auto;
   width: 100%;
   max-height: none;
-  min-height: 44px;
+  min-height: 48px;
   aspect-ratio: 320 / 96;
+  container-type: inline-size;
 }
 .match-shell.matchday .upgrade-panel .ar-cost-btn.upgrade.cd,
 .match-shell.matchday .upgrade-panel .ar-cost-btn.upgrade:disabled {
   background-color: #64748b;
   background-image: url("/icons/ui-final/btn-upgrade-grey.png") !important;
   opacity: 0.75;
+}
+.match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .inner.person-btn-inner {
+  --face-left: 2.5%;
+  --face-right: 2%;
+  --face-top: 2%;
+  --face-bot: 2%;
+  --unit-w: 36%;
+  --col-gap: 4%;
+  --yield-gap: 4%;
+  --pay-gap: 0.2em;
+  left: calc(var(--wood-x) + var(--face-left));
+  right: calc(var(--wood-x) + var(--face-right));
+  top: calc(var(--wood-y-top) + var(--face-top));
+  bottom: calc(var(--wood-y-bot) + var(--face-bot));
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--col-gap);
+  font-size: clamp(8px, 11cqw, 13px);
+}
+.match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .unit-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--yield-gap);
+  width: var(--unit-w);
+  max-width: var(--unit-w);
+  min-width: 0;
+  height: 100%;
+  flex: 0 0 var(--unit-w);
+  overflow: hidden;
+}
+.match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .unit-ico {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 68%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  flex: 0 1 auto;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+.match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .unit-col .yield-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15em;
+  max-width: 100%;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  border: 0;
+  font-size: 0.85em;
+}
+.match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .unit-col .yield-chip img {
+  width: 0.95em;
+  height: 0.95em;
+  object-fit: contain;
+}
+.match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .pay {
+  margin-left: auto;
+  font-size: 1.15em;
 }
 
 .match-shell.matchday .build-card .build-top {
