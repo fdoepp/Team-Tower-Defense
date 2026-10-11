@@ -572,17 +572,17 @@ export function stewardHealPerSec(level: number): number {
  * Block crowd: roughly spread home slots + tiny drift, while they
  * bob/cheer in place (not a marching clump).
  */
-export const BLOCK_WANDER_SPEED = 0.022;
-export const BLOCK_WANDER_RETARGET_MIN = 2.8;
-export const BLOCK_WANDER_RETARGET_MAX = 5.5;
-export const BLOCK_WANDER_ARRIVE = 0.01;
-/** Max offset from each fan's home slot while idling */
-export const BLOCK_HOME_RADIUS = 0.028;
-/** Soft spring back toward home so the stand stays spread out */
-export const BLOCK_HOME_PULL = 1.1;
+export const BLOCK_WANDER_SPEED = 0.038;
+export const BLOCK_WANDER_RETARGET_MIN = 1.6;
+export const BLOCK_WANDER_RETARGET_MAX = 3.4;
+export const BLOCK_WANDER_ARRIVE = 0.012;
+/** Max offset from each fan's home slot while idling — fill the terrace */
+export const BLOCK_HOME_RADIUS = 0.07;
+/** Soft spring toward home (weaker = freer milling across the block) */
+export const BLOCK_HOME_PULL = 0.45;
 /** Soft push-apart so crowded stands don't fully stack */
-export const BLOCK_SEPARATION_RADIUS = 0.036;
-export const BLOCK_SEPARATION_PUSH = 0.055;
+export const BLOCK_SEPARATION_RADIUS = 0.048;
+export const BLOCK_SEPARATION_PUSH = 0.08;
 
 export const BLOCK_META = [
   { id: 0, side: "heim" as const, label: "HEIM", fill: "#1f6feb", stripe: "#f3f0e7" },

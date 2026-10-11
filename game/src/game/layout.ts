@@ -401,6 +401,17 @@ export function gangLaneYForUnit(unitId: number): number {
   return y0 + h * (0.04 + u * 0.92);
 }
 
+/**
+ * Personal depth along the gang (world-X offset from the battle line).
+ * Without this, every unit at the same gangX sits on one vertical line.
+ */
+export function gangLaneDepthForUnit(unitId: number): number {
+  const u = unitLaneHash(unitId * 3 + 11);
+  const v = unitLaneHash(unitId * 7 + 29);
+  // ±~3.5% field width, second hash breaks pair-clustering
+  return (u - 0.5) * 0.07 + (v - 0.5) * 0.02;
+}
+
 export function gangLanePosForUnit(
   blockId: number,
   unitId: number,
@@ -415,9 +426,9 @@ export function gangLanePosForUnit(
  * Wait / queue band outside the building footprint (normalized 0–1 field).
  * Wider ring so queued fans fan out instead of stacking on the booth.
  */
-export const STAND_WAIT_BAND = 0.14;
+export const STAND_WAIT_BAND = 0.18;
 /** Separation / wander clamp radius around a stand */
-export const STAND_WAIT_RADIUS = 0.155;
+export const STAND_WAIT_RADIUS = 0.2;
 
 export function slotIndicesForBlock(blockId: number): readonly number[] {
   if (blockId === NEUTRAL_BLOCK) return BUILDABLE_INDICES_NEUTRAL;

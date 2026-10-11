@@ -3,9 +3,26 @@ import { uiFinalIconPath } from "./uiFinal";
 
 export type TeamColor = "blue" | "red" | "grey";
 
+/**
+ * Resolve a public/ asset for GitHub Pages project sites and local Vite.
+ * Never use a leading "/" alone — that breaks under /Team-Tower-Defense/.
+ */
+export function assetUrl(path: string): string {
+  const clean = path.replace(/^\.\//, "").replace(/^\//, "");
+  // Vite `base: "./"` → keep document-relative paths (Pages uses trailing /).
+  // Never emit a root-absolute "/icons/…" — that 404s under /Team-Tower-Defense/.
+  const base = import.meta.env.BASE_URL || "./";
+  if (base.startsWith("/") || base.startsWith("http")) {
+    const b = base.endsWith("/") ? base : `${base}/`;
+    return `${b}${clean}`;
+  }
+  return clean;
+}
+
 /** Prefer Final-UI DB when released; else legacy icons/ui/. */
 function uiPath(id: string, legacy: string): string {
-  return uiFinalIconPath(id) ?? legacy;
+  const rel = uiFinalIconPath(id) ?? legacy;
+  return assetUrl(rel);
 }
 
 const cache = new Map<string, HTMLImageElement>();
@@ -55,7 +72,7 @@ export const SCENE_ASSETS = {
   tribuneGrey: uiPath("tribuneGreyWide150", "icons/ui-final/tribune-block-grey-wide150.png"),
   tribuneRed: uiPath("tribuneRedWide150", "icons/ui-final/tribune-block-red-wide150.png"),
   /** Binding match backdrop — see MATCH_LAYOUT_TOKENS.json / stadium-background rule */
-  stadiumFloodlightDerby: "assets/stadium-floodlight-derby-bg.jpg",
+  stadiumFloodlightDerby: assetUrl("assets/stadium-floodlight-derby-bg.jpg"),
 } as const;
 
 export function tribuneIconPath(blockId: number): string {

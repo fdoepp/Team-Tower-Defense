@@ -68,6 +68,7 @@ import {
   type ScoreBoardKind,
 } from "./game/highscores";
 import {
+  bindAudioGestures,
   setAmbienceFromMatch,
   sfx,
   startAmbience,
@@ -76,6 +77,7 @@ import {
 } from "./game/sound";
 
 void preloadIcons();
+bindAudioGestures();
 
 function buildingYieldCurrency(kind: BuildingKind): string {
   if (kind === "bier") return UI_ICONS.currencyBier;
@@ -1163,13 +1165,11 @@ function renderMatchScreen(): void {
 
       const bauIco = app.querySelector<HTMLImageElement>(`#build-ico-${kind}`);
       if (bauIco) {
-        const src = standIconPath(kind, tc, 1);
-        bauIco.src = src.startsWith("/") ? src : `/${src}`;
+        bauIco.src = standIconPath(kind, tc, 1);
       }
       const upIco = app.querySelector<HTMLImageElement>(`#build-up-ico-${kind}`);
       if (upIco) {
-        const src = standIconPath(kind, tc, next);
-        upIco.src = src.startsWith("/") ? src : `/${src}`;
+        upIco.src = standIconPath(kind, tc, next);
       }
 
       setPayAmt(app, `build-pay-${kind}`, BUILD_COST[kind]);

@@ -117,6 +117,7 @@ import {
   crowdHomePos,
   doorPos,
   gangHeight,
+  gangLaneDepthForUnit,
   gangLanePosForUnit,
   gangLaneYForUnit,
   gangMidY,
@@ -2771,13 +2772,25 @@ export class Match {
     });
   }
 
-  /** Micro-target near this fan's spread-out home slot (celebration idle). */
+  /** Micro-target near home, often across a wide slice of the terrace. */
   private retargetBlockWander(f: FanUnit): void {
     const home = crowdHomePos(f.blockId, f.seatIndex ?? 0);
+    const rect = blockCrowdRect(f.blockId);
     const ang = Math.random() * Math.PI * 2;
-    const rad = Math.random() * BLOCK_HOME_RADIUS;
-    f._wanderTx = home.x + Math.cos(ang) * rad;
-    f._wanderTy = home.y + Math.sin(ang) * rad * 0.75;
+    // Mix: local bob around home + occasional stroll across the stand
+    const wide = Math.random() < 0.55;
+    const rad = wide
+      ? (0.25 + Math.random() * 0.75) *
+        Math.min(rect.width, rect.height) *
+        0.42
+      : Math.random() * BLOCK_HOME_RADIUS;
+    let tx = home.x + Math.cos(ang) * rad;
+    let ty = home.y + Math.sin(ang) * rad * 0.95;
+    const pad = 0.01;
+    tx = clamp(tx, rect.left + pad, rect.left + rect.width - pad);
+    ty = clamp(ty, rect.top + pad, rect.top + rect.height - pad);
+    f._wanderTx = tx;
+    f._wanderTy = ty;
     f._wanderCd =
       BLOCK_WANDER_RETARGET_MIN +
       Math.random() * (BLOCK_WANDER_RETARGET_MAX - BLOCK_WANDER_RETARGET_MIN);
@@ -2942,9 +2955,10 @@ export class Match {
     const ang = slot * 2.399963229728653 + stand.blockId * 0.37 + stand.index;
     const ring = 0.12 + ((slot * 5) % 7) / 7 * 0.88;
     const r = edge + STAND_WAIT_BAND * ring;
+    // Full ellipse — was *0.72 on Y which collapsed waiters into a vertical line
     return {
       x: sp.x + Math.cos(ang) * r,
-      y: sp.y + Math.sin(ang) * r * 0.72,
+      y: sp.y + Math.sin(ang) * r,
     };
   }
 
@@ -2953,7 +2967,7 @@ export class Match {
     const waiting = this.fans.filter(
       (f) => f.hp > 0 && !f.isSteward && f.state === "stand" && f.standKey,
     );
-    const sep = STAND_WAIT_RADIUS * 0.35;
+    const sep = STAND_WAIT_RADIUS * 0.45;
     const r2 = sep * sep;
     for (let i = 0; i < waiting.length; i++) {
       const a = waiting[i]!;
@@ -2985,26 +2999,26 @@ export class Match {
     const sp = this.standWorld(stand);
     if (f._wanderTx == null || f._wanderTy == null || (f._wanderCd ?? 0) <= 0) {
       const ang = Math.random() * Math.PI * 2;
-      const r = STAND_WAIT_RADIUS * (0.2 + Math.random() * 0.8);
+      const r = STAND_WAIT_RADIUS * (0.35 + Math.random() * 0.65);
       f._wanderTx = sp.x + Math.cos(ang) * r;
-      f._wanderTy = sp.y + Math.sin(ang) * r * 0.72;
-      f._wanderCd = 0.35 + Math.random() * 0.55;
+      f._wanderTy = sp.y + Math.sin(ang) * r;
+      f._wanderCd = 0.45 + Math.random() * 0.7;
     } else {
       f._wanderCd = (f._wanderCd ?? 0) - dt;
     }
     const tx = f._wanderTx!;
     const ty = f._wanderTy!;
-    const speed = 0.07;
+    const speed = 0.085;
     const d = dist(f.x, f.y, tx, ty);
     if (d > 0.004) {
       const step = Math.min(1, (speed * dt) / d);
       f.x += (tx - f.x) * step;
       f.y += (ty - f.y) * step;
     }
-    // Soft clamp into radius
+    // Soft clamp into circular wait area (no Y squish)
     const dx = f.x - sp.x;
     const dy = f.y - sp.y;
-    const rad = Math.hypot(dx, dy / 0.72);
+    const rad = Math.hypot(dx, dy);
     if (rad > STAND_WAIT_RADIUS) {
       const s = STAND_WAIT_RADIUS / rad;
       f.x = sp.x + dx * s;
@@ -3492,8 +3506,15 @@ export class Match {
   private syncGangFromWorld(f: FanUnit): void {
     const left = blockCenterX(0);
     const right = blockCenterX(BLOCK_COUNT - 1);
-    f.gangX = clamp((f.x - left) / (right - left || 1), 0, 1);
-    f.x = gangXToWorld(f.gangX);
+    // Remove personal depth before mapping back to logical gangX
+    const depth = gangLaneDepthForUnit(f.id);
+    f.gangX = clamp((f.x - depth - left) / (right - left || 1), 0, 1);
+    f.x = this.gangWorldX(f);
+  }
+
+  /** World X = battle-line position + personal depth (breaks the vertical stack). */
+  private gangWorldX(f: FanUnit): number {
+    return gangXToWorld(f.gangX) + gangLaneDepthForUnit(f.id);
   }
 
   /**
