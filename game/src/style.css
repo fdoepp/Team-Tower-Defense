@@ -935,7 +935,7 @@ select {
 
 /* Gebäude-Upgrade-Panel: lila Chrome + gleiches Action-Layout wie Personen-Karten */
 .match-shell.matchday .upgrade-panel .ar-cost-btn.upgrade {
-  background-color: #6d28d9;
+  background-color: transparent;
   background-image: url("/icons/ui-final/btn-upgrade-purple.png") !important;
   background-repeat: no-repeat;
   background-position: center;
@@ -952,7 +952,7 @@ select {
 }
 .match-shell.matchday .upgrade-panel .ar-cost-btn.upgrade.cd,
 .match-shell.matchday .upgrade-panel .ar-cost-btn.upgrade:disabled {
-  background-color: #64748b;
+  background-color: transparent;
   background-image: url("/icons/ui-final/btn-upgrade-grey.png") !important;
   opacity: 0.75;
 }
