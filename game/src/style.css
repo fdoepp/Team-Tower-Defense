@@ -125,6 +125,11 @@ button {
   font-weight: 600;
 }
 
+.hs-sync {
+  margin: 0 0 8px;
+  opacity: 0.85;
+}
+
 .hs-team {
   display: inline-block;
   margin-left: 4px;
