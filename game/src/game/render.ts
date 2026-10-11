@@ -47,6 +47,7 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
+import { clubPrimary, clubSecondary, clubShort } from "./clubs";
 import {
   boothFacadeQuad,
   scaleQuad,
@@ -104,11 +105,11 @@ function drawStormBanner(
   const baseY = (r.y + r.h * 0.42) * h;
   const y = baseY - poleH * raise + wind;
   const x = cx - bw / 2;
-  const isKsc = b.team === "ksc";
-  const fill = isKsc ? "#1d4ed8" : "#b91c1c";
-  const fillMid = isKsc ? "#3b82f6" : "#ef4444";
-  const edge = isKsc ? "#bfdbfe" : "#fecaca";
-  const label = isKsc ? "KSC" : "VfB";
+  // Club kit colors from live branding (testbranch multi-team)
+  const fill = clubPrimary(b.team);
+  const fillMid = fill;
+  const edge = clubSecondary(b.team);
+  const label = clubShort(b.team);
 
   ctx.save();
   ctx.globalAlpha = 0.35 + raise * 0.65;
@@ -481,7 +482,45 @@ function drawScoreboard(
     };
   };
 
-  // Logos are baked into scoreboardChrome — no live Wimpel overlays
+  // Live club badges over baked logo slots (multi-team test branch)
+  const paintCrest = (side: "ksc" | "vfb", key: "logoHeim" | "logoGast") => {
+    const r = slot(key);
+    const pad = Math.min(r.w, r.h) * 0.08;
+    const x = r.x + pad;
+    const y = r.y + pad;
+    const ww = r.w - pad * 2;
+    const hh = r.h - pad * 2;
+    const prim = clubPrimary(side);
+    const sec = clubSecondary(side);
+    roundRect(ctx, x, y, ww, hh, Math.min(8, hh * 0.22));
+    ctx.fillStyle = prim;
+    ctx.fill();
+    ctx.strokeStyle = sec;
+    ctx.lineWidth = Math.max(1.5, hh * 0.06);
+    ctx.stroke();
+    ctx.fillStyle = sec === "#FFFFFF" || sec.toLowerCase() === "#fff" ? "#f8fafc" : sec;
+    // Prefer readable contrast on dark kits
+    const dark =
+      prim === "#000000" ||
+      prim.toLowerCase() === "#000" ||
+      prim === "#241F20" ||
+      prim === "#010E80" ||
+      prim === "#132257" ||
+      prim === "#004812";
+    ctx.fillStyle = dark || sec === "#FFFFFF" || sec.toLowerCase() === "#fff" ? "#f8fafc" : sec;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const short = clubShort(side);
+    let px = Math.max(9, Math.floor(hh * 0.42));
+    ctx.font = `900 ${px}px Outfit, Manrope, sans-serif`;
+    while (px > 7 && ctx.measureText(short).width > ww * 0.88) {
+      px -= 1;
+      ctx.font = `900 ${px}px Outfit, Manrope, sans-serif`;
+    }
+    ctx.fillText(short, x + ww / 2, y + hh / 2 + 0.5);
+  };
+  paintCrest("ksc", "logoHeim");
+  paintCrest("vfb", "logoGast");
 
   ctx.save();
   ctx.textAlign = "center";
@@ -521,10 +560,10 @@ function drawScoreboard(
   const split = mt.x + mt.w * heimPct;
   const fillY = mt.y + mt.h * 0.18;
   const fillH = mt.h * 0.72;
-  ctx.fillStyle = "#2563eb";
+  ctx.fillStyle = clubPrimary("ksc");
   roundRect(ctx, mt.x, fillY, Math.max(4, split - mt.x), fillH, 5);
   ctx.fill();
-  ctx.fillStyle = "#dc2626";
+  ctx.fillStyle = clubPrimary("vfb");
   roundRect(ctx, split, fillY, Math.max(4, mt.x + mt.w - split), fillH, 5);
   ctx.fill();
 
@@ -536,16 +575,18 @@ function drawScoreboard(
   ctx.fillStyle = "#f8fafc";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.strokeText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
-  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
+  const heimTag = clubShort("ksc");
+  const gastTag = clubShort("vfb");
+  ctx.strokeText(`${heimTag} ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
+  ctx.fillText(`${heimTag} ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
   ctx.textAlign = "right";
   ctx.strokeText(
-    `Gast ${Math.round((1 - heimPct) * 100)}%`,
+    `${gastTag} ${Math.round((1 - heimPct) * 100)}%`,
     mt.x + mt.w - 7,
     pctY,
   );
   ctx.fillText(
-    `Gast ${Math.round((1 - heimPct) * 100)}%`,
+    `${gastTag} ${Math.round((1 - heimPct) * 100)}%`,
     mt.x + mt.w - 7,
     pctY,
   );

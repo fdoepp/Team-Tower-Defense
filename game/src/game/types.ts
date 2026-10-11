@@ -10,10 +10,20 @@ export type AiBehavior =
   | "beer"
   | "earlywin";
 
+/**
+ * Side slots stay ksc|vfb for game logic; clubs supply labels + kit colors.
+ * playerTeam = which SIDE the human plays (left/heim = ksc, right/gast = vfb).
+ */
 export type SoloSettings = {
   difficulty: AiDifficulty;
   behavior: AiBehavior;
   playerTeam: TeamId;
+  /** Club branding for the player's side */
+  playerClub: string;
+  /** Club branding for the AI side */
+  aiClub: string;
+  /** Optional derby preset id (for UI / rematch) */
+  derbyId?: string;
 };
 
 /**

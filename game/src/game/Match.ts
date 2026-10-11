@@ -101,6 +101,11 @@ import {
   type TickerChannel,
   type TickerItem,
 } from "./types";
+import {
+  applyClubCssVars,
+  getClub,
+  setSideBranding,
+} from "./clubs";
 import { clamp, expandMix, slotKey, teamLabel } from "./util";
 import { sfx, startAmbience } from "./sound";
 import {
@@ -340,6 +345,22 @@ export class Match {
     this.cfg = cfg;
     this.playerTeam = cfg.settings.playerTeam;
     this.aiTeam = cfg.settings.playerTeam === "ksc" ? "vfb" : "ksc";
+    // Map club kits onto side slots (player side + AI side)
+    const playerClub = cfg.settings.playerClub || "ksc";
+    const aiClub = cfg.settings.aiClub || "vfb";
+    if (this.playerTeam === "ksc") {
+      setSideBranding(playerClub, aiClub);
+    } else {
+      setSideBranding(aiClub, playerClub);
+    }
+    try {
+      applyClubCssVars();
+    } catch {
+      /* non-DOM (tests) */
+    }
+    // Validate clubs exist early
+    getClub(playerClub);
+    getClub(aiClub);
     this.diffProf = difficultyProfile(cfg.settings.difficulty);
     this.aiGold = START_GOLD + this.diffProf.aiGoldBonus;
     this.aiMerch = this.diffProf.aiStartMerch;
