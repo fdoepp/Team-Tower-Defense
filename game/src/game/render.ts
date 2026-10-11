@@ -497,18 +497,19 @@ function drawScoreboard(
   const ck = slot("clock");
   const min = Math.floor(m.minute ?? 0);
   const clockLabel = `${min}′`;
-  // Fit text inside the green circle (square slot ≈ diameter)
-  const maxPx = Math.max(9, Math.floor(Math.min(ck.w, ck.h) * 0.52));
+  // Fit text inside the green circle (square slot ≈ diameter); keep padding for 90′
+  const maxPx = Math.max(8, Math.floor(Math.min(ck.w, ck.h) * 0.42));
   let clockPx = maxPx;
   ctx.font = `800 ${clockPx}px Outfit, Manrope, sans-serif`;
-  while (clockPx > 8 && ctx.measureText(clockLabel).width > ck.w * 0.78) {
+  while (clockPx > 7 && ctx.measureText(clockLabel).width > ck.w * 0.62) {
     clockPx -= 1;
     ctx.font = `800 ${clockPx}px Outfit, Manrope, sans-serif`;
   }
   ctx.fillStyle = "#0f2310";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(clockLabel, ck.x + ck.w / 2, ck.y + ck.h / 2 + ck.h * 0.02);
+  // Optical center: Outfit + prime sits high with middle baseline
+  ctx.fillText(clockLabel, ck.x + ck.w / 2, ck.y + ck.h * 0.58);
 
   // Momentum bar only (Torwahrscheinlichkeit label removed — LIVE ticker below)
   const mt = slot("momentumTrack");
