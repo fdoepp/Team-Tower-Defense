@@ -692,6 +692,18 @@ function renderMatchScreen(): void {
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
         <canvas id="c"></canvas>
+        <!-- Tip proposal A: Stadionsprecher-Chip unter dem Scoreboard -->
+        <div class="tip-chip tip-a hidden" id="tip-a" data-tone="info" aria-live="polite"></div>
+        <!-- Tip proposal B: Seitliche Coach-Karte am Bau-Rand -->
+        <aside class="tip-card tip-b hidden" id="tip-b" data-tone="info" aria-live="polite">
+          <span class="tip-card-label">Hinweis</span>
+          <p class="tip-card-text"></p>
+        </aside>
+        <!-- Tip proposal C: Ticker-Leiste über dem Gang -->
+        <div class="tip-ticker tip-c hidden" id="tip-c" data-tone="info" aria-live="polite">
+          <span class="tip-ticker-tag">LIVE</span>
+          <span class="tip-ticker-text"></span>
+        </div>
         <div class="toast" id="toast"></div>
         <div class="popup-menu hidden" id="build-menu">
           <p class="popup-title" id="build-title">Gebäude</p>
@@ -1535,6 +1547,34 @@ function renderMatchScreen(): void {
           toast.textContent = t.text;
           toast.classList.add("show");
         } else toast.classList.remove("show");
+      }
+      // Three tip display proposals — all driven by the same tip feed
+      const tip = m.activeTip();
+      const tipA = app.querySelector<HTMLElement>("#tip-a");
+      const tipB = app.querySelector<HTMLElement>("#tip-b");
+      const tipC = app.querySelector<HTMLElement>("#tip-c");
+      if (tip) {
+        if (tipA) {
+          tipA.textContent = tip.text;
+          tipA.dataset.tone = tip.tone;
+          tipA.classList.remove("hidden");
+        }
+        if (tipB) {
+          const p = tipB.querySelector(".tip-card-text");
+          if (p) p.textContent = tip.text;
+          tipB.dataset.tone = tip.tone;
+          tipB.classList.remove("hidden");
+        }
+        if (tipC) {
+          const tx = tipC.querySelector(".tip-ticker-text");
+          if (tx) tx.textContent = tip.text;
+          tipC.dataset.tone = tip.tone;
+          tipC.classList.remove("hidden");
+        }
+      } else {
+        tipA?.classList.add("hidden");
+        tipB?.classList.add("hidden");
+        tipC?.classList.add("hidden");
       }
       if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
       if (m.result) {

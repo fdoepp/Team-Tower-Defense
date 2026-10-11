@@ -253,6 +253,13 @@ export class Match {
   private postFxBand = new Map<string, 0 | 1 | 2>();
   speed: SpeedMode = 0;
   toasts: { text: string; t: number }[] = [];
+  /**
+   * Contextual coach tip for HUD (Bier knapp, Momentum, …).
+   * Shown via tip UI proposals in main/style.
+   */
+  tip: { text: string; tone: "warn" | "info" | "hot"; t: number } | null = null;
+  private tipCd = 0;
+  private tipSeen = new Set<string>();
   result: MatchResult | null = null;
   cd = { hooliganOrder: 0, pyroFight: 0 };
   selectedSlot: { blockId: number; index: number } | null = null;
@@ -870,6 +877,128 @@ export class Match {
     return null;
   }
 
+  /** Active coach tip for HUD tip proposals */
+  activeTip(): { text: string; tone: "warn" | "info" | "hot" } | null {
+    if (!this.tip || this.tip.t <= 0) return null;
+    return { text: this.tip.text, tone: this.tip.tone };
+  }
+
+  /**
+   * Contextual tips — short stadium-coach lines when something shifts.
+   * Examples: Bier knapp, Momentum kippt, Ordner unter Druck.
+   */
+  private tickTips(dt: number): void {
+    if (this.tip) {
+      this.tip.t -= dt;
+      if (this.tip.t <= 0) this.tip = null;
+    }
+    this.tipCd = Math.max(0, this.tipCd - dt);
+    if (this.tipCd > 0 || this.tip) return;
+
+    type Cand = { key: string; text: string; tone: "warn" | "info" | "hot"; prio: number };
+    const cands: Cand[] = [];
+    const beer = this.currency.beer;
+    if (beer < 8) {
+      cands.push({
+        key: "beer-low",
+        text: beer < 3 ? "Bier ist leer — Hooligans warten" : "Bier ist knapp",
+        tone: "warn",
+        prio: beer < 3 ? 90 : 70,
+      });
+    }
+    const merch = this.currency.merch;
+    if (merch < 6) {
+      cands.push({
+        key: "merch-low",
+        text: "Fanartikel werden knapp",
+        tone: "warn",
+        prio: 55,
+      });
+    }
+    const M = this.momentum;
+    if (Math.abs(M) > 0.42) {
+      cands.push({
+        key: M > 0 ? "mom-up" : "mom-down",
+        text:
+          M > 0.55
+            ? "Momentum auf unserer Seite"
+            : M < -0.55
+              ? "Das Momentum kippt"
+              : M > 0
+                ? "Kurve zieht an"
+                : "Gegnerische Kurve kommt",
+        tone: M < 0 ? "hot" : "info",
+        prio: 60 + Math.round(Math.abs(M) * 20),
+      });
+    }
+    const home = HEIM_BLOCK;
+    const threatened = this.slots.some(
+      (s) =>
+        s.building === "ordner" &&
+        s.owner === this.playerTeam &&
+        s.structMaxHp > 0 &&
+        s.structHp > 0 &&
+        s.structHp / s.structMaxHp < 0.4,
+    );
+    if (threatened) {
+      cands.push({
+        key: "ordner-dmg",
+        text: "Ordnerpost unter Druck",
+        tone: "hot",
+        prio: 85,
+      });
+    }
+    if (this.countBlockInvaders(this.aiTeam, home) > 0) {
+      cands.push({
+        key: "home-invade",
+        text: "Feind im Heimblock — verteidigen!",
+        tone: "hot",
+        prio: 95,
+      });
+    }
+    const emptyBier = this.slots.some(
+      (s) =>
+        s.building === "bier" &&
+        s.owner === this.playerTeam &&
+        s.beer < 1,
+    );
+    if (emptyBier) {
+      cands.push({
+        key: "shelf-empty",
+        text: "Bierstand ausverkauft — Nachschub!",
+        tone: "warn",
+        prio: 65,
+      });
+    }
+    if (this.minute > 70 && this.minute < 85 && Math.abs(this.scoreKsc - this.scoreVfb) <= 1) {
+      cands.push({
+        key: "late-game",
+        text: "Schlussphase — jede Aktion zählt",
+        tone: "info",
+        prio: 40,
+      });
+    }
+
+    cands.sort((a, b) => b.prio - a.prio);
+    for (const c of cands) {
+      if (this.tipSeen.has(c.key)) continue;
+      this.tipSeen.add(c.key);
+      this.tip = { text: c.text, tone: c.tone, t: 4.8 };
+      this.tipCd = 7.5;
+      // Allow key tips to resurface later in the match
+      if (this.tipSeen.size > 6) {
+        const first = this.tipSeen.values().next().value;
+        if (first) this.tipSeen.delete(first);
+      }
+      return;
+    }
+    // Soft reset so tips can repeat when situation persists
+    if (cands.length && this.tipCd <= 0) {
+      this.tipSeen.clear();
+      this.tipCd = 4;
+    }
+  }
+
   canBuy(kind: FanKind): boolean {
     const c = BUY_COST[kind];
     if (kind === "normalos") return this.currency.security >= c.security;
@@ -1231,6 +1360,18 @@ export class Match {
     void dt;
   }
 
+  /**
+   * Prefer a foe on a similar Y-band (skirmish pocket) over the absolute
+   * nearest clump — keeps 4v6 fights as distributed 1v1 / 2v2 instead of
+   * one stacked melee blob.
+   */
+  private skirmishScore(ax: number, ay: number, bx: number, by: number): number {
+    const dx = ax - bx;
+    const dy = ay - by;
+    // Heavy Y weight so units stick to their lane band when choosing targets
+    return Math.hypot(dx, dy * 2.6);
+  }
+
   /** Nearest hostile unit or Ordnerpost for offense targeting. */
   private nearestHostileEngage(
     a: FanUnit,
@@ -1241,6 +1382,7 @@ export class Match {
     const reach = a.rangedPyro ? RANGED_RANGE : MELEE_RANGE;
     let bestUnit: FanUnit | null = null;
     let bestUnitD = Number.POSITIVE_INFINITY;
+    let bestUnitScore = Number.POSITIVE_INFINITY;
     for (const b of this.fans) {
       if (!this.isHostileUnit(a, b)) continue;
       const sameBlockFight =
@@ -1261,7 +1403,9 @@ export class Match {
         (b.state === "moving" && Math.abs(b.y - midY) < 0.12);
       if (!sameBlockFight && !(aOnCorridor && bOnCorridor)) continue;
       const d = dist(a.x, a.y, b.x, b.y);
-      if (d < bestUnitD) {
+      const score = this.skirmishScore(a.x, a.y, b.x, b.y);
+      if (score < bestUnitScore || (score === bestUnitScore && d < bestUnitD)) {
+        bestUnitScore = score;
         bestUnitD = d;
         bestUnit = b;
       }
@@ -1686,7 +1830,7 @@ export class Match {
       this.tickToasts(dt);
       this.tickConfetti(dt);
       this.tickMoodFx(dt);
-      if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - dt * 1.2);
+      if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - dt * 0.55);
       return;
     }
     const step = dt * this.speed;
@@ -1721,7 +1865,7 @@ export class Match {
       this.tickFloats(step);
       this.tickToasts(step);
       this.tickConfetti(step);
-      if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - step * 1.2);
+      if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - step * 0.55);
       return;
     }
 
@@ -1732,7 +1876,9 @@ export class Match {
       this.moodFloatCd.heim = Math.max(0, this.moodFloatCd.heim - step);
     if (this.moodFloatCd.gast > 0)
       this.moodFloatCd.gast = Math.max(0, this.moodFloatCd.gast - step);
-    if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - step * 1.15);
+    // Slower decay so Torjubel scoreboard flash stays readable longer
+    if (this.scorePulse > 0)
+      this.scorePulse = Math.max(0, this.scorePulse - step * 0.55);
 
     this.tickEconomy(step);
     this.tickSecurityBaseline(step);
@@ -1755,6 +1901,7 @@ export class Match {
     this.tickAi(step);
     this.tickFloats(step);
     this.tickToasts(step);
+    this.tickTips(step);
     this.tickConfetti(step);
     this.tickMoodFx(step);
 
@@ -1765,22 +1912,41 @@ export class Match {
       if (f.shopT > 0) f.shopT = Math.max(0, f.shopT - step);
       if (f.throwT > 0) f.throwT = Math.max(0, f.throwT - step);
       if (f.cheerT > 0) {
+        const prevCheer = f.cheerT;
         f.cheerT = Math.max(0, f.cheerT - step);
-        // Keep emitting notes/smoke while cheering
-        if (Math.random() < 0.35 * step * 8) {
+        // Keep arms lively + denser FX for the whole Torjubel window
+        if (f.armSwing < 0.55) f.armSwing = 0.7 + Math.random() * 0.25;
+        // Mid-celebration re-bursts (schema: Fans confetti · Ultra smoke · Hool props)
+        if (prevCheer > 6 && f.cheerT <= 6) {
+          const club = f.team === "ksc" ? "#1d4ed8" : "#b91c1c";
+          if (f.kind === "normalos") this.burstFanConfetti(f, "#f8fafc");
+          else if (f.kind === "ultras") {
+            f.throwT = Math.max(f.throwT, 2.2);
+            this.burstUltraSmoke(f, club);
+          } else if (f.kind === "hooligans") {
+            if (f.id % 2 === 0) this.burstBeerMug(f);
+            else this.burstFireworkRocket(f, club);
+          }
+        }
+        if (Math.random() < 0.55 * step * 10) {
           const isPyro = f.kind === "ultras";
+          const isHool = f.kind === "hooligans";
           const color =
             f.team === "ksc" ? "#3b82f6" : f.team === "vfb" ? "#ef4444" : "#9ca3af";
           this.moodFx.push({
-            kind: isPyro ? "smoke" : "note",
-            x: f.x + (Math.random() - 0.5) * 0.03,
+            kind: isPyro ? "smoke" : isHool ? "spark" : "note",
+            x: f.x + (Math.random() - 0.5) * 0.04,
             y: f.y - 0.03,
-            vx: (Math.random() - 0.5) * 0.04,
-            vy: -0.05 - Math.random() * 0.04,
-            color: isPyro ? color : Math.random() < 0.5 ? color : "#fde68a",
+            vx: (Math.random() - 0.5) * 0.055,
+            vy: -0.06 - Math.random() * 0.05,
+            color: isPyro
+              ? color
+              : Math.random() < 0.5
+                ? color
+                : "#fde68a",
             t: 0,
-            life: isPyro ? 1.2 : 0.9,
-            size: isPyro ? 0.022 : 0.012,
+            life: isPyro ? 1.5 : 1.1,
+            size: isPyro ? 0.028 : isHool ? 0.01 : 0.014,
           });
         }
       }
@@ -3042,8 +3208,8 @@ export class Match {
 
   /**
    * Corridor blocker ahead, measured in gangX.
-   * World MELEE/RANGED spans most of the short gang strip (~0.27 wide) and
-   * made every unit look "stuck" fighting across half the corridor.
+   * Prefers the foe in the same Y-band (skirmish pocket) so a 4v6 does not
+   * all lock onto one mid-lane target.
    */
   private blockerAhead(f: FanUnit, dirHint?: number): FanUnit | null {
     const dir =
@@ -3051,7 +3217,8 @@ export class Match {
       (f.team === this.playerTeam ? 1 : f.team === this.aiTeam ? -1 : 1);
     let best: FanUnit | null = null;
     // Short look-ahead so the rest of the gang stays walkable
-    let bestD = f.rangedPyro ? 0.16 : 0.09;
+    const maxLook = f.rangedPyro ? 0.16 : 0.09;
+    let bestScore = Number.POSITIVE_INFINITY;
     for (const o of this.fans) {
       if (!this.isHostileUnit(f, o)) continue;
       const onLane =
@@ -3067,12 +3234,47 @@ export class Match {
           ? o.gangX
           : worldXToGangX(o.x);
       const dx = (ogx - f.gangX) * dir;
-      if (dx < -0.015 || dx > bestD) continue;
-      if (Math.abs(o.y - f.y) > 0.14) continue;
-      bestD = dx;
-      best = o;
+      if (dx < -0.015 || dx > maxLook) continue;
+      const dy = Math.abs(o.y - f.y);
+      if (dy > 0.18) continue;
+      // Prefer close X, then same Y-band — never just the nearest X foe
+      const score = dx * 1.15 + dy * 2.4;
+      if (score < bestScore) {
+        bestScore = score;
+        best = o;
+      }
     }
     return best;
+  }
+
+  /**
+   * Soft Y-separation from nearby allies while fighting — opens readable
+   * skirmish pockets instead of one packed scrum.
+   */
+  private applySkirmishSeparation(f: FanUnit, dt: number): void {
+    const y0 = gangY() + 0.012;
+    const y1 = gangY() + gangHeight() - 0.012;
+    let pushY = 0;
+    for (const o of this.fans) {
+      if (o === f || o.hp <= 0 || o.team !== f.team || o.isSteward) continue;
+      if (
+        o.state !== "gang" &&
+        !o.invading &&
+        o.state !== "moving" &&
+        o.state !== "stand"
+      )
+        continue;
+      const dx = f.x - o.x;
+      const dy = f.y - o.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 1e-4 || d > 0.055) continue;
+      // Prefer pushing on Y so X contact (the fight) stays; stronger when stacked
+      const falloff = (0.055 - d) / 0.055;
+      const ny = Math.abs(dy) < 0.004 ? (f.id < o.id ? -1 : 1) : dy / d;
+      pushY += ny * falloff * 0.042;
+    }
+    if (Math.abs(pushY) < 1e-5) return;
+    f.y = clamp(f.y + pushY * Math.min(1, 9 * dt), y0, y1);
   }
 
   private syncGangFromWorld(f: FanUnit): void {
@@ -3128,6 +3330,7 @@ export class Match {
       const homeDir = -dir;
       const blocker = this.blockerAhead(f, homeDir);
       let moveSpeed = speed;
+      let inContact = false;
       if (blocker) {
         const ogx =
           blocker.state === "gang" || blocker.invading || blocker.isSteward
@@ -3135,15 +3338,23 @@ export class Match {
             : worldXToGangX(blocker.x);
         const gapGx = (ogx - f.gangX) * homeDir;
         if (gapGx < 0.05) {
-          // Soft contact — still crawl home, never freeze on one X
+          // Soft contact — still crawl home; hold personal lane (no Y pile-in)
           moveSpeed = speed * 0.7;
           f.aggro = Math.max(f.aggro, 80);
-          f.y += (blocker.y - f.y) * Math.min(1, 8 * dt);
+          inContact = true;
         }
       }
       f.gangX = clamp(f.gangX + homeDir * moveSpeed * dt, 0, 1);
       f.x = gangXToWorld(f.gangX);
-      f.y = laneY + Math.sin(this.realElapsed * 3 + f.id) * 0.006;
+      // Stay on personal lane; tiny nudge toward paired foe only when already close in Y
+      let aimY = laneY;
+      if (inContact && blocker && Math.abs(blocker.y - laneY) < 0.07) {
+        aimY = laneY * 0.72 + blocker.y * 0.28;
+      }
+      f.y +=
+        (aimY + Math.sin(this.realElapsed * 3 + f.id) * 0.006 - f.y) *
+        Math.min(1, 7 * dt);
+      if (inContact) this.applySkirmishSeparation(f, dt);
       if (Math.abs(f.gangX - homeGx) < 0.1) {
         this.returnFanToHomeBlock(f);
       }
@@ -3162,6 +3373,7 @@ export class Match {
     }
 
     const blocker = this.blockerAhead(f, dir);
+    let inContact = false;
     if (blocker) {
       const ogx =
         blocker.state === "gang" || blocker.invading || blocker.isSteward
@@ -3169,16 +3381,23 @@ export class Match {
           : worldXToGangX(blocker.x);
       const gapGx = (ogx - f.gangX) * dir;
       if (gapGx < 0.05) {
-        // Soft contact: slight slow, keep Y toward foe, keep advancing
+        // Soft contact: slight slow, keep personal lane — don't collapse onto foe Y
         moveSpeed = Math.max(speed * 0.7, moveSpeed * 0.8);
-        f.y += ((blocker.y + laneY) * 0.5 - f.y) * Math.min(1, 8 * dt);
+        inContact = true;
         if (f.aggro < 80) f.aggro = 40;
       }
     }
 
     f.gangX = clamp(f.gangX + dir * moveSpeed * dt, 0, 1);
     f.x = gangXToWorld(f.gangX);
-    f.y = laneY + Math.sin(this.realElapsed * 3 + f.id) * 0.006;
+    let aimY = laneY;
+    if (inContact && blocker && Math.abs(blocker.y - laneY) < 0.07) {
+      aimY = laneY * 0.68 + blocker.y * 0.32;
+    }
+    f.y +=
+      (aimY + Math.sin(this.realElapsed * 3 + f.id) * 0.006 - f.y) *
+      Math.min(1, 7 * dt);
+    if (inContact) this.applySkirmishSeparation(f, dt);
 
     const goalGx = blockIdToGangX(goalBlock);
     const reached =
@@ -3402,7 +3621,6 @@ export class Match {
 
   /** Own ultras/hools leave seats to defend when enemy Ultra is in / approaching home */
   private tickAutoDefend(dt: number): void {
-    void dt;
     for (const team of [this.playerTeam, this.aiTeam] as TeamId[]) {
       const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
       const underAttack = this.enemyUltraInBlock(home, team);
@@ -3485,14 +3703,17 @@ export class Match {
       inv.onOffense = true;
       const target = this.nearestHostileEngage(inv);
       if (!target) continue;
+      const slotY = this.gangLaneYSpread(inv);
       const tx =
         target.kind === "unit"
           ? target.unit.x
           : this.ordnerPostGangPos(target.post).x;
-      const ty =
+      const tyRaw =
         target.kind === "unit"
           ? target.unit.y
           : this.ordnerPostGangPos(target.post).y;
+      // Blend personal lane into aim Y so several invaders don't stack on one foe
+      const ty = tyRaw * 0.4 + slotY * 0.6;
       const d = dist(inv.x, inv.y, tx, ty);
       const hold = inv.rangedPyro ? RANGED_RANGE * 0.45 : MELEE_RANGE * 0.85;
       if (d > hold) {
@@ -3500,6 +3721,7 @@ export class Match {
         inv.x += (tx - inv.x) * step;
         inv.y += (ty - inv.y) * step;
       }
+      this.applySkirmishSeparation(inv, dt);
     }
   }
 
@@ -3854,14 +4076,14 @@ export class Match {
     else this.scoreVfb++;
     // No direct mood/momentum bump — celebration leaves the block (Bierrunde)
     this.lastGoalTeam = team;
-    this.scorePulse = 1;
+    this.scorePulse = 1.85; // longer scoreboard flash for Torjubel
     this.spawnGoalConfetti(team);
     this.startGoalCelebration(team);
-    this.toast(`TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`);
+    this.toast(`TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`, 9);
   }
 
   /**
-   * Tor-Jubel im eigenen Block:
+   * Tor-Jubel im eigenen Block (vereinbartes Schema, länger + intensiver):
    * Fans → Konfetti weiß/Vereinsfarbe 50/50 · Ultras → Rauch + Pyro in der Hand ·
    * Hooligans → Bierkrug 50% / Feuerwerksrakete 50%.
    */
@@ -3877,100 +4099,103 @@ export class Match {
       if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
       if (f.blockId !== home) continue;
       if (f.state !== "block" && f.state !== "stand") continue;
-      f.cheerT = 6.4; // doppelte Jubel-Länge
+      f.cheerT = 11.5; // deutlich längerer Jubel
       n++;
       if (f.kind === "normalos") {
         const col = fanI++ % 2 === 0 ? white : club;
         this.burstFanConfetti(f, col);
+        this.burstFanConfetti(f, col === white ? club : white);
       } else if (f.kind === "ultras") {
         const col = ultraI++ % 2 === 0 ? white : club;
         // Raise pyro prop in hand while smoke show plays
-        f.throwT = Math.max(f.throwT, 2.4);
-        f.armSwing = 0.85;
+        f.throwT = Math.max(f.throwT, 4.2);
+        f.armSwing = 1;
         this.burstUltraSmoke(f, col);
+        this.burstUltraSmoke(f, col === white ? club : white);
       } else if (f.kind === "hooligans") {
         if (hoolI++ % 2 === 0) this.burstBeerMug(f);
         else this.burstFireworkRocket(f, club);
       }
     }
-    this.floatAt(blockCenterX(home), blockTopY(home) + 0.08, "TOR-JUBEL!", true);
-    this.toast(n > 0 ? "Kurve feiert!" : "TOR!", 7);
+    this.floatAt(blockCenterX(home), blockTopY(home) + 0.06, "TOR-JUBEL!", true);
+    this.floatAt(blockCenterX(home), blockTopY(home) + 0.11, "TOR!", true);
+    this.toast(n > 0 ? "Kurve feiert!" : "TOR!", 10);
   }
 
   private burstFanConfetti(f: FanUnit, color: string): void {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 16; i++) {
       this.confetti.push({
-        x: f.x + (Math.random() - 0.5) * 0.04,
-        y: f.y - 0.02 - Math.random() * 0.03,
-        vx: (Math.random() - 0.5) * 0.22,
-        vy: -0.02 + Math.random() * 0.1,
+        x: f.x + (Math.random() - 0.5) * 0.055,
+        y: f.y - 0.02 - Math.random() * 0.04,
+        vx: (Math.random() - 0.5) * 0.28,
+        vy: -0.04 + Math.random() * 0.14,
         rot: Math.random() * Math.PI * 2,
-        vr: (Math.random() - 0.5) * 10,
+        vr: (Math.random() - 0.5) * 12,
         color,
         t: 0,
-        life: 1.2 + Math.random() * 0.7,
+        life: 1.6 + Math.random() * 1.1,
       });
     }
   }
 
   private burstUltraSmoke(f: FanUnit, color: string): void {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 8; i++) {
       this.moodFx.push({
         kind: "smoke",
-        x: f.x + (Math.random() - 0.5) * 0.03,
+        x: f.x + (Math.random() - 0.5) * 0.04,
         y: f.y - 0.02,
-        vx: (Math.random() - 0.5) * 0.04,
-        vy: -0.06 - Math.random() * 0.05,
+        vx: (Math.random() - 0.5) * 0.055,
+        vy: -0.07 - Math.random() * 0.07,
         color,
         t: 0,
-        life: 1.4 + Math.random() * 0.6,
-        size: 0.028 + Math.random() * 0.02,
+        life: 1.9 + Math.random() * 0.9,
+        size: 0.034 + Math.random() * 0.028,
       });
     }
   }
 
   private burstBeerMug(f: FanUnit): void {
-    f.throwT = Math.max(f.throwT, 0.55);
-    f.armSwing = 0.9;
+    f.throwT = Math.max(f.throwT, 0.85);
+    f.armSwing = 1;
     this.moodFx.push({
       kind: "mug",
       x: f.x,
       y: f.y - 0.02,
-      vx: (Math.random() - 0.5) * 0.12,
-      vy: -0.14 - Math.random() * 0.08,
+      vx: (Math.random() - 0.5) * 0.14,
+      vy: -0.16 - Math.random() * 0.1,
       color: "#b45309",
       t: 0,
-      life: 1.1,
-      size: 0.018,
+      life: 1.45,
+      size: 0.022,
     });
   }
 
   private burstFireworkRocket(f: FanUnit, club: string): void {
-    f.throwT = Math.max(f.throwT, 0.65);
+    f.throwT = Math.max(f.throwT, 0.95);
     f.armSwing = 1;
     this.moodFx.push({
       kind: "rocket",
       x: f.x,
       y: f.y - 0.02,
-      vx: (Math.random() - 0.5) * 0.06,
-      vy: -0.28 - Math.random() * 0.12,
+      vx: (Math.random() - 0.5) * 0.08,
+      vy: -0.34 - Math.random() * 0.14,
       color: club,
       t: 0,
-      life: 1.35,
-      size: 0.016,
+      life: 1.7,
+      size: 0.02,
     });
     // Spark trail
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 7; i++) {
       this.moodFx.push({
         kind: "spark",
-        x: f.x + (Math.random() - 0.5) * 0.02,
+        x: f.x + (Math.random() - 0.5) * 0.025,
         y: f.y - 0.01,
-        vx: (Math.random() - 0.5) * 0.05,
-        vy: -0.1 - Math.random() * 0.08,
+        vx: (Math.random() - 0.5) * 0.07,
+        vy: -0.12 - Math.random() * 0.1,
         color: Math.random() < 0.5 ? "#fde68a" : club,
         t: 0,
-        life: 0.7 + Math.random() * 0.4,
-        size: 0.008,
+        life: 0.9 + Math.random() * 0.5,
+        size: 0.01,
       });
     }
   }
@@ -3981,17 +4206,17 @@ export class Match {
     const top = blockTopY(blockId);
     const white = "#f8fafc";
     const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
-    for (let i = 0; i < 36; i++) {
+    for (let i = 0; i < 64; i++) {
       this.confetti.push({
-        x: cx + (Math.random() - 0.5) * blockWidthNorm(blockId) * 0.85,
-        y: top + 0.02 + Math.random() * 0.04,
-        vx: (Math.random() - 0.5) * 0.18,
-        vy: 0.04 + Math.random() * 0.12,
+        x: cx + (Math.random() - 0.5) * blockWidthNorm(blockId) * 0.95,
+        y: top + 0.01 + Math.random() * 0.06,
+        vx: (Math.random() - 0.5) * 0.24,
+        vy: 0.03 + Math.random() * 0.16,
         rot: Math.random() * Math.PI * 2,
-        vr: (Math.random() - 0.5) * 8,
+        vr: (Math.random() - 0.5) * 10,
         color: i % 2 === 0 ? white : club,
         t: 0,
-        life: 1.4 + Math.random() * 0.8,
+        life: 2.1 + Math.random() * 1.2,
       });
     }
   }

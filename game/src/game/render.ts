@@ -790,11 +790,25 @@ function drawBuilding(
 
   if (s.building === "ordner" && s.structMaxHp > 0) {
     const pct = Math.max(0, Math.min(1, s.structHp / s.structMaxHp));
-    const barW = bw - 10;
-    ctx.fillStyle = "rgba(15,23,42,0.55)";
-    ctx.fillRect(x + 5, y + bh - 8, barW, 4);
-    ctx.fillStyle = pct > 0.45 ? "#22c55e" : pct > 0.2 ? "#f59e0b" : "#ef4444";
-    ctx.fillRect(x + 5, y + bh - 8, barW * pct, 4);
+    const barW = Math.max(18, bw - 6);
+    const barH = Math.max(7, Math.floor(bh * 0.09));
+    const barX = x + (bw - barW) / 2;
+    const barY = y + bh - barH - 3;
+    // High-contrast plate so the Ordnerpost HP bar reads at a glance
+    ctx.fillStyle = "rgba(15,23,42,0.88)";
+    ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+    ctx.strokeStyle = "rgba(248,250,252,0.55)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(barX - 1, barY - 1, barW + 2, barH + 2);
+    ctx.fillStyle = "rgba(30,41,59,0.95)";
+    ctx.fillRect(barX, barY, barW, barH);
+    const fillCol =
+      pct > 0.55 ? "#22c55e" : pct > 0.28 ? "#f59e0b" : "#ef4444";
+    ctx.fillStyle = fillCol;
+    ctx.fillRect(barX, barY, barW * pct, barH);
+    // Soft highlight on the fill for readability on busy Bau tiles
+    ctx.fillStyle = "rgba(255,255,255,0.22)";
+    ctx.fillRect(barX, barY, barW * pct, Math.max(2, barH * 0.35));
   }
 
   // level pips
@@ -925,10 +939,13 @@ function personAnimMode(m: Match, f: FanUnit): {
     propI = 0.5 + 0.4 * shopProg;
   } else if (cheering && f.kind === "normalos" && !f.isSteward) {
     prop = "scarf";
-    propI = Math.min(1, f.cheerT / 2);
+    propI = Math.min(1, Math.max(0.55, f.cheerT / 3));
   } else if (cheering && f.kind === "ultras") {
     prop = "pyro";
-    propI = 0.35 + 0.3 * Math.sin(m.realElapsed * 8);
+    propI = 0.55 + 0.4 * Math.sin(m.realElapsed * 10);
+  } else if (cheering && f.kind === "hooligans") {
+    prop = "beer";
+    propI = 0.5 + 0.35 * Math.abs(Math.sin(m.realElapsed * 7 + f.id));
   }
 
   return {

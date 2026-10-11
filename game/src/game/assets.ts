@@ -441,7 +441,7 @@ export function drawToyIcon(
   const stepAbs = Math.abs(step);
 
   const idleBob = Math.sin(t * 5.4 + ph) * size * 0.045;
-  const cheerBob = Math.sin(t * 10.5 + ph) * size * 0.12;
+  const cheerBob = Math.sin(t * 13.5 + ph) * size * 0.18;
   // Planted foot: lift on step peak, settle on zero-crossing
   const walkBob = (stepAbs * 0.18 + Math.max(0, step) * 0.04) * size * hop;
   const fightBob = Math.sin(t * 14 + ph) * size * 0.05 + strike * size * -0.1;
@@ -479,7 +479,7 @@ export function drawToyIcon(
         : mode === "fight"
           ? 1 - strike * 0.14 + Math.sin(t * 14 + ph) * 0.03
           : mode === "cheer"
-            ? 1 + Math.sin(t * 10.5 + ph) * 0.07
+            ? 1 + Math.sin(t * 13.5 + ph) * 0.11
             : mode === "drink"
               ? 1 - 0.06 * ap
               : mode === "throw"
@@ -493,7 +493,7 @@ export function drawToyIcon(
     mode === "planted"
       ? 0
       : mode === "cheer"
-        ? Math.sin(t * 6.2 + ph) * 0.16
+        ? Math.sin(t * 8.4 + ph) * 0.24
         : mode === "fight"
           ? Math.sin(t * 16 + ph) * 0.2 + strike * 0.28 * facing
           : mode === "drink"
@@ -573,7 +573,7 @@ export function drawToyIcon(
     ctx.globalCompositeOperation = "lighter";
     ctx.globalAlpha =
       mode === "cheer"
-        ? 0.14
+        ? 0.22
         : mode === "throw"
           ? 0.12 + ap * 0.18
           : 0.1 + strike * 0.15;
