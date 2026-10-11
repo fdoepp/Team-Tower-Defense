@@ -3142,32 +3142,15 @@ export class Match {
       else f.gangX = Math.max(f.gangX, hardCap);
       f.x = gangXToWorld(f.gangX);
     }
-    // Soft approach to next Ordnerpost — hold only at fight range, never freeze mid-gang
-    if (
-      frontPost &&
-      postPos &&
-      (f.kind === "hooligans" || f.kind === "ultras") &&
-      !engage
-    ) {
-      const approachGap = f.rangedPyro ? RANGED_RANGE * 0.45 : MELEE_RANGE * 0.3;
-      const postGx = this.postGangX(frontPost);
-      const capGx = postGx - dir * Math.max(0.01, approachGap * 0.15);
-      if (dir > 0) f.gangX = Math.min(f.gangX, capGx);
-      else f.gangX = Math.max(f.gangX, capGx);
-      f.x = gangXToWorld(f.gangX);
-    }
+    // Ordnerposten are fight targets in range — they must NOT freeze the gang.
+    // Offense keeps marching; posts/stewards are engaged via combat when near.
 
     if (defendHome) return;
 
     const goalGx = blockIdToGangX(goalBlock);
-    const foe = team === this.playerTeam ? this.aiTeam : this.playerTeam;
-    const foeCement = this.cementEdgeGx(foe);
-    const pastCement =
-      dir > 0 ? foeCement < f.gangX - 0.01 : foeCement > f.gangX + 0.01;
-    const canInvade =
-      !engage &&
-      ordPosts.length === 0 &&
-      (cementWall == null || pastCement);
+    // Gang is permeable: reach enemy block even if mid posts remain.
+    // Only pause invade while actively locked in a melee/post engage.
+    const canInvade = !engage;
     const reached =
       f.team === this.playerTeam
         ? f.gangX >= goalGx - 0.02

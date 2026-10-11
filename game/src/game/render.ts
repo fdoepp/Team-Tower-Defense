@@ -1619,16 +1619,20 @@ export function hitSlot(
   my: number,
 ): { blockId: number; index: number } | null {
   let best: { blockId: number; index: number; d: number } | null = null;
-  /** Minimum touch target — far row was tiny with AABB-only hits */
-  const minPad = Math.max(18, Math.min(m.width, m.height) * 0.028);
+  /**
+   * Generous touch targets — buildings are large visually but plot AABBs are
+   * small; expand well past the booth so Baumenü opens easily (units ignore clicks).
+   */
+  const minPad = Math.max(36, Math.min(m.width, m.height) * 0.055);
+  const expand = Math.max(22, Math.min(m.width, m.height) * 0.032);
   for (const s of m.slots) {
     // AI home plots are not clickable for the player
     if (s.blockId === GAST_BLOCK && s.owner === m.aiTeam && s.building) continue;
     const r = boothRect(s.blockId, s.index);
-    let x0 = r.x * m.width;
-    let y0 = r.y * m.height;
-    let x1 = (r.x + r.w) * m.width;
-    let y1 = (r.y + r.h) * m.height;
+    let x0 = r.x * m.width - expand;
+    let y0 = r.y * m.height - expand;
+    let x1 = (r.x + r.w) * m.width + expand;
+    let y1 = (r.y + r.h) * m.height + expand;
     const cx = (x0 + x1) / 2;
     const cy = (y0 + y1) / 2;
     if (x1 - x0 < minPad * 2) {
@@ -1641,9 +1645,13 @@ export function hitSlot(
     }
     let hit = mx >= x0 && mx <= x1 && my >= y0 && my <= y1;
     if (FLOOR_GRID_COUPLE) {
-      // Hit full cell (not inset chrome) so smaller visuals stay easy to click.
+      // Expanded cell + radius so large buildings stay easy to tap
       const q = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
       if (pointInQuad(q, mx, my)) hit = true;
+      const qcx = (q.tl.x + q.tr.x + q.br.x + q.bl.x) / 4;
+      const qcy = (q.tl.y + q.tr.y + q.br.y + q.bl.y) / 4;
+      const reach = Math.max(minPad, Math.hypot(q.br.x - q.bl.x, q.br.y - q.bl.y) * 0.85);
+      if (Math.hypot(mx - qcx, my - qcy) <= reach) hit = true;
     }
     if (hit) {
       const d = Math.hypot(mx - cx, my - cy);

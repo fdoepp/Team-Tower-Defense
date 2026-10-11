@@ -205,10 +205,10 @@ export const CEMENT_SLOW_MUL = 0.35;
 /** Cement gate: HP lost per second while pressing past cement */
 export const CEMENT_DOT_PER_SEC = 10;
 /**
- * How far past cement edge attackers may creep.
- * 0 = must clear front Ordner/post before advancing (no random walkthrough).
+ * How far past cement edge attackers may creep while taking DoT.
+ * Soft gate — gang stays permeable; Ordner/posts still fight in range.
  */
-export const CEMENT_BREAKTHROUGH = 0;
+export const CEMENT_BREAKTHROUGH = 0.12;
 /**
  * Standarte / Fortschrittsbalken: base crawl toward living attacker depth
  * (gangX per second). Extra catch-up scales with lag so the banner does

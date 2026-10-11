@@ -320,21 +320,27 @@ function ownedBuildingSlots(m: Match, kind: BuildingKind) {
   );
 }
 
-/** Niedrigste Upgrade-fähige eigene Bude dieser Art (optional Preferenz). */
+/**
+ * Upgrade-Ziel einer Gebäude-Art.
+ * - preferredOnly: genau dieses Gebäude (Gebäude-Klick / Fokus-Panel)
+ * - sonst immer das niedrigste eigene (allgemeines Baumenü)
+ */
 function pickBuildingUpgradeSlot(
   m: Match,
   kind: BuildingKind,
   preferred?: { blockId: number; index: number } | null,
+  preferredOnly = false,
 ) {
   const owned = ownedBuildingSlots(m, kind);
-  if (preferred) {
-    const hit = owned.find(
-      (s) =>
-        s.blockId === preferred.blockId &&
-        s.index === preferred.index &&
-        s.level < UPGRADE_MAX,
+  if (preferred && preferredOnly) {
+    return (
+      owned.find(
+        (s) =>
+          s.blockId === preferred.blockId &&
+          s.index === preferred.index &&
+          s.level < UPGRADE_MAX,
+      ) ?? null
     );
-    if (hit) return hit;
   }
   let best: (typeof owned)[number] | null = null;
   for (const s of owned) {
@@ -349,7 +355,9 @@ function buildingMetaLabel(m: Match, kind: BuildingKind): string {
   const lv = owned.length
     ? Math.min(...owned.map((s) => s.level || 1))
     : 1;
-  return `(Lvl.${lv}, x${owned.length})`;
+  return owned.length
+    ? `(niedrigstes Lvl.${lv}, x${owned.length})`
+    : `(Lvl.${lv}, x0)`;
 }
 
 /** Bau + UP (Icon/Kosten/Ertrag) — gleiche Alt-D-Logik wie Personen. */
@@ -1035,7 +1043,8 @@ function renderMatchScreen(): void {
               : `+${formatYieldPerSec(buildingYieldPerSec(kind, 2) - buildingYieldPerSec(kind, 1))}/s`;
       }
 
-      const slot = pickBuildingUpgradeSlot(m, kind, state.buildTarget);
+      // Allgemeines Baumenü: immer niedrigstes Gebäude dieser Art
+      const slot = pickBuildingUpgradeSlot(m, kind, null, false);
       const upCost =
         slot != null ? m.upgradeCost(slot) : null;
       setPayAmt(app, `build-up-pay-${kind}`, upCost != null ? upCost : "—");
@@ -1086,7 +1095,7 @@ function renderMatchScreen(): void {
             ? owned.length
               ? "Max. Stufe"
               : "Zuerst Gebäude bauen"
-            : `Upgrade → Lv${(slot.level || 1) + 1} · ${upCost}€`;
+            : `Niedrigstes → Lv${(slot.level || 1) + 1} · ${upCost}€`;
       }
     }
   };
@@ -1277,7 +1286,8 @@ function renderMatchScreen(): void {
   app.querySelectorAll<HTMLButtonElement>("[data-build-up]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const kind = btn.dataset.buildUp as BuildingKind;
-      const slot = pickBuildingUpgradeSlot(m, kind, state.buildTarget);
+      // Immer nur das niedrigste eigene Gebäude dieser Art upgraden
+      const slot = pickBuildingUpgradeSlot(m, kind, null, false);
       if (!slot) {
         m.toast(
           ownedBuildingSlots(m, kind).length
@@ -1289,7 +1299,6 @@ function renderMatchScreen(): void {
       }
       m.buildMenu = { blockId: slot.blockId, index: slot.index };
       m.selectedSlot = m.buildMenu;
-      state.buildTarget = m.buildMenu;
       m.tryUpgrade();
       syncBuildingRailUi();
       syncOverlay();
