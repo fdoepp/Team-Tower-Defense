@@ -276,7 +276,8 @@ export type TickerItem = {
   t: number;
 };
 export const BLOCK_STORM_COUNT = 4;
-export const BLOCK_STORM_SEC = 7;
+/** Banner must stay visible this long while the block stays occupied → win */
+export const BLOCK_STORM_SEC = 5;
 export const STAND_CONVERT_SEC = 11;
 export const STAND_CONVERT_SEAT_MAJORITY = true;
 /** Soft gold upkeep per Ordner / s — low enough that defense stays affordable */

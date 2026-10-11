@@ -307,9 +307,20 @@ export class Match {
     hooligans: 1,
     ordner: 1,
   };
-  /** Blocksturm hold timers */
+  /** Blocksturm hold timers (legacy mirrors of stormBanner.holdT) */
   stormAccPlayer = 0;
   stormAccAi = 0;
+  /**
+   * Occupation banner: invaders hold up „Hier regiert der …“;
+   * win only after BLOCK_STORM_SEC with block still occupied.
+   */
+  stormBanner: {
+    team: TeamId;
+    blockId: number;
+    holdT: number;
+  } | null = null;
+  /** Throttle continuous Blocksturm spectacle FX */
+  private stormFxCd = 0;
   /** battle line gangX 0..1 (vorderster Ultra) */
   linePlayer = 0;
   lineAi = 1;
@@ -944,11 +955,11 @@ export class Match {
   combatStatus(): string | null {
     const pInv = this.countBlockInvaders(this.playerTeam, GAST_BLOCK);
     const aInv = this.countBlockInvaders(this.aiTeam, HEIM_BLOCK);
-    if (this.stormAccPlayer > 0) {
-      return `BLOCKSTURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccPlayer)}s · ${pInv}/${BLOCK_STORM_COUNT} Angreifer`;
+    if (this.stormBanner?.team === this.playerTeam) {
+      return `Hier regiert der ${teamLabel(this.playerTeam)}! ${Math.ceil(BLOCK_STORM_SEC - this.stormBanner.holdT)}s · ${pInv}/${BLOCK_STORM_COUNT}`;
     }
-    if (this.stormAccAi > 0) {
-      return `GEGEN-STURM ${Math.ceil(BLOCK_STORM_SEC - this.stormAccAi)}s · ${aInv}/${BLOCK_STORM_COUNT}`;
+    if (this.stormBanner?.team === this.aiTeam) {
+      return `Hier regiert der ${teamLabel(this.aiTeam)}! ${Math.ceil(BLOCK_STORM_SEC - this.stormBanner.holdT)}s · ${aInv}/${BLOCK_STORM_COUNT}`;
     }
     if (pInv > 0)
       return `ANGRIFF im Gästeblock · ${pInv} Angreifer — Verteidigung!`;
@@ -4351,31 +4362,195 @@ export class Match {
 
   private tickBlockStorm(dt: number): void {
     const pN = this.countBlockInvaders(this.playerTeam, GAST_BLOCK);
+    const aN = this.countBlockInvaders(this.aiTeam, HEIM_BLOCK);
+
+    // Player occupation of Gästeblock takes priority if both somehow qualify
     if (pN >= BLOCK_STORM_COUNT) {
-      this.stormAccPlayer += dt;
-      if (this.stormAccPlayer >= BLOCK_STORM_SEC) {
-        this.blockOwner[GAST_BLOCK] = this.playerTeam;
-        this.finish(
-          this.playerTeam,
-          "invade",
-          "Blocksturm! Gästeblock übernommen",
-        );
-        return;
-      }
-    } else {
+      this.advanceStormBanner(this.playerTeam, GAST_BLOCK, dt);
+      this.stormAccPlayer = this.stormBanner?.holdT ?? 0;
+      this.stormAccAi = 0;
+      return;
+    }
+    if (aN >= BLOCK_STORM_COUNT) {
+      this.advanceStormBanner(this.aiTeam, HEIM_BLOCK, dt);
+      this.stormAccAi = this.stormBanner?.holdT ?? 0;
       this.stormAccPlayer = 0;
+      return;
     }
 
-    const aN = this.countBlockInvaders(this.aiTeam, HEIM_BLOCK);
-    if (aN >= BLOCK_STORM_COUNT) {
-      this.stormAccAi += dt;
-      if (this.stormAccAi >= BLOCK_STORM_SEC) {
-        this.blockOwner[HEIM_BLOCK] = this.aiTeam;
-        this.finish(this.aiTeam, "invade", "Blocksturm! Heimblock übernommen");
+    // Occupation broken — banner down, timer reset
+    if (this.stormBanner) {
+      this.pushTicker("Blocksturm abgebrochen", "combat", 2.8);
+    }
+    this.stormBanner = null;
+    this.stormAccPlayer = 0;
+    this.stormAccAi = 0;
+  }
+
+  /**
+   * Raise / hold the occupation banner. Win only after BLOCK_STORM_SEC
+   * of continuous banner visibility while the block stays occupied.
+   */
+  private advanceStormBanner(
+    team: TeamId,
+    blockId: number,
+    dt: number,
+  ): void {
+    if (
+      !this.stormBanner ||
+      this.stormBanner.team !== team ||
+      this.stormBanner.blockId !== blockId
+    ) {
+      this.stormBanner = { team, blockId, holdT: 0 };
+      this.stormFxCd = 0;
+      this.pushTicker(
+        `Hier regiert der ${teamLabel(team)}!`,
+        "combat",
+        4.5,
+      );
+      this.burstStormSpectacle(team, blockId, true);
+    }
+
+    this.stormBanner.holdT += dt;
+    this.pulseStormHolders(team, blockId);
+    this.stormFxCd -= dt;
+    if (this.stormFxCd <= 0) {
+      this.stormFxCd = 0.22;
+      this.burstStormSpectacle(team, blockId, false);
+    }
+
+    if (this.stormBanner.holdT >= BLOCK_STORM_SEC) {
+      // Re-check occupation at win moment
+      const still =
+        this.countBlockInvaders(team, blockId) >= BLOCK_STORM_COUNT;
+      if (!still) {
+        this.stormBanner = null;
         return;
       }
-    } else {
-      this.stormAccAi = 0;
+      this.blockOwner[blockId] = team;
+      const label = teamLabel(team);
+      this.finish(
+        team,
+        "invade",
+        `Hier regiert der ${label}! Blocksturm gewonnen`,
+      );
+    }
+  }
+
+  /** Occupying fans hoist the banner — arms up, pyro props, cheer. */
+  private pulseStormHolders(team: TeamId, blockId: number): void {
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
+      if (f.blockId !== blockId) continue;
+      if (!(f.invading || f.state === "block" || f.state === "stand")) continue;
+      f.cheerT = Math.max(f.cheerT, 1.2);
+      f.armSwing = Math.max(f.armSwing, 0.85);
+      if (f.kind === "ultras" || f.kind === "hooligans") {
+        f.throwT = Math.max(f.throwT, 0.9);
+      }
+    }
+  }
+
+  /**
+   * Heavy pyro / confetti / fireworks for the occupation show.
+   * `opening` = big burst when the banner first goes up.
+   */
+  private burstStormSpectacle(
+    team: TeamId,
+    blockId: number,
+    opening: boolean,
+  ): void {
+    const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
+    const accent = team === "ksc" ? "#60a5fa" : "#f87171";
+    const white = "#f8fafc";
+    const cx = blockCenterX(blockId);
+    const top = blockTopY(blockId);
+    const w = blockWidthNorm(blockId);
+
+    const burstN = opening ? 90 : 10;
+    for (let i = 0; i < burstN; i++) {
+      this.confetti.push({
+        x: cx + (Math.random() - 0.5) * w * 1.05,
+        y: top + 0.02 + Math.random() * 0.14,
+        vx: (Math.random() - 0.5) * 0.32,
+        vy: -0.02 + Math.random() * 0.18,
+        rot: Math.random() * Math.PI * 2,
+        vr: (Math.random() - 0.5) * 14,
+        color: i % 3 === 0 ? white : i % 3 === 1 ? club : accent,
+        t: 0,
+        life: 1.8 + Math.random() * 1.4,
+      });
+    }
+
+    const smokeN = opening ? 18 : 3;
+    for (let i = 0; i < smokeN; i++) {
+      this.moodFx.push({
+        kind: "smoke",
+        x: cx + (Math.random() - 0.5) * w * 0.9,
+        y: top + 0.08 + Math.random() * 0.1,
+        vx: (Math.random() - 0.5) * 0.07,
+        vy: -0.08 - Math.random() * 0.08,
+        color: Math.random() < 0.5 ? club : accent,
+        t: 0,
+        life: 2.0 + Math.random() * 1.0,
+        size: 0.04 + Math.random() * 0.035,
+      });
+    }
+
+    const rocketN = opening ? 10 : 2;
+    for (let i = 0; i < rocketN; i++) {
+      const rx = cx + (Math.random() - 0.5) * w * 0.75;
+      const ry = top + 0.12 + Math.random() * 0.08;
+      this.moodFx.push({
+        kind: "rocket",
+        x: rx,
+        y: ry,
+        vx: (Math.random() - 0.5) * 0.1,
+        vy: -0.38 - Math.random() * 0.16,
+        color: Math.random() < 0.5 ? club : "#fde68a",
+        t: 0,
+        life: 1.6 + Math.random() * 0.5,
+        size: 0.022,
+      });
+      for (let s = 0; s < 5; s++) {
+        this.moodFx.push({
+          kind: "spark",
+          x: rx + (Math.random() - 0.5) * 0.03,
+          y: ry,
+          vx: (Math.random() - 0.5) * 0.09,
+          vy: -0.14 - Math.random() * 0.12,
+          color: Math.random() < 0.5 ? "#fde68a" : club,
+          t: 0,
+          life: 0.8 + Math.random() * 0.5,
+          size: 0.012,
+        });
+      }
+    }
+
+    const flameN = opening ? 12 : 2;
+    for (let i = 0; i < flameN; i++) {
+      this.moodFx.push({
+        kind: "flame",
+        x: cx + (Math.random() - 0.5) * w * 0.85,
+        y: top + 0.14 + Math.random() * 0.06,
+        vx: (Math.random() - 0.5) * 0.04,
+        vy: -0.05 - Math.random() * 0.05,
+        color: Math.random() < 0.4 ? "#f97316" : club,
+        t: 0,
+        life: 0.55 + Math.random() * 0.4,
+        size: 0.016 + Math.random() * 0.014,
+      });
+    }
+
+    // Occupiers also fling personal FX
+    if (opening || Math.random() < 0.45) {
+      for (const f of this.fans) {
+        if (f.hp <= 0 || f.team !== team || f.blockId !== blockId) continue;
+        if (!(f.invading || f.state === "block")) continue;
+        if (f.kind === "ultras") this.burstUltraSmoke(f, club);
+        else if (f.kind === "hooligans") this.burstFireworkRocket(f, club);
+        else this.burstFanConfetti(f, Math.random() < 0.5 ? white : club);
+      }
     }
   }
 
