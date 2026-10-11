@@ -6,6 +6,8 @@ Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
 Ablage-Regel: [`STORAGE_CANON.md`](./STORAGE_CANON.md) — Chrome vs Live-Werte. Scoreboard-Slots: [`scoreboard-slots.json`](./scoreboard-slots.json).
 
+**Scoreboard Chrome (2026-10-11):** `scoreboardChrome` ersetzt durch Blank-Asset mit durchgängigem braunen Holzrand, freigestellt, ohne KSC/VfB-Logos (`scoreboard-chrome.png`, 1216×472).
+
 Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../mockups/personen-rail-no-senden/).
 
 ## Pending

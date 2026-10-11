@@ -430,16 +430,18 @@ function drawSeats(
   }
 }
 
-/** Scoreboard slots — calibrated to scoreboard-chrome.png (0–1 on chrome box). */
+/** Scoreboard slots — blank chrome (durchgängiger Holzrand), 0–1 on asset box. */
 const SB_SLOTS = {
-  /** Logo discs on blank chrome (no baked KSC/VfB) */
-  logoHeim: { x: 0.08, y: 0.28, w: 0.18, h: 0.44 },
-  logoGast: { x: 0.74, y: 0.28, w: 0.18, h: 0.44 },
-  score: { x: 0.32, y: 0.3, w: 0.36, h: 0.36 },
-  /** Green top circle (measured): cx≈0.50, cy≈0.23, diameter≈0.094 */
-  clock: { x: 0.453, y: 0.178, w: 0.094, h: 0.094 },
-  momentumTrack: { x: 0.1, y: 0.7, w: 0.8, h: 0.24 },
+  logoHeim: { x: 0.08, y: 0.3, w: 0.16, h: 0.4 },
+  logoGast: { x: 0.76, y: 0.3, w: 0.16, h: 0.4 },
+  score: { x: 0.3, y: 0.34, w: 0.4, h: 0.3 },
+  /** Green gem (cx≈0.50, cy≈0.196) */
+  clock: { x: 0.455, y: 0.07, w: 0.09, h: 0.23 },
+  momentumTrack: { x: 0.12, y: 0.7, w: 0.76, h: 0.16 },
 } as const;
+
+/** Native AR of scoreboard-chrome.png (1216×472). */
+const SCOREBOARD_AR = 1216 / 472;
 
 /** Empty chrome + live overlays (STORAGE_CANON). Sizes: MATCH_LAYOUT_TOKENS. */
 function drawScoreboard(
@@ -448,8 +450,8 @@ function drawScoreboard(
   w: number,
   h: number,
 ): void {
-  const boardW = Math.min(w * 0.598, h * 0.48);
-  const boardH = Math.min(boardW * (508 / 1041), h * 0.1725);
+  const boardW = Math.min(w * 0.62, h * 0.52);
+  const boardH = Math.min(boardW / SCOREBOARD_AR, h * 0.185);
   const bx = (w - boardW) / 2;
   const by = h * 0.03;
 

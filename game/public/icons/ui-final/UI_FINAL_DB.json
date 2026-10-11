@@ -4042,34 +4042,34 @@
       },
       "validation": {
         "ok": true,
-        "file": "/workspace/docs/icons/ui-final/pending/scoreboard-chrome.png",
+        "file": "game/public/icons/ui-final/scoreboard-chrome.png",
         "mode": "RGBA",
         "native": {
-          "w": 1041,
-          "h": 508
+          "w": 1216,
+          "h": 472
         },
-        "aspectRatio": 2.049213,
-        "alphaCoverage": 0.459,
+        "aspectRatio": 2.576271,
+        "alphaCoverage": 0.2306,
         "opaqueCornerRatio": 0,
         "contentBBox": [
-          32,
-          70,
-          1008,
-          437
+          8,
+          8,
+          1207,
+          463
         ],
         "freigestellt": true,
         "exception": null,
         "preserveAspectRequired": true,
         "reasons": [],
-        "checkedAt": "2026-10-09T07:29:43.862276+00:00"
+        "checkedAt": "2026-10-11T20:07:09.199436+00:00"
       },
-      "approvedBy": "user",
-      "approvedAt": "2026-10-09T07:29:43.876Z",
-      "notes": "Chrome ohne Score/Balken/Orb. Runtime + docs/icons/ui-final/scoreboard-slots.json.",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T20:07:09.213534Z",
+      "notes": "Freigestellte Blank-Chrome mit durchgängigem braunen Holzrand, ohne KSC/VfB-Logos. Runtime + docs/icons/ui-final/scoreboard-slots.json. Freigabe: User 2026-10-11.",
       "category": "ui",
-      "source": "game/public/icons/ui/scoreboard-chrome.png",
-      "name": "Scoreboard Chrome",
-      "displayName": "Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)",
+      "source": "docs/icons/ui-final/pending/scoreboard-chrome.png",
+      "name": "Scoreboard Chrome Blank",
+      "displayName": "Scoreboard Chrome (Blank, durchgängiger Holzrand, ohne Logos)",
       "relatedTo": "scoreboard",
       "slots": "docs/icons/ui-final/scoreboard-slots.json"
     },

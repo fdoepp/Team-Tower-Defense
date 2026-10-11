@@ -892,8 +892,8 @@ export const UI_FINAL_PATHS = {
   "scoreboardChrome": {
     file: "scoreboard-chrome.png",
     path: "icons/ui-final/scoreboard-chrome.png",
-    native: { w: 1041, h: 508 },
-    aspectRatio: 2.049213,
+    native: { w: 1216, h: 472 },
+    aspectRatio: 2.576271,
     preserveAspect: true,
     freigestellt: true,
   },
