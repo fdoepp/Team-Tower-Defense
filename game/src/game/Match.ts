@@ -576,28 +576,6 @@ export class Match {
     return s.owner === "neutral" || s.owner !== team;
   }
 
-  /** Intact Ordnerposten between unit and goal block */
-  private blockingOrdnerPosts(f: FanUnit, goalBlock: number): BuildSlot[] {
-    const dir = f.team === this.playerTeam ? 1 : -1;
-    const goalGx = blockIdToGangX(goalBlock);
-    const out: BuildSlot[] = [];
-    for (const s of this.slots) {
-      if (!this.isHostileOrdnerPost(s, f.team as TeamId)) continue;
-      const gx = this.postGangX(s);
-      const between =
-        dir > 0
-          ? gx >= f.gangX - 0.03 && gx <= goalGx + 0.02
-          : gx <= f.gangX + 0.03 && gx >= goalGx - 0.02;
-      if (between) out.push(s);
-    }
-    out.sort((a, b) => {
-      const ga = this.postGangX(a);
-      const gb = this.postGangX(b);
-      return dir > 0 ? ga - gb : gb - ga;
-    });
-    return out;
-  }
-
   private destroyOrdnerPost(s: BuildSlot): void {
     const key = slotKey(s.blockId, s.index);
     const pos = this.standWorld(s);
@@ -1121,23 +1099,22 @@ export class Match {
   }
 
   /**
-   * Nur Invasion abbrechen, wenn der eigene Block wirklich angegriffen wird.
-   * Angreifer (Angriff/Pyro Wurf, onOffense) pushen weiter —
-   * sie werden NICHT zurück auf den Sitz geschickt.
+   * Rückkehr / Verteidigung:
+   * - Angreifer (onOffense) mit Feind voraus pushen weiter
+   * - Angreifer ohne Feind in Reichweite / nach Invasion ohne Ziel → Heimblock
+   * - Verteidiger nach Entwarnung zurück in den Block
    */
   private tickRecallForDefense(dt: number): void {
     void dt;
     for (const team of [this.playerTeam, this.aiTeam] as TeamId[]) {
       const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
-      const homeGx = blockIdToGangX(home);
       const threatened = this.teamHomeThreatened(team);
 
       for (const f of this.fans) {
         if (f.hp <= 0 || f.team !== team) continue;
-        if (f.kind !== "hooligans" && f.kind !== "ultras") continue;
-
-        // Offensive orders keep pushing
-        if (f.onOffense) continue;
+        if (f.kind !== "hooligans" && f.kind !== "ultras" && f.kind !== "normalos")
+          continue;
+        if (f.isSteward) continue;
 
         if (threatened && f.invading) {
           f.invading = false;
@@ -1150,25 +1127,73 @@ export class Match {
           continue;
         }
 
-        // Nur Verteidiger (aggro≥80) nahe Heim → zurück auf Sitz nach Entwarnung
+        // Offense that still has a corridor/goal to clear keeps pushing
+        if (f.onOffense && this.offenseShouldKeepPushing(f)) continue;
+
+        // Push finished (or never had a target left) → Heimblock, don't linger
+        if (f.onOffense) {
+          this.returnFanToHomeBlock(f);
+          continue;
+        }
+
+        // Nicht bedroht → vom Gang / aus der Invasion zurück in den Block
         if (
           !threatened &&
-          f.state === "gang" &&
-          !f.invading &&
-          f.aggro >= 80 &&
-          Math.abs(f.gangX - homeGx) < 0.2
+          (f.state === "gang" || (f.invading && f.state === "block"))
         ) {
-          const seat = f.seatIndex ?? f._homeSeat ?? this.freeSeat(home);
-          if (seat != null) {
-            const end = crowdHomePos(home, seat);
-            this.startPath(f, this.pathViaDoors(f, home, end), "home");
-            f._homeSeat = seat;
-            f.aggro = 10;
-            f.onOffense = false;
-          }
+          this.returnFanToHomeBlock(f);
         }
       }
     }
+  }
+
+  /**
+   * Offense keeps marching while there is still something to do on the gang:
+   * hostile posts ahead, enemy combatants, or the enemy block not yet reached.
+   */
+  private offenseShouldKeepPushing(f: FanUnit): boolean {
+    if (f.team !== this.playerTeam && f.team !== this.aiTeam) return false;
+    const dir = f.team === this.playerTeam ? 1 : -1;
+    const goal = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
+
+    for (const s of this.slots) {
+      if (!this.isHostileOrdnerPost(s, f.team as TeamId)) continue;
+      const gx = this.postGangX(s);
+      if ((gx - f.gangX) * dir > -0.02) return true;
+    }
+
+    for (const o of this.fans) {
+      if (!this.isHostileUnit(f, o)) continue;
+      if (o.isSteward || o.state === "gang" || o.invading || o.state === "moving") {
+        return true;
+      }
+      if (o.state === "block" && (o.blockId === goal || o.invading)) return true;
+    }
+
+    // Empty corridor — still walk the full gang to the enemy door
+    if ((f.state === "gang" || f.state === "moving") && !f.invading) {
+      const goalGx = blockIdToGangX(goal);
+      const reached =
+        dir > 0 ? f.gangX >= goalGx - 0.04 : f.gangX <= goalGx + 0.04;
+      if (!reached) return true;
+    }
+
+    return false;
+  }
+
+  /** Path a fan back into their home block seat (clears gang linger). */
+  private returnFanToHomeBlock(f: FanUnit): void {
+    if (f.hp <= 0 || f.isSteward) return;
+    if (f.state === "moving" && this.getAfter(f) === "home") return;
+    const home = this.homeBlockOf(f);
+    const seat = f.seatIndex ?? f._homeSeat ?? this.freeSeat(home);
+    if (seat == null) return;
+    f.invading = false;
+    f.onOffense = false;
+    f.aggro = 10;
+    f._homeSeat = seat;
+    const end = crowdHomePos(home, seat);
+    this.startPath(f, this.pathViaDoors(f, home, end), "home");
   }
 
   private enemyOnGangNearHome(team: TeamId): boolean {
@@ -2825,37 +2850,34 @@ export class Match {
       Math.abs(f.y - laneY) < 0.12 ||
       Math.abs(t.y - midY) < 0.14 ||
       Math.abs(t.y - laneY) < 0.12;
+    const after = this.getAfter(f);
 
-    // Cannot walk past hostile units (to beer stand / home / invade)
-    if (onGangCorridor && f.team !== "neutral") {
-      const moveDir = Math.sign(t.x - f.x) || (f.team === this.playerTeam ? 1 : -1);
-      const blocker =
-        this.blockerAhead(f, moveDir) ??
-        (Math.abs(t.x - f.x) < 0.04 ? this.foeInWay(f) : null);
+    // Only interrupt for a CLOSE corridor foe (gangX). World MELEE_RANGE spans
+    // ~half the gang, so using it here froze units mid-corridor.
+    // Home paths ignore distant fights — always finish the seat return.
+    if (
+      onGangCorridor &&
+      f.team !== "neutral" &&
+      after !== "home" &&
+      Math.abs(f.y - midY) < 0.16
+    ) {
+      const moveDir =
+        Math.sign(t.x - f.x) || (f.team === this.playerTeam ? 1 : -1);
+      const blocker = this.blockerAhead(f, moveDir);
       if (blocker) {
-        // Offense units: leave path-follow and enter gang combat so they
-        // keep pushing / shooting instead of freezing mid-route.
-        if (f.onOffense && Math.abs(f.y - midY) < 0.14) {
-          f.state = "gang";
-          f.path = [];
-          f.pathI = 0;
-          this.setAfter(f, "");
-          f.y = laneY;
-          this.syncGangFromWorld(f);
-          if (f.aggro < 80) f.aggro = 40;
-          return;
-        }
-        const gap = (blocker.x - f.x) * moveDir;
-        const reach = f.rangedPyro ? RANGED_RANGE * 0.7 : MELEE_RANGE * 0.35;
-        if (gap > reach) {
-          const step = Math.min(gap - reach, 0.14 * dt);
-          f.x += moveDir * step;
-        }
-        f.y += (laneY - f.y) * Math.min(1, 8 * dt);
+        f.state = "gang";
+        f.path = [];
+        f.pathI = 0;
+        f.y = laneY;
         this.syncGangFromWorld(f);
-        // Don't promote attackers to "defender" mid-path — keeps Angriff pushing
-        if (!f.onOffense) f.aggro = 100;
-        else if (f.aggro < 80) f.aggro = 40;
+        if (f.onOffense || after === "gang" || after === "invade") {
+          f.onOffense = true;
+          if (f.aggro < 80) f.aggro = 40;
+          this.setAfter(f, "");
+        } else {
+          f.aggro = Math.max(f.aggro, 80);
+          this.setAfter(f, "");
+        }
         return;
       }
     }
@@ -2992,14 +3014,18 @@ export class Match {
     return true;
   }
 
-  /** Enemy in front on gang / path — cannot walk past without fighting */
+  /**
+   * Corridor blocker ahead, measured in gangX.
+   * World MELEE/RANGED spans most of the short gang strip (~0.27 wide) and
+   * made every unit look "stuck" fighting across half the corridor.
+   */
   private blockerAhead(f: FanUnit, dirHint?: number): FanUnit | null {
     const dir =
       dirHint ??
       (f.team === this.playerTeam ? 1 : f.team === this.aiTeam ? -1 : 1);
     let best: FanUnit | null = null;
-    // Keep detection modest so attackers don't "see" the whole gang from home
-    let bestD = f.rangedPyro ? RANGED_RANGE * 0.95 : MELEE_RANGE * 2.2;
+    // Short look-ahead so the rest of the gang stays walkable
+    let bestD = f.rangedPyro ? 0.16 : 0.09;
     for (const o of this.fans) {
       if (!this.isHostileUnit(f, o)) continue;
       const onLane =
@@ -3007,34 +3033,18 @@ export class Match {
         o.isSteward ||
         o.state === "stand" ||
         o.state === "moving" ||
-        (o.state === "block" && Math.abs(blockIdToGangX(o.blockId) - f.gangX) < 0.12);
+        (o.state === "block" &&
+          Math.abs(blockIdToGangX(o.blockId) - f.gangX) < 0.12);
       if (!onLane) continue;
-      const dx = (o.x - f.x) * dir;
-      if (dx < -0.02 || dx > bestD) continue;
+      const ogx =
+        o.state === "gang" || o.invading || o.isSteward
+          ? o.gangX
+          : worldXToGangX(o.x);
+      const dx = (ogx - f.gangX) * dir;
+      if (dx < -0.015 || dx > bestD) continue;
       if (Math.abs(o.y - f.y) > 0.14) continue;
       bestD = dx;
       best = o;
-    }
-    return best;
-  }
-
-  /** Closest foe near current position (any direction) — used when heading to beer */
-  private foeInWay(f: FanUnit): FanUnit | null {
-    let best: FanUnit | null = null;
-    let bestD = MELEE_RANGE * 1.8;
-    for (const o of this.fans) {
-      if (!this.isHostileUnit(f, o)) continue;
-      const onLane =
-        o.state === "gang" ||
-        o.isSteward ||
-        o.state === "moving" ||
-        o.state === "stand";
-      if (!onLane && !(o.state === "block" && Math.abs(o.y - f.y) < 0.08)) continue;
-      const d = dist(f.x, f.y, o.x, o.y);
-      if (d < bestD) {
-        bestD = d;
-        best = o;
-      }
     }
     return best;
   }
@@ -3049,113 +3059,78 @@ export class Match {
   private tickGangMove(f: FanUnit, dt: number): void {
     if (f.isSteward) return;
     const dir = f.team === this.playerTeam ? 1 : -1;
-    const speed = 0.065 * FAN_STATS[f.kind].fight;
+    // Brisk march so the full Heim→Gast corridor reads as movement
+    const speed = 0.11 * FAN_STATS[f.kind].fight;
     const laneY = gangLaneYForUnit(f.id);
     const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
-
-    // Angreifer (onOffense) pushen immer vorwärts bis 0 HP oder Blocksturm.
-    // Nur echte Heim-Verteidiger laufen zurück, wenn Feinde am Heimblock sind.
     const team = f.team as TeamId;
     const homeGx = blockIdToGangX(
       team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK,
     );
-    const defendHome =
-      !f.onOffense &&
-      f.aggro >= 80 &&
-      this.teamHomeThreatened(team) &&
-      (dir > 0 ? f.gangX > homeGx + 0.12 : f.gangX < homeGx - 0.12);
-    const moveDir = defendHome ? -dir : dir;
 
-    const ordPosts = defendHome ? [] : this.blockingOrdnerPosts(f, goalBlock);
-    const cementWall = defendHome ? null : this.cementWallAhead(f);
+    // Non-offense: walk home along the gang (full length), then enter block.
+    if (!f.onOffense) {
+      const homeDir = -dir;
+      const blocker = this.blockerAhead(f, homeDir);
+      let moveSpeed = speed;
+      if (blocker) {
+        const ogx =
+          blocker.state === "gang" || blocker.invading || blocker.isSteward
+            ? blocker.gangX
+            : worldXToGangX(blocker.x);
+        const gapGx = (ogx - f.gangX) * homeDir;
+        if (gapGx < 0.05) {
+          // Soft contact — still crawl home, never freeze on one X
+          moveSpeed = speed * 0.7;
+          f.aggro = Math.max(f.aggro, 80);
+          f.y += (blocker.y - f.y) * Math.min(1, 8 * dt);
+        }
+      }
+      f.gangX = clamp(f.gangX + homeDir * moveSpeed * dt, 0, 1);
+      f.x = gangXToWorld(f.gangX);
+      f.y = laneY + Math.sin(this.realElapsed * 3 + f.id) * 0.006;
+      if (Math.abs(f.gangX - homeGx) < 0.1) {
+        this.returnFanToHomeBlock(f);
+      }
+      return;
+    }
+
+    // Offense: always march toward the enemy block across the full gang.
+    // Cement slows + DoTs but never hard-stops (gang stays permeable).
+    const cementWall = this.cementWallAhead(f);
     const pressingCement =
       cementWall != null &&
-      (f.kind === "hooligans" || f.kind === "ultras") &&
-      !defendHome;
-    const cementSlow = pressingCement ? CEMENT_SLOW_MUL : 1;
-    const moveSpeed = speed * cementSlow;
+      (f.kind === "hooligans" || f.kind === "ultras");
+    let moveSpeed = speed * (pressingCement ? Math.max(0.55, CEMENT_SLOW_MUL) : 1);
     if (pressingCement) {
       f.hp = Math.max(0, f.hp - CEMENT_DOT_PER_SEC * dt);
     }
 
-    const blocker = this.blockerAhead(f, moveDir);
-    const frontPost = ordPosts[0] ?? null;
-    const postPos = frontPost ? this.ordnerPostGangPos(frontPost) : null;
-    const gapToBlocker = blocker ? (blocker.x - f.x) * moveDir : 999;
-    const gapToPost = postPos ? (postPos.x - f.x) * moveDir : 999;
-    const haltGap = f.rangedPyro ? RANGED_RANGE * 0.55 : MELEE_RANGE * 0.7;
-    const engageUnit = blocker != null && gapToBlocker <= haltGap;
-    const engagePost = postPos != null && gapToPost <= haltGap && gapToPost >= -0.02;
-    const engage =
-      engageUnit || engagePost
-        ? engageUnit && (!engagePost || gapToBlocker <= gapToPost)
-          ? ("unit" as const)
-          : ("post" as const)
-        : null;
-
-    if (engage === "unit" && blocker && !f.onOffense) {
-      if (f.rangedPyro) {
-        const desired = blocker.x - moveDir * (RANGED_RANGE * 0.4);
-        f.x += (desired - f.x) * Math.min(1, 5 * dt);
-        f.y += (laneY - f.y) * Math.min(1, 8 * dt);
-      } else {
-        const targetGap = MELEE_RANGE * 0.2;
-        if (gapToBlocker > targetGap) {
-          f.x += moveDir * Math.min(gapToBlocker - targetGap, moveSpeed * 2.4 * dt);
-        } else {
-          f.x += moveDir * moveSpeed * 0.4 * dt;
-        }
-        f.y += (blocker.y - f.y) * Math.min(1, 10 * dt);
-      }
-      this.syncGangFromWorld(f);
-    } else if (engage && f.onOffense) {
-      // Fight nearest unit/post in range, then keep marching when clear
-      const targetGap = f.rangedPyro ? RANGED_RANGE * 0.4 : MELEE_RANGE * 0.25;
-      if (engage === "unit" && blocker) {
-        if (gapToBlocker > targetGap) {
-          f.x += moveDir * Math.min(gapToBlocker - targetGap, moveSpeed * 1.6 * dt);
-        } else {
-          f.x += (blocker.x - moveDir * targetGap - f.x) * Math.min(1, 6 * dt);
-        }
+    const blocker = this.blockerAhead(f, dir);
+    if (blocker) {
+      const ogx =
+        blocker.state === "gang" || blocker.invading || blocker.isSteward
+          ? blocker.gangX
+          : worldXToGangX(blocker.x);
+      const gapGx = (ogx - f.gangX) * dir;
+      if (gapGx < 0.05) {
+        // Soft contact: slight slow, keep Y toward foe, keep advancing
+        moveSpeed = Math.max(speed * 0.7, moveSpeed * 0.8);
         f.y += ((blocker.y + laneY) * 0.5 - f.y) * Math.min(1, 8 * dt);
-      } else if (postPos) {
-        if (gapToPost > targetGap) {
-          f.x += moveDir * Math.min(gapToPost - targetGap, moveSpeed * 1.6 * dt);
-        } else {
-          f.x += (postPos.x - moveDir * targetGap - f.x) * Math.min(1, 6 * dt);
-        }
-        f.y += ((postPos.y + laneY) * 0.5 - f.y) * Math.min(1, 8 * dt);
+        if (f.aggro < 80) f.aggro = 40;
       }
-      this.syncGangFromWorld(f);
-      if (f.aggro < 80) f.aggro = 40;
-    } else {
-      // No engageable target — always walk the gang toward the goal
-      f.gangX = clamp(f.gangX + moveDir * moveSpeed * dt, 0, 1);
-      f.x = gangXToWorld(f.gangX);
-      f.y = laneY + Math.sin(this.realElapsed * 3 + f.id) * 0.006;
     }
 
-    // Cement: soft damage/slow gate — creep up to breakthrough, not a hard wall
-    if (pressingCement && cementWall != null) {
-      const hardCap = cementWall + dir * CEMENT_BREAKTHROUGH;
-      if (dir > 0) f.gangX = Math.min(f.gangX, hardCap);
-      else f.gangX = Math.max(f.gangX, hardCap);
-      f.x = gangXToWorld(f.gangX);
-    }
-    // Ordnerposten are fight targets in range — they must NOT freeze the gang.
-    // Offense keeps marching; posts/stewards are engaged via combat when near.
-
-    if (defendHome) return;
+    f.gangX = clamp(f.gangX + dir * moveSpeed * dt, 0, 1);
+    f.x = gangXToWorld(f.gangX);
+    f.y = laneY + Math.sin(this.realElapsed * 3 + f.id) * 0.006;
 
     const goalGx = blockIdToGangX(goalBlock);
-    // Gang is permeable: reach enemy block even if mid posts remain.
-    // Only pause invade while actively locked in a melee/post engage.
-    const canInvade = !engage;
     const reached =
       f.team === this.playerTeam
         ? f.gangX >= goalGx - 0.02
         : f.gangX <= goalGx + 0.02;
-    if (reached && canInvade) {
+    if (reached) {
       const door = doorPos(goalBlock);
       f.blockId = goalBlock;
       f.path = [
