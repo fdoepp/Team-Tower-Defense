@@ -6641,6 +6641,120 @@
       "notes": "REFERENZ-DEMO (Broadcast-Tech) — nicht Runtime-Default. Runtime = scoreboardChrome + scoreboard-slots.json + Live-Overlays.",
       "updatedAt": "2026-10-09T12:06:03.203227+00:00",
       "assetClass": "reference-demo"
+    },
+    "tribuneBlueWide150": {
+      "id": "tribuneBlueWide150",
+      "file": "tribune-block-blue-wide150.png",
+      "source": "../tmp/tribune-wide150/tribune-block-blue-wide150.png",
+      "status": "pendingApproval",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-blue-wide150.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 639,
+          "h": 309
+        },
+        "aspectRatio": 2.067961,
+        "alphaCoverage": 0.2133,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          8,
+          6,
+          630,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-11T12:07:36.645649+00:00"
+      },
+      "notes": "Zusatzvariante +50% Breite zu tribuneBlue. Freigabe-Vergleich: Original 426x309 → 639x309. Nicht ersetzen — parallel zu released tribuneBlue.",
+      "variantOf": "tribuneBlue",
+      "widthScale": 1.5
+    },
+    "tribuneGreyWide150": {
+      "id": "tribuneGreyWide150",
+      "file": "tribune-block-grey-wide150.png",
+      "source": "../tmp/tribune-wide150/tribune-block-grey-wide150.png",
+      "status": "pendingApproval",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-grey-wide150.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 579,
+          "h": 308
+        },
+        "aspectRatio": 1.87987,
+        "alphaCoverage": 0.1681,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          8,
+          6,
+          570,
+          301
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-11T12:07:36.783296+00:00"
+      },
+      "notes": "Zusatzvariante +50% Breite zu tribuneGrey. Freigabe-Vergleich: Original 386x308 → 579x308. Nicht ersetzen — parallel zu released tribuneGrey.",
+      "variantOf": "tribuneGrey",
+      "widthScale": 1.5
+    },
+    "tribuneRedWide150": {
+      "id": "tribuneRedWide150",
+      "file": "tribune-block-red-wide150.png",
+      "source": "../tmp/tribune-wide150/tribune-block-red-wide150.png",
+      "status": "pendingApproval",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-red-wide150.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 639,
+          "h": 309
+        },
+        "aspectRatio": 2.067961,
+        "alphaCoverage": 0.2141,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          8,
+          6,
+          630,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-11T12:07:36.910639+00:00"
+      },
+      "notes": "Zusatzvariante +50% Breite zu tribuneRed. Freigabe-Vergleich: Original 426x309 → 639x309. Nicht ersetzen — parallel zu released tribuneRed.",
+      "variantOf": "tribuneRed",
+      "widthScale": 1.5
     }
   },
   "runtimeBinding": {
