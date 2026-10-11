@@ -40,6 +40,7 @@ import {
   unitLevelMul,
   visitGoldPayout,
   visitInterval,
+  difficultyProfile,
   type BuildingKind,
   type FanKind,
   type FanMix,
@@ -488,7 +489,7 @@ function renderMenu(): void {
         <label class="field">KI
           <select id="diff">
             <option value="easy" selected>Einfach</option>
-            <option value="normal">Normal</option>
+            <option value="normal">Mittel</option>
             <option value="hard">Schwer</option>
           </select>
         </label>
@@ -545,10 +546,11 @@ function renderSetup(): void {
     ev.preventDefault();
     ev.stopPropagation();
     if (!isValidMix(state.setup.mix)) return;
+    const aiProf = difficultyProfile(state.settings.difficulty);
     state.match = new Match({
       settings: state.settings,
       playerSetup: state.setup,
-      aiSetup: { mix: defaultMix() },
+      aiSetup: { mix: { ...aiProf.aiMix } },
     });
     // QA / playtest hook (read-only introspection)
     (window as unknown as { __match?: Match }).__match = state.match;

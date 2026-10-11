@@ -1,6 +1,5 @@
 import {
   AI_SOFT_REGEN,
-  AI_START_GOLD_BONUS,
   BLOCK_META,
   BLOCK_HOME_PULL,
   BLOCK_HOME_RADIUS,
@@ -86,7 +85,9 @@ import {
   canVisit,
   visitGoldPayout,
   visitInterval,
+  difficultyProfile,
   type AiDifficulty,
+  type DiffProfile,
   type BuildSlot,
   type BuildingKind,
   type Currencies,
@@ -148,16 +149,12 @@ function uid(): number {
 }
 
 function diffMul(d: AiDifficulty): number {
-  if (d === "easy") return 0.55;
-  if (d === "hard") return 1.1;
-  return 0.85;
+  return difficultyProfile(d).tickMul;
 }
 
 /** Easy sends/buys less often; hard a bit more. */
 function aiActionMul(d: AiDifficulty): number {
-  if (d === "easy") return 0.55;
-  if (d === "hard") return 1.15;
-  return 1;
+  return difficultyProfile(d).actionMul;
 }
 
 function dist(ax: number, ay: number, bx: number, by: number): number {
@@ -277,14 +274,17 @@ export class Match {
   /** Cooldown before next mood +/− float (heim / gäste) */
   moodFloatCd = { heim: 0, gast: 0 };
   captureAcc: Record<string, number> = {};
-  aiGold = START_GOLD + AI_START_GOLD_BONUS;
+  aiGold = START_GOLD;
   aiBuildRot = 0;
   /** Grey economy cadence while unbothered */
   greyBuildAcc = 0;
-  /** soft AI combat resources (same start as player; regen still applies) */
+  /** soft AI combat resources (difficulty sets start; regen still applies) */
   aiMerch = 0;
   aiBeer = 0;
   aiSecurity = START_SECURITY;
+  /** AI starting unit tech (Schwer can begin at Lv2) */
+  private aiUnitTech = 1;
+  private diffProf!: DiffProfile;
   /** Penalty: whose kick is next (alternating) */
   pensNext: TeamId = "ksc";
   pensKicksKsc = 0;
@@ -331,6 +331,12 @@ export class Match {
     this.cfg = cfg;
     this.playerTeam = cfg.settings.playerTeam;
     this.aiTeam = cfg.settings.playerTeam === "ksc" ? "vfb" : "ksc";
+    this.diffProf = difficultyProfile(cfg.settings.difficulty);
+    this.aiGold = START_GOLD + this.diffProf.aiGoldBonus;
+    this.aiMerch = this.diffProf.aiStartMerch;
+    this.aiBeer = this.diffProf.aiStartBeer;
+    this.aiSecurity = START_SECURITY + this.diffProf.aiStartSecurityBonus;
+    this.aiUnitTech = this.diffProf.aiUnitTech;
     this.blockOwner = [this.playerTeam, "neutral", this.aiTeam];
 
     for (const b of BLOCK_META) {
@@ -424,7 +430,11 @@ export class Match {
     // Roughly spread home slot; then micro-drift + cheer bob in place
     const p = crowdHomePos(blockId, seat);
     const level =
-      team === this.playerTeam ? this.unitTechLevel(kind) : 1;
+      team === this.playerTeam
+        ? this.unitTechLevel(kind)
+        : team === this.aiTeam
+          ? this.aiUnitTech
+          : 1;
     const beerIv = visitInterval(kind, "beer", level);
     const shopIv = visitInterval(kind, "shop", level);
     const maxHp = this.baseMaxHp(kind, level, false);
@@ -994,8 +1004,10 @@ export class Match {
 
     type Cand = { key: string; text: string; channel: TickerChannel; prio: number };
     const cands: Cand[] = [];
+    // Skip economy-nag tips in the opening minutes (Anpfiff clutter)
+    const economyTips = this.minute >= 3;
     const beer = this.currency.beer;
-    if (beer < 8) {
+    if (economyTips && beer < 8) {
       cands.push({
         key: "beer-low",
         text: beer < 3 ? "Bier ist leer — Hooligans warten" : "Bier ist knapp",
@@ -1004,7 +1016,7 @@ export class Match {
       });
     }
     const merch = this.currency.merch;
-    if (merch < 6) {
+    if (economyTips && merch < 6) {
       cands.push({
         key: "merch-low",
         text: "Fanartikel werden knapp",
@@ -4787,13 +4799,39 @@ export class Match {
     return this.momentum > 0.18 || p > a + 1.2;
   }
 
+  /** Minute-based course multiplier for Mittel/Schwer ramps. */
+  private aiPhase(): {
+    regenBonus: number;
+    actionBonus: number;
+    gangBonus: number;
+  } {
+    const p = this.diffProf;
+    const m = this.minute;
+    if (m >= p.lateMinute) {
+      return {
+        regenBonus: p.lateRegenBonus,
+        actionBonus: p.lateActionBonus,
+        gangBonus: p.lateGangBonus,
+      };
+    }
+    if (m >= p.midMinute) {
+      return {
+        regenBonus: p.midRegenBonus,
+        actionBonus: p.midActionBonus,
+        gangBonus: p.midGangBonus,
+      };
+    }
+    return { regenBonus: 0, actionBonus: 0, gangBonus: 0 };
+  }
+
   private tickAi(dt: number): void {
     this.aiAcc += dt;
     const diff = this.cfg.settings.difficulty;
     const trailing = this.aiTrailingCrowd();
+    const phase = this.aiPhase();
     const regen =
       AI_SOFT_REGEN *
-      (diff === "easy" ? 0.7 : diff === "hard" ? 1.25 : 1) *
+      (this.diffProf.regenMul + phase.regenBonus) *
       (trailing ? 1.25 : 1);
     // Soft regen of AI send/buy resources
     this.aiMerch = Math.min(120, this.aiMerch + dt * regen);
@@ -4808,7 +4846,10 @@ export class Match {
     this.aiTryHireSteward();
     this.aiTryBuyFans();
     this.aiTryUpgradeUnits();
-    const act = aiActionMul(diff) * (trailing ? 1.35 : 1);
+    const act =
+      (aiActionMul(diff) + phase.actionBonus) *
+      this.diffProf.sendChanceMul *
+      (trailing ? 1.35 : 1);
     const hools = this.fans.filter(
       (f) =>
         f.team === this.aiTeam &&
@@ -4828,7 +4869,7 @@ export class Match {
     const onGang = this.fans.filter(
       (f) => f.team === this.aiTeam && f.state === "gang" && f.hp > 0 && !f.isSteward,
     ).length;
-    let want = diff === "hard" ? 3 : diff === "easy" ? 1 : 2;
+    let want = this.diffProf.gangWant + phase.gangBonus;
     if (trailing) want += 1;
     if (
       hools.length &&
@@ -4876,12 +4917,18 @@ export class Match {
   /** Mirror player fan buys into Gästebox with AI wallets */
   private aiTryBuyFans(): void {
     const diff = this.cfg.settings.difficulty;
-    const act = aiActionMul(diff);
+    const phase = this.aiPhase();
+    const act = aiActionMul(diff) + phase.actionBonus;
     const trailing = this.aiTrailingCrowd();
     if (Math.random() > (trailing ? 0.7 : 0.55) * act) return;
     const own = this.countTeamFans(this.aiTeam);
     const target =
-      diff === "easy" ? 10 : diff === "hard" ? 16 : 13;
+      this.diffProf.fanTarget +
+      (this.minute >= this.diffProf.lateMinute
+        ? 2
+        : this.minute >= this.diffProf.midMinute
+          ? 1
+          : 0);
     if (own.normalos + own.ultras + own.hooligans >= target) return;
 
     const seat = this.freeSeat(GAST_BLOCK);

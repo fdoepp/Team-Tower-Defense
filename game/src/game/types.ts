@@ -16,6 +16,111 @@ export type SoloSettings = {
   playerTeam: TeamId;
 };
 
+/**
+ * Start + Verlaufsprofil je Schwierigkeit (Mittel = "normal").
+ * Zahlen sind relative Multiplikatoren / absolute Startwerte für die KI.
+ */
+export type DiffProfile = {
+  /** AI start lineup (sum = MIX_TOTAL) */
+  aiMix: FanMix;
+  aiGoldBonus: number;
+  aiStartMerch: number;
+  aiStartBeer: number;
+  aiStartSecurityBonus: number;
+  /** Starting unit level for AI Ultras/Hools/Fans */
+  aiUnitTech: number;
+  regenMul: number;
+  actionMul: number;
+  /** Higher = faster AI decision ticks */
+  tickMul: number;
+  fanTarget: number;
+  gangWant: number;
+  sendChanceMul: number;
+  /** Progression: minute gates + bonuses */
+  midMinute: number;
+  lateMinute: number;
+  midGangBonus: number;
+  lateGangBonus: number;
+  midRegenBonus: number;
+  lateRegenBonus: number;
+  midActionBonus: number;
+  lateActionBonus: number;
+};
+
+export function difficultyProfile(d: AiDifficulty): DiffProfile {
+  if (d === "easy") {
+    return {
+      aiMix: { normalos: 4, ultras: 2, hooligans: 2 },
+      aiGoldBonus: 0,
+      aiStartMerch: 0,
+      aiStartBeer: 0,
+      aiStartSecurityBonus: 0,
+      aiUnitTech: 1,
+      regenMul: 0.65,
+      actionMul: 0.5,
+      tickMul: 0.55,
+      fanTarget: 10,
+      gangWant: 1,
+      sendChanceMul: 0.75,
+      midMinute: 35,
+      lateMinute: 65,
+      midGangBonus: 0,
+      lateGangBonus: 1,
+      midRegenBonus: 0.1,
+      lateRegenBonus: 0.15,
+      midActionBonus: 0.05,
+      lateActionBonus: 0.1,
+    };
+  }
+  if (d === "hard") {
+    return {
+      aiMix: { normalos: 2, ultras: 3, hooligans: 3 },
+      aiGoldBonus: 40,
+      aiStartMerch: 22,
+      aiStartBeer: 22,
+      aiStartSecurityBonus: 12,
+      aiUnitTech: 2,
+      regenMul: 1.35,
+      actionMul: 1.25,
+      tickMul: 1.2,
+      fanTarget: 18,
+      gangWant: 3,
+      sendChanceMul: 1.2,
+      midMinute: 18,
+      lateMinute: 40,
+      midGangBonus: 1,
+      lateGangBonus: 2,
+      midRegenBonus: 0.2,
+      lateRegenBonus: 0.35,
+      midActionBonus: 0.15,
+      lateActionBonus: 0.25,
+    };
+  }
+  // Mittel (normal): fair mirror start, ramps mid-game
+  return {
+    aiMix: { normalos: 3, ultras: 3, hooligans: 2 },
+    aiGoldBonus: 15,
+    aiStartMerch: 10,
+    aiStartBeer: 10,
+    aiStartSecurityBonus: 0,
+    aiUnitTech: 1,
+    regenMul: 1,
+    actionMul: 1,
+    tickMul: 0.9,
+    fanTarget: 14,
+    gangWant: 2,
+    sendChanceMul: 1,
+    midMinute: 25,
+    lateMinute: 50,
+    midGangBonus: 1,
+    lateGangBonus: 1,
+    midRegenBonus: 0.15,
+    lateRegenBonus: 0.25,
+    midActionBonus: 0.1,
+    lateActionBonus: 0.2,
+  };
+}
+
 export type SetupConfig = {
   mix: FanMix;
 };
