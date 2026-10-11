@@ -627,7 +627,12 @@ export class Match {
     return plotGangX(s.blockId, s.index);
   }
 
+  /**
+   * Truly grey/neutral buildings only — NOT blue/red posts that were claimed
+   * or built on formerly neutral mid plots.
+   */
   private isGreyBuilding(s: BuildSlot): boolean {
+    if (s.owner === this.playerTeam || s.owner === this.aiTeam) return false;
     return !!(s.owner === "neutral" || s.greyNeutral);
   }
 
@@ -636,6 +641,11 @@ export class Match {
     return !!(f.onOffense || f.invading);
   }
 
+  /**
+   * Intact Ordnerpost that blocks this team's advance / Standarte.
+   * Includes grey mid AND enemy-colored posts on any plot (incl. former
+   * neutral mid) — those must be destroyed before units can push past.
+   */
   private isHostileOrdnerPost(s: BuildSlot, team: TeamId): boolean {
     if (s.building !== "ordner" || s.structHp <= 0) return false;
     if (s.owner === team) return false;
@@ -1526,7 +1536,8 @@ export class Match {
     ) {
       for (const s of this.slots) {
         if (!this.isHostileOrdnerPost(s, a.team as TeamId)) continue;
-        // Grey / neutral buildings: only under an active attack order
+        // Grey-only rule: passive shoppers must not chip grey posts.
+        // Blue/red posts (also on former mid plots) stay valid combat targets.
         if (this.isGreyBuilding(s) && !this.isActiveAttacker(a)) {
           continue;
         }
@@ -2560,8 +2571,9 @@ export class Match {
   }
 
   /**
-   * Nearest intact hostile Ordnerpost ahead (incl. neutral mid).
-   * Enemy fans and the enemy Standarte may never pass this wall.
+   * Nearest intact hostile Ordnerpost ahead.
+   * Walls for: grey mid, AND blue/red posts on formerly neutral mid plots.
+   * Units + Standarte never pass until that post is destroyed.
    */
   hostilePostWallGx(team: TeamId): number | null {
     const dir = team === this.playerTeam ? 1 : -1;
@@ -3388,6 +3400,31 @@ export class Match {
     if (Math.abs(f.y - laneY) < 0.08 || Math.abs(f.y - midY) < 0.08) {
       this.captureGangXFromWorld(f);
     }
+
+    // Active attackers cannot path past an intact hostile Ordnerpost
+    // (grey mid or blue/red posts on former neutral ground).
+    if (
+      this.isActiveAttacker(f) &&
+      onGangCorridor &&
+      (f.team === this.playerTeam || f.team === this.aiTeam)
+    ) {
+      const postWall = this.hostilePostWallGx(f.team as TeamId);
+      if (postWall != null) {
+        const dir = f.team === this.playerTeam ? 1 : -1;
+        const limit = postWall - dir * 0.012;
+        this.captureGangXFromWorld(f);
+        const past =
+          dir > 0 ? f.gangX > limit + 1e-4 : f.gangX < limit - 1e-4;
+        if (past) {
+          f.gangX = limit;
+          f.x = gangXToWorld(limit) + gangLaneDepthForUnit(f.id);
+          // Hold at the wall — don't eat waypoints beyond it
+          if ((dir > 0 && t.x > f.x + 0.01) || (dir < 0 && t.x < f.x - 0.01)) {
+            return;
+          }
+        }
+      }
+    }
   }
 
   private finishPath(f: FanUnit): void {
@@ -3734,7 +3771,8 @@ export class Match {
     }
 
     f.gangX = clamp(f.gangX + dir * moveSpeed * dt, 0, 1);
-    // Hard wall: never pass an intact hostile Ordnerpost (incl. central)
+    // Hard wall: never pass intact hostile Ordnerposts — grey mid OR
+    // blue/red posts on formerly neutral plots. Destroy first, then push.
     if (team === this.playerTeam || team === this.aiTeam) {
       const postWall = this.hostilePostWallGx(team);
       if (postWall != null) {
