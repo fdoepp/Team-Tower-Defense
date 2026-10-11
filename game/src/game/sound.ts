@@ -1,6 +1,10 @@
 /**
  * Procedural Web Audio bed + stingers (no external audio files).
  * Unlock on first user gesture; events call sfx()/setAmbience().
+ *
+ * Autoplay: AudioContext often stays "suspended" until resume() finishes.
+ * SFX during that window are queued and flushed after unlock — otherwise
+ * Anpfiff-whistle / first UI clicks are silently dropped.
  */
 
 export type SfxKind =
@@ -29,6 +33,10 @@ let ambience: AmbienceMode = "off";
 let lastSfxAt = 0;
 let lastAmbienceSwitchAt = 0;
 let gestureBound = false;
+let resumeWait: Promise<void> | null = null;
+/** SFX waiting for AudioContext running (post-gesture). */
+let pendingSfx: SfxKind[] = [];
+const PENDING_MAX = 14;
 
 function ensure(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -49,6 +57,42 @@ function ensure(): AudioContext | null {
   return ctx;
 }
 
+function queueSfx(kind: SfxKind): void {
+  pendingSfx.push(kind);
+  while (pendingSfx.length > PENDING_MAX) pendingSfx.shift();
+}
+
+function flushPending(): void {
+  if (!isContextRunning() || muted || !unlocked) return;
+  const q = pendingSfx.splice(0, pendingSfx.length);
+  for (const kind of q) playSfxNow(kind);
+}
+
+function isContextRunning(): boolean {
+  const c = ctx ?? ensure();
+  return !!c && c.state === "running";
+}
+
+function resumeContext(): Promise<void> {
+  const c = ensure();
+  if (!c) return Promise.resolve();
+  if (c.state === "running") return Promise.resolve();
+  if (resumeWait) return resumeWait;
+  resumeWait = c
+    .resume()
+    .catch(() => {
+      /* autoplay still blocked */
+    })
+    .then(() => {
+      resumeWait = null;
+      if (c.state === "running") {
+        flushPending();
+        if (ambience !== "off" && ambNodes.length === 0) startAmbience(ambience);
+      }
+    });
+  return resumeWait;
+}
+
 /** Bind once: any pointer/key unlocks audio (autoplay policies). */
 export function bindAudioGestures(): void {
   if (gestureBound || typeof window === "undefined") return;
@@ -59,6 +103,12 @@ export function bindAudioGestures(): void {
   window.addEventListener("pointerdown", unlock, { capture: true });
   window.addEventListener("keydown", unlock, { capture: true });
   window.addEventListener("touchstart", unlock, { capture: true });
+  // Tab back into focus — browsers often re-suspend the context
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && unlocked) {
+      void resumeContext();
+    }
+  });
 }
 
 export function unlockAudio(): void {
@@ -66,12 +116,10 @@ export function unlockAudio(): void {
   const c = ensure();
   if (!c) return;
   unlocked = true;
-  if (c.state === "suspended") {
-    void c.resume().then(() => {
-      if (ambience !== "off" && ambNodes.length === 0) startAmbience(ambience);
-    });
-  } else if (ambience !== "off" && ambNodes.length === 0) {
-    startAmbience(ambience);
+  void resumeContext();
+  if (c.state === "running") {
+    flushPending();
+    if (ambience !== "off" && ambNodes.length === 0) startAmbience(ambience);
   }
 }
 
@@ -79,9 +127,34 @@ export function isAudioUnlocked(): boolean {
   return unlocked;
 }
 
+export function isMuted(): boolean {
+  return muted;
+}
+
+/** Debug / probes */
+export function audioDebugState(): {
+  unlocked: boolean;
+  muted: boolean;
+  ctxState: string | null;
+  pending: number;
+  ambience: AmbienceMode;
+  ambNodes: number;
+} {
+  return {
+    unlocked,
+    muted,
+    ctxState: ctx?.state ?? null,
+    pending: pendingSfx.length,
+    ambience,
+    ambNodes: ambNodes.length,
+  };
+}
+
 export function setMuted(m: boolean): void {
   muted = m;
   if (master) master.gain.value = m ? 0 : 0.7;
+  if (m) pendingSfx = [];
+  else if (unlocked) flushPending();
 }
 
 export function toggleMuted(): boolean {
@@ -92,8 +165,8 @@ export function toggleMuted(): boolean {
 function ready(): boolean {
   const c = ensure();
   if (!c || !master || muted || !unlocked) return false;
-  if (c.state === "suspended") {
-    void c.resume();
+  if (c.state !== "running") {
+    void resumeContext();
     return false;
   }
   return true;
@@ -152,14 +225,11 @@ function noiseBurst(dur: number, gain = 0.1, when = 0, hp = 400): void {
   src.stop(t0 + dur + 0.02);
 }
 
-export function sfx(kind: SfxKind): void {
-  const now = performance.now();
-  if (kind !== "goal" && kind !== "victory" && kind !== "storm" && kind !== "whistle") {
-    if (now - lastSfxAt < 40) return;
+function playSfxNow(kind: SfxKind): void {
+  if (!ready()) {
+    queueSfx(kind);
+    return;
   }
-  lastSfxAt = now;
-  unlockAudio();
-  if (!ready()) return;
   switch (kind) {
     case "ui":
       tone(660, 0.07, "sine", 0.09);
@@ -215,6 +285,26 @@ export function sfx(kind: SfxKind): void {
   }
 }
 
+export function sfx(kind: SfxKind): void {
+  const now = performance.now();
+  if (
+    kind !== "goal" &&
+    kind !== "victory" &&
+    kind !== "storm" &&
+    kind !== "whistle"
+  ) {
+    if (now - lastSfxAt < 40) return;
+  }
+  lastSfxAt = now;
+  unlockAudio();
+  if (!ready()) {
+    // Keep Anpfiff / UI / build sounds — play once context is running
+    queueSfx(kind);
+    return;
+  }
+  playSfxNow(kind);
+}
+
 function stopAmbienceNodes(): void {
   for (const n of ambNodes) {
     try {
@@ -236,8 +326,8 @@ export function startAmbience(mode: AmbienceMode): void {
   ambience = mode;
   const c = ensure();
   if (!c || !ambGain || !unlocked || muted) return;
-  if (c.state === "suspended") {
-    void c.resume().then(() => {
+  if (c.state !== "running") {
+    void resumeContext().then(() => {
       if (ambience === mode && ambNodes.length === 0) startAmbience(mode);
     });
     return;
