@@ -796,7 +796,8 @@ select {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 68%;
+  max-height: 72%;
+  min-height: 28%;
   aspect-ratio: 1;
   object-fit: contain;
   flex: 0 1 auto;
