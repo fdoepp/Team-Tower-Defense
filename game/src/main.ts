@@ -59,10 +59,11 @@ import {
   blocksturmValue,
   difficultyLabel,
   ergebnisValue,
+  fetchSharedHighscores,
   loadHighscores,
   teamShort,
-  tryInsertHighscore,
-  wouldEnterTop10,
+  tryInsertHighscoreShared,
+  wouldEnterTop10Shared,
   type HighscoreEntry,
   type ScoreBoardKind,
 } from "./game/highscores";
@@ -591,21 +592,33 @@ function renderTutorial(): void {
 }
 
 function renderHighscores(): void {
-  const tables = loadHighscores();
   const d = state.highscoreDiff;
-  const listHtml = (kind: ScoreBoardKind, title: string, fmt: (e: HighscoreEntry) => string) => {
-    const rows = tables[d][kind];
-    if (!rows.length) return `<p class="tiny">${title}: noch leer</p>`;
-    return `<h3>${title}</h3><ol class="hs-list">${rows
-      .map(
-        (e) =>
-          `<li><b>${escapeHtml(e.name)}</b> <span class="hs-team ${e.team === "ksc" || e.team === "vfb" ? e.team : ""}">${teamShort(e.team)}</span> — ${fmt(e)}</li>`,
-      )
-      .join("")}</ol>`;
-  };
-  app.innerHTML = `
+  const cached = loadHighscores();
+  const paint = (tables: typeof cached, shared: boolean | null) => {
+    const listHtml = (
+      kind: ScoreBoardKind,
+      title: string,
+      fmt: (e: HighscoreEntry) => string,
+    ) => {
+      const rows = tables[d][kind];
+      if (!rows.length) return `<p class="tiny">${title}: noch leer</p>`;
+      return `<h3>${title}</h3><ol class="hs-list">${rows
+        .map(
+          (e) =>
+            `<li><b>${escapeHtml(e.name)}</b> <span class="hs-team ${e.team === "ksc" || e.team === "vfb" ? e.team : ""}">${teamShort(e.team)}</span> — ${fmt(e)}</li>`,
+        )
+        .join("")}</ol>`;
+    };
+    const status =
+      shared === null
+        ? `<p class="tiny hs-sync">Globale Liste wird geladen…</p>`
+        : shared
+          ? `<p class="tiny hs-sync">Geteilte Top-10 aller Spieler</p>`
+          : `<p class="tiny hs-sync">Offline — lokale Liste (Sync fehlgeschlagen)</p>`;
+    app.innerHTML = `
     <div class="screen menu">
       <h1 class="brand">Highscores</h1>
+      ${status}
       <label class="field">Schwierigkeit
         <select id="hs-diff">
           <option value="easy" ${d === "easy" ? "selected" : ""}>Einfach</option>
@@ -619,12 +632,18 @@ function renderHighscores(): void {
       </div>
       <button class="btn secondary" id="hs-back">Zurück</button>
     </div>`;
-  app.querySelector("#hs-diff")!.addEventListener("change", (ev) => {
-    state.highscoreDiff = (ev.target as HTMLSelectElement)
-      .value as SoloSettings["difficulty"];
-    renderHighscores();
+    app.querySelector("#hs-diff")!.addEventListener("change", (ev) => {
+      state.highscoreDiff = (ev.target as HTMLSelectElement)
+        .value as SoloSettings["difficulty"];
+      renderHighscores();
+    });
+    app.querySelector("#hs-back")!.addEventListener("click", () => go("menu"));
+  };
+  paint(cached, null);
+  void fetchSharedHighscores().then(({ tables, shared }) => {
+    if (state.screen !== "highscores") return;
+    paint(tables, shared);
   });
-  app.querySelector("#hs-back")!.addEventListener("click", () => go("menu"));
 }
 
 function escapeHtml(s: string): string {
@@ -1691,46 +1710,9 @@ function renderResult(): void {
   const playerIsKsc = state.settings.playerTeam === "ksc";
   const playerGoals = playerIsKsc ? r.score[0] : r.score[1];
   const aiGoals = playerIsKsc ? r.score[1] : r.score[0];
-  const hsNotes: string[] = [];
 
-  if (youWin) {
-    const lastName = localStorage.getItem("matchday-player-name") || "Spieler";
-    if (r.reason === "invade") {
-      const value = blocksturmValue(r.minute);
-      if (wouldEnterTop10(r.difficulty, "blocksturm", value)) {
-        const name = askPlayerName(lastName);
-        if (name) {
-          localStorage.setItem("matchday-player-name", name);
-          const { placed, rank } = tryInsertHighscore(r.difficulty, "blocksturm", {
-            name,
-            value,
-            team: state.settings.playerTeam,
-            detail: `Blocksturm in ${formatMinute(r.minute)} · ${teamLabel(state.settings.playerTeam)} (${difficultyLabel(r.difficulty)})`,
-          });
-          if (placed) hsNotes.push(`Blocksturm-Highscore Platz ${rank}!`);
-        }
-      }
-    }
-    const erg = ergebnisValue(playerGoals, aiGoals);
-    if (wouldEnterTop10(r.difficulty, "ergebnis", erg)) {
-      const name =
-        hsNotes.length > 0
-          ? localStorage.getItem("matchday-player-name") || "Spieler"
-          : askPlayerName(lastName);
-      if (name) {
-        localStorage.setItem("matchday-player-name", name);
-        const { placed, rank } = tryInsertHighscore(r.difficulty, "ergebnis", {
-          name,
-          value: erg,
-          team: state.settings.playerTeam,
-          detail: `${playerGoals}:${aiGoals} · ${teamLabel(state.settings.playerTeam)} · ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
-        });
-        if (placed) hsNotes.push(`Ergebnis-Highscore Platz ${rank}!`);
-      }
-    }
-  }
-
-  app.innerHTML = `
+  const paint = (hsNotes: string[]) => {
+    app.innerHTML = `
     <div class="screen menu">
       <p class="sub">${r.detail}</p>
       <h1 class="brand">${youWin ? "Sieg!" : "Niederlage"}</h1>
@@ -1742,12 +1724,75 @@ function renderResult(): void {
         <button class="btn ksc grow" id="again">Rematch</button>
       </div>
     </div>`;
-  app.querySelector("#menu")!.addEventListener("click", () => go("menu"));
-  app.querySelector("#hs")!.addEventListener("click", () => {
-    state.highscoreDiff = r.difficulty;
-    go("highscores");
-  });
-  app.querySelector("#again")!.addEventListener("click", () => go("setup"));
+    app.querySelector("#menu")!.addEventListener("click", () => go("menu"));
+    app.querySelector("#hs")!.addEventListener("click", () => {
+      state.highscoreDiff = r.difficulty;
+      go("highscores");
+    });
+    app.querySelector("#again")!.addEventListener("click", () => go("setup"));
+  };
+
+  if (!youWin) {
+    paint([]);
+    return;
+  }
+
+  paint(["Highscore wird geprüft…"]);
+  void (async () => {
+    const hsNotes: string[] = [];
+    const lastName = localStorage.getItem("matchday-player-name") || "Spieler";
+    if (r.reason === "invade") {
+      const value = blocksturmValue(r.minute);
+      if (await wouldEnterTop10Shared(r.difficulty, "blocksturm", value)) {
+        const name = askPlayerName(lastName);
+        if (name) {
+          localStorage.setItem("matchday-player-name", name);
+          const { placed, rank, shared } = await tryInsertHighscoreShared(
+            r.difficulty,
+            "blocksturm",
+            {
+              name,
+              value,
+              team: state.settings.playerTeam,
+              detail: `Blocksturm in ${formatMinute(r.minute)} · ${teamLabel(state.settings.playerTeam)} (${difficultyLabel(r.difficulty)})`,
+            },
+          );
+          if (placed) {
+            hsNotes.push(
+              `Blocksturm-Highscore Platz ${rank}${shared ? " (global)" : ""}!`,
+            );
+          }
+        }
+      }
+    }
+    const erg = ergebnisValue(playerGoals, aiGoals);
+    if (await wouldEnterTop10Shared(r.difficulty, "ergebnis", erg)) {
+      const name =
+        hsNotes.length > 0
+          ? localStorage.getItem("matchday-player-name") || "Spieler"
+          : askPlayerName(lastName);
+      if (name) {
+        localStorage.setItem("matchday-player-name", name);
+        const { placed, rank, shared } = await tryInsertHighscoreShared(
+          r.difficulty,
+          "ergebnis",
+          {
+            name,
+            value: erg,
+            team: state.settings.playerTeam,
+            detail: `${playerGoals}:${aiGoals} · ${teamLabel(state.settings.playerTeam)} · ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
+          },
+        );
+        if (placed) {
+          hsNotes.push(
+            `Ergebnis-Highscore Platz ${rank}${shared ? " (global)" : ""}!`,
+          );
+        }
+      }
+    }
+    if (state.screen !== "result") return;
+    paint(hsNotes);
+  })();
 }
 
 render();
