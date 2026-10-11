@@ -142,8 +142,11 @@ export type UiFinalId =
   | "standOrdnerRed4"
   | "standOrdnerRed5"
   | "tribuneBlue"
+  | "tribuneBlueWide150"
   | "tribuneGrey"
+  | "tribuneGreyWide150"
   | "tribuneRed"
+  | "tribuneRedWide150"
   | "ultraBlue1"
   | "ultraBlue2"
   | "ultraBlue3"
@@ -1270,6 +1273,14 @@ export const UI_FINAL_PATHS = {
     preserveAspect: true,
     freigestellt: true,
   },
+  "tribuneBlueWide150": {
+    file: "tribune-block-blue-wide150.png",
+    path: "icons/ui-final/tribune-block-blue-wide150.png",
+    native: { w: 639, h: 309 },
+    aspectRatio: 2.067961,
+    preserveAspect: true,
+    freigestellt: true,
+  },
   "tribuneGrey": {
     file: "tribune-block-grey.png",
     path: "icons/ui-final/tribune-block-grey.png",
@@ -1278,11 +1289,27 @@ export const UI_FINAL_PATHS = {
     preserveAspect: true,
     freigestellt: true,
   },
+  "tribuneGreyWide150": {
+    file: "tribune-block-grey-wide150.png",
+    path: "icons/ui-final/tribune-block-grey-wide150.png",
+    native: { w: 579, h: 308 },
+    aspectRatio: 1.87987,
+    preserveAspect: true,
+    freigestellt: true,
+  },
   "tribuneRed": {
     file: "tribune-block-red.png",
     path: "icons/ui-final/tribune-block-red.png",
     native: { w: 426, h: 309 },
     aspectRatio: 1.378641,
+    preserveAspect: true,
+    freigestellt: true,
+  },
+  "tribuneRedWide150": {
+    file: "tribune-block-red-wide150.png",
+    path: "icons/ui-final/tribune-block-red-wide150.png",
+    native: { w: 639, h: 309 },
+    aspectRatio: 2.067961,
     preserveAspect: true,
     freigestellt: true,
   },

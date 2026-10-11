@@ -3,7 +3,10 @@ import {
   ANIM_DRINK_SEC,
   ANIM_SHOP_SEC,
   ANIM_THROW_SEC,
+  BEER_STEAL_CAPTURE,
   BLOCK_META,
+  BLOCK_STORM_SEC,
+  NEUTRAL_MID_GANG_INDEX,
   STAND_CONVERT_SEC,
   type BuildSlot,
   type FanUnit,
@@ -12,6 +15,7 @@ import {
   GAST_BLOCK,
   HEIM_BLOCK,
   L,
+  NEUTRAL_BLOCK,
   SEATS_PER_BLOCK,
   FLOOR_GRID_COUPLE,
   blockCenterX,
@@ -29,7 +33,6 @@ import {
   SCENE_ASSETS,
   UI_ICONS,
   drawIcon,
-  drawIconQuad,
   drawToyIcon,
   drawToyProp,
   getIcon,
@@ -45,9 +48,7 @@ import {
   type SlotControl,
 } from "./assets";
 import {
-  PLOT_DRAW_INSET,
   boothFacadeQuad,
-  insetQuad,
   scaleQuad,
   type ScreenQuad,
 } from "./floorGrid";
@@ -72,10 +73,135 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawSlots(ctx, m, w, h);
   // Plot/building pennants intentionally omitted — floor reads clearer without wimpel clutter.
   drawFans(ctx, m, w, h);
+  drawStormBanner(ctx, m, w, h);
   drawPyroShots(ctx, m, w, h);
   drawConfetti(ctx, m, w, h);
   drawMoodParticles(ctx, m, w, h);
   drawFloats(ctx, m, w, h);
+}
+
+/**
+ * Wehendes Stoffbanner — langsam gehisst, immer bei Blocksturm.
+ * „Hier regiert der KSC / VfB“; Sieg nach BLOCK_STORM_SEC.
+ */
+function drawStormBanner(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  const b = m.stormBanner;
+  if (!b) return;
+  const r = tribuneRect(b.blockId);
+  // Slow hoist over ~1.6s, then gentle wind bob
+  const raise = Math.min(1, b.holdT / 1.6);
+  const wind = Math.sin(m.realElapsed * 2.6) * h * 0.006 * raise;
+  const flutter = Math.sin(m.realElapsed * 5.1);
+  const cx = (r.x + r.w / 2) * w;
+  const bw = Math.min(w * 0.38, r.w * w * 1.05);
+  const bh = Math.max(44, h * 0.078);
+  const poleH = bh + h * 0.055;
+  const baseY = (r.y + r.h * 0.42) * h;
+  const y = baseY - poleH * raise + wind;
+  const x = cx - bw / 2;
+  const isKsc = b.team === "ksc";
+  const fill = isKsc ? "#1d4ed8" : "#b91c1c";
+  const fillMid = isKsc ? "#3b82f6" : "#ef4444";
+  const edge = isKsc ? "#bfdbfe" : "#fecaca";
+  const label = isKsc ? "KSC" : "VfB";
+
+  ctx.save();
+  ctx.globalAlpha = 0.35 + raise * 0.65;
+
+  // Poles
+  ctx.strokeStyle = "rgba(226,232,240,0.9)";
+  ctx.lineWidth = Math.max(2.5, h * 0.005);
+  ctx.lineCap = "round";
+  const poleL = x + bw * 0.04;
+  const poleR = x + bw * 0.96;
+  ctx.beginPath();
+  ctx.moveTo(poleL, y + bh * 0.15);
+  ctx.lineTo(poleL, y + bh + h * 0.07);
+  ctx.moveTo(poleR, y + bh * 0.15);
+  ctx.lineTo(poleR, y + bh + h * 0.07);
+  ctx.stroke();
+
+  // Waving cloth path (top/bottom sine)
+  const wave = (t: number, amp: number) =>
+    Math.sin(t * Math.PI * 2 + m.realElapsed * 3.4) * amp * flutter;
+  const amp = h * 0.01 * raise;
+  ctx.beginPath();
+  const steps = 14;
+  for (let i = 0; i <= steps; i++) {
+    const u = i / steps;
+    const px = x + u * bw;
+    const py = y + wave(u, amp);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  for (let i = steps; i >= 0; i--) {
+    const u = i / steps;
+    const px = x + u * bw;
+    const py = y + bh + wave(u + 0.15, amp * 0.85);
+    ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  const g = ctx.createLinearGradient(x, y, x + bw, y + bh);
+  g.addColorStop(0, fill);
+  g.addColorStop(0.45, fillMid);
+  g.addColorStop(1, fill);
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.strokeStyle = edge;
+  ctx.lineWidth = Math.max(2, h * 0.004);
+  ctx.stroke();
+
+  // Soft folds
+  ctx.strokeStyle = "rgba(255,255,255,0.18)";
+  ctx.lineWidth = 1.5;
+  for (let k = 0; k < 3; k++) {
+    const u0 = 0.2 + k * 0.25;
+    ctx.beginPath();
+    for (let i = 0; i <= 8; i++) {
+      const v = i / 8;
+      const px = x + u0 * bw + wave(v, amp * 0.4);
+      const py = y + v * bh;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "#f8fafc";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const titlePx = Math.max(12, Math.floor(bh * 0.36));
+  ctx.font = `900 ${titlePx}px Outfit, Manrope, sans-serif`;
+  ctx.shadowColor = "rgba(0,0,0,0.4)";
+  ctx.shadowBlur = 5;
+  ctx.fillText(`Hier regiert der ${label}`, cx + wind * 0.3, y + bh * 0.42);
+  ctx.shadowBlur = 0;
+
+  // Hold countdown
+  const pct = Math.min(1, b.holdT / BLOCK_STORM_SEC);
+  const barW = bw * 0.7;
+  const barH = Math.max(5, bh * 0.1);
+  const barX = cx - barW / 2;
+  const barY = y + bh * 0.72;
+  ctx.globalAlpha = raise;
+  ctx.fillStyle = "rgba(15,23,42,0.7)";
+  ctx.fillRect(barX, barY, barW, barH);
+  ctx.fillStyle = "#fde68a";
+  ctx.fillRect(barX, barY, barW * pct, barH);
+  ctx.fillStyle = "#fff7ed";
+  ctx.font = `700 ${Math.max(8, Math.floor(barH))}px Outfit, Manrope, sans-serif`;
+  ctx.fillText(
+    `${Math.ceil(Math.max(0, BLOCK_STORM_SEC - b.holdT))}s`,
+    cx,
+    barY + barH / 2 + 0.5,
+  );
+
+  ctx.restore();
 }
 
 /** Cover-draw stadium-floodlight-derby-bg when available (Rahmenlogik). */
@@ -269,14 +395,9 @@ function drawBlocks(
     ctx.fillStyle = g;
     ctx.fillRect(left - 10, top - 8, bw + 20, bh + 20);
 
-    ctx.fillStyle = "rgba(0,0,0,0.35)";
-    ctx.beginPath();
-    ctx.ellipse(cx, top + bh * 0.92, bw * 0.42, bh * 0.08, 0, 0, Math.PI * 2);
-    ctx.fill();
-
+    // No under-block ellipse/cover — freigegebene Tribünen show open exits.
     const tribSrc = tribuneIconPath(b.id);
     // Cell already native-aspect packed — pad 0 so faces stay 0.5% apart
-    // Tribune assets have solid fronts (no arch tunnels); exit pathing unchanged.
     const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
     if (!drew) {
       ctx.fillStyle =
@@ -378,7 +499,7 @@ function drawScoreboard(
   ctx.font = `800 ${Math.max(10, Math.floor(ck.h * 0.55))}px Outfit, Manrope, sans-serif`;
   ctx.fillText(`${min}′`, ck.x + ck.w / 2, ck.y + ck.h / 2);
 
-  // Torwahrscheinlichkeit — höhere Leiste: Titel oben, %, Ball unten
+  // Momentum bar only (Torwahrscheinlichkeit label removed — LIVE ticker below)
   const mt = slot("momentumTrack");
   const ch = m.goalChance();
   const heimPct = Math.max(0.05, Math.min(0.95, ch.pHeim));
@@ -386,9 +507,8 @@ function drawScoreboard(
   ctx.fillStyle = "rgba(15,23,42,0.8)";
   ctx.fill();
   const split = mt.x + mt.w * heimPct;
-  // Party fills occupy lower band so the title stays readable
-  const fillY = mt.y + mt.h * 0.38;
-  const fillH = mt.h * 0.56;
+  const fillY = mt.y + mt.h * 0.18;
+  const fillH = mt.h * 0.72;
   ctx.fillStyle = "#2563eb";
   roundRect(ctx, mt.x, fillY, Math.max(4, split - mt.x), fillH, 5);
   ctx.fill();
@@ -396,25 +516,14 @@ function drawScoreboard(
   roundRect(ctx, split, fillY, Math.max(4, mt.x + mt.w - split), fillH, 5);
   ctx.fill();
 
-  const title = "Torwahrscheinlichkeit";
-  const titlePx = Math.max(11, Math.floor(mt.h * 0.34));
-  ctx.font = `900 ${titlePx}px Outfit, Manrope, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "#f8fafc";
-  ctx.strokeStyle = "rgba(15,23,42,0.85)";
-  ctx.lineWidth = Math.max(2, titlePx * 0.16);
-  const titleY = mt.y + mt.h * 0.2;
-  ctx.strokeText(title, w * 0.5, titleY);
-  ctx.fillText(title, w * 0.5, titleY);
-
   const pctY = fillY + fillH / 2;
-  const sidePx = Math.max(10, Math.floor(fillH * 0.55));
+  const sidePx = Math.max(10, Math.floor(fillH * 0.48));
   ctx.font = `800 ${sidePx}px Outfit, Manrope, sans-serif`;
   ctx.lineWidth = Math.max(2, sidePx * 0.16);
   ctx.strokeStyle = "rgba(15,23,42,0.75)";
   ctx.fillStyle = "#f8fafc";
   ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
   ctx.strokeText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
   ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
   ctx.textAlign = "right";
@@ -429,8 +538,70 @@ function drawScoreboard(
     pctY,
   );
 
-  drawTorBall(ctx, split, pctY, fillH * 1.25, m.torBallAngle);
+  drawTorBall(ctx, split, pctY, fillH * 1.15, m.torBallAngle);
+
+  // Prominent LIVE ticker directly under the momentum bar
+  drawLiveTicker(ctx, m, bx, by, boardW, boardH, mt);
   ctx.restore();
+}
+
+const TICKER_COLORS: Record<string, string> = {
+  match: "#ffffff", // Spielnachrichten — weiß
+  combat: "#ef4444", // Kampfmeldungen — rot
+  crowd: "#3b82f6", // Personen / Stimmung — blau
+  build: "#f97316", // Bau / Ressourcen — orange
+};
+
+function drawLiveTicker(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  bx: number,
+  _by: number,
+  boardW: number,
+  boardH: number,
+  mt: { x: number; y: number; w: number; h: number },
+): void {
+  void _by;
+  const item = m.activeTicker?.() ?? m.tickerQueue?.[0];
+  if (!item) return;
+  const tw = boardW * 0.98;
+  const th = Math.max(22, boardH * 0.28);
+  const tx = bx + (boardW - tw) / 2;
+  const ty = mt.y + mt.h + Math.max(6, boardH * 0.08);
+  roundRect(ctx, tx, ty, tw, th, 8);
+  ctx.fillStyle = "rgba(15,23,42,0.9)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(148,163,184,0.35)";
+  ctx.lineWidth = 1.2;
+  roundRect(ctx, tx, ty, tw, th, 8);
+  ctx.stroke();
+
+  const tagW = Math.max(36, tw * 0.11);
+  const tagH = th * 0.62;
+  const tagX = tx + 6;
+  const tagY = ty + (th - tagH) / 2;
+  roundRect(ctx, tagX, tagY, tagW, tagH, 5);
+  ctx.fillStyle = "#0ea5e9";
+  ctx.fill();
+  ctx.fillStyle = "#0f172a";
+  ctx.font = `900 ${Math.max(9, Math.floor(tagH * 0.55))}px Outfit, Manrope, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("LIVE", tagX + tagW / 2, tagY + tagH / 2 + 0.5);
+
+  const col = TICKER_COLORS[item.channel] ?? TICKER_COLORS.match;
+  ctx.fillStyle = col;
+  ctx.font = `800 ${Math.max(12, Math.floor(th * 0.48))}px Outfit, Manrope, sans-serif`;
+  ctx.textAlign = "left";
+  const textX = tagX + tagW + 10;
+  const maxW = tw - tagW - 22;
+  let label = item.text;
+  while (ctx.measureText(label).width > maxW && label.length > 4) {
+    label = label.slice(0, -2);
+  }
+  if (label !== item.text) label = `${label.trimEnd()}…`;
+  ctx.fillText(label, textX, ty + th / 2 + 0.5);
+  ctx.textBaseline = "alphabetic";
 }
 
 /** Classic football overlay on the Torwahrscheinlichkeit split. */
@@ -506,7 +677,7 @@ function drawFrontStandards(
   for (const pole of poles) {
     const src = pole.team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
     const baseY = y + gh * 0.88;
-    const size = Math.min(w * 0.075, h * 0.1);
+    const size = standarteSizePx(w, h);
     const bob = Math.sin(m.realElapsed * 3.5 + (pole.team === "ksc" ? 0 : 1)) * 2;
     // Full standarte asset (includes pole) — upright billboard, no duplicate stroke pole.
     drawPennantUpright(ctx, src, pole.x, baseY + bob, size);
@@ -573,9 +744,21 @@ function drawSlots(
 }
 
 function slotControlForPlot(m: Match, s: BuildSlot): SlotControl {
-  if (s.greyNeutral || s.owner === "neutral") return "grey";
+  // Built neutral/grey posts stay grey; empty plots take team color once buildable
+  if (s.building && (s.greyNeutral || s.owner === "neutral")) return "grey";
   if (s.owner === "ksc") return "blue";
   if (s.owner === "vfb") return "red";
+
+  // Empty grey/neutral Bauplätze: Schildfarbe follows who can build there
+  if (!s.building) {
+    if (m.inPlayerTerritory(s.blockId, s.index)) {
+      return m.playerTeam === "ksc" ? "blue" : "red";
+    }
+    if (m.inAiTerritory(s.blockId, s.index)) {
+      return m.aiTeam === "ksc" ? "blue" : "red";
+    }
+    return "grey";
+  }
 
   const bo = m.blockOwner[s.blockId];
   if (bo === "ksc" || bo === "vfb") {
@@ -626,29 +809,32 @@ function drawBaustelle(
 ): void {
   const control = slotControlForPlot(m, s);
   const src = slotEmptyIconPath(control, "persp", false);
-  const farRow = s.index < 2;
   let drew = false;
   let footX = x + bw / 2;
   let footY = y + bh / 2;
-  ctx.save();
-  // Far row quieter so the near band and gang stay readable.
-  ctx.globalAlpha = sel ? 1 : farRow ? 0.52 : 0.78;
   if (FLOOR_GRID_COUPLE) {
     const cell = boothQuad(s.blockId, s.index);
-    const q = scaleQuad(insetQuad(cell, PLOT_DRAW_INSET), m.width, m.height);
+    const q = scaleQuad(cell, m.width, m.height);
     footX = (q.tl.x + q.tr.x + q.br.x + q.bl.x) / 4;
     footY = (q.tl.y + q.tr.y + q.br.y + q.bl.y) / 4;
-    drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
-  } else {
-    const padX = bw * PLOT_DRAW_INSET * 0.5;
-    const padY = bh * PLOT_DRAW_INSET * 0.5;
-    drew = drawIcon(ctx, src, x + padX, y + padY, bw - padX * 2, bh - padY * 2, 0.02);
   }
+  // Same screen-size Bauplatz marker top & bottom (no far-row shrink).
+  const standarte = standarteSizePx(m.width, m.height);
+  const signSize = standarte * 1.25;
+  const padSize = signSize * 0.95;
+  ctx.save();
+  ctx.globalAlpha = sel ? 1 : 0.9;
+  drew = drawIcon(
+    ctx,
+    src,
+    footX - padSize * 0.5,
+    footY - padSize * 0.35,
+    padSize,
+    padSize * 0.7,
+    0.02,
+  );
   ctx.restore();
 
-  // Jackhammer sign: Standarte size at gang mid × 75% (far) / 125% (near).
-  const standarte = standarteSizePx(m.width, m.height);
-  const signSize = standarte * (farRow ? 0.75 : 1.25);
   const signSrc = baustelleSchildIconPath(control);
   drawPennantUpright(ctx, signSrc, footX, footY, signSize);
 
@@ -693,18 +879,21 @@ function drawBuilding(
   // sets foot position + size from the VP facade math — no icon warp/yaw.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
-  // Gebäude ×2.8125 vs prior ×1.40625 (nochmals verdoppelt)
+  // Same Gebäude scale for Bau-row stands and mid-gang Ordner
   const BUILD_SCALE = 2.8125;
+  const facadeOpts = {
+    widthScale: 1.35,
+    heightScale: 1.92,
+    taper: 0.32,
+  };
+  const isMidGang =
+    s.blockId === NEUTRAL_BLOCK && s.index === NEUTRAL_MID_GANG_INDEX;
   let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
-    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, {
-      widthScale: 1.35,
-      heightScale: 1.92,
-      taper: 0.32,
-    });
+    facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, facadeOpts);
   }
 
   const color = teamColor(
@@ -713,6 +902,16 @@ function drawBuilding(
   const lv = Math.max(1, Math.min(5, s.level || 1));
   const iconSrc = standIconPath(s.building, color, lv);
 
+  /** Pixel size matching a near-row (bottom) Bau building. */
+  const nearRowIconSize = (): number => {
+    const ref = boothFacadeQuad(HEIM_BLOCK, 3, m.width, m.height, facadeOpts);
+    const refW = Math.hypot(ref.br.x - ref.bl.x, ref.br.y - ref.bl.y);
+    const refFoot = (ref.bl.y + ref.br.y) / 2;
+    const refTop = (ref.tl.y + ref.tr.y) / 2;
+    const refH = Math.max(1, refFoot - refTop);
+    return Math.max(34, Math.min(refW * 1.05, refH) * BUILD_SCALE);
+  };
+
   let drew = false;
   if (facade && pq) {
     cx = (facade.bl.x + facade.br.x) / 2;
@@ -720,7 +919,9 @@ function drawBuilding(
     const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
     const topY = (facade.tl.y + facade.tr.y) / 2;
     const facadeH = Math.max(1, footY - topY);
-    size = Math.max(34, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
+    size = isMidGang
+      ? nearRowIconSize()
+      : Math.max(34, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
     ctx.fillStyle = "rgba(15,23,42,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
@@ -763,7 +964,7 @@ function drawBuilding(
     }
   }
 
-  if (s.convertBy && s.convertAcc > 0.15) {
+  if (s.convertBy && s.convertAcc > 0.15 && s.building === "fanshop") {
     const pct = Math.min(1, s.convertAcc / STAND_CONVERT_SEC);
     const left = Math.max(0, STAND_CONVERT_SEC - s.convertAcc);
     const col = s.convertBy === "ksc" ? "#3b82f6" : "#ef4444";
@@ -788,13 +989,65 @@ function drawBuilding(
     ctx.restore();
   }
 
+  // Leer-trinken Fortschritt an fremden Bierständen
+  if (s.building === "bier" && s.beerStealAcc > 0.5) {
+    const pct = Math.min(1, s.beerStealAcc / BEER_STEAL_CAPTURE);
+    const barW = Math.max(36, size * 0.85);
+    const barH = Math.max(11, Math.floor(size * 0.12));
+    const barX = cx - barW / 2;
+    const barY = footY - size * 1.05;
+    ctx.save();
+    ctx.fillStyle = "rgba(15,23,42,0.9)";
+    ctx.fillRect(barX - 2, barY - 14, barW + 4, barH + 16);
+    ctx.fillStyle = "#fde68a";
+    ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.95))}px Outfit, Manrope, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("Leer trinken", cx, barY - 2);
+    ctx.fillStyle = "rgba(30,41,59,0.98)";
+    ctx.fillRect(barX, barY, barW, barH);
+    ctx.fillStyle = "#f59e0b";
+    ctx.fillRect(barX, barY, barW * pct, barH);
+    ctx.fillStyle = "#fff7ed";
+    ctx.font = `700 ${Math.max(8, Math.floor(barH * 0.8))}px Outfit, Manrope, sans-serif`;
+    ctx.textBaseline = "middle";
+    ctx.fillText(
+      `${Math.floor(s.beerStealAcc)}/${BEER_STEAL_CAPTURE}`,
+      cx,
+      barY + barH / 2 + 0.5,
+    );
+    ctx.restore();
+  }
+
   if (s.building === "ordner" && s.structMaxHp > 0) {
     const pct = Math.max(0, Math.min(1, s.structHp / s.structMaxHp));
-    const barW = bw - 10;
-    ctx.fillStyle = "rgba(15,23,42,0.55)";
-    ctx.fillRect(x + 5, y + bh - 8, barW, 4);
-    ctx.fillStyle = pct > 0.45 ? "#22c55e" : pct > 0.2 ? "#f59e0b" : "#ef4444";
-    ctx.fillRect(x + 5, y + bh - 8, barW * pct, 4);
+    const barW = Math.max(28, bw * 0.92);
+    const barH = Math.max(10, Math.floor(bh * 0.13));
+    const barX = x + (bw - barW) / 2;
+    // Sit just above the booth so it doesn't hide under feet / floor grid
+    const barY = y + bh * 0.02;
+    ctx.fillStyle = "rgba(15,23,42,0.92)";
+    ctx.fillRect(barX - 2, barY - 2, barW + 4, barH + 4);
+    ctx.strokeStyle = "rgba(248,250,252,0.75)";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(barX - 2, barY - 2, barW + 4, barH + 4);
+    ctx.fillStyle = "rgba(30,41,59,0.98)";
+    ctx.fillRect(barX, barY, barW, barH);
+    const fillCol =
+      pct > 0.55 ? "#22c55e" : pct > 0.28 ? "#f59e0b" : "#ef4444";
+    ctx.fillStyle = fillCol;
+    ctx.fillRect(barX, barY, barW * pct, barH);
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.fillRect(barX, barY, barW * pct, Math.max(3, barH * 0.4));
+    // Tiny HP readout for damaged posts
+    if (pct < 0.98) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.85))}px Outfit, Manrope, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${Math.round(pct * 100)}%`, barX + barW / 2, barY + barH / 2 + 0.5);
+      ctx.textBaseline = "alphabetic";
+    }
   }
 
   // level pips
@@ -925,10 +1178,13 @@ function personAnimMode(m: Match, f: FanUnit): {
     propI = 0.5 + 0.4 * shopProg;
   } else if (cheering && f.kind === "normalos" && !f.isSteward) {
     prop = "scarf";
-    propI = Math.min(1, f.cheerT / 2);
+    propI = Math.min(1, Math.max(0.55, f.cheerT / 3));
   } else if (cheering && f.kind === "ultras") {
     prop = "pyro";
-    propI = 0.35 + 0.3 * Math.sin(m.realElapsed * 8);
+    propI = 0.55 + 0.4 * Math.sin(m.realElapsed * 10);
+  } else if (cheering && f.kind === "hooligans") {
+    prop = "beer";
+    propI = 0.5 + 0.35 * Math.abs(Math.sin(m.realElapsed * 7 + f.id));
   }
 
   return {
@@ -956,7 +1212,8 @@ function personAnimMode(m: Match, f: FanUnit): {
 function personDrawSize(f: FanUnit, h: number): number {
   const onGang = f.state === "gang" || f.invading;
   const moving = f.state === "moving" || onGang;
-  return Math.max(26, h * (moving ? 0.085 : 0.068));
+  // +10% vs prior baseline
+  return Math.max(28, h * (moving ? 0.0935 : 0.0748));
 }
 
 function drawMannchen(

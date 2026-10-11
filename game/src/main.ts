@@ -40,6 +40,7 @@ import {
   unitLevelMul,
   visitGoldPayout,
   visitInterval,
+  difficultyProfile,
   type BuildingKind,
   type FanKind,
   type FanMix,
@@ -47,7 +48,6 @@ import {
   type TeamId,
 } from "./game/types";
 import {
-  defaultMix,
   defaultSetup,
   defaultSoloSettings,
   formatMinute,
@@ -55,6 +55,16 @@ import {
   mixSum,
   teamLabel,
 } from "./game/util";
+import {
+  blocksturmValue,
+  difficultyLabel,
+  ergebnisValue,
+  loadHighscores,
+  tryInsertHighscore,
+  wouldEnterTop10,
+  type HighscoreEntry,
+  type ScoreBoardKind,
+} from "./game/highscores";
 
 void preloadIcons();
 
@@ -416,7 +426,7 @@ function setPayAmt(root: ParentNode, payId: string, amount: number | string): vo
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
-type Screen = "menu" | "setup" | "match" | "result";
+type Screen = "menu" | "tutorial" | "setup" | "match" | "result" | "highscores";
 
 const state = {
   screen: "menu" as Screen,
@@ -431,6 +441,7 @@ const state = {
   buildTarget: null as { blockId: number; index: number } | null,
   /** place = Bau-Karten · upgrade = nur Upgrade-Card für geklicktes Gebäude */
   buildRailMode: "place" as "place" | "upgrade",
+  highscoreDiff: "normal" as SoloSettings["difficulty"],
 };
 
 document.documentElement.classList.toggle("standalone", isStandalone());
@@ -458,8 +469,10 @@ function go(screen: Screen): void {
 function render(): void {
   cancelAnimationFrame(state.raf);
   if (state.screen === "menu") renderMenu();
+  else if (state.screen === "tutorial") renderTutorial();
   else if (state.screen === "setup") renderSetup();
   else if (state.screen === "match") renderMatchScreen();
+  else if (state.screen === "highscores") renderHighscores();
   else renderResult();
 }
 
@@ -474,6 +487,7 @@ function renderMenu(): void {
       </div>
       <div class="card stack">
         <button class="btn ksc" id="solo">Solo vs KI</button>
+        <button class="btn secondary" id="highscores">Highscores</button>
         <button class="btn secondary" id="fs-menu">Vollbild</button>
       </div>
       ${
@@ -488,7 +502,7 @@ function renderMenu(): void {
         <label class="field">KI
           <select id="diff">
             <option value="easy" selected>Einfach</option>
-            <option value="normal">Normal</option>
+            <option value="normal">Mittel</option>
             <option value="hard">Schwer</option>
           </select>
         </label>
@@ -496,6 +510,11 @@ function renderMenu(): void {
     </div>`;
   app.querySelector("#fs-menu")!.addEventListener("click", () => {
     void goFullscreen();
+  });
+  app.querySelector("#highscores")!.addEventListener("click", () => {
+    state.highscoreDiff = (app.querySelector("#diff") as HTMLSelectElement)
+      .value as SoloSettings["difficulty"];
+    go("highscores");
   });
   app.querySelector("#solo")!.addEventListener("click", () => {
     void goFullscreen();
@@ -506,8 +525,90 @@ function renderMenu(): void {
       behavior: "balanced",
     };
     state.setup = defaultSetup();
-    go("setup");
+    go("tutorial");
   });
+}
+
+function renderTutorial(): void {
+  app.innerHTML = `
+    <div class="screen menu tutorial-screen">
+      <h1 class="brand">Tutorial</h1>
+      <p class="sub">Kurz vor dem Anpfiff — so gewinnst du</p>
+      <div class="card stack tutorial-card">
+        <section>
+          <h2>Siegtypen</h2>
+          <ul>
+            <li><b>Tore</b> — deine Kurve füllt den Momentum-Balken vollständig in die Gegnerhälfte → Tor. Danach Feier im Block, erst danach Glücksbiergang.</li>
+            <li><b>Blocksturm</b> — besetze den gegnerischen Block mit genug Angreifern und halte das Banner (~5 s).</li>
+            <li><b>Elfmeter</b> — bei Unentschieden nach der regulären Zeit.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Mechaniken</h2>
+          <ul>
+            <li><b>Bauen</b> — Bier / Fanshop / Ordner auf Bauplätzen hinter deiner Standarte.</li>
+            <li><b>Personen</b> — Fans (Momentum), Ultras (Senden/Pyro), Hooligans (Nahkampf), Ordner (Posten).</li>
+            <li><b>Senden</b> — Einheiten gehen über die Ausgänge in den Gang und kämpfen um Raum.</li>
+            <li><b>LIVE-Ticker</b> — Torchance, Kampf und Bau-Hinweise unter dem Balken.</li>
+          </ul>
+        </section>
+      </div>
+      <div class="row setup-actions">
+        <button class="btn secondary grow" id="tut-back" type="button">Zurück</button>
+        <button class="btn ksc grow" id="tut-next" type="button">Zur Aufstellung</button>
+      </div>
+    </div>`;
+  app.querySelector("#tut-back")!.addEventListener("click", () => go("menu"));
+  app.querySelector("#tut-next")!.addEventListener("click", () => go("setup"));
+}
+
+function renderHighscores(): void {
+  const tables = loadHighscores();
+  const d = state.highscoreDiff;
+  const listHtml = (kind: ScoreBoardKind, title: string, fmt: (e: HighscoreEntry) => string) => {
+    const rows = tables[d][kind];
+    if (!rows.length) return `<p class="tiny">${title}: noch leer</p>`;
+    return `<h3>${title}</h3><ol class="hs-list">${rows
+      .map((e, i) => `<li><b>${i + 1}. ${escapeHtml(e.name)}</b> — ${fmt(e)}</li>`)
+      .join("")}</ol>`;
+  };
+  app.innerHTML = `
+    <div class="screen menu">
+      <h1 class="brand">Highscores</h1>
+      <label class="field">Schwierigkeit
+        <select id="hs-diff">
+          <option value="easy" ${d === "easy" ? "selected" : ""}>Einfach</option>
+          <option value="normal" ${d === "normal" ? "selected" : ""}>Mittel</option>
+          <option value="hard" ${d === "hard" ? "selected" : ""}>Schwer</option>
+        </select>
+      </label>
+      <div class="card stack">
+        ${listHtml("ergebnis", "Höchstes Ergebnis", (e) => e.detail)}
+        ${listHtml("blocksturm", "Schnellster Blocksturm", (e) => e.detail)}
+      </div>
+      <button class="btn secondary" id="hs-back">Zurück</button>
+    </div>`;
+  app.querySelector("#hs-diff")!.addEventListener("change", (ev) => {
+    state.highscoreDiff = (ev.target as HTMLSelectElement)
+      .value as SoloSettings["difficulty"];
+    renderHighscores();
+  });
+  app.querySelector("#hs-back")!.addEventListener("click", () => go("menu"));
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function askPlayerName(defaultName = "Spieler"): string | null {
+  const raw = window.prompt("Neuer Top-10-Platz! Dein Name:", defaultName);
+  if (raw == null) return null;
+  const name = raw.trim().slice(0, 20);
+  return name || defaultName;
 }
 
 function renderSetup(): void {
@@ -545,10 +646,11 @@ function renderSetup(): void {
     ev.preventDefault();
     ev.stopPropagation();
     if (!isValidMix(state.setup.mix)) return;
+    const aiProf = difficultyProfile(state.settings.difficulty);
     state.match = new Match({
       settings: state.settings,
       playerSetup: state.setup,
-      aiSetup: { mix: defaultMix() },
+      aiSetup: { mix: { ...aiProf.aiMix } },
     });
     // QA / playtest hook (read-only introspection)
     (window as unknown as { __match?: Match }).__match = state.match;
@@ -679,19 +781,20 @@ function renderMatchScreen(): void {
             <b id="hud-score">0:0</b>
             <span id="hud-minute">0′</span>
           </div>
-          <div class="pitch-momentum sr-only" aria-label="Torwahrscheinlichkeit">
+          <div class="pitch-momentum sr-only" aria-label="Momentum">
             <div class="momentum-bar" id="momentum-bar">
               <div class="mom-fill heim" id="mom-heim"></div>
               <div class="mom-fill gast" id="mom-gast"></div>
               <div class="mom-knob" id="mom-knob"></div>
             </div>
             <span id="mom-p-heim">Stimmung Heim 1.0</span>
-            <span id="mom-p-tor">Torwahrscheinlichkeit Heim 50%</span>
+            <span id="mom-p-tor">Momentum Heim 50%</span>
             <span id="mom-p-gast">Stimmung Gast 1.0</span>
           </div>
           <div class="combat-banner hidden" id="combat-banner"></div>
         </div>
         <canvas id="c"></canvas>
+        <!-- Live ticker is drawn on canvas under the momentum bar -->
         <div class="toast" id="toast"></div>
         <div class="popup-menu hidden" id="build-menu">
           <p class="popup-title" id="build-title">Gebäude</p>
@@ -1514,28 +1617,17 @@ function renderMatchScreen(): void {
       const lpT = app.querySelector("#mom-p-tor");
       const lpG = app.querySelector("#mom-p-gast");
       if (lpH) lpH.textContent = `Kurve Heim ${m.moodHeim.toFixed(1)}`;
-      if (lpT) lpT.textContent = `Torwahrscheinlichkeit Heim ${Math.round(ch.pHeim * 100)}%`;
+      if (lpT) lpT.textContent = `Momentum Heim ${Math.round(ch.pHeim * 100)}%`;
       if (lpG) lpG.textContent = `Kurve Gast ${m.moodGaeste.toFixed(1)}`;
       const bar = app.querySelector("#momentum-bar");
       if (bar) {
         bar.classList.remove("kick");
       }
+      // Extra mid-screen hint strips off — only the LIVE ticker under momentum
       const banner = app.querySelector("#combat-banner");
-      if (banner) {
-        const st = m.combatStatus();
-        if (st) {
-          banner.textContent = st;
-          banner.classList.remove("hidden");
-        } else banner.classList.add("hidden");
-      }
+      if (banner) banner.classList.add("hidden");
       const toast = app.querySelector("#toast");
-      if (toast) {
-        const t = m.toasts[0];
-        if (t) {
-          toast.textContent = t.text;
-          toast.classList.add("show");
-        } else toast.classList.remove("show");
-      }
+      if (toast) toast.classList.remove("show");
       if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
       if (m.result) {
         unFs();
@@ -1554,17 +1646,63 @@ function renderResult(): void {
   const m = state.match!;
   const r = m.result!;
   const youWin = r.winner === state.settings.playerTeam;
+  const playerIsKsc = state.settings.playerTeam === "ksc";
+  const playerGoals = playerIsKsc ? r.score[0] : r.score[1];
+  const aiGoals = playerIsKsc ? r.score[1] : r.score[0];
+  const hsNotes: string[] = [];
+
+  if (youWin) {
+    const lastName = localStorage.getItem("matchday-player-name") || "Spieler";
+    if (r.reason === "invade") {
+      const value = blocksturmValue(r.minute);
+      if (wouldEnterTop10(r.difficulty, "blocksturm", value)) {
+        const name = askPlayerName(lastName);
+        if (name) {
+          localStorage.setItem("matchday-player-name", name);
+          const { placed, rank } = tryInsertHighscore(r.difficulty, "blocksturm", {
+            name,
+            value,
+            detail: `Blocksturm in ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
+          });
+          if (placed) hsNotes.push(`Blocksturm-Highscore Platz ${rank}!`);
+        }
+      }
+    }
+    const erg = ergebnisValue(playerGoals, aiGoals);
+    if (wouldEnterTop10(r.difficulty, "ergebnis", erg)) {
+      const name =
+        hsNotes.length > 0
+          ? localStorage.getItem("matchday-player-name") || "Spieler"
+          : askPlayerName(lastName);
+      if (name) {
+        localStorage.setItem("matchday-player-name", name);
+        const { placed, rank } = tryInsertHighscore(r.difficulty, "ergebnis", {
+          name,
+          value: erg,
+          detail: `${playerGoals}:${aiGoals} · ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
+        });
+        if (placed) hsNotes.push(`Ergebnis-Highscore Platz ${rank}!`);
+      }
+    }
+  }
+
   app.innerHTML = `
     <div class="screen menu">
       <p class="sub">${r.detail}</p>
       <h1 class="brand">${youWin ? "Sieg!" : "Niederlage"}</h1>
-      <p class="sub">${teamLabel(r.winner)} · ${r.score[0]}:${r.score[1]} · ${formatMinute(m.minute)}</p>
+      <p class="sub">${teamLabel(r.winner)} · ${r.score[0]}:${r.score[1]} · ${formatMinute(m.minute)} · ${difficultyLabel(r.difficulty)}</p>
+      ${hsNotes.length ? `<p class="sub hs-note">${hsNotes.join(" · ")}</p>` : ""}
       <div class="row">
         <button class="btn secondary grow" id="menu">Menü</button>
+        <button class="btn secondary grow" id="hs">Highscores</button>
         <button class="btn ksc grow" id="again">Rematch</button>
       </div>
     </div>`;
   app.querySelector("#menu")!.addEventListener("click", () => go("menu"));
+  app.querySelector("#hs")!.addEventListener("click", () => {
+    state.highscoreDiff = r.difficulty;
+    go("highscores");
+  });
   app.querySelector("#again")!.addEventListener("click", () => go("setup"));
 }
 
@@ -1574,10 +1712,11 @@ render();
 if (new URLSearchParams(location.search).has("demoStands")) {
   state.settings = defaultSoloSettings();
   state.setup = defaultSetup();
+  const demoAi = difficultyProfile(state.settings.difficulty);
   state.match = new Match({
     settings: state.settings,
     playerSetup: state.setup,
-    aiSetup: { mix: defaultMix() },
+    aiSetup: { mix: { ...demoAi.aiMix } },
   });
   const m = state.match;
   m.setSpeed(0);

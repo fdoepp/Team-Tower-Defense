@@ -16,6 +16,111 @@ export type SoloSettings = {
   playerTeam: TeamId;
 };
 
+/**
+ * Start + Verlaufsprofil je Schwierigkeit (Mittel = "normal").
+ * Zahlen sind relative Multiplikatoren / absolute Startwerte für die KI.
+ */
+export type DiffProfile = {
+  /** AI start lineup (sum = MIX_TOTAL) */
+  aiMix: FanMix;
+  aiGoldBonus: number;
+  aiStartMerch: number;
+  aiStartBeer: number;
+  aiStartSecurityBonus: number;
+  /** Starting unit level for AI Ultras/Hools/Fans */
+  aiUnitTech: number;
+  regenMul: number;
+  actionMul: number;
+  /** Higher = faster AI decision ticks */
+  tickMul: number;
+  fanTarget: number;
+  gangWant: number;
+  sendChanceMul: number;
+  /** Progression: minute gates + bonuses */
+  midMinute: number;
+  lateMinute: number;
+  midGangBonus: number;
+  lateGangBonus: number;
+  midRegenBonus: number;
+  lateRegenBonus: number;
+  midActionBonus: number;
+  lateActionBonus: number;
+};
+
+export function difficultyProfile(d: AiDifficulty): DiffProfile {
+  if (d === "easy") {
+    return {
+      aiMix: { normalos: 4, ultras: 2, hooligans: 2 },
+      aiGoldBonus: 0,
+      aiStartMerch: 0,
+      aiStartBeer: 0,
+      aiStartSecurityBonus: 0,
+      aiUnitTech: 1,
+      regenMul: 0.65,
+      actionMul: 0.5,
+      tickMul: 0.55,
+      fanTarget: 10,
+      gangWant: 1,
+      sendChanceMul: 0.75,
+      midMinute: 35,
+      lateMinute: 65,
+      midGangBonus: 0,
+      lateGangBonus: 1,
+      midRegenBonus: 0.1,
+      lateRegenBonus: 0.15,
+      midActionBonus: 0.05,
+      lateActionBonus: 0.1,
+    };
+  }
+  if (d === "hard") {
+    return {
+      aiMix: { normalos: 2, ultras: 3, hooligans: 3 },
+      aiGoldBonus: 40,
+      aiStartMerch: 22,
+      aiStartBeer: 22,
+      aiStartSecurityBonus: 12,
+      aiUnitTech: 2,
+      regenMul: 1.35,
+      actionMul: 1.25,
+      tickMul: 1.2,
+      fanTarget: 18,
+      gangWant: 3,
+      sendChanceMul: 1.2,
+      midMinute: 18,
+      lateMinute: 40,
+      midGangBonus: 1,
+      lateGangBonus: 2,
+      midRegenBonus: 0.2,
+      lateRegenBonus: 0.35,
+      midActionBonus: 0.15,
+      lateActionBonus: 0.25,
+    };
+  }
+  // Mittel (normal): fair mirror start, ramps mid-game
+  return {
+    aiMix: { normalos: 3, ultras: 3, hooligans: 2 },
+    aiGoldBonus: 15,
+    aiStartMerch: 10,
+    aiStartBeer: 10,
+    aiStartSecurityBonus: 0,
+    aiUnitTech: 1,
+    regenMul: 1,
+    actionMul: 1,
+    tickMul: 0.9,
+    fanTarget: 14,
+    gangWant: 2,
+    sendChanceMul: 1,
+    midMinute: 25,
+    lateMinute: 50,
+    midGangBonus: 1,
+    lateGangBonus: 1,
+    midRegenBonus: 0.15,
+    lateRegenBonus: 0.25,
+    midActionBonus: 0.1,
+    lateActionBonus: 0.2,
+  };
+}
+
 export type SetupConfig = {
   mix: FanMix;
 };
@@ -102,6 +207,12 @@ export type BuildSlot = {
   structMaxHp: number;
   /** Contested-time accumulator for neutral mid post auto-level */
   autoLevelAcc: number;
+  /** Seconds this plot has been behind a colored Standarte (capture clock) */
+  bannerHoldAcc: number;
+  /** Seconds a non-Ordner building has spent in enemy Standarte territory */
+  enemyZoneAcc: number;
+  /** Beers stolen from this stand toward Leer-trinken takeover */
+  beerStealAcc: number;
 };
 
 export type Currencies = {
@@ -229,6 +340,12 @@ export const BANNER_RETREAT_SPEED = 0.012;
 export const BANNER_MIN_GAP = 0.05;
 /** Standarte / build rights stop this far before an enemy Ordnerpost. */
 export const BANNER_POST_STANDOFF = 0.035;
+/** Empty/Fanshop Bauplatz is claimed after this many seconds behind a Standarte */
+export const BANNER_PLOT_CAPTURE_SEC = 20;
+/** Non-Ordner buildings break after this many seconds in enemy Standarte zone */
+export const ENEMY_ZONE_BUILDING_BREAK_SEC = 30;
+/** Fremde Bierstände: Übernahme nach so vielen geklauten Bieren (ohne Zahlung) */
+export const BEER_STEAL_CAPTURE = 50;
 
 export const STEWARD_HIRE_GOLD = 22;
 export const STEWARD_CAP = 2;
@@ -236,19 +353,36 @@ export const STEWARD_CAP = 2;
 export const NEUTRAL_STEWARD_CAP = 4;
 export const NEUTRAL_STEWARD_RESPAWN = 32;
 /**
- * CANONICAL neutral mid layout (keep across versions):
- * outer Ordnerposts + empty center; no grey Bier/Shop seed.
- * Auto-level over time; produce Ordner up to NEUTRAL_STEWARD_CAP.
+ * CANONICAL neutral mid layout:
+ * one Level-3 Ordnerpost mid-gang + empty grey Bau plots; no grey Bier/Shop seed.
+ * Grey AI builds/levels when unbothered; produce Ordner up to NEUTRAL_STEWARD_CAP.
  */
 export const NEUTRAL_POST_AUTO_LEVEL_CAP = 3;
 /** Real seconds between auto-levels on grey Ordnerposts */
 export const NEUTRAL_POST_AUTO_LEVEL_SEC = 60;
-/** Heim-facing (blue/left) starting Ordnerpost index in the neutral block */
-export const NEUTRAL_POST_HEIM_INDEX = 0;
-/** Gast-facing (red/right) starting Ordnerpost index in the neutral block */
-export const NEUTRAL_POST_GAST_INDEX = 3;
+/** Kickoff Ordner count at the central L3 post */
+export const NEUTRAL_MID_START_STEWARDS = 3;
+/** Grey builds/upgrades only while unbothered this long between actions */
+export const GREY_AI_BUILD_SEC = 28;
+/** How close colored fighters must be to count as “bothering” grey */
+export const GREY_BOTHER_RADIUS_GX = 0.14;
+/** Single mid-gang Ordnerpost index in the neutral block */
+export const NEUTRAL_MID_GANG_INDEX = 4;
+/** @deprecated use NEUTRAL_MID_GANG_INDEX — dual outer posts removed */
+export const NEUTRAL_POST_HEIM_INDEX = NEUTRAL_MID_GANG_INDEX;
+/** @deprecated use NEUTRAL_MID_GANG_INDEX */
+export const NEUTRAL_POST_GAST_INDEX = NEUTRAL_MID_GANG_INDEX;
+
+/** Live-ticker channel under the momentum bar */
+export type TickerChannel = "match" | "combat" | "crowd" | "build";
+export type TickerItem = {
+  text: string;
+  channel: TickerChannel;
+  t: number;
+};
 export const BLOCK_STORM_COUNT = 4;
-export const BLOCK_STORM_SEC = 7;
+/** Banner must stay visible this long while the block stays occupied → win */
+export const BLOCK_STORM_SEC = 5;
 export const STAND_CONVERT_SEC = 11;
 export const STAND_CONVERT_SEAT_MAJORITY = true;
 /** Soft gold upkeep per Ordner / s — low enough that defense stays affordable */
@@ -316,10 +450,20 @@ export const MOMENTUM_WEIGHT: Record<FanKind, number> = {
   ultras: 0.55,
   hooligans: 0.35,
 };
-/** Softener in (pH−pG)/(pH+pG+ε) so small crowds don't flip hard */
-export const MOMENTUM_EPS = 2.5;
+/**
+ * Softener in (pH−pG)/(pH+pG+ε). Slightly tighter than before so a clear
+ * Kurve-dominance can push the bar fully into the enemy half for a Tor.
+ */
+export const MOMENTUM_EPS = 1.8;
 /** How fast momentum tracks relative block power (1/s scale via exp) */
-export const MOMENTUM_APPROACH = 0.5;
+export const MOMENTUM_APPROACH = 0.55;
+/**
+ * |momentum| to score. Bar HUD stretches so this reads as fully enemy-side.
+ * ~starting Heim roster alone vs empty Gast ≈ this edge.
+ */
+export const GOAL_MOMENTUM_EDGE = 0.74;
+/** Seconds after a goal before another can fall (Bierrunde window) */
+export const GOAL_LOCK_SEC = 10;
 /** Mood HUD tracks the same power (display scale 0…3) */
 export const MOOD_FROM_POWER = 0.09;
 

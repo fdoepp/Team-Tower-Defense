@@ -14,11 +14,11 @@ export const HEIM_BLOCK = 0;
 export const NEUTRAL_BLOCK = 1;
 export const GAST_BLOCK = 2;
 export const NEUTRAL_BLOCKS = [NEUTRAL_BLOCK] as const;
-export const SEATS_PER_BLOCK = 12;
-export const SEAT_COLS = 3;
-export const SEAT_ROWS = 4;
+export const SEATS_PER_BLOCK = 15;
+export const SEAT_COLS = 5;
+export const SEAT_ROWS = 3;
 /** Soft visual packing — gameplay can exceed; positions wrap into this density. */
-export const VISUAL_CROWD_SOFT_CAP = 20;
+export const VISUAL_CROWD_SOFT_CAP = 24;
 
 /**
  * Vertical pack (~thirds):
@@ -57,18 +57,19 @@ export const L = {
 
 /**
  * Native tribune PNG sizes + opaque floor-face pads (px, measured).
- * Transparent side pads are overlapped so visible platforms sit 0.5% apart.
+ * Runtime: freigegebene wide150 (+50 % Breite). Transparent side pads overlap
+ * so visible platforms sit ~0.5% apart.
  */
 export const TRIBUNE_NATIVE = [
-  { w: 426, h: 309, faceL: 6, faceR: 29 }, // Heim blue
-  { w: 386, h: 308, faceL: 6, faceR: 6 }, // Neutral grey
-  { w: 426, h: 309, faceL: 28, faceR: 6 }, // Gäste red
+  { w: 639, h: 309, faceL: 8, faceR: 8 }, // Heim blue wide150
+  { w: 579, h: 308, faceL: 8, faceR: 8 }, // Neutral grey wide150
+  { w: 639, h: 309, faceL: 8, faceR: 8 }, // Gäste red wide150
 ] as const;
-
 export type TribuneRectNorm = { x: number; y: number; w: number; h: number };
 
 type TribunePack = {
   aspect: number;
+  rev: number;
   rects: TribuneRectNorm[];
   centers: number[];
   widths: number[];
@@ -77,6 +78,8 @@ type TribunePack = {
 };
 
 let _pack: TribunePack | null = null;
+/** Bump when tribune packing rules change (invalidates hot-reload cache). */
+const TRIBUNE_LAYOUT_REV = 4;
 
 /**
  * Recompute flush tribune strip for the current canvas aspect (W/H).
@@ -84,7 +87,12 @@ let _pack: TribunePack | null = null;
  */
 export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack {
   const aspect = canvasW / Math.max(1, canvasH);
-  if (_pack && Math.abs(_pack.aspect - aspect) < 1e-5) return _pack;
+  if (
+    _pack &&
+    _pack.rev === TRIBUNE_LAYOUT_REV &&
+    Math.abs(_pack.aspect - aspect) < 1e-5
+  )
+    return _pack;
 
   const edge = L.blocksLeft;
   const shelfBottom = L.blockTop + L.blockBodyH; // 0.50
@@ -133,6 +141,7 @@ export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack
 
   _pack = {
     aspect,
+    rev: TRIBUNE_LAYOUT_REV,
     rects,
     centers: rects.map((r) => r.x + r.w / 2),
     widths: rects.map((r) => r.w),
@@ -161,33 +170,45 @@ export function blocksRightNorm(): number {
   return ensureTribunePack().right;
 }
 
-/** 4 plots per block → 12 total */
-export const SLOTS_PER_BLOCK = 4;
-export const BUILDABLE_INDICES = [0, 1, 2, 3] as const;
-export const BUILDABLE_INDICES_COLORED = BUILDABLE_INDICES;
-export const BUILDABLE_INDICES_NEUTRAL = BUILDABLE_INDICES;
+/**
+ * Heim/Gäste: 3 far + 3 near = 6 (extra outer slot top & bottom).
+ * Neutral: 2 far + 2 near empty Bau + mid-gang Ordner (index 4).
+ */
+export const SLOTS_PER_BLOCK_COLORED = 6;
+export const BUILDABLE_INDICES_COLORED = [0, 1, 2, 3, 4, 5] as const;
+export const BUILDABLE_INDICES_NEUTRAL = [0, 1, 2, 3, 4] as const;
+/** @deprecated prefer slotIndicesForBlock — colored blocks now have 6 */
+export const SLOTS_PER_BLOCK = 6;
+export const BUILDABLE_INDICES = BUILDABLE_INDICES_COLORED;
 export const ULTRA_PAD_INDEX = 0;
+/** Neutral mid-gang Ordnerpost (same as types.NEUTRAL_MID_GANG_INDEX) */
+export const NEUTRAL_MID_GANG_SLOT = 4;
 
 /**
  * Legacy AABB scatter (fallback if FLOOR_GRID_COUPLE is off).
- * flat 0–3 Heim (left), 4–7 Neutral (center), 8–11 Gäste (right).
+ * Heim 6 · Neutral 4 Bau + mid-gang · Gäste 6.
  */
 export const PLOT_SCATTER: readonly { x: number; y: number; w: number; h: number }[] = [
-  // Heim — left (gang starts ~0.63)
-  { x: 0.04, y: 0.655, w: 0.1, h: 0.095 },
-  { x: 0.16, y: 0.69, w: 0.095, h: 0.09 },
-  { x: 0.05, y: 0.79, w: 0.1, h: 0.095 },
-  { x: 0.17, y: 0.875, w: 0.095, h: 0.09 },
-  // Neutral CANONICAL: Heim Ordner | empty | empty | Gast Ordner
-  { x: 0.33, y: 0.70, w: 0.1, h: 0.095 },
-  { x: 0.43, y: 0.78, w: 0.095, h: 0.09 },
-  { x: 0.52, y: 0.78, w: 0.095, h: 0.09 },
-  { x: 0.62, y: 0.70, w: 0.1, h: 0.095 },
-  // Gäste — right
-  { x: 0.71, y: 0.655, w: 0.1, h: 0.095 },
-  { x: 0.84, y: 0.69, w: 0.095, h: 0.09 },
-  { x: 0.72, y: 0.79, w: 0.1, h: 0.095 },
-  { x: 0.85, y: 0.875, w: 0.095, h: 0.09 },
+  // Heim — left (3 far + 3 near)
+  { x: 0.02, y: 0.655, w: 0.08, h: 0.09 },
+  { x: 0.11, y: 0.67, w: 0.08, h: 0.09 },
+  { x: 0.20, y: 0.655, w: 0.08, h: 0.09 },
+  { x: 0.02, y: 0.86, w: 0.08, h: 0.09 },
+  { x: 0.11, y: 0.875, w: 0.08, h: 0.09 },
+  { x: 0.20, y: 0.86, w: 0.08, h: 0.09 },
+  // Neutral Bau empty (far/near) + mid-gang Ordner last
+  { x: 0.38, y: 0.67, w: 0.08, h: 0.09 },
+  { x: 0.48, y: 0.67, w: 0.08, h: 0.09 },
+  { x: 0.38, y: 0.875, w: 0.08, h: 0.09 },
+  { x: 0.48, y: 0.875, w: 0.08, h: 0.09 },
+  { x: 0.455, y: 0.74, w: 0.07, h: 0.07 }, // mid-gang
+  // Gäste — right (3 far + 3 near)
+  { x: 0.70, y: 0.655, w: 0.08, h: 0.09 },
+  { x: 0.79, y: 0.67, w: 0.08, h: 0.09 },
+  { x: 0.88, y: 0.655, w: 0.08, h: 0.09 },
+  { x: 0.70, y: 0.86, w: 0.08, h: 0.09 },
+  { x: 0.79, y: 0.875, w: 0.08, h: 0.09 },
+  { x: 0.88, y: 0.86, w: 0.08, h: 0.09 },
 ];
 
 export function blockWidthNorm(blockId = NEUTRAL_BLOCK): number {
@@ -272,11 +293,12 @@ export function blockCrowdRect(blockId: number): {
   height: number;
 } {
   const r = tribuneRect(blockId);
+  // wide150 floor: slightly tighter side walls, keep clear of front exits
   return {
-    left: r.x + r.w * 0.12,
-    top: r.y + r.h * 0.18,
-    width: r.w * 0.76,
-    height: r.h * 0.72,
+    left: r.x + r.w * 0.1,
+    top: r.y + r.h * 0.16,
+    width: r.w * 0.8,
+    height: r.h * 0.62,
   };
 }
 
@@ -299,7 +321,7 @@ export function crowdHomePos(
   index: number,
 ): { x: number; y: number } {
   const r = blockCrowdRect(blockId);
-  const cols = 4;
+  const cols = 5;
   const rows = 3;
   const cells = cols * rows;
   const idx = Math.max(0, index | 0);
@@ -397,8 +419,9 @@ export const STAND_WAIT_BAND = 0.05;
 /** @deprecated use STAND_WAIT_BAND + booth footprint; kept for separation scale */
 export const STAND_WAIT_RADIUS = 0.06;
 
-export function slotIndicesForBlock(_blockId: number): readonly number[] {
-  return BUILDABLE_INDICES;
+export function slotIndicesForBlock(blockId: number): readonly number[] {
+  if (blockId === NEUTRAL_BLOCK) return BUILDABLE_INDICES_NEUTRAL;
+  return BUILDABLE_INDICES_COLORED;
 }
 
 export function isUltraPad(blockId: number, index: number): boolean {

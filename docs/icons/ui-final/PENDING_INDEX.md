@@ -1,6 +1,6 @@
 # UI Final — Freigabe-Status
 
-**pending=18** · **released=149**
+**pending=18** · **released=159**
 
 Nummern = Original-Galerie (Freigabe z.B. „121,122 freigeben“).
 
@@ -36,6 +36,12 @@ Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../
 
 ## Released (diese Runde)
 
+- **176** `tribuneBlueWide150` — `tribune-block-blue-wide150.png` — **Tribüne blau +50 % Breite freigeschnitten freigegeben**
+- **177** `tribuneGreyWide150` — `tribune-block-grey-wide150.png` — **Tribüne grau +50 % Breite freigeschnitten freigegeben**
+- **178** `tribuneRedWide150` — `tribune-block-red-wide150.png` — **Tribüne rot +50 % Breite freigeschnitten freigegeben**
+- **140** `tribuneBlue` — `tribune-block-blue.png` — **Tribüne blau Normalmaß freigeschnitten freigegeben**
+- **141** `tribuneGrey` — `tribune-block-grey.png` — **Tribüne grau Normalmaß freigeschnitten freigegeben**
+- **142** `tribuneRed` — `tribune-block-red.png` — **Tribüne rot Normalmaß freigeschnitten freigegeben**
 - **169** `fxFistBlue` — `fx-fist-blue.png` — **Nahkampf Faust blau freigegeben**
 - **170** `fxFistRed` — `fx-fist-red.png` — **Nahkampf Faust rot freigegeben**
 - **171** `fxFistGrey` — `fx-fist-grey.png` — **Nahkampf Faust grau freigegeben**

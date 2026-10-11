@@ -3486,9 +3486,9 @@
         "reasons": [],
         "checkedAt": "2026-10-09T05:19:08.914458+00:00"
       },
-      "approvedBy": "user",
-      "approvedAt": "2026-10-09T05:19:08.929Z",
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "Normalmaß freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
     },
     "tribuneGrey": {
       "id": "tribuneGrey",
@@ -3523,9 +3523,9 @@
         "reasons": [],
         "checkedAt": "2026-10-09T05:19:09.063883+00:00"
       },
-      "approvedBy": "user",
-      "approvedAt": "2026-10-09T05:19:09.077Z",
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "Normalmaß freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
     },
     "tribuneRed": {
       "id": "tribuneRed",
@@ -3560,9 +3560,9 @@
         "reasons": [],
         "checkedAt": "2026-10-09T05:19:09.191613+00:00"
       },
-      "approvedBy": "user",
-      "approvedAt": "2026-10-09T05:19:09.204Z",
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "Normalmaß freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
     },
     "slotEmpty": {
       "id": "slotEmpty",
@@ -5948,6 +5948,117 @@
       "approvedBy": "user",
       "approvedAt": "2026-10-10T11:08:45.566Z",
       "notes": "Pyro: ein Ende brennt, roter Teamrauch. Freigestellt 256²."
+    },
+    "tribuneBlueWide150": {
+      "id": "tribuneBlueWide150",
+      "file": "tribune-block-blue-wide150.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-blue-wide150.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 639,
+          "h": 309
+        },
+        "aspectRatio": 2.067961,
+        "alphaCoverage": 0.2356,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          8,
+          6,
+          630,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-11T12:27:52.052336+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "+50% Breite freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
+    },
+    "tribuneGreyWide150": {
+      "id": "tribuneGreyWide150",
+      "file": "tribune-block-grey-wide150.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-grey-wide150.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 579,
+          "h": 308
+        },
+        "aspectRatio": 1.87987,
+        "alphaCoverage": 0.1844,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          8,
+          6,
+          570,
+          301
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-11T12:27:52.195926+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "+50% Breite freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
+    },
+    "tribuneRedWide150": {
+      "id": "tribuneRedWide150",
+      "file": "tribune-block-red-wide150.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-red-wide150.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 639,
+          "h": 309
+        },
+        "aspectRatio": 2.067961,
+        "alphaCoverage": 0.2356,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          8,
+          6,
+          630,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-11T12:27:52.453684+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "+50% Breite freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
     }
   },
   "pending": {

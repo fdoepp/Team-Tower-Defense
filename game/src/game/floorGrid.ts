@@ -163,21 +163,23 @@ function freePockets(xMin: number, xMax: number): Seg[] {
 }
 
 /**
- * Six centers across [xMin,xMax]: 2·1·1·2 in the free pockets around the
- * three dark corridors. Even fill of each pocket → pairs span the full
- * side-margin band without sitting in an Ausgang.
+ * Eight centers across [xMin,xMax]: 3·1·1·3 in the free pockets around the
+ * three dark corridors — Heim/Gäste get an extra outer column each.
  */
 function pocketCenters(xMin: number, xMax: number, plotHalf: number): number[] {
   const pockets = freePockets(xMin, xMax);
+  const target = 8;
   const counts =
     pockets.length === 4
-      ? [2, 1, 1, 2]
-      : pockets.map(() => Math.max(1, Math.ceil(6 / Math.max(1, pockets.length))));
-  const pad = plotHalf * 1.12;
+      ? [3, 1, 1, 3]
+      : pockets.map(() =>
+          Math.max(1, Math.ceil(target / Math.max(1, pockets.length))),
+        );
+  const pad = plotHalf * 1.05;
   const centers: number[] = [];
-  for (let i = 0; i < pockets.length && centers.length < 6; i++) {
+  for (let i = 0; i < pockets.length && centers.length < target; i++) {
     const p = pockets[i]!;
-    const n = Math.min(counts[i] ?? 1, 6 - centers.length);
+    const n = Math.min(counts[i] ?? 1, target - centers.length);
     const L = p.L + pad;
     const R = p.R - pad;
     if (R <= L) {
@@ -188,26 +190,27 @@ function pocketCenters(xMin: number, xMax: number, plotHalf: number): number[] {
       centers.push(L + ((k + 0.5) / n) * (R - L));
     }
   }
-  while (centers.length < 6) centers.push((xMin + xMax) / 2);
-  return centers.slice(0, 6);
+  while (centers.length < target) centers.push((xMin + xMax) / 2);
+  return centers.slice(0, target);
 }
 
-/** Screen-space bau quad for a global slot 0..5 at row r (0=far, 1=near). */
+/** Screen-space bau quad for a global slot 0..7 at row r (0=far, 1=near). */
 function evenSlotQuad(slot: number, r: number): QuadNorm {
   const { yTop, yBot } = floorBauBand(r);
-  // Use the side-margin band in screen x for both rows (not VP-compressed
-  // far margins) so six pockets span the full usable width evenly.
   const xMin = FLOOR_SIDE_MARGIN;
   const xMax = 1 - FLOOR_SIDE_MARGIN;
   const span = xMax - xMin;
   const pockets = freePockets(xMin, xMax);
   const minPocket = pockets.reduce((m, p) => Math.min(m, p.R - p.L), span);
-  const maxW = r === 0 ? 0.042 : 0.055;
-  // Outer pockets are wide; don't shrink every plot to the tiny mid gaps.
-  const plotW = Math.min(maxW, (span / 6) * 0.48, Math.max(0.028, minPocket * 0.7));
+  const maxW = r === 0 ? 0.038 : 0.048;
+  const plotW = Math.min(
+    maxW,
+    (span / 8) * 0.52,
+    Math.max(0.024, minPocket * 0.55),
+  );
   const half = plotW / 2;
   const centers = pocketCenters(xMin, xMax, half * 1.05);
-  const s = Math.max(0, Math.min(5, slot | 0));
+  const s = Math.max(0, Math.min(7, slot | 0));
   const cx = centers[s]!;
   const topHalf = half * (r === 0 ? 0.9 : 0.95);
   const botHalf = half * (r === 0 ? 1.06 : 1.03);
@@ -219,12 +222,49 @@ function evenSlotQuad(slot: number, r: number): QuadNorm {
   };
 }
 
+/** Mid-gang Ordnerpost — same footprint as a near-row (bottom) Bau plot. */
+function midGangOrdnerQuad(): QuadNorm {
+  const band = floorGangBand();
+  const ref = evenSlotQuad(0, 1);
+  const half = Math.abs(ref.br.x - ref.bl.x) / 2;
+  const h = Math.abs(ref.br.y - ref.tr.y);
+  const cx = 0.5;
+  const mid = band.mid;
+  const topHalf = half * 0.95;
+  const botHalf = half * 1.03;
+  return {
+    tl: { x: cx - topHalf, y: mid - h / 2 },
+    tr: { x: cx + topHalf, y: mid - h / 2 },
+    br: { x: cx + botHalf, y: mid + h / 2 },
+    bl: { x: cx - botHalf, y: mid + h / 2 },
+  };
+}
+
+/**
+ * Heim/Gäste: index 0..2 far, 3..5 near → global columns 0..2 / 5..7.
+ * Neutral Bau: index 0..1 far, 2..3 near → columns 3..4.
+ * Neutral mid-gang Ordner: index 4.
+ */
 export function boothQuad(blockId: number, index: number): QuadNorm {
   const b = Math.max(0, Math.min(2, blockId | 0));
-  const i = Math.max(0, Math.min(3, index | 0));
+  const i = Math.max(0, index | 0);
+  if (b === 1 && i === 4) return midGangOrdnerQuad();
+  if (b === 0) {
+    // Heim — 3 columns
+    const col = i % 3;
+    const r = i < 3 ? 0 : 1;
+    return evenSlotQuad(col, r);
+  }
+  if (b === 2) {
+    // Gäste — 3 columns on the right (global 5..7)
+    const col = 5 + (i % 3);
+    const r = i < 3 ? 0 : 1;
+    return evenSlotQuad(col, r);
+  }
+  // Neutral Bau empty — 2 columns (global 3..4)
+  const col = 3 + (i % 2);
   const r = i < 2 ? 0 : 1;
-  const slot = b * 2 + (i % 2);
-  return evenSlotQuad(slot, r);
+  return evenSlotQuad(col, r);
 }
 
 export function quadToRect(q: QuadNorm): {

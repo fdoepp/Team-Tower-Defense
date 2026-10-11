@@ -50,9 +50,10 @@ export type SlotEmptyOrientation = "parallel" | "iso" | "persp";
 export const SLOT_EMPTY_ORIENTATION: SlotEmptyOrientation = "persp";
 
 export const SCENE_ASSETS = {
-  tribuneBlue: uiPath("tribuneBlue", "assets/tribune-block-blue.png"),
-  tribuneGrey: uiPath("tribuneGrey", "assets/tribune-block-grey.png"),
-  tribuneRed: uiPath("tribuneRed", "assets/tribune-block-red.png"),
+  /** Runtime uses freigegebene wide150 (+50 % Breite); Normalmaß remains in DB. */
+  tribuneBlue: uiPath("tribuneBlueWide150", "icons/ui-final/tribune-block-blue-wide150.png"),
+  tribuneGrey: uiPath("tribuneGreyWide150", "icons/ui-final/tribune-block-grey-wide150.png"),
+  tribuneRed: uiPath("tribuneRedWide150", "icons/ui-final/tribune-block-red-wide150.png"),
   /** Binding match backdrop — see MATCH_LAYOUT_TOKENS.json / stadium-background rule */
   stadiumFloodlightDerby: "assets/stadium-floodlight-derby-bg.jpg",
 } as const;
@@ -229,7 +230,8 @@ export function baustelleSchildIconPath(
 
 /** Standarte reference size (gang mid) — baustelle signs scale from this. */
 export function standarteSizePx(canvasW: number, canvasH: number): number {
-  return Math.min(canvasW * 0.075, canvasH * 0.1);
+  // +10% vs prior baseline
+  return Math.min(canvasW * 0.075, canvasH * 0.1) * 1.1;
 }
 
 function loadOne(src: string): Promise<HTMLImageElement> {
@@ -441,7 +443,7 @@ export function drawToyIcon(
   const stepAbs = Math.abs(step);
 
   const idleBob = Math.sin(t * 5.4 + ph) * size * 0.045;
-  const cheerBob = Math.sin(t * 10.5 + ph) * size * 0.12;
+  const cheerBob = Math.sin(t * 13.5 + ph) * size * 0.18;
   // Planted foot: lift on step peak, settle on zero-crossing
   const walkBob = (stepAbs * 0.18 + Math.max(0, step) * 0.04) * size * hop;
   const fightBob = Math.sin(t * 14 + ph) * size * 0.05 + strike * size * -0.1;
@@ -479,7 +481,7 @@ export function drawToyIcon(
         : mode === "fight"
           ? 1 - strike * 0.14 + Math.sin(t * 14 + ph) * 0.03
           : mode === "cheer"
-            ? 1 + Math.sin(t * 10.5 + ph) * 0.07
+            ? 1 + Math.sin(t * 13.5 + ph) * 0.11
             : mode === "drink"
               ? 1 - 0.06 * ap
               : mode === "throw"
@@ -493,7 +495,7 @@ export function drawToyIcon(
     mode === "planted"
       ? 0
       : mode === "cheer"
-        ? Math.sin(t * 6.2 + ph) * 0.16
+        ? Math.sin(t * 8.4 + ph) * 0.24
         : mode === "fight"
           ? Math.sin(t * 16 + ph) * 0.2 + strike * 0.28 * facing
           : mode === "drink"
@@ -573,7 +575,7 @@ export function drawToyIcon(
     ctx.globalCompositeOperation = "lighter";
     ctx.globalAlpha =
       mode === "cheer"
-        ? 0.14
+        ? 0.22
         : mode === "throw"
           ? 0.12 + ap * 0.18
           : 0.1 + strike * 0.15;

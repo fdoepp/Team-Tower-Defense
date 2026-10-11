@@ -71,6 +71,60 @@ button {
   justify-content: center;
 }
 
+.tutorial-screen {
+  max-width: 720px;
+  overflow: auto;
+}
+
+.tutorial-card {
+  text-align: left;
+  max-height: min(58vh, 420px);
+  overflow: auto;
+}
+
+.tutorial-card h2 {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  margin: 0 0 6px;
+}
+
+.tutorial-card section + section {
+  margin-top: 12px;
+}
+
+.tutorial-card ul {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.tutorial-card li + li {
+  margin-top: 6px;
+}
+
+.tutorial-card b {
+  color: var(--ink);
+}
+
+.hs-list {
+  margin: 0 0 12px;
+  padding-left: 1.2rem;
+  text-align: left;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.hs-list b {
+  color: var(--ink);
+}
+
+.hs-note {
+  color: var(--ok) !important;
+  font-weight: 600;
+}
+
 .setup-actions {
   width: 100%;
   flex-wrap: nowrap;
@@ -2261,6 +2315,149 @@ select {
 
 .combat-banner.hidden { display: none; }
 
+/* ——— Tip / Hinweis display proposals (A · B · C) ——— */
+/* A: compact stadium announcer chip under scoreboard */
+.tip-chip.tip-a {
+  position: absolute;
+  left: 50%;
+  top: 16%;
+  transform: translateX(-50%);
+  z-index: 5;
+  max-width: min(72%, 340px);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-family: var(--display);
+  font-size: clamp(0.68rem, 1.6cqw, 0.82rem);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-align: center;
+  color: #0f172a;
+  background: rgba(254, 249, 195, 0.94);
+  border: 1px solid rgba(202, 138, 4, 0.45);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+  pointer-events: none;
+  animation: tip-pop 0.35s ease-out;
+}
+.tip-chip.tip-a[data-tone="warn"] {
+  background: rgba(254, 226, 226, 0.95);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #7f1d1d;
+}
+.tip-chip.tip-a[data-tone="hot"] {
+  background: rgba(255, 237, 213, 0.96);
+  border-color: rgba(234, 88, 12, 0.5);
+  color: #9a3412;
+}
+.tip-chip.tip-a.hidden { display: none; }
+
+/* B: side coach card at Bau edge */
+.tip-card.tip-b {
+  position: absolute;
+  right: 10px;
+  top: 28%;
+  z-index: 5;
+  width: min(168px, 22%);
+  padding: 8px 10px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.28);
+  pointer-events: none;
+  animation: tip-slide 0.4s ease-out;
+  backdrop-filter: blur(10px);
+}
+.tip-card.tip-b .tip-card-label {
+  display: block;
+  font-family: var(--font);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.65;
+  margin-bottom: 3px;
+}
+.tip-card.tip-b .tip-card-text {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(0.72rem, 1.5cqw, 0.88rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+.tip-card.tip-b[data-tone="warn"] {
+  border-color: rgba(248, 113, 113, 0.55);
+  box-shadow: 0 8px 22px rgba(127, 29, 29, 0.35);
+}
+.tip-card.tip-b[data-tone="hot"] {
+  border-color: rgba(251, 146, 60, 0.6);
+}
+.tip-card.tip-b.hidden { display: none; }
+
+/* C: live ticker strip above the gang corridor */
+.tip-ticker.tip-c {
+  position: absolute;
+  left: 50%;
+  bottom: 38%;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(78%, 420px);
+  padding: 5px 12px 5px 6px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #f8fafc;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  font-family: var(--display);
+  font-size: clamp(0.66rem, 1.5cqw, 0.8rem);
+  font-weight: 800;
+  pointer-events: none;
+  animation: tip-ticker-in 0.35s ease-out;
+  backdrop-filter: blur(8px);
+}
+.tip-ticker.tip-c .tip-ticker-tag {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: #0ea5e9;
+  color: #0f172a;
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+.tip-ticker.tip-c[data-tone="warn"] {
+  border-color: rgba(248, 113, 113, 0.5);
+}
+.tip-ticker.tip-c[data-tone="warn"] .tip-ticker-tag {
+  background: #f87171;
+}
+.tip-ticker.tip-c[data-tone="hot"] {
+  border-color: rgba(251, 146, 60, 0.55);
+}
+.tip-ticker.tip-c[data-tone="hot"] .tip-ticker-tag {
+  background: #fb923c;
+}
+.tip-ticker.tip-c.hidden { display: none; }
+
+@keyframes tip-pop {
+  from { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(0.96); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+@keyframes tip-slide {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes tip-ticker-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@media (max-width: 700px) {
+  .tip-card.tip-b { display: none; } /* keep A+C readable on narrow */
+  .tip-ticker.tip-c { bottom: 34%; max-width: 90%; }
+}
+
 .ultra-pad {
   position: absolute;
   z-index: 4;
@@ -2351,25 +2548,7 @@ select {
 }
 
 .toast {
-  position: absolute;
-  left: 50%;
-  top: 22%;
-  transform: translate(-50%, -50%);
-  background: rgba(15, 23, 42, 0.88);
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 14px;
-  font-weight: 700;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 6;
-  font-size: 0.85rem;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(12px);
-}
-
-.toast.show {
-  opacity: 1;
+  display: none; /* LIVE ticker only — no mid-screen hint toast */
 }
 
 .rotate-hint {
