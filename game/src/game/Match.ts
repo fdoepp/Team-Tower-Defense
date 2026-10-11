@@ -37,8 +37,7 @@ import {
   MELEE_RANGE,
   NEUTRAL_POST_AUTO_LEVEL_CAP,
   NEUTRAL_POST_AUTO_LEVEL_SEC,
-  NEUTRAL_POST_GAST_INDEX,
-  NEUTRAL_POST_HEIM_INDEX,
+  NEUTRAL_MID_GANG_INDEX,
   NEUTRAL_STEWARD_RESPAWN,
   ORDNER_POST_HP_PER_LEVEL,
   ordnerPostMaxHp,
@@ -92,6 +91,8 @@ import {
   type SoloSettings,
   type SpeedMode,
   type TeamId,
+  type TickerChannel,
+  type TickerItem,
 } from "./types";
 import { clamp, expandMix, slotKey, teamLabel } from "./util";
 import {
@@ -253,11 +254,8 @@ export class Match {
   private postFxBand = new Map<string, 0 | 1 | 2>();
   speed: SpeedMode = 0;
   toasts: { text: string; t: number }[] = [];
-  /**
-   * Contextual coach tip for HUD (Bier knapp, Momentum, …).
-   * Shown via tip UI proposals in main/style.
-   */
-  tip: { text: string; tone: "warn" | "info" | "hot"; t: number } | null = null;
+  /** Live ticker under momentum (match / combat / crowd / build) */
+  tickerQueue: TickerItem[] = [];
   private tipCd = 0;
   private tipSeen = new Set<string>();
   result: MatchResult | null = null;
@@ -339,33 +337,32 @@ export class Match {
     }
 
     /**
-     * CANONICAL neutral mid (all future Matchday versions):
-     * - Ordnerposten on the outer plots (Heim-facing + Gast-facing)
-     * - Two empty center plots for claim/build after the wall breaks
-     * - Never seed Bier/Shop on grey/neutral — only Ordner make sense there
-     * - Soft auto-level while contested (see tickNeutralPostAutoLevel)
+     * CANONICAL neutral mid:
+     * - One Level-2 Ordnerpost exactly mid-gang
+     * - Empty grey Bau plots (far/near) for claim once territory reaches them
+     * - Never seed Bier/Shop on grey — only Ordner on the mid slot
      */
-    for (const index of [NEUTRAL_POST_HEIM_INDEX, NEUTRAL_POST_GAST_INDEX]) {
-      this.placeBuilding(NEUTRAL_BLOCK, index, "ordner", true, "neutral");
-      const post = this.slots.find(
-        (x) => x.blockId === NEUTRAL_BLOCK && x.index === index,
-      );
-      if (!post) continue;
-      post.greyNeutral = false;
-      post.owner = "neutral";
-      post.level = 1;
-      post.stewardCd = NEUTRAL_STEWARD_RESPAWN;
-      post.autoLevelAcc = 0;
-      const sp = this.stewardPostPos(post);
-      const st = this.makeSteward("neutral", post);
+    this.placeBuilding(NEUTRAL_BLOCK, NEUTRAL_MID_GANG_INDEX, "ordner", true, "neutral");
+    const midPost = this.slots.find(
+      (x) => x.blockId === NEUTRAL_BLOCK && x.index === NEUTRAL_MID_GANG_INDEX,
+    );
+    if (midPost) {
+      midPost.greyNeutral = false;
+      midPost.owner = "neutral";
+      midPost.level = 2;
+      this.initOrdnerPostHp(midPost);
+      midPost.stewardCd = NEUTRAL_STEWARD_RESPAWN;
+      midPost.autoLevelAcc = 0;
+      const sp = this.stewardPostPos(midPost);
+      const st = this.makeSteward("neutral", midPost);
       st.state = "gang";
       st.path = [];
       st.pathI = 0;
       this.setAfter(st, "");
       st.x = sp.x;
       st.y = sp.y;
-      st.gangX = this.postGangX(post);
-      st.patrolDir = index === NEUTRAL_POST_HEIM_INDEX ? 1 : -1;
+      st.gangX = this.postGangX(midPost);
+      st.patrolDir = 1;
       this.fans.push(st);
     }
 
@@ -798,8 +795,50 @@ export class Match {
     return this.enemyOnGangNearHome(team);
   }
 
-  toast(text: string, duration = 2.2): void {
+  toast(text: string, duration = 2.2, channel?: TickerChannel): void {
     this.toasts.push({ text, t: duration });
+    this.pushTicker(text, channel ?? this.classifyTicker(text), Math.max(3.2, duration));
+  }
+
+  /** Push a prominent Live-Ticker line under the momentum bar */
+  pushTicker(text: string, channel: TickerChannel, duration = 4.2): void {
+    const clean = text.trim();
+    if (!clean) return;
+    // Replace duplicate head; keep queue short
+    if (this.tickerQueue[0]?.text === clean) {
+      this.tickerQueue[0]!.t = Math.max(this.tickerQueue[0]!.t, duration);
+      this.tickerQueue[0]!.channel = channel;
+      return;
+    }
+    this.tickerQueue.unshift({ text: clean, channel, t: duration });
+    if (this.tickerQueue.length > 4) this.tickerQueue.length = 4;
+  }
+
+  activeTicker(): TickerItem | null {
+    return this.tickerQueue[0] ?? null;
+  }
+
+  private classifyTicker(text: string): TickerChannel {
+    const t = text.toLowerCase();
+    if (
+      /bier|fass|€|gold|bau|bude|fanshop|ordnerpost|upgrade|ausverkauft|fanartikel|sicherheit|übernommen|gebaut|nachschub|slot|plot/.test(
+        t,
+      )
+    )
+      return "build";
+    if (
+      /kampf|angriff|verteid|blocksturm|gegen-sturm|besiegt|pyro|hooligan|ultra →|nahkampf|feind|sturm|invade/.test(
+        t,
+      )
+    )
+      return "combat";
+    if (
+      /momentum|kurve|stimmung|normalo|fan |gekauft|personen|bierrunde|jubel/.test(
+        t,
+      )
+    )
+      return "crowd";
+    return "match";
   }
 
   floatAt(x: number, y: number, text: string, good: boolean): void {
@@ -877,32 +916,36 @@ export class Match {
     return null;
   }
 
-  /** Active coach tip for HUD tip proposals */
-  activeTip(): { text: string; tone: "warn" | "info" | "hot" } | null {
-    if (!this.tip || this.tip.t <= 0) return null;
-    return { text: this.tip.text, tone: this.tip.tone };
+  /** Active Live-Ticker line (under momentum bar) */
+  activeTip(): TickerItem | null {
+    return this.activeTicker();
   }
 
   /**
-   * Contextual tips — short stadium-coach lines when something shifts.
-   * Examples: Bier knapp, Momentum kippt, Ordner unter Druck.
+   * Contextual Live-Ticker hints when something shifts.
+   * Channels: match (white) · combat (red) · crowd (blue) · build (orange).
    */
   private tickTips(dt: number): void {
-    if (this.tip) {
-      this.tip.t -= dt;
-      if (this.tip.t <= 0) this.tip = null;
-    }
+    for (const t of this.tickerQueue) t.t -= dt;
+    this.tickerQueue = this.tickerQueue.filter((t) => t.t > 0);
     this.tipCd = Math.max(0, this.tipCd - dt);
-    if (this.tipCd > 0 || this.tip) return;
 
-    type Cand = { key: string; text: string; tone: "warn" | "info" | "hot"; prio: number };
+    // Combat banner also feeds the red ticker channel
+    const combat = this.combatStatus();
+    if (combat) {
+      this.pushTicker(combat, "combat", 2.4);
+    }
+
+    if (this.tipCd > 0) return;
+
+    type Cand = { key: string; text: string; channel: TickerChannel; prio: number };
     const cands: Cand[] = [];
     const beer = this.currency.beer;
     if (beer < 8) {
       cands.push({
         key: "beer-low",
         text: beer < 3 ? "Bier ist leer — Hooligans warten" : "Bier ist knapp",
-        tone: "warn",
+        channel: "build",
         prio: beer < 3 ? 90 : 70,
       });
     }
@@ -911,7 +954,7 @@ export class Match {
       cands.push({
         key: "merch-low",
         text: "Fanartikel werden knapp",
-        tone: "warn",
+        channel: "build",
         prio: 55,
       });
     }
@@ -927,7 +970,7 @@ export class Match {
               : M > 0
                 ? "Kurve zieht an"
                 : "Gegnerische Kurve kommt",
-        tone: M < 0 ? "hot" : "info",
+        channel: "crowd",
         prio: 60 + Math.round(Math.abs(M) * 20),
       });
     }
@@ -944,7 +987,7 @@ export class Match {
       cands.push({
         key: "ordner-dmg",
         text: "Ordnerpost unter Druck",
-        tone: "hot",
+        channel: "combat",
         prio: 85,
       });
     }
@@ -952,7 +995,7 @@ export class Match {
       cands.push({
         key: "home-invade",
         text: "Feind im Heimblock — verteidigen!",
-        tone: "hot",
+        channel: "combat",
         prio: 95,
       });
     }
@@ -966,15 +1009,19 @@ export class Match {
       cands.push({
         key: "shelf-empty",
         text: "Bierstand ausverkauft — Nachschub!",
-        tone: "warn",
+        channel: "build",
         prio: 65,
       });
     }
-    if (this.minute > 70 && this.minute < 85 && Math.abs(this.scoreKsc - this.scoreVfb) <= 1) {
+    if (
+      this.minute > 70 &&
+      this.minute < 85 &&
+      Math.abs(this.scoreKsc - this.scoreVfb) <= 1
+    ) {
       cands.push({
         key: "late-game",
         text: "Schlussphase — jede Aktion zählt",
-        tone: "info",
+        channel: "match",
         prio: 40,
       });
     }
@@ -983,16 +1030,14 @@ export class Match {
     for (const c of cands) {
       if (this.tipSeen.has(c.key)) continue;
       this.tipSeen.add(c.key);
-      this.tip = { text: c.text, tone: c.tone, t: 4.8 };
+      this.pushTicker(c.text, c.channel, 4.8);
       this.tipCd = 7.5;
-      // Allow key tips to resurface later in the match
       if (this.tipSeen.size > 6) {
         const first = this.tipSeen.values().next().value;
         if (first) this.tipSeen.delete(first);
       }
       return;
     }
-    // Soft reset so tips can repeat when situation persists
     if (cands.length && this.tipCd <= 0) {
       this.tipSeen.clear();
       this.tipCd = 4;

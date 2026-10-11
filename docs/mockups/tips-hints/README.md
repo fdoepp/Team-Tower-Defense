@@ -1,32 +1,14 @@
-# Tipps & Hinweise — drei Anzeige-Vorschläge
+# Live-Ticker unter der Momentum-Leiste
 
-Kurzform-Hinweise aus dem Match-Zustand (z. B. „Bier ist knapp“, „Das Momentum kippt“, „Ordnerpost unter Druck“). Alle drei Varianten teilen denselben Tip-Feed; im Match laufen sie parallel, damit man sie direkt vergleichen kann.
+Freigabe: prominenter **LIVE**-Ticker direkt unter der Torwahrscheinlichkeits-/Momentum-Leiste auf dem Scoreboard.
 
-## A — Stadionsprecher-Chip (unten am Scoreboard)
+## Kanäle (Textfarbe)
 
-- Kompakte Pill unter der Anzeigetafel
-- Tone: `info` / `warn` / `hot` über Farbe
-- Gut für kurze, einmalige Coach-Zeilen ohne den Gang zu verdecken
+| Kanal | Farbe | Inhalt |
+|-------|-------|--------|
+| `match` | weiß | Spielnachrichten (Anpfiff, TOR, Verlängerung, Schlussphase…) |
+| `combat` | rot | Kampfmeldungen & Hinweise (Angriff, Verteidigung, Ordner unter Druck…) |
+| `crowd` | blau | Personen- & Stimmungshinweise (Momentum, Kurve, Käufe…) |
+| `build` | orange | Bau- & Ressourcenhinweise (Bier knapp, Ausverkauft, gebaut…) |
 
-## B — Coach-Karte am Bau-Rand
-
-- Kleine Karte rechts mit Label „Hinweis“
-- Mehr Platz für etwas längere Sätze
-- Liest sich wie ein Sideline-Coach; auf schmalen Screens ausgeblendet
-
-## C — LIVE-Ticker über dem Gang
-
-- Horizontale Leiste mit `LIVE`-Tag oberhalb der Kampfzone
-- Wirkt stadium-nah und zeitkritisch
-- Ideal wenn der Hinweis mit dem Geschehen auf dem Gang zusammenhängt
-
-## Beispieltexte
-
-| Situation | Text |
-|-----------|------|
-| Bier &lt; 8 | Bier ist knapp |
-| Bier &lt; 3 | Bier ist leer — Hooligans warten |
-| |momentum| hoch negativ | Das Momentum kippt |
-| Ordner &lt; 40 % HP | Ordnerpost unter Druck |
-| Feind im Heimblock | Feind im Heimblock — verteidigen! |
-| Bierstand-Regal leer | Bierstand ausverkauft — Nachschub! |
+Runtime: `Match.pushTicker` / `Match.activeTicker` → `drawLiveTicker` in `render.ts`.

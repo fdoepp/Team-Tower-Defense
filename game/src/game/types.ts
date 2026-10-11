@@ -236,17 +236,27 @@ export const STEWARD_CAP = 2;
 export const NEUTRAL_STEWARD_CAP = 4;
 export const NEUTRAL_STEWARD_RESPAWN = 32;
 /**
- * CANONICAL neutral mid layout (keep across versions):
- * outer Ordnerposts + empty center; no grey Bier/Shop seed.
+ * CANONICAL neutral mid layout:
+ * one Level-2 Ordnerpost mid-gang + empty grey Bau plots; no grey Bier/Shop seed.
  * Auto-level over time; produce Ordner up to NEUTRAL_STEWARD_CAP.
  */
 export const NEUTRAL_POST_AUTO_LEVEL_CAP = 3;
 /** Real seconds between auto-levels on grey Ordnerposts */
 export const NEUTRAL_POST_AUTO_LEVEL_SEC = 60;
-/** Heim-facing (blue/left) starting Ordnerpost index in the neutral block */
-export const NEUTRAL_POST_HEIM_INDEX = 0;
-/** Gast-facing (red/right) starting Ordnerpost index in the neutral block */
-export const NEUTRAL_POST_GAST_INDEX = 3;
+/** Single mid-gang Ordnerpost index in the neutral block */
+export const NEUTRAL_MID_GANG_INDEX = 4;
+/** @deprecated use NEUTRAL_MID_GANG_INDEX — dual outer posts removed */
+export const NEUTRAL_POST_HEIM_INDEX = NEUTRAL_MID_GANG_INDEX;
+/** @deprecated use NEUTRAL_MID_GANG_INDEX */
+export const NEUTRAL_POST_GAST_INDEX = NEUTRAL_MID_GANG_INDEX;
+
+/** Live-ticker channel under the momentum bar */
+export type TickerChannel = "match" | "combat" | "crowd" | "build";
+export type TickerItem = {
+  text: string;
+  channel: TickerChannel;
+  t: number;
+};
 export const BLOCK_STORM_COUNT = 4;
 export const BLOCK_STORM_SEC = 7;
 export const STAND_CONVERT_SEC = 11;

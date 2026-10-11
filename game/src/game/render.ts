@@ -430,7 +430,69 @@ function drawScoreboard(
   );
 
   drawTorBall(ctx, split, pctY, fillH * 1.25, m.torBallAngle);
+
+  // Prominent LIVE ticker directly under the momentum bar
+  drawLiveTicker(ctx, m, bx, by, boardW, boardH, mt);
   ctx.restore();
+}
+
+const TICKER_COLORS: Record<string, string> = {
+  match: "#ffffff", // Spielnachrichten — weiß
+  combat: "#ef4444", // Kampfmeldungen — rot
+  crowd: "#3b82f6", // Personen / Stimmung — blau
+  build: "#f97316", // Bau / Ressourcen — orange
+};
+
+function drawLiveTicker(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  bx: number,
+  _by: number,
+  boardW: number,
+  boardH: number,
+  mt: { x: number; y: number; w: number; h: number },
+): void {
+  void _by;
+  const item = m.activeTicker?.() ?? m.tickerQueue?.[0];
+  if (!item) return;
+  const tw = boardW * 0.98;
+  const th = Math.max(22, boardH * 0.28);
+  const tx = bx + (boardW - tw) / 2;
+  const ty = mt.y + mt.h + Math.max(6, boardH * 0.08);
+  roundRect(ctx, tx, ty, tw, th, 8);
+  ctx.fillStyle = "rgba(15,23,42,0.9)";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(148,163,184,0.35)";
+  ctx.lineWidth = 1.2;
+  roundRect(ctx, tx, ty, tw, th, 8);
+  ctx.stroke();
+
+  const tagW = Math.max(36, tw * 0.11);
+  const tagH = th * 0.62;
+  const tagX = tx + 6;
+  const tagY = ty + (th - tagH) / 2;
+  roundRect(ctx, tagX, tagY, tagW, tagH, 5);
+  ctx.fillStyle = "#0ea5e9";
+  ctx.fill();
+  ctx.fillStyle = "#0f172a";
+  ctx.font = `900 ${Math.max(9, Math.floor(tagH * 0.55))}px Outfit, Manrope, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("LIVE", tagX + tagW / 2, tagY + tagH / 2 + 0.5);
+
+  const col = TICKER_COLORS[item.channel] ?? TICKER_COLORS.match;
+  ctx.fillStyle = col;
+  ctx.font = `800 ${Math.max(12, Math.floor(th * 0.48))}px Outfit, Manrope, sans-serif`;
+  ctx.textAlign = "left";
+  const textX = tagX + tagW + 10;
+  const maxW = tw - tagW - 22;
+  let label = item.text;
+  while (ctx.measureText(label).width > maxW && label.length > 4) {
+    label = label.slice(0, -2);
+  }
+  if (label !== item.text) label = `${label.trimEnd()}…`;
+  ctx.fillText(label, textX, ty + th / 2 + 0.5);
+  ctx.textBaseline = "alphabetic";
 }
 
 /** Classic football overlay on the Torwahrscheinlichkeit split. */
@@ -573,9 +635,21 @@ function drawSlots(
 }
 
 function slotControlForPlot(m: Match, s: BuildSlot): SlotControl {
-  if (s.greyNeutral || s.owner === "neutral") return "grey";
+  // Built neutral/grey posts stay grey; empty plots take team color once buildable
+  if (s.building && (s.greyNeutral || s.owner === "neutral")) return "grey";
   if (s.owner === "ksc") return "blue";
   if (s.owner === "vfb") return "red";
+
+  // Empty grey/neutral Bauplätze: Schildfarbe follows who can build there
+  if (!s.building) {
+    if (m.inPlayerTerritory(s.blockId, s.index)) {
+      return m.playerTeam === "ksc" ? "blue" : "red";
+    }
+    if (m.inAiTerritory(s.blockId, s.index)) {
+      return m.aiTeam === "ksc" ? "blue" : "red";
+    }
+    return "grey";
+  }
 
   const bo = m.blockOwner[s.blockId];
   if (bo === "ksc" || bo === "vfb") {
@@ -626,7 +700,8 @@ function drawBaustelle(
 ): void {
   const control = slotControlForPlot(m, s);
   const src = slotEmptyIconPath(control, "persp", false);
-  const farRow = s.index < 2;
+  // Heim/Gäste: 0..2 far · 3..5 near · Neutral Bau: 0..1 far · 2..3 near
+  const farRow = s.blockId === 1 ? s.index < 2 : s.index < 3;
   let drew = false;
   let footX = x + bw / 2;
   let footY = y + bh / 2;
