@@ -72,7 +72,12 @@ export function floorRowYs(): readonly number[] {
 
 /**
  * Fight corridor = full clear span between the two Bau rows
- * (far plot bottom → near plot top), including the former plot buffers.
+ * (far/upper plot bottom → near/lower plot top).
+ *
+ * Typical values with FLOOR_ROW_YS + GANG_PLOT_BUFFER:
+ *   upper Bau (far):  yTop≈0.58 … yBot≈0.65
+ *   lower Bau (near): yTop≈0.89 … yBot≈0.975
+ *   gang corridor:    y0≈0.65 … y1≈0.89  (all fighters roam here)
  */
 export function floorGangBand(): { y0: number; y1: number; mid: number; h: number } {
   const far = floorBauBand(0);
@@ -80,6 +85,27 @@ export function floorGangBand(): { y0: number; y1: number; mid: number; h: numbe
   const y0 = far.yBot;
   const y1 = near.yTop;
   return { y0, y1, mid: (y0 + y1) / 2, h: Math.max(0.02, y1 - y0) };
+}
+
+/** Upper (far) + lower (near) Bau-row Y edges — for corridor / roam clamps. */
+export function bauRowYEdges(): {
+  upperTop: number;
+  upperBot: number;
+  lowerTop: number;
+  lowerBot: number;
+  corridorY0: number;
+  corridorY1: number;
+} {
+  const far = floorBauBand(0);
+  const near = floorBauBand(1);
+  return {
+    upperTop: far.yTop,
+    upperBot: far.yBot,
+    lowerTop: near.yTop,
+    lowerBot: near.yBot,
+    corridorY0: far.yBot,
+    corridorY1: near.yTop,
+  };
 }
 
 /** Bau band edges with gang buffer applied (r=0 far, r=1 near). */

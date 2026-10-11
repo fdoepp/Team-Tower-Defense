@@ -391,25 +391,25 @@ function unitLaneHash(unitId: number): number {
 }
 
 /**
- * Personal gang Y across nearly the full fight corridor (between Bau rows).
- * Stagger so stacked attackers fill the strip, not a single mid-lane.
+ * Personal gang Y across the full fight corridor (between Bau rows).
+ * Uses almost the entire band so units occupy every “line” between the rows.
  */
 export function gangLaneYForUnit(unitId: number): number {
   const y0 = gangY();
   const h = Math.max(0.02, gangHeight());
   const u = unitLaneHash(unitId);
-  return y0 + h * (0.04 + u * 0.92);
+  return y0 + h * (0.02 + u * 0.96);
 }
 
 /**
  * Personal depth along the gang (world-X offset from the battle line).
- * Without this, every unit at the same gangX sits on one vertical line.
+ * Wide enough that units lean toward the outer pitch edges, not one column.
  */
 export function gangLaneDepthForUnit(unitId: number): number {
   const u = unitLaneHash(unitId * 3 + 11);
   const v = unitLaneHash(unitId * 7 + 29);
-  // ±~3.5% field width, second hash breaks pair-clustering
-  return (u - 0.5) * 0.07 + (v - 0.5) * 0.02;
+  // ±~6% field width + secondary jitter
+  return (u - 0.5) * 0.12 + (v - 0.5) * 0.03;
 }
 
 export function gangLanePosForUnit(

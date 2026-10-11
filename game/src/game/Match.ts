@@ -1533,14 +1533,17 @@ export class Match {
     return null;
   }
 
-  /** Spieler-Einheiten einer Art, die im Block bereit zum Angriff sind. */
+  /**
+   * Spieler-Einheiten einer Art, die bereit zum Angriff sind —
+   * im Block oder am Stand (Bier/Fanshop-Warteschlange).
+   */
   attackReadyList(kind: "ultras" | "hooligans"): FanUnit[] {
     return this.fans.filter(
       (f) =>
         f.team === this.playerTeam &&
         f.kind === kind &&
         f.hp > 0 &&
-        f.state === "block",
+        (f.state === "block" || f.state === "stand"),
     );
   }
 
@@ -1563,7 +1566,7 @@ export class Match {
     const list = this.attackReadyList("hooligans");
     const n = count === "all" ? list.length : Math.max(0, Math.floor(count));
     if (n < 1 || list.length < n) {
-      this.toast("Keine Hooligans im Block");
+      this.toast("Keine Hooligans bereit");
       return false;
     }
     const cost = HOOLIGAN_ORDER_BEER * n;
@@ -1598,7 +1601,7 @@ export class Match {
     const list = this.attackReadyList("ultras");
     const n = count === "all" ? list.length : Math.max(0, Math.floor(count));
     if (n < 1 || list.length < n) {
-      this.toast("Keine Ultras im Block");
+      this.toast("Keine Ultras bereit");
       return false;
     }
     const cost = PYRO_FIGHT_MERCH * n;
@@ -1629,6 +1632,28 @@ export class Match {
 
   private leaveSeatToGang(f: FanUnit, offense: boolean): void {
     if (f.team === this.playerTeam) sfx("send");
+    // Keep seatIndex reserved while alive on gang
+    f._homeSeat = f.seatIndex;
+    f.standKey = null;
+    f.invading = false;
+    f.onOffense = offense;
+    f.aggro = offense ? 40 : 100;
+    this.retargetGangWander(f);
+
+    // Already at a stand / on the gang floor — peel straight into the fight strip
+    const onGangFloor =
+      f.state === "stand" ||
+      (f.y >= gangY() - 0.02 && f.y <= gangY() + gangHeight() + 0.02);
+    if (onGangFloor) {
+      f.state = "gang";
+      this.syncGangFromWorld(f);
+      f.y = this.gangFreeAimY(f);
+      f.path = [];
+      f.pathI = 0;
+      this.setAfter(f, "gang");
+      return;
+    }
+
     // Two exits under the block (left/right of door) — early horizontal spread
     const door = doorPos(f.blockId);
     const crowd = blockCrowdRect(f.blockId);
@@ -1639,13 +1664,7 @@ export class Match {
       crowd.left + crowd.width - 0.01,
     );
     const exit = { x: exitX, y: door.y };
-    // Keep seatIndex reserved while alive on gang
-    f._homeSeat = f.seatIndex;
     f.state = "moving";
-    f.standKey = null;
-    f.invading = false;
-    f.onOffense = offense;
-    f.aggro = offense ? 40 : 100;
     const path: { x: number; y: number }[] = [];
     if (Math.abs(f.x - exit.x) > 0.012) {
       path.push({ x: exit.x, y: f.y });
@@ -3307,9 +3326,10 @@ export class Match {
     f.pathI = 0;
     if (after === "gang") {
       f.state = "gang";
-      f.gangX = worldXToGangX(f.x);
+      this.retargetGangWander(f);
+      this.syncGangFromWorld(f);
       f.y = this.gangFreeAimY(f);
-      f.x = gangXToWorld(f.gangX);
+      f.x = this.gangWorldX(f);
       // seat stays reserved
     } else if (after === "steward") {
       f.state = "gang";
@@ -3506,26 +3526,44 @@ export class Match {
   private syncGangFromWorld(f: FanUnit): void {
     const left = blockCenterX(0);
     const right = blockCenterX(BLOCK_COUNT - 1);
-    // Remove personal depth before mapping back to logical gangX
-    const depth = gangLaneDepthForUnit(f.id);
+    // Strip personal depth + edge wander before mapping back to logical gangX
+    const depth = gangLaneDepthForUnit(f.id) + (f._wanderTx ?? 0);
     f.gangX = clamp((f.x - depth - left) / (right - left || 1), 0, 1);
     f.x = this.gangWorldX(f);
   }
 
-  /** World X = battle-line position + personal depth (breaks the vertical stack). */
+  /**
+   * World X = battle-line + personal depth + live wander toward pitch edges.
+   * `_wanderTx` on gang units stores an extra depth offset (not a world X).
+   */
   private gangWorldX(f: FanUnit): number {
-    return gangXToWorld(f.gangX) + gangLaneDepthForUnit(f.id);
+    const edge = f._wanderTx ?? 0;
+    return gangXToWorld(f.gangX) + gangLaneDepthForUnit(f.id) + edge;
+  }
+
+  /** Pick a new Y across the full Bau-row corridor + X lean toward an outer edge. */
+  private retargetGangWander(f: FanUnit): void {
+    const y0 = gangY();
+    const y1 = y0 + gangHeight();
+    const pad = 0.01;
+    f._wanderTy = y0 + pad + Math.random() * Math.max(0.02, y1 - y0 - pad * 2);
+    // Lean toward left/right outer pitch edge (extra depth on top of lane depth)
+    const towardEdge = Math.random() < 0.5 ? -1 : 1;
+    f._wanderTx = towardEdge * (0.03 + Math.random() * 0.09);
+    f._wanderCd = 1.1 + Math.random() * 2.2;
   }
 
   /**
-   * Free personal Y in the fight corridor (not a formation line).
-   * Door exits stay tight; once on the gang, units pick their own lane + wander.
+   * Free personal Y in the fight corridor between upper/lower Bau rows.
+   * Units continuously retarget so they move back and forth across all lines.
    */
   private gangFreeAimY(f: FanUnit): number {
-    return (
-      gangLaneYForUnit(f.id) +
-      Math.sin(this.realElapsed * 0.42 + f.id * 0.91) * gangHeight() * 0.06
-    );
+    if (f._wanderTy == null || (f._wanderCd ?? 0) <= 0) {
+      this.retargetGangWander(f);
+    }
+    const y0 = gangY() + 0.008;
+    const y1 = gangY() + gangHeight() - 0.008;
+    return clamp(f._wanderTy ?? gangLaneYForUnit(f.id), y0, y1);
   }
 
   private tickGangMove(f: FanUnit, dt: number): void {
@@ -3533,6 +3571,7 @@ export class Match {
     const dir = f.team === this.playerTeam ? 1 : -1;
     // Brisk march so the full Heim→Gast corridor reads as movement
     const speed = 0.11 * FAN_STATS[f.kind].fight;
+    if ((f._wanderCd ?? 0) > 0) f._wanderCd = (f._wanderCd ?? 0) - dt;
     const laneY = this.gangFreeAimY(f);
     const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
     const team = f.team as TeamId;
@@ -3560,13 +3599,14 @@ export class Match {
         }
       }
       f.gangX = clamp(f.gangX + homeDir * moveSpeed * dt, 0, 1);
-      f.x = gangXToWorld(f.gangX);
-      // Soft Y drift — free corridor, not a drill line
+      f.x = this.gangWorldX(f);
+      // Roam full Bau-corridor height; edge lean via gangWorldX/_wanderTx
       let aimY = laneY;
-      if (inContact && blocker && Math.abs(blocker.y - laneY) < 0.1) {
-        aimY = laneY * 0.55 + blocker.y * 0.45;
+      if (inContact && blocker && Math.abs(blocker.y - laneY) < 0.12) {
+        aimY = laneY * 0.45 + blocker.y * 0.55;
       }
-      f.y += (aimY - f.y) * Math.min(1, 2.4 * dt);
+      f.y += (aimY - f.y) * Math.min(1, 3.2 * dt);
+      f.y = clamp(f.y, gangY() + 0.008, gangY() + gangHeight() - 0.008);
       if (inContact) this.applySkirmishSeparation(f, dt);
       if (Math.abs(f.gangX - homeGx) < 0.1) {
         this.returnFanToHomeBlock(f);
@@ -3611,12 +3651,13 @@ export class Match {
           dir > 0 ? Math.min(f.gangX, limit) : Math.max(f.gangX, limit);
       }
     }
-    f.x = gangXToWorld(f.gangX);
+    f.x = this.gangWorldX(f);
     let aimY = laneY;
-    if (inContact && blocker && Math.abs(blocker.y - laneY) < 0.1) {
-      aimY = laneY * 0.5 + blocker.y * 0.5;
+    if (inContact && blocker && Math.abs(blocker.y - laneY) < 0.12) {
+      aimY = laneY * 0.4 + blocker.y * 0.6;
     }
-    f.y += (aimY - f.y) * Math.min(1, 2.4 * dt);
+    f.y += (aimY - f.y) * Math.min(1, 3.2 * dt);
+    f.y = clamp(f.y, gangY() + 0.008, gangY() + gangHeight() - 0.008);
     if (inContact) this.applySkirmishSeparation(f, dt);
 
     // Cannot enter the far block while a hostile Ordnerpost still blocks the way

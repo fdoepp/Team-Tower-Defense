@@ -27,12 +27,12 @@
       "align": "center"
     },
     "clock": {
-      "x": 0.45,
-      "y": 0.17,
-      "w": 0.1,
-      "h": 0.14,
+      "x": 0.453,
+      "y": 0.178,
+      "w": 0.094,
+      "h": 0.094,
       "align": "center",
-      "notes": "Gemessen an scoreboard-chrome.png grüne Mulde (y≈0.175–0.297)"
+      "notes": "Grüner Kreisknopf gemessen (cx≈0.50, cy≈0.23, Ø≈0.094). Dynamische Minute muss in diesen Kreis passen."
     },
     "momentumTrack": {
       "x": 0.1,
