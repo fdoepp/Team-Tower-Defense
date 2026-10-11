@@ -69,7 +69,9 @@ import {
   type ScoreBoardKind,
 } from "./game/highscores";
 import {
+  audioDebugState,
   bindAudioGestures,
+  isMuted,
   setAmbienceFromMatch,
   sfx,
   startAmbience,
@@ -79,6 +81,12 @@ import {
 
 void preloadIcons();
 bindAudioGestures();
+(window as unknown as { __audio?: typeof audioDebugState }).__audio =
+  audioDebugState;
+
+function muteButtonLabel(): string {
+  return isMuted() ? "Ton: aus" : "Ton: an";
+}
 
 function buildingYieldCurrency(kind: BuildingKind): string {
   if (kind === "bier") return UI_ICONS.currencyBier;
@@ -501,7 +509,7 @@ function renderMenu(): void {
       <div class="card stack">
         <button class="btn ksc" id="solo">Solo vs KI</button>
         <button class="btn secondary" id="highscores">Highscores</button>
-        <button class="btn secondary" id="mute-audio">Ton an/aus</button>
+        <button class="btn secondary" id="mute-audio">${muteButtonLabel()}</button>
         <button class="btn secondary" id="fs-menu">Vollbild</button>
       </div>
       ${
@@ -528,11 +536,11 @@ function renderMenu(): void {
   });
   app.querySelector("#mute-audio")!.addEventListener("click", () => {
     unlockAudio();
-    const muted = toggleMuted();
-    sfx("ui");
-    (app.querySelector("#mute-audio") as HTMLButtonElement).textContent = muted
-      ? "Ton aus"
-      : "Ton an/aus";
+    toggleMuted();
+    // Click tone only when turning sound back on
+    if (!isMuted()) sfx("ui");
+    (app.querySelector("#mute-audio") as HTMLButtonElement).textContent =
+      muteButtonLabel();
   });
   app.querySelector("#highscores")!.addEventListener("click", () => {
     sfx("ui");
