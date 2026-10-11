@@ -432,9 +432,9 @@ function drawSeats(
 
 /** Scoreboard slots — calibrated to scoreboard-chrome.png (0–1 on chrome box). */
 const SB_SLOTS = {
-  /** Wide parchment plates — must fully hide baked KSC/VfB shields */
-  logoHeim: { x: 0.02, y: 0.14, w: 0.30, h: 0.58 },
-  logoGast: { x: 0.68, y: 0.14, w: 0.30, h: 0.58 },
+  /** Logo discs on blank chrome (no baked KSC/VfB) */
+  logoHeim: { x: 0.08, y: 0.28, w: 0.18, h: 0.44 },
+  logoGast: { x: 0.74, y: 0.28, w: 0.18, h: 0.44 },
   score: { x: 0.32, y: 0.3, w: 0.36, h: 0.36 },
   /** Green top circle (measured): cx≈0.50, cy≈0.23, diameter≈0.094 */
   clock: { x: 0.453, y: 0.178, w: 0.094, h: 0.094 },
@@ -483,16 +483,12 @@ function drawScoreboard(
     };
   };
 
-  // Cover baked KSC/VfB shields (beige plate), then paint live club discs
+  // Live club discs on blank chrome (KSC/VfB shields removed from asset)
   const paintCrest = (side: "ksc" | "vfb", key: "logoHeim" | "logoGast") => {
     const r = slot(key);
-    // Match chrome parchment so baked shields disappear cleanly
-    roundRect(ctx, r.x, r.y, r.w, r.h, Math.min(10, r.h * 0.18));
-    ctx.fillStyle = "#e7dfc8";
-    ctx.fill();
     const cx = r.x + r.w / 2;
     const cy = r.y + r.h / 2;
-    const rad = Math.min(r.w, r.h) * 0.42;
+    const rad = Math.min(r.w, r.h) * 0.46;
     const prim = clubPrimary(side);
     const sec = clubSecondary(side);
     const dark =
