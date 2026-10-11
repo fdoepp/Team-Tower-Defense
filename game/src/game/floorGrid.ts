@@ -19,24 +19,25 @@ export type QuadNorm = {
 export const FLOOR_VP = { x: 0.5027, y: 0.0897 } as const;
 
 /**
- * Side rails reserve — keep this band free on both edges.
- * Future left/right rails toggle in/out inside this margin.
+ * Side rails reserve — keep a thin band free on both edges.
+ * Plots may start near the canvas rim (user asked for edge-near placement).
  */
-export const FLOOR_SIDE_MARGIN = 0.15;
+/** Outer plots may sit close to the screen edge for max horizontal spread. */
+export const FLOOR_SIDE_MARGIN = 0.015;
 
 /**
  * Near-plane column ray anchors (x at yNear) — 6 equal cells across
- * [FLOOR_SIDE_MARGIN .. 1-FLOOR_SIDE_MARGIN] (step = 0.70/6 ≈ 0.1167).
+ * [FLOOR_SIDE_MARGIN .. 1-FLOOR_SIDE_MARGIN].
  * Kept for floorCellQuad helpers; boothQuad places via EXIT_BANDS pockets.
  */
 export const FLOOR_COL_XS_NEAR = [
-  0.15,
-  0.2667,
-  0.3833,
+  0.04,
+  0.2,
+  0.36,
   0.5,
-  0.6167,
-  0.7333,
-  0.85,
+  0.64,
+  0.8,
+  0.96,
 ] as const;
 
 /** Depth of the near column anchors (normalized). */
@@ -125,9 +126,9 @@ export function floorCellQuad(c: number, r: number): QuadNorm {
  * sit inside the outer pockets' right/left edges and stay clear via pad.
  */
 const EXIT_BANDS = [
-  { L: 0.4, R: 0.45 }, // aisle Heim ↔ Neutral
-  { L: 0.48, R: 0.52 }, // Neutral center corridor
-  { L: 0.55, R: 0.6 }, // aisle Neutral ↔ Gäste
+  { L: 0.36, R: 0.445 }, // aisle Heim ↔ Neutral (wide gap → plots further apart)
+  { L: 0.47, R: 0.53 }, // Neutral center corridor
+  { L: 0.555, R: 0.64 }, // aisle Neutral ↔ Gäste
 ] as const;
 
 /** Inset a floor quad toward its centroid (visual breathing room). */
@@ -175,7 +176,8 @@ function pocketCenters(xMin: number, xMax: number, plotHalf: number): number[] {
       : pockets.map(() =>
           Math.max(1, Math.ceil(target / Math.max(1, pockets.length))),
         );
-  const pad = plotHalf * 1.05;
+  // Tiny pad so outer plots sit near pocket / screen edges
+  const pad = plotHalf * 0.2;
   const centers: number[] = [];
   for (let i = 0; i < pockets.length && centers.length < target; i++) {
     const p = pockets[i]!;
@@ -186,6 +188,7 @@ function pocketCenters(xMin: number, xMax: number, plotHalf: number): number[] {
       for (let k = 0; k < n; k++) centers.push((p.L + p.R) / 2);
       continue;
     }
+    // Spread evenly across the full pocket width
     for (let k = 0; k < n; k++) {
       centers.push(L + ((k + 0.5) / n) * (R - L));
     }
@@ -202,14 +205,15 @@ function evenSlotQuad(slot: number, r: number): QuadNorm {
   const span = xMax - xMin;
   const pockets = freePockets(xMin, xMax);
   const minPocket = pockets.reduce((m, p) => Math.min(m, p.R - p.L), span);
-  const maxW = r === 0 ? 0.038 : 0.048;
+  // Smaller footprints so spaced centers don't visually collide
+  const maxW = r === 0 ? 0.03 : 0.038;
   const plotW = Math.min(
     maxW,
-    (span / 8) * 0.52,
-    Math.max(0.024, minPocket * 0.55),
+    (span / 8) * 0.38,
+    Math.max(0.02, minPocket * 0.38),
   );
   const half = plotW / 2;
-  const centers = pocketCenters(xMin, xMax, half * 1.05);
+  const centers = pocketCenters(xMin, xMax, half * 0.9);
   const s = Math.max(0, Math.min(7, slot | 0));
   const cx = centers[s]!;
   const topHalf = half * (r === 0 ? 0.9 : 0.95);

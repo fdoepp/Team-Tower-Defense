@@ -413,11 +413,11 @@ export function gangLanePosForUnit(
 
 /**
  * Wait / queue band outside the building footprint (normalized 0–1 field).
- * Starts at the booth outer edge and covers the next ~5% of free field space.
+ * Wider ring so queued fans fan out instead of stacking on the booth.
  */
-export const STAND_WAIT_BAND = 0.05;
-/** @deprecated use STAND_WAIT_BAND + booth footprint; kept for separation scale */
-export const STAND_WAIT_RADIUS = 0.06;
+export const STAND_WAIT_BAND = 0.14;
+/** Separation / wander clamp radius around a stand */
+export const STAND_WAIT_RADIUS = 0.155;
 
 export function slotIndicesForBlock(blockId: number): readonly number[] {
   if (blockId === NEUTRAL_BLOCK) return BUILDABLE_INDICES_NEUTRAL;

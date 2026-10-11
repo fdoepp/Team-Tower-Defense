@@ -102,6 +102,7 @@ import {
   type TickerItem,
 } from "./types";
 import { clamp, expandMix, slotKey, teamLabel } from "./util";
+import { sfx, startAmbience } from "./sound";
 import {
   BLOCK_COUNT,
   GAST_BLOCK,
@@ -680,6 +681,7 @@ export class Match {
     const prevBand = this.postDamageBand(s);
     s.structHp = Math.max(0, s.structHp - dmg);
     s.prodFlash = 1;
+    if (Math.random() < 0.28) sfx("hit");
     if (s.owner === this.playerTeam || s.owner === this.aiTeam) {
       this.alertTeamDefense(s.owner as TeamId, this.postGangX(s));
     }
@@ -1625,6 +1627,7 @@ export class Match {
   }
 
   private leaveSeatToGang(f: FanUnit, offense: boolean): void {
+    if (f.team === this.playerTeam) sfx("send");
     // Two exits under the block (left/right of door) — early horizontal spread
     const door = doorPos(f.blockId);
     const crowd = blockCrowdRect(f.blockId);
@@ -1696,6 +1699,7 @@ export class Match {
     this.seatMenu = null;
     this.floatAt(p.x, p.y + 0.02, `+${FAN_STATS[kind].label}`, true);
     this.toast(`${FAN_STATS[kind].label} gekauft`);
+    sfx("buy");
     return true;
   }
 
@@ -1775,6 +1779,7 @@ export class Match {
     this.buildMenu = null;
     const p = this.standWorld(s);
     this.floatAt(p.x, p.y, `−${cost}€`, false);
+    sfx("build");
     this.toast(
       `${s.building === "bier" ? "Bierstand" : s.building === "ordner" ? "Ordnerposten" : "Fanshop"} ${cost < BUILD_COST[kind] ? "übernommen" : "gebaut"}`,
     );
@@ -2623,32 +2628,40 @@ export class Match {
     return best;
   }
 
+  /** Visit counts so traffic rotates across every open stand (not only nearest). */
+  private standVisitCount = new Map<string, number>();
+
   /**
    * Pick among ALL own-team stands of a type (not just nearest).
-   * Prefers shorter queues, then closer block — spreads traffic across every
-   * Bier/Fanshop the team owns.
+   * Prefers short queues + least-visited, then random among the best pool.
    */
   private pickOwnVisitStand(
     team: TeamId,
     fromBlock: number,
     building: "bier" | "fanshop",
   ): BuildSlot | null {
-    let best: BuildSlot | null = null;
-    let bestScore = Infinity;
+    type Cand = { s: BuildSlot; score: number };
+    const cands: Cand[] = [];
     for (const s of this.slots) {
       if (s.building !== building || s.owner !== team || s.greyNeutral) continue;
       if (building === "bier" && s.beer < 1) continue;
       if (building === "fanshop" && s.merch < 1) continue;
+      const key = slotKey(s.blockId, s.index);
       const queue = this.queueDepthAt(s);
+      const visits = this.standVisitCount.get(key) ?? 0;
       const dist = Math.abs(s.blockId - fromBlock);
-      // Queue dominates so a far empty stand beats a packed neighbour.
-      const score = queue * 10 + dist;
-      if (score < bestScore) {
-        bestScore = score;
-        best = s;
-      }
+      // Queue + visit rotation dominate; distance is only a weak tie-break.
+      const score = queue * 12 + visits * 4 + dist * 0.35;
+      cands.push({ s, score });
     }
-    return best;
+    if (!cands.length) return null;
+    cands.sort((a, b) => a.score - b.score);
+    const best = cands[0]!.score;
+    const pool = cands.filter((c) => c.score <= best + 4);
+    const pick = pool[Math.floor(Math.random() * pool.length)]!.s;
+    const key = slotKey(pick.blockId, pick.index);
+    this.standVisitCount.set(key, (this.standVisitCount.get(key) ?? 0) + 1);
+    return pick;
   }
 
   /**
@@ -2659,22 +2672,27 @@ export class Match {
     team: TeamId,
     fromBlock: number,
   ): BuildSlot | null {
-    let best: BuildSlot | null = null;
-    let bestScore = Infinity;
+    type Cand = { s: BuildSlot; score: number };
+    const cands: Cand[] = [];
     for (const s of this.slots) {
       if (s.building !== "bier" || s.beer < 1) continue;
       if (!s.owner || s.owner === team) continue;
       const gx = plotGangX(s.blockId, s.index);
       if (this.bannerHolderAt(gx) !== team) continue;
+      const key = slotKey(s.blockId, s.index);
       const queue = this.queueDepthAt(s);
+      const visits = this.standVisitCount.get(key) ?? 0;
       const dist = Math.abs(s.blockId - fromBlock);
-      const score = queue * 8 + dist;
-      if (score < bestScore) {
-        bestScore = score;
-        best = s;
-      }
+      cands.push({ s, score: queue * 10 + visits * 3 + dist * 0.4 });
     }
-    return best;
+    if (!cands.length) return null;
+    cands.sort((a, b) => a.score - b.score);
+    const best = cands[0]!.score;
+    const pool = cands.filter((c) => c.score <= best + 4);
+    const pick = pool[Math.floor(Math.random() * pool.length)]!.s;
+    const key = slotKey(pick.blockId, pick.index);
+    this.standVisitCount.set(key, (this.standVisitCount.get(key) ?? 0) + 1);
+    return pick;
   }
 
   /** Any team Bier/Fanshop with stock — for grey Fans shopping trips. */
@@ -4476,6 +4494,7 @@ export class Match {
     ) {
       this.stormBanner = { team, blockId, holdT: 0 };
       this.stormFxCd = 0;
+      sfx("storm");
       this.pushTicker(
         `Hier regiert der ${teamLabel(team)}!`,
         "combat",
@@ -4626,6 +4645,8 @@ export class Match {
     this.startGoalCelebration(team);
     this.goalPartyTeam = team;
     this.goalPartyT = 11.5;
+    sfx("goal");
+    sfx("cheer");
     this.toast(`TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`, 10);
   }
 
@@ -4662,6 +4683,7 @@ export class Match {
       n++;
     }
     if (n > 0) {
+      sfx("beer");
       this.pushTicker("Glücksbiergang — die Kurve trinkt!", "crowd", 4.2);
       this.toast("Glücksbiergang!", 3.5, "crowd");
     }
@@ -5168,6 +5190,9 @@ export class Match {
       difficulty: this.cfg.settings.difficulty,
     };
     this.speed = 0;
+    if (reason === "invade") sfx("storm");
+    sfx(winner === this.playerTeam ? "victory" : "defeat");
+    startAmbience("menu");
     this.toast(detail);
   }
 }
