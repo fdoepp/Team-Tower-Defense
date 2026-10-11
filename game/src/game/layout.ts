@@ -64,14 +64,11 @@ export const TRIBUNE_NATIVE = [
   { w: 386, h: 308, faceL: 6, faceR: 6 }, // Neutral grey
   { w: 426, h: 309, faceL: 28, faceR: 6 }, // Gäste red
 ] as const;
-/** Width stretch: blue/red +20%, grey +10% (pack still avoids overlap). */
-export const TRIBUNE_WIDTH_SCALE = [1.2, 1.1, 1.2] as const;
-
 export type TribuneRectNorm = { x: number; y: number; w: number; h: number };
 
 type TribunePack = {
   aspect: number;
-  scaleKey: string;
+  rev: number;
   rects: TribuneRectNorm[];
   centers: number[];
   widths: number[];
@@ -80,8 +77,8 @@ type TribunePack = {
 };
 
 let _pack: TribunePack | null = null;
-/** Bust cache when tribune width scales change (hot reload). */
-const _tribuneScaleKey = TRIBUNE_WIDTH_SCALE.join("x");
+/** Bump when tribune packing rules change (invalidates hot-reload cache). */
+const TRIBUNE_LAYOUT_REV = 3;
 
 /**
  * Recompute flush tribune strip for the current canvas aspect (W/H).
@@ -91,8 +88,8 @@ export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack
   const aspect = canvasW / Math.max(1, canvasH);
   if (
     _pack &&
-    Math.abs(_pack.aspect - aspect) < 1e-5 &&
-    _pack.scaleKey === _tribuneScaleKey
+    _pack.rev === TRIBUNE_LAYOUT_REV &&
+    Math.abs(_pack.aspect - aspect) < 1e-5
   )
     return _pack;
 
@@ -103,9 +100,7 @@ export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack
 
   const packAt = (hNorm: number) => {
     const ws = TRIBUNE_NATIVE.map(
-      (n, i) =>
-        (hNorm * (n.w / n.h) * TRIBUNE_WIDTH_SCALE[i]!) /
-        Math.max(1e-6, aspect),
+      (n) => (hNorm * (n.w / n.h)) / Math.max(1e-6, aspect),
     );
     const faceL = TRIBUNE_NATIVE.map((n, i) => (n.faceL / n.w) * ws[i]!);
     const faceR = TRIBUNE_NATIVE.map((n, i) => (n.faceR / n.w) * ws[i]!);
@@ -145,7 +140,7 @@ export function syncTribuneLayout(canvasW: number, canvasH: number): TribunePack
 
   _pack = {
     aspect,
-    scaleKey: _tribuneScaleKey,
+    rev: TRIBUNE_LAYOUT_REV,
     rects,
     centers: rects.map((r) => r.x + r.w / 2),
     widths: rects.map((r) => r.w),
@@ -297,12 +292,11 @@ export function blockCrowdRect(blockId: number): {
   height: number;
 } {
   const r = tribuneRect(blockId);
-  // Use nearly the full tribune face so fans stay movable across the wider platforms
   return {
-    left: r.x + r.w * 0.06,
-    top: r.y + r.h * 0.14,
-    width: r.w * 0.88,
-    height: r.h * 0.78,
+    left: r.x + r.w * 0.12,
+    top: r.y + r.h * 0.18,
+    width: r.w * 0.76,
+    height: r.h * 0.72,
   };
 }
 

@@ -345,10 +345,20 @@ export const MOMENTUM_WEIGHT: Record<FanKind, number> = {
   ultras: 0.55,
   hooligans: 0.35,
 };
-/** Softener in (pH−pG)/(pH+pG+ε) so small crowds don't flip hard */
-export const MOMENTUM_EPS = 2.5;
+/**
+ * Softener in (pH−pG)/(pH+pG+ε). Slightly tighter than before so a clear
+ * Kurve-dominance can push the bar fully into the enemy half for a Tor.
+ */
+export const MOMENTUM_EPS = 1.8;
 /** How fast momentum tracks relative block power (1/s scale via exp) */
-export const MOMENTUM_APPROACH = 0.5;
+export const MOMENTUM_APPROACH = 0.55;
+/**
+ * |momentum| to score. Bar HUD stretches so this reads as fully enemy-side.
+ * ~starting Heim roster alone vs empty Gast ≈ this edge.
+ */
+export const GOAL_MOMENTUM_EDGE = 0.74;
+/** Seconds after a goal before another can fall (Bierrunde window) */
+export const GOAL_LOCK_SEC = 10;
 /** Mood HUD tracks the same power (display scale 0…3) */
 export const MOOD_FROM_POWER = 0.09;
 

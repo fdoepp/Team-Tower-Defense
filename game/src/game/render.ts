@@ -81,8 +81,8 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
 }
 
 /**
- * Large occupation banner held up by Blocksturm invaders:
- * „Hier regiert der KSC / VfB“ — visible for BLOCK_STORM_SEC before win.
+ * Wehendes Stoffbanner — langsam gehisst, immer bei Blocksturm.
+ * „Hier regiert der KSC / VfB“; Sieg nach BLOCK_STORM_SEC.
  */
 function drawStormBanner(
   ctx: CanvasRenderingContext2D,
@@ -93,70 +93,108 @@ function drawStormBanner(
   const b = m.stormBanner;
   if (!b) return;
   const r = tribuneRect(b.blockId);
-  const bob = Math.sin(m.realElapsed * 4.2) * h * 0.008;
-  const raise = Math.min(1, b.holdT / 0.45);
+  // Slow hoist over ~1.6s, then gentle wind bob
+  const raise = Math.min(1, b.holdT / 1.6);
+  const wind = Math.sin(m.realElapsed * 2.6) * h * 0.006 * raise;
+  const flutter = Math.sin(m.realElapsed * 5.1);
   const cx = (r.x + r.w / 2) * w;
-  const top = r.y * h + bob - h * 0.02 * raise;
-  const bw = Math.min(w * 0.42, r.w * w * 1.15);
-  const bh = Math.max(48, h * 0.085);
+  const bw = Math.min(w * 0.38, r.w * w * 1.05);
+  const bh = Math.max(44, h * 0.078);
+  const poleH = bh + h * 0.055;
+  const baseY = (r.y + r.h * 0.42) * h;
+  const y = baseY - poleH * raise + wind;
   const x = cx - bw / 2;
-  const y = top + (1 - raise) * bh * 0.8;
   const isKsc = b.team === "ksc";
   const fill = isKsc ? "#1d4ed8" : "#b91c1c";
-  const edge = isKsc ? "#93c5fd" : "#fca5a5";
+  const fillMid = isKsc ? "#3b82f6" : "#ef4444";
+  const edge = isKsc ? "#bfdbfe" : "#fecaca";
   const label = isKsc ? "KSC" : "VfB";
 
   ctx.save();
-  // Poles held by the crowd
-  ctx.strokeStyle = "rgba(248,250,252,0.85)";
-  ctx.lineWidth = Math.max(3, h * 0.006);
+  ctx.globalAlpha = 0.35 + raise * 0.65;
+
+  // Poles
+  ctx.strokeStyle = "rgba(226,232,240,0.9)";
+  ctx.lineWidth = Math.max(2.5, h * 0.005);
   ctx.lineCap = "round";
+  const poleL = x + bw * 0.04;
+  const poleR = x + bw * 0.96;
   ctx.beginPath();
-  ctx.moveTo(x + bw * 0.08, y + bh);
-  ctx.lineTo(x + bw * 0.08, y + bh + h * 0.06);
-  ctx.moveTo(x + bw * 0.92, y + bh);
-  ctx.lineTo(x + bw * 0.92, y + bh + h * 0.06);
+  ctx.moveTo(poleL, y + bh * 0.15);
+  ctx.lineTo(poleL, y + bh + h * 0.07);
+  ctx.moveTo(poleR, y + bh * 0.15);
+  ctx.lineTo(poleR, y + bh + h * 0.07);
   ctx.stroke();
 
-  // Cloth
-  roundRect(ctx, x, y, bw, bh, Math.min(14, bh * 0.22));
+  // Waving cloth path (top/bottom sine)
+  const wave = (t: number, amp: number) =>
+    Math.sin(t * Math.PI * 2 + m.realElapsed * 3.4) * amp * flutter;
+  const amp = h * 0.01 * raise;
+  ctx.beginPath();
+  const steps = 14;
+  for (let i = 0; i <= steps; i++) {
+    const u = i / steps;
+    const px = x + u * bw;
+    const py = y + wave(u, amp);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  for (let i = steps; i >= 0; i--) {
+    const u = i / steps;
+    const px = x + u * bw;
+    const py = y + bh + wave(u + 0.15, amp * 0.85);
+    ctx.lineTo(px, py);
+  }
+  ctx.closePath();
   const g = ctx.createLinearGradient(x, y, x + bw, y + bh);
   g.addColorStop(0, fill);
-  g.addColorStop(0.5, isKsc ? "#2563eb" : "#dc2626");
+  g.addColorStop(0.45, fillMid);
   g.addColorStop(1, fill);
   ctx.fillStyle = g;
   ctx.fill();
   ctx.strokeStyle = edge;
-  ctx.lineWidth = Math.max(3, h * 0.005);
+  ctx.lineWidth = Math.max(2, h * 0.004);
   ctx.stroke();
 
-  // Stripe fringe
-  ctx.fillStyle = "rgba(248,250,252,0.92)";
-  ctx.fillRect(x + 4, y + 4, bw - 8, Math.max(3, bh * 0.08));
-  ctx.fillRect(x + 4, y + bh - Math.max(3, bh * 0.08) - 4, bw - 8, Math.max(3, bh * 0.08));
+  // Soft folds
+  ctx.strokeStyle = "rgba(255,255,255,0.18)";
+  ctx.lineWidth = 1.5;
+  for (let k = 0; k < 3; k++) {
+    const u0 = 0.2 + k * 0.25;
+    ctx.beginPath();
+    for (let i = 0; i <= 8; i++) {
+      const v = i / 8;
+      const px = x + u0 * bw + wave(v, amp * 0.4);
+      const py = y + v * bh;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
 
   ctx.fillStyle = "#f8fafc";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  const titlePx = Math.max(13, Math.floor(bh * 0.38));
+  const titlePx = Math.max(12, Math.floor(bh * 0.36));
   ctx.font = `900 ${titlePx}px Outfit, Manrope, sans-serif`;
-  ctx.shadowColor = "rgba(0,0,0,0.45)";
-  ctx.shadowBlur = 6;
-  ctx.fillText(`Hier regiert der ${label}`, cx, y + bh * 0.42);
+  ctx.shadowColor = "rgba(0,0,0,0.4)";
+  ctx.shadowBlur = 5;
+  ctx.fillText(`Hier regiert der ${label}`, cx + wind * 0.3, y + bh * 0.42);
   ctx.shadowBlur = 0;
 
-  // Hold progress under banner
+  // Hold countdown
   const pct = Math.min(1, b.holdT / BLOCK_STORM_SEC);
-  const barW = bw * 0.72;
-  const barH = Math.max(6, bh * 0.12);
+  const barW = bw * 0.7;
+  const barH = Math.max(5, bh * 0.1);
   const barX = cx - barW / 2;
   const barY = y + bh * 0.72;
-  ctx.fillStyle = "rgba(15,23,42,0.75)";
+  ctx.globalAlpha = raise;
+  ctx.fillStyle = "rgba(15,23,42,0.7)";
   ctx.fillRect(barX, barY, barW, barH);
   ctx.fillStyle = "#fde68a";
   ctx.fillRect(barX, barY, barW * pct, barH);
   ctx.fillStyle = "#fff7ed";
-  ctx.font = `700 ${Math.max(9, Math.floor(barH * 1.1))}px Outfit, Manrope, sans-serif`;
+  ctx.font = `700 ${Math.max(8, Math.floor(barH))}px Outfit, Manrope, sans-serif`;
   ctx.fillText(
     `${Math.ceil(Math.max(0, BLOCK_STORM_SEC - b.holdT))}s`,
     cx,

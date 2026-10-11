@@ -29,12 +29,12 @@ import {
   CEMENT_SLOW_MUL,
   ET_REAL_SEC,
   FAN_STATS,
-  FEVER_FROM_MIN,
+  GOAL_LOCK_SEC,
+  GOAL_MOMENTUM_EDGE,
   GOAL_P_TOR_BASE,
   GOAL_P_TOR_MAX,
   GOAL_P_TOR_MIN,
   GOAL_P_TOR_MOMENTUM,
-  GOAL_ROLL_INTERVAL,
   HIT_CD,
   HIT_DAMAGE,
   HIT_DAMAGE_SCALE,
@@ -321,6 +321,8 @@ export class Match {
   } | null = null;
   /** Throttle continuous Blocksturm spectacle FX */
   private stormFxCd = 0;
+  /** Post-goal lock so Bierrunde can swing momentum the other way */
+  private goalLockT = 0;
   /** battle line gangX 0..1 (vorderster Ultra) */
   linePlayer = 0;
   lineAi = 1;
@@ -1581,7 +1583,16 @@ export class Match {
   }
 
   private leaveSeatToGang(f: FanUnit, offense: boolean): void {
+    // Two exits under the block (left/right of door) — early horizontal spread
     const door = doorPos(f.blockId);
+    const crowd = blockCrowdRect(f.blockId);
+    const side = (typeof f.id === "number" ? f.id : 0) % 2 === 0 ? -1 : 1;
+    const exitX = clamp(
+      door.x + side * Math.max(0.028, crowd.width * 0.2),
+      crowd.left + 0.01,
+      crowd.left + crowd.width - 0.01,
+    );
+    const exit = { x: exitX, y: door.y };
     // Keep seatIndex reserved while alive on gang
     f._homeSeat = f.seatIndex;
     f.state = "moving";
@@ -1589,13 +1600,12 @@ export class Match {
     f.invading = false;
     f.onOffense = offense;
     f.aggro = offense ? 40 : 100;
-    // Tight aisle only until the door / upper Bau edge — then free gang Y
     const path: { x: number; y: number }[] = [];
-    if (f.y < door.y - 0.015 && Math.abs(f.x - door.x) > 0.018) {
-      path.push({ x: door.x, y: f.y });
+    if (Math.abs(f.x - exit.x) > 0.012) {
+      path.push({ x: exit.x, y: f.y });
     }
-    path.push({ x: door.x, y: door.y });
-    path.push({ x: door.x, y: this.gangFreeAimY(f) });
+    path.push({ x: exit.x, y: exit.y });
+    path.push({ x: exit.x, y: this.gangFreeAimY(f) });
     f.path = path;
     f.pathI = 0;
     this.setAfter(f, "gang");
@@ -4303,10 +4313,17 @@ export class Match {
   }
 
   private tickJubelMomentum(dt: number): void {
+    if (this.goalLockT > 0) {
+      this.goalLockT = Math.max(0, this.goalLockT - dt);
+    }
     const pHeim = this.blockPower(this.playerTeam);
     const pGast = this.blockPower(this.aiTeam);
     const rel = (pHeim - pGast) / (pHeim + pGast + MOMENTUM_EPS);
-    const targetMom = clamp(rel, -1, 1);
+    let targetMom = clamp(rel, -1, 1);
+    // After a goal, scorers are at Bier — damp snap-back while lock lasts
+    if (this.goalLockT > 0) {
+      targetMom *= 0.45;
+    }
     const approach = 1 - Math.exp(-MOMENTUM_APPROACH * dt);
     this.momentum = clamp(
       this.momentum + (targetMom - this.momentum) * approach,
@@ -4314,7 +4331,16 @@ export class Match {
       1,
     );
 
-    // Roll the Torwahrscheinlichkeit football toward the gaining side
+    // Tor when the indicator is fully in the enemy area
+    if (this.goalLockT <= 0) {
+      if (this.momentum >= GOAL_MOMENTUM_EDGE) {
+        this.scoreGoal(this.playerTeam);
+      } else if (this.momentum <= -GOAL_MOMENTUM_EDGE) {
+        this.scoreGoal(this.aiTeam);
+      }
+    }
+
+    // Football overlay follows the split
     const ch = this.goalChance();
     const dP = ch.pHeim - this.prevTorPHeim;
     this.torBallAngle += dP * 14 + this.momentum * dt * 1.8;
@@ -4452,8 +4478,8 @@ export class Match {
   }
 
   /**
-   * Heavy pyro / confetti / fireworks for the occupation show.
-   * `opening` = big burst when the banner first goes up.
+   * Blocksturm FX scaled like Torjubel: Ultras → Rauch/Pyro, Hools → Bier/Raketen,
+   * Fans → Konfetti. Banner always shows; FX amount follows units in the block.
    */
   private burstStormSpectacle(
     team: TeamId,
@@ -4461,125 +4487,93 @@ export class Match {
     opening: boolean,
   ): void {
     const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
-    const accent = team === "ksc" ? "#60a5fa" : "#f87171";
     const white = "#f8fafc";
-    const cx = blockCenterX(blockId);
-    const top = blockTopY(blockId);
-    const w = blockWidthNorm(blockId);
+    const holders = this.fans.filter(
+      (f) =>
+        f.hp > 0 &&
+        !f.isSteward &&
+        f.team === team &&
+        f.blockId === blockId &&
+        (f.invading || f.state === "block" || f.state === "stand"),
+    );
+    const ultras = holders.filter((f) => f.kind === "ultras");
+    const hools = holders.filter((f) => f.kind === "hooligans");
+    const fans = holders.filter((f) => f.kind === "normalos");
 
-    const burstN = opening ? 90 : 10;
-    for (let i = 0; i < burstN; i++) {
-      this.confetti.push({
-        x: cx + (Math.random() - 0.5) * w * 1.05,
-        y: top + 0.02 + Math.random() * 0.14,
-        vx: (Math.random() - 0.5) * 0.32,
-        vy: -0.02 + Math.random() * 0.18,
-        rot: Math.random() * Math.PI * 2,
-        vr: (Math.random() - 0.5) * 14,
-        color: i % 3 === 0 ? white : i % 3 === 1 ? club : accent,
-        t: 0,
-        life: 1.8 + Math.random() * 1.4,
-      });
+    // Per-unit bursts (Torjubel schema), lighter on pulse ticks
+    const take = <T>(arr: T[], n: number) =>
+      arr.filter((_, i) => opening || i % Math.max(1, Math.ceil(arr.length / n)) === 0);
+
+    for (const f of take(fans, opening ? fans.length : 2)) {
+      this.burstFanConfetti(f, white);
+      this.burstFanConfetti(f, club);
+    }
+    for (const f of take(ultras, opening ? ultras.length : 2)) {
+      f.throwT = Math.max(f.throwT, opening ? 3.2 : 1.2);
+      f.armSwing = 1;
+      this.burstUltraSmoke(f, club);
+      if (opening) this.burstUltraSmoke(f, white);
+    }
+    let hoolI = 0;
+    for (const f of take(hools, opening ? hools.length : 2)) {
+      if (hoolI++ % 2 === 0) this.burstBeerMug(f);
+      else this.burstFireworkRocket(f, club);
     }
 
-    const smokeN = opening ? 18 : 3;
-    for (let i = 0; i < smokeN; i++) {
-      this.moodFx.push({
-        kind: "smoke",
-        x: cx + (Math.random() - 0.5) * w * 0.9,
-        y: top + 0.08 + Math.random() * 0.1,
-        vx: (Math.random() - 0.5) * 0.07,
-        vy: -0.08 - Math.random() * 0.08,
-        color: Math.random() < 0.5 ? club : accent,
-        t: 0,
-        life: 2.0 + Math.random() * 1.0,
-        size: 0.04 + Math.random() * 0.035,
-      });
-    }
-
-    const rocketN = opening ? 10 : 2;
-    for (let i = 0; i < rocketN; i++) {
-      const rx = cx + (Math.random() - 0.5) * w * 0.75;
-      const ry = top + 0.12 + Math.random() * 0.08;
-      this.moodFx.push({
-        kind: "rocket",
-        x: rx,
-        y: ry,
-        vx: (Math.random() - 0.5) * 0.1,
-        vy: -0.38 - Math.random() * 0.16,
-        color: Math.random() < 0.5 ? club : "#fde68a",
-        t: 0,
-        life: 1.6 + Math.random() * 0.5,
-        size: 0.022,
-      });
-      for (let s = 0; s < 5; s++) {
-        this.moodFx.push({
-          kind: "spark",
-          x: rx + (Math.random() - 0.5) * 0.03,
-          y: ry,
-          vx: (Math.random() - 0.5) * 0.09,
-          vy: -0.14 - Math.random() * 0.12,
-          color: Math.random() < 0.5 ? "#fde68a" : club,
+    // Small ambient rain only when someone is celebrating
+    if (holders.length && (opening || ultras.length + hools.length > 0)) {
+      const cx = blockCenterX(blockId);
+      const top = blockTopY(blockId);
+      const w = blockWidthNorm(blockId);
+      const n = opening
+        ? 8 + ultras.length * 4 + hools.length * 3
+        : 2 + Math.min(4, ultras.length + hools.length);
+      for (let i = 0; i < n; i++) {
+        this.confetti.push({
+          x: cx + (Math.random() - 0.5) * w * 0.9,
+          y: top + 0.02 + Math.random() * 0.1,
+          vx: (Math.random() - 0.5) * 0.22,
+          vy: 0.02 + Math.random() * 0.12,
+          rot: Math.random() * Math.PI * 2,
+          vr: (Math.random() - 0.5) * 10,
+          color: i % 2 === 0 ? white : club,
           t: 0,
-          life: 0.8 + Math.random() * 0.5,
-          size: 0.012,
+          life: 1.5 + Math.random() * 1.0,
         });
       }
     }
-
-    const flameN = opening ? 12 : 2;
-    for (let i = 0; i < flameN; i++) {
-      this.moodFx.push({
-        kind: "flame",
-        x: cx + (Math.random() - 0.5) * w * 0.85,
-        y: top + 0.14 + Math.random() * 0.06,
-        vx: (Math.random() - 0.5) * 0.04,
-        vy: -0.05 - Math.random() * 0.05,
-        color: Math.random() < 0.4 ? "#f97316" : club,
-        t: 0,
-        life: 0.55 + Math.random() * 0.4,
-        size: 0.016 + Math.random() * 0.014,
-      });
-    }
-
-    // Occupiers also fling personal FX
-    if (opening || Math.random() < 0.45) {
-      for (const f of this.fans) {
-        if (f.hp <= 0 || f.team !== team || f.blockId !== blockId) continue;
-        if (!(f.invading || f.state === "block")) continue;
-        if (f.kind === "ultras") this.burstUltraSmoke(f, club);
-        else if (f.kind === "hooligans") this.burstFireworkRocket(f, club);
-        else this.burstFanConfetti(f, Math.random() < 0.5 ? white : club);
-      }
-    }
   }
 
+  /** Goals are threshold-based in tickJubelMomentum — kept as tick hook. */
   private tickMatch(dt: number): void {
-    const fever = this.minute >= FEVER_FROM_MIN || this.phase === "et" ? 1.5 : 1;
-    this.chanceAcc += dt;
-    if (this.chanceAcc < GOAL_ROLL_INTERVAL / fever) return;
-    this.chanceAcc = 0;
-    const ch = this.goalChance();
-    if (Math.random() > ch.pTor) return;
-    this.scoreGoal(Math.random() < ch.pHeim ? this.playerTeam : this.aiTeam);
+    void dt;
   }
 
-  /** Public HUD: next-goal probability from momentum */
+  /**
+   * HUD bar: stretch so GOAL_MOMENTUM_EDGE reads as fully in the enemy half.
+   * Goals fire on that threshold (not random rolls).
+   */
   goalChance(): { pTor: number; pHeim: number; pGast: number; momentum: number } {
     const M = this.momentum;
-    const pTor = clamp(
-      GOAL_P_TOR_BASE + GOAL_P_TOR_MOMENTUM * Math.abs(M),
-      GOAL_P_TOR_MIN,
-      GOAL_P_TOR_MAX,
-    );
-    const pHeim = clamp(0.5 + 0.5 * M, 0.05, 0.95);
+    const visual = clamp(M / GOAL_MOMENTUM_EDGE, -1, 1);
+    const pHeim = clamp(0.5 + 0.5 * visual, 0.02, 0.98);
+    const nearEdge = Math.abs(M) >= GOAL_MOMENTUM_EDGE * 0.92;
+    const pTor = nearEdge
+      ? 1
+      : clamp(
+          GOAL_P_TOR_BASE + GOAL_P_TOR_MOMENTUM * Math.abs(M),
+          GOAL_P_TOR_MIN,
+          GOAL_P_TOR_MAX,
+        );
     return { pTor, pHeim, pGast: 1 - pHeim, momentum: M };
   }
 
   private scoreGoal(team: TeamId): void {
     if (team === "ksc") this.scoreKsc++;
     else this.scoreVfb++;
-    // No direct mood/momentum bump — celebration leaves the block (Bierrunde)
+    // Reset bar to mid — Bierrunde pulls scorers out of the block
+    this.momentum = 0;
+    this.goalLockT = GOAL_LOCK_SEC;
     this.lastGoalTeam = team;
     this.scorePulse = 2.6; // longer scoreboard flash for Torjubel
     this.spawnGoalConfetti(team);
