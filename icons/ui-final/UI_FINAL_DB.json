@@ -1,0 +1,6814 @@
+{
+  "version": 1,
+  "name": "UI_FINAL",
+  "description": "Final freigegebene Grafiken (UI, Personen, Gebäude, Tribünen). Alle Branches laden Runtime ausschließlich aus released. Ablage nur nach manueller Freigabe. (Runtime-Spiegel — nur released Dateien liegen neben dieser Datei.)",
+  "rules": {
+    "approvalRequired": true,
+    "approver": "repo-owner",
+    "freigestellt": "RGBA cutout required (transparent background), except documented chrome backgrounds",
+    "preserveAspect": "Runtime must draw with uniform scale / contain — never stretch",
+    "consumeFrom": "game/public/icons/ui-final/",
+    "pendingDir": "docs/icons/ui-final/pending/",
+    "sourceOfTruth": "docs/icons/ui-final/UI_FINAL_DB.json",
+    "scope": "ui + units + stands + tribunes"
+  },
+  "released": {
+    "fanBlue2": {
+      "id": "fanBlue2",
+      "file": "fan-blue-2.png",
+      "source": "game/public/icons/units/fan-blue-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8265,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          45,
+          185,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.250607+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.173299+00:00"
+    },
+    "fanBlue3": {
+      "id": "fanBlue3",
+      "file": "fan-blue-3.png",
+      "source": "game/public/icons/units/fan-blue-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8204,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          68,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.340844+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.264757+00:00"
+    },
+    "fanBlue4": {
+      "id": "fanBlue4",
+      "file": "fan-blue-4.png",
+      "source": "game/public/icons/units/fan-blue-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8086,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          54,
+          45,
+          200,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.429777+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.353992+00:00"
+    },
+    "fanBlue5": {
+      "id": "fanBlue5",
+      "file": "fan-blue-5.png",
+      "source": "game/public/icons/units/fan-blue-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8193,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          72,
+          44,
+          183,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.516691+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.442735+00:00"
+    },
+    "fanGrey2": {
+      "id": "fanGrey2",
+      "file": "fan-grey-2.png",
+      "source": "game/public/icons/units/fan-grey-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8265,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          45,
+          185,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.692964+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.616770+00:00"
+    },
+    "fanGrey3": {
+      "id": "fanGrey3",
+      "file": "fan-grey-3.png",
+      "source": "game/public/icons/units/fan-grey-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8204,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          68,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.784662+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.706075+00:00"
+    },
+    "fanGrey4": {
+      "id": "fanGrey4",
+      "file": "fan-grey-4.png",
+      "source": "game/public/icons/units/fan-grey-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8086,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          54,
+          45,
+          200,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:15.872197+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:15.797774+00:00"
+    },
+    "fanRed2": {
+      "id": "fanRed2",
+      "file": "fan-red-2.png",
+      "source": "game/public/icons/units/fan-red-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8265,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          45,
+          185,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.134859+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.061355+00:00"
+    },
+    "fanRed3": {
+      "id": "fanRed3",
+      "file": "fan-red-3.png",
+      "source": "game/public/icons/units/fan-red-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8204,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          68,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.220294+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.147210+00:00"
+    },
+    "fanRed4": {
+      "id": "fanRed4",
+      "file": "fan-red-4.png",
+      "source": "game/public/icons/units/fan-red-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8086,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          54,
+          45,
+          200,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.305573+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.232993+00:00"
+    },
+    "hooliganBlue1": {
+      "id": "hooliganBlue1",
+      "file": "hooligan-blue-1.png",
+      "source": "game/public/icons/units/hooligan-blue-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8197,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.485749+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.412451+00:00"
+    },
+    "hooliganBlue2": {
+      "id": "hooliganBlue2",
+      "file": "hooligan-blue-2.png",
+      "source": "game/public/icons/units/hooligan-blue-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8231,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          76,
+          45,
+          179,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.575603+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.498276+00:00"
+    },
+    "hooliganBlue3": {
+      "id": "hooliganBlue3",
+      "file": "hooligan-blue-3.png",
+      "source": "game/public/icons/units/hooligan-blue-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.9306,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          246
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.662951+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.590022+00:00"
+    },
+    "hooliganBlue4": {
+      "id": "hooliganBlue4",
+      "file": "hooligan-blue-4.png",
+      "source": "game/public/icons/units/hooligan-blue-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8282,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.782977+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.675330+00:00"
+    },
+    "hooliganBlue5": {
+      "id": "hooliganBlue5",
+      "file": "hooligan-blue-5.png",
+      "source": "game/public/icons/units/hooligan-blue-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7985,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          59,
+          45,
+          196,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.875171+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.800966+00:00"
+    },
+    "hooliganGrey1": {
+      "id": "hooliganGrey1",
+      "file": "hooligan-grey-1.png",
+      "source": "game/public/icons/units/hooligan-grey-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8197,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:16.962716+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.888059+00:00"
+    },
+    "hooliganGrey2": {
+      "id": "hooliganGrey2",
+      "file": "hooligan-grey-2.png",
+      "source": "game/public/icons/units/hooligan-grey-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8231,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          76,
+          45,
+          179,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.054710+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:16.976032+00:00"
+    },
+    "hooliganGrey3": {
+      "id": "hooliganGrey3",
+      "file": "hooligan-grey-3.png",
+      "source": "game/public/icons/units/hooligan-grey-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.9306,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          246
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.142642+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.068822+00:00"
+    },
+    "hooliganGrey4": {
+      "id": "hooliganGrey4",
+      "file": "hooligan-grey-4.png",
+      "source": "game/public/icons/units/hooligan-grey-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8282,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.232678+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.155143+00:00"
+    },
+    "hooliganGrey5": {
+      "id": "hooliganGrey5",
+      "file": "hooligan-grey-5.png",
+      "source": "game/public/icons/units/hooligan-grey-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7985,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          59,
+          45,
+          196,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.322012+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.246397+00:00"
+    },
+    "hooliganRed1": {
+      "id": "hooliganRed1",
+      "file": "hooligan-red-1.png",
+      "source": "game/public/icons/units/hooligan-red-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8197,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.411378+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.335318+00:00"
+    },
+    "hooliganRed2": {
+      "id": "hooliganRed2",
+      "file": "hooligan-red-2.png",
+      "source": "game/public/icons/units/hooligan-red-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8231,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          76,
+          45,
+          179,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.504427+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.424715+00:00"
+    },
+    "hooliganRed3": {
+      "id": "hooliganRed3",
+      "file": "hooligan-red-3.png",
+      "source": "game/public/icons/units/hooligan-red-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.9306,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          43,
+          177,
+          246
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.597345+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.518250+00:00"
+    },
+    "hooliganRed4": {
+      "id": "hooliganRed4",
+      "file": "hooligan-red-4.png",
+      "source": "game/public/icons/units/hooligan-red-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8282,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          45,
+          186,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.685666+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.611056+00:00"
+    },
+    "hooliganRed5": {
+      "id": "hooliganRed5",
+      "file": "hooligan-red-5.png",
+      "source": "game/public/icons/units/hooligan-red-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7985,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          59,
+          45,
+          196,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.774588+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.698813+00:00"
+    },
+    "ordnerBlue1": {
+      "id": "ordnerBlue1",
+      "file": "ordner-blue-1.png",
+      "source": "game/public/icons/units/ordner-blue-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8428,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          83,
+          44,
+          171,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.861081+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.787680+00:00"
+    },
+    "ordnerBlue2": {
+      "id": "ordnerBlue2",
+      "file": "ordner-blue-2.png",
+      "source": "game/public/icons/units/ordner-blue-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8466,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          86,
+          45,
+          168,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:17.949129+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.873795+00:00"
+    },
+    "ordnerBlue3": {
+      "id": "ordnerBlue3",
+      "file": "ordner-blue-3.png",
+      "source": "game/public/icons/units/ordner-blue-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8394,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          87,
+          45,
+          167,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.038896+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:17.962125+00:00"
+    },
+    "ordnerBlue4": {
+      "id": "ordnerBlue4",
+      "file": "ordner-blue-4.png",
+      "source": "game/public/icons/units/ordner-blue-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8056,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          80,
+          45,
+          174,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.125970+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.051964+00:00"
+    },
+    "ordnerBlue5": {
+      "id": "ordnerBlue5",
+      "file": "ordner-blue-5.png",
+      "source": "game/public/icons/units/ordner-blue-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7932,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          80,
+          45,
+          175,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.211101+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.138757+00:00"
+    },
+    "ordnerGrey1": {
+      "id": "ordnerGrey1",
+      "file": "ordner-grey-1.png",
+      "source": "game/public/icons/units/ordner-grey-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8428,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          83,
+          44,
+          171,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.300089+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.223572+00:00"
+    },
+    "ordnerGrey2": {
+      "id": "ordnerGrey2",
+      "file": "ordner-grey-2.png",
+      "source": "game/public/icons/units/ordner-grey-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8466,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          86,
+          45,
+          168,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.397155+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.313717+00:00"
+    },
+    "ordnerGrey3": {
+      "id": "ordnerGrey3",
+      "file": "ordner-grey-3.png",
+      "source": "game/public/icons/units/ordner-grey-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8394,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          87,
+          45,
+          167,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.490786+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.412176+00:00"
+    },
+    "ordnerGrey4": {
+      "id": "ordnerGrey4",
+      "file": "ordner-grey-4.png",
+      "source": "game/public/icons/units/ordner-grey-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8056,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          80,
+          45,
+          174,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.605193+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.504983+00:00"
+    },
+    "ordnerGrey5": {
+      "id": "ordnerGrey5",
+      "file": "ordner-grey-5.png",
+      "source": "game/public/icons/units/ordner-grey-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7932,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          80,
+          45,
+          175,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.717456+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.619764+00:00"
+    },
+    "ordnerRed1": {
+      "id": "ordnerRed1",
+      "file": "ordner-red-1.png",
+      "source": "game/public/icons/units/ordner-red-1.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8428,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          83,
+          44,
+          171,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.809917+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.731128+00:00"
+    },
+    "ordnerRed2": {
+      "id": "ordnerRed2",
+      "file": "ordner-red-2.png",
+      "source": "game/public/icons/units/ordner-red-2.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8466,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          86,
+          45,
+          168,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.899017+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.823293+00:00"
+    },
+    "ordnerRed3": {
+      "id": "ordnerRed3",
+      "file": "ordner-red-3.png",
+      "source": "game/public/icons/units/ordner-red-3.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8394,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          87,
+          45,
+          167,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:18.986925+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:18.912034+00:00"
+    },
+    "ordnerRed4": {
+      "id": "ordnerRed4",
+      "file": "ordner-red-4.png",
+      "source": "game/public/icons/units/ordner-red-4.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8056,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          80,
+          45,
+          174,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:19.078210+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:19.000409+00:00"
+    },
+    "ordnerRed5": {
+      "id": "ordnerRed5",
+      "file": "ordner-red-5.png",
+      "source": "game/public/icons/units/ordner-red-5.png",
+      "status": "released",
+      "role": "unit",
+      "category": "persons",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7932,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          80,
+          45,
+          175,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:50:19.167736+00:00"
+      },
+      "notes": "Freigegeben (Personen-Restbestand).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:50:19.091879+00:00"
+    },
+    "standBierBlue1": {
+      "id": "standBierBlue1",
+      "file": "bier-blue-1.png",
+      "source": "game/public/icons/stands/bier-blue-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6432,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          75,
+          16,
+          435,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.321302+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.237120+00:00"
+    },
+    "standBierBlue2": {
+      "id": "standBierBlue2",
+      "file": "bier-blue-2.png",
+      "source": "game/public/icons/stands/bier-blue-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5822,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          16,
+          26,
+          495,
+          484
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.414694+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.334836+00:00"
+    },
+    "standBierBlue3": {
+      "id": "standBierBlue3",
+      "file": "bier-blue-3.png",
+      "source": "game/public/icons/stands/bier-blue-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5434,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          31,
+          16,
+          479,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.516124+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.427299+00:00"
+    },
+    "standBierBlue4": {
+      "id": "standBierBlue4",
+      "file": "bier-blue-4.png",
+      "source": "game/public/icons/stands/bier-blue-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5255,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          16,
+          442,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.612097+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.530007+00:00"
+    },
+    "standBierBlue5": {
+      "id": "standBierBlue5",
+      "file": "bier-blue-5.png",
+      "source": "game/public/icons/stands/bier-blue-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5355,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          16,
+          434,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.707113+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.625621+00:00"
+    },
+    "standBierGrey1": {
+      "id": "standBierGrey1",
+      "file": "bier-grey-1.png",
+      "source": "game/public/icons/stands/bier-grey-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.642,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          75,
+          16,
+          435,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.802436+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.720402+00:00"
+    },
+    "standBierGrey2": {
+      "id": "standBierGrey2",
+      "file": "bier-grey-2.png",
+      "source": "game/public/icons/stands/bier-grey-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5823,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          16,
+          27,
+          495,
+          484
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.899571+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.815826+00:00"
+    },
+    "standBierGrey3": {
+      "id": "standBierGrey3",
+      "file": "bier-grey-3.png",
+      "source": "game/public/icons/stands/bier-grey-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5434,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          31,
+          16,
+          479,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:20.994810+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:20.913189+00:00"
+    },
+    "standBierGrey4": {
+      "id": "standBierGrey4",
+      "file": "bier-grey-4.png",
+      "source": "game/public/icons/stands/bier-grey-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5262,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          68,
+          16,
+          442,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.088977+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.008187+00:00"
+    },
+    "standBierGrey5": {
+      "id": "standBierGrey5",
+      "file": "bier-grey-5.png",
+      "source": "game/public/icons/stands/bier-grey-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.537,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          16,
+          433,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.187338+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.102925+00:00"
+    },
+    "standBierRed1": {
+      "id": "standBierRed1",
+      "file": "bier-red-1.png",
+      "source": "game/public/icons/stands/bier-red-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6413,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          75,
+          18,
+          435,
+          495
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.286284+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.200491+00:00"
+    },
+    "standBierRed2": {
+      "id": "standBierRed2",
+      "file": "bier-red-2.png",
+      "source": "game/public/icons/stands/bier-red-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5808,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          17,
+          27,
+          495,
+          484
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.384862+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.299954+00:00"
+    },
+    "standBierRed3": {
+      "id": "standBierRed3",
+      "file": "bier-red-3.png",
+      "source": "game/public/icons/stands/bier-red-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5427,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          32,
+          17,
+          479,
+          493
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.484354+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.398255+00:00"
+    },
+    "standBierRed4": {
+      "id": "standBierRed4",
+      "file": "bier-red-4.png",
+      "source": "game/public/icons/stands/bier-red-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5235,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          17,
+          441,
+          494
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.583123+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.498251+00:00"
+    },
+    "standBierRed5": {
+      "id": "standBierRed5",
+      "file": "bier-red-5.png",
+      "source": "game/public/icons/stands/bier-red-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5327,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          16,
+          434,
+          497
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.681479+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.596683+00:00"
+    },
+    "standFanshopBlue1": {
+      "id": "standFanshopBlue1",
+      "file": "fanshop-blue-1.png",
+      "source": "game/public/icons/stands/fanshop-blue-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7447,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          109,
+          40,
+          412,
+          453
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.778746+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.694977+00:00"
+    },
+    "standFanshopBlue2": {
+      "id": "standFanshopBlue2",
+      "file": "fanshop-blue-2.png",
+      "source": "game/public/icons/stands/fanshop-blue-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7016,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          85,
+          54,
+          423,
+          465
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.876484+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.792562+00:00"
+    },
+    "standFanshopBlue3": {
+      "id": "standFanshopBlue3",
+      "file": "fanshop-blue-3.png",
+      "source": "game/public/icons/stands/fanshop-blue-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6348,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          111,
+          39,
+          417,
+          459
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:21.973611+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.889927+00:00"
+    },
+    "standFanshopBlue4": {
+      "id": "standFanshopBlue4",
+      "file": "fanshop-blue-4.png",
+      "source": "game/public/icons/stands/fanshop-blue-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5563,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          111,
+          17,
+          448,
+          477
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.075937+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:21.989236+00:00"
+    },
+    "standFanshopBlue5": {
+      "id": "standFanshopBlue5",
+      "file": "fanshop-blue-5.png",
+      "source": "game/public/icons/stands/fanshop-blue-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5695,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          105,
+          18,
+          429,
+          481
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.175970+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.090745+00:00"
+    },
+    "standFanshopGrey1": {
+      "id": "standFanshopGrey1",
+      "file": "fanshop-grey-1.png",
+      "source": "game/public/icons/stands/fanshop-grey-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7434,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          109,
+          40,
+          411,
+          450
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.274459+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.189924+00:00"
+    },
+    "standFanshopGrey2": {
+      "id": "standFanshopGrey2",
+      "file": "fanshop-grey-2.png",
+      "source": "game/public/icons/stands/fanshop-grey-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7058,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          85,
+          55,
+          421,
+          462
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.369512+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.288266+00:00"
+    },
+    "standFanshopGrey3": {
+      "id": "standFanshopGrey3",
+      "file": "fanshop-grey-3.png",
+      "source": "game/public/icons/stands/fanshop-grey-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6409,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          112,
+          41,
+          416,
+          457
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.467499+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.383082+00:00"
+    },
+    "standFanshopGrey4": {
+      "id": "standFanshopGrey4",
+      "file": "fanshop-grey-4.png",
+      "source": "game/public/icons/stands/fanshop-grey-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5605,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          111,
+          18,
+          446,
+          475
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.565972+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.481857+00:00"
+    },
+    "standFanshopGrey5": {
+      "id": "standFanshopGrey5",
+      "file": "fanshop-grey-5.png",
+      "source": "game/public/icons/stands/fanshop-grey-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5724,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          106,
+          19,
+          429,
+          480
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.661073+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.579033+00:00"
+    },
+    "standFanshopRed1": {
+      "id": "standFanshopRed1",
+      "file": "fanshop-red-1.png",
+      "source": "game/public/icons/stands/fanshop-red-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.745,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          109,
+          40,
+          412,
+          451
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.756822+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.674197+00:00"
+    },
+    "standFanshopRed2": {
+      "id": "standFanshopRed2",
+      "file": "fanshop-red-2.png",
+      "source": "game/public/icons/stands/fanshop-red-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7037,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          85,
+          54,
+          422,
+          463
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.851077+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.770069+00:00"
+    },
+    "standFanshopRed3": {
+      "id": "standFanshopRed3",
+      "file": "fanshop-red-3.png",
+      "source": "game/public/icons/stands/fanshop-red-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6364,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          111,
+          40,
+          416,
+          459
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:22.947150+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.864205+00:00"
+    },
+    "standFanshopRed4": {
+      "id": "standFanshopRed4",
+      "file": "fanshop-red-4.png",
+      "source": "game/public/icons/stands/fanshop-red-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5557,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          111,
+          17,
+          447,
+          477
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.043976+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:22.960878+00:00"
+    },
+    "standFanshopRed5": {
+      "id": "standFanshopRed5",
+      "file": "fanshop-red-5.png",
+      "source": "game/public/icons/stands/fanshop-red-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5688,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          105,
+          18,
+          429,
+          481
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.139747+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.057686+00:00"
+    },
+    "standOrdnerBlue1": {
+      "id": "standOrdnerBlue1",
+      "file": "stand-ordner-blue-1.png",
+      "source": "game/public/icons/stands/ordner-blue-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8378,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          127,
+          46,
+          383,
+          480
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.233754+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.152900+00:00"
+    },
+    "standOrdnerBlue2": {
+      "id": "standOrdnerBlue2",
+      "file": "stand-ordner-blue-2.png",
+      "source": "game/public/icons/stands/ordner-blue-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.747,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          102,
+          41,
+          408,
+          485
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.329908+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.247348+00:00"
+    },
+    "standOrdnerBlue3": {
+      "id": "standOrdnerBlue3",
+      "file": "stand-ordner-blue-3.png",
+      "source": "game/public/icons/stands/ordner-blue-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5874,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          88,
+          54,
+          423,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.425660+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.343783+00:00"
+    },
+    "standOrdnerBlue4": {
+      "id": "standOrdnerBlue4",
+      "file": "stand-ordner-blue-4.png",
+      "source": "game/public/icons/stands/ordner-blue-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6037,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          91,
+          54,
+          419,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.521372+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.438958+00:00"
+    },
+    "standOrdnerBlue5": {
+      "id": "standOrdnerBlue5",
+      "file": "stand-ordner-blue-5.png",
+      "source": "game/public/icons/stands/ordner-blue-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6518,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          103,
+          54,
+          407,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.615274+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.534686+00:00"
+    },
+    "standOrdnerGrey1": {
+      "id": "standOrdnerGrey1",
+      "file": "stand-ordner-grey-1.png",
+      "source": "game/public/icons/stands/ordner-grey-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8444,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          127,
+          46,
+          383,
+          480
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.707605+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.628069+00:00"
+    },
+    "standOrdnerGrey2": {
+      "id": "standOrdnerGrey2",
+      "file": "stand-ordner-grey-2.png",
+      "source": "game/public/icons/stands/ordner-grey-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.746,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          102,
+          41,
+          409,
+          485
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.800521+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.721279+00:00"
+    },
+    "standOrdnerGrey3": {
+      "id": "standOrdnerGrey3",
+      "file": "stand-ordner-grey-3.png",
+      "source": "game/public/icons/stands/ordner-grey-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5875,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          88,
+          54,
+          423,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.897562+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.814272+00:00"
+    },
+    "standOrdnerGrey4": {
+      "id": "standOrdnerGrey4",
+      "file": "stand-ordner-grey-4.png",
+      "source": "game/public/icons/stands/ordner-grey-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6048,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          91,
+          54,
+          419,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:23.994520+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:23.910910+00:00"
+    },
+    "standOrdnerGrey5": {
+      "id": "standOrdnerGrey5",
+      "file": "stand-ordner-grey-5.png",
+      "source": "game/public/icons/stands/ordner-grey-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6518,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          103,
+          54,
+          407,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.087590+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.007802+00:00"
+    },
+    "standOrdnerRed1": {
+      "id": "standOrdnerRed1",
+      "file": "stand-ordner-red-1.png",
+      "source": "game/public/icons/stands/ordner-red-1.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.843,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          127,
+          46,
+          383,
+          480
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.181327+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.100106+00:00"
+    },
+    "standOrdnerRed2": {
+      "id": "standOrdnerRed2",
+      "file": "stand-ordner-red-2.png",
+      "source": "game/public/icons/stands/ordner-red-2.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7476,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          102,
+          41,
+          408,
+          485
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.273619+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.194654+00:00"
+    },
+    "standOrdnerRed3": {
+      "id": "standOrdnerRed3",
+      "file": "stand-ordner-red-3.png",
+      "source": "game/public/icons/stands/ordner-red-3.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5924,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          89,
+          54,
+          422,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.369824+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.286653+00:00"
+    },
+    "standOrdnerRed4": {
+      "id": "standOrdnerRed4",
+      "file": "stand-ordner-red-4.png",
+      "source": "game/public/icons/stands/ordner-red-4.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6057,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          92,
+          54,
+          419,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.463911+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.383034+00:00"
+    },
+    "standOrdnerRed5": {
+      "id": "standOrdnerRed5",
+      "file": "stand-ordner-red-5.png",
+      "source": "game/public/icons/stands/ordner-red-5.png",
+      "status": "released",
+      "role": "stand",
+      "category": "buildings",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 512,
+          "h": 512
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.651,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          103,
+          54,
+          407,
+          473
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:55:24.558049+00:00"
+      },
+      "notes": "Freigegeben (alle Gebäude).",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:55:24.476889+00:00"
+    },
+    "btnBauenAmber": {
+      "id": "btnBauenAmber",
+      "file": "btn-bauen-amber.png",
+      "source": "game/public/icons/ui/btn-bauen-amber.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/btn-bauen-amber.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.1635,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          3,
+          2,
+          316,
+          93
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T18:45:19.697800+00:00"
+      },
+      "notes": "Freigabe 2026-10-09: Baubutton + Gebäude-Right-Rail. Chrome 320×96 Holzrahmen + eine Face-Fläche, ohne Label/Silberplatte. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
+      "category": "ui",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
+      "chrome": true,
+      "bakedLabel": false,
+      "assetClass": "chrome-button"
+    },
+    "btnBauenGrey": {
+      "id": "btnBauenGrey",
+      "file": "btn-bauen-grey.png",
+      "source": "game/public/icons/ui/btn-bauen-grey.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/btn-bauen-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.1279,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          3,
+          2,
+          316,
+          93
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T18:45:19.789820+00:00"
+      },
+      "notes": "Freigabe 2026-10-09: Baubutton + Gebäude-Right-Rail. Chrome 320×96 Holzrahmen + eine Face-Fläche, ohne Label/Silberplatte. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
+      "category": "ui",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
+      "chrome": true,
+      "bakedLabel": false,
+      "assetClass": "chrome-button"
+    },
+    "btnSendenBlue": {
+      "id": "btnSendenBlue",
+      "file": "btn-senden-blue.png",
+      "source": "game/public/icons/ui/btn-senden-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "game/public/icons/ui-final/btn-senden-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.1408,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          3,
+          2,
+          316,
+          93
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T16:04:45.792794+00:00"
+      },
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
+      "category": "ui",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-08T22:57:00.544979+00:00",
+      "remadeAt": "2026-10-08T22:59:41.416122+00:00",
+      "chrome": true,
+      "bakedLabel": false
+    },
+    "btnUpgradeGrey": {
+      "id": "btnUpgradeGrey",
+      "file": "btn-upgrade-grey.png",
+      "source": "game/public/icons/ui/btn-upgrade-grey.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/btn-upgrade-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.1478,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          3,
+          2,
+          316,
+          93
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T18:45:19.975831+00:00"
+      },
+      "notes": "Freigabe 2026-10-09: Baubutton + Gebäude-Right-Rail. Chrome 320×96 Holzrahmen + eine Face-Fläche, ohne Label/Silberplatte. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
+      "category": "ui",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
+      "chrome": true,
+      "bakedLabel": false,
+      "assetClass": "chrome-button"
+    },
+    "btnUpgradePurple": {
+      "id": "btnUpgradePurple",
+      "file": "btn-upgrade-purple.png",
+      "source": "game/public/icons/ui/btn-upgrade-purple.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/btn-upgrade-purple.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.1766,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          3,
+          2,
+          316,
+          93
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T18:45:19.882728+00:00"
+      },
+      "notes": "Freigabe 2026-10-09: Baubutton + Gebäude-Right-Rail. Chrome 320×96 Holzrahmen + eine Face-Fläche, ohne Label/Silberplatte. Live-Text im DOM (.ar-cost-btn) Holz-Innen + 2%.",
+      "category": "ui",
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
+      "chrome": true,
+      "bakedLabel": false,
+      "assetClass": "chrome-button"
+    },
+    "tribuneBlue": {
+      "id": "tribuneBlue",
+      "file": "tribune-block-blue.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 426,
+          "h": 309
+        },
+        "aspectRatio": 1.378641,
+        "alphaCoverage": 0.2294,
+        "opaqueCornerRatio": 0.0078,
+        "contentBBox": [
+          6,
+          6,
+          419,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T05:19:08.914458+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "Normalmaß freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
+    },
+    "tribuneGrey": {
+      "id": "tribuneGrey",
+      "file": "tribune-block-grey.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 386,
+          "h": 308
+        },
+        "aspectRatio": 1.253247,
+        "alphaCoverage": 0.1768,
+        "opaqueCornerRatio": 0.0117,
+        "contentBBox": [
+          6,
+          6,
+          379,
+          301
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T05:19:09.063883+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "Normalmaß freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
+    },
+    "tribuneRed": {
+      "id": "tribuneRed",
+      "file": "tribune-block-red.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 426,
+          "h": 309
+        },
+        "aspectRatio": 1.378641,
+        "alphaCoverage": 0.2293,
+        "opaqueCornerRatio": 0.0078,
+        "contentBBox": [
+          6,
+          6,
+          419,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T05:19:09.191613+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "Normalmaß freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
+    },
+    "slotEmpty": {
+      "id": "slotEmpty",
+      "file": "slot-empty.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/slot-empty.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T06:16:51.043352+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T06:16:51.057Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "scoreboard": {
+      "id": "scoreboard",
+      "file": "scoreboard-top.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/scoreboard-top.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.2637,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          15,
+          14,
+          1024,
+          492
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T06:23:54.538333+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T06:23:54.552Z",
+      "notes": "Referenz Scoreboard — vollständige Demo mit Text, Momentumsbalken und Torchancen-Orb.",
+      "name": "Referenz Scoreboard",
+      "displayName": "Referenz Scoreboard"
+    },
+    "fanGrey5": {
+      "id": "fanGrey5",
+      "file": "fan-grey-5.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fan-grey-5.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7854,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          66,
+          22,
+          188,
+          245
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.255570+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.269Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/fan-grey-5.png"
+    },
+    "fanRed5": {
+      "id": "fanRed5",
+      "file": "fan-red-5.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fan-red-5.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7854,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          66,
+          22,
+          188,
+          245
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.409603+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.422Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/fan-red-5.png"
+    },
+    "ultraBlue1": {
+      "id": "ultraBlue1",
+      "file": "ultra-blue-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-blue-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8006,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          54,
+          187,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.531678+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.544Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-blue-1.png"
+    },
+    "ultraBlue5": {
+      "id": "ultraBlue5",
+      "file": "ultra-blue-5.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-blue-5.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7754,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          54,
+          211,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.683313+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.699Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-blue-5.png"
+    },
+    "ultraGrey1": {
+      "id": "ultraGrey1",
+      "file": "ultra-grey-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-grey-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8006,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          54,
+          187,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.803859+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.816Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-grey-1.png"
+    },
+    "ultraGrey5": {
+      "id": "ultraGrey5",
+      "file": "ultra-grey-5.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-grey-5.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7754,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          54,
+          211,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:43.923906+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:43.936Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-grey-5.png"
+    },
+    "ultraRed1": {
+      "id": "ultraRed1",
+      "file": "ultra-red-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-red-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8006,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          69,
+          54,
+          187,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:44.044210+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:44.057Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-red-1.png"
+    },
+    "ultraRed5": {
+      "id": "ultraRed5",
+      "file": "ultra-red-5.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-red-5.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7754,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          54,
+          211,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:27:44.163654+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:27:44.176Z",
+      "notes": "Korrektur v2 — bitte erneut freigeben (Auge/Höhe/Ultra).",
+      "category": "persons",
+      "source": "game/public/icons/units/ultra-red-5.png"
+    },
+    "pennantKsc": {
+      "id": "pennantKsc",
+      "file": "pennant-ksc.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/pennant-ksc.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8201,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          20,
+          177,
+          234
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:29:01.520958+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:29:01.534Z",
+      "notes": "Freigegeben — freigestellt, ohne Hilfslinien, upright Perspective.",
+      "category": "ui",
+      "source": "game/public/icons/ui/pennant-ksc.png"
+    },
+    "pennantVfb": {
+      "id": "pennantVfb",
+      "file": "pennant-vfb.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/pennant-vfb.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8216,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          20,
+          177,
+          234
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:29:01.650014+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:29:01.662Z",
+      "notes": "Freigegeben — freigestellt, ohne Hilfslinien, upright Perspective.",
+      "category": "ui",
+      "source": "game/public/icons/ui/pennant-vfb.png"
+    },
+    "scoreboardChrome": {
+      "id": "scoreboardChrome",
+      "file": "scoreboard-chrome.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/scoreboard-chrome.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.459,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          32,
+          70,
+          1008,
+          437
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:29:43.862276+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T07:29:43.876Z",
+      "notes": "Chrome ohne Score/Balken/Orb. Runtime + docs/icons/ui-final/scoreboard-slots.json.",
+      "category": "ui",
+      "source": "game/public/icons/ui/scoreboard-chrome.png",
+      "name": "Scoreboard Chrome",
+      "displayName": "Scoreboard Chrome (Uhr + Logos, ohne Text/Balken/Orb)",
+      "relatedTo": "scoreboard",
+      "slots": "docs/icons/ui-final/scoreboard-slots.json"
+    },
+    "menuRail": {
+      "id": "menuRail",
+      "file": "menu-rail-brown.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/menu-rail-brown.png",
+        "mode": "RGB",
+        "native": {
+          "w": 720,
+          "h": 1280
+        },
+        "aspectRatio": 0.5625,
+        "alphaCoverage": 0,
+        "opaqueCornerRatio": 1,
+        "contentBBox": [
+          0,
+          0,
+          719,
+          1279
+        ],
+        "freigestellt": false,
+        "exception": "menu-rail-background",
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:30:30.412524+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
+      "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt). · Freigabe 2026-10-09: Gebäude-Right-Rail Hintergrund.",
+      "category": "ui",
+      "source": "game/public/icons/ui/menu-rail-brown.png"
+    },
+    "menuRailTile": {
+      "id": "menuRailTile",
+      "file": "menu-rail-brown-tile.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/menu-rail-brown-tile.png",
+        "mode": "RGB",
+        "native": {
+          "w": 504,
+          "h": 1024
+        },
+        "aspectRatio": 0.492188,
+        "alphaCoverage": 0,
+        "opaqueCornerRatio": 1,
+        "contentBBox": [
+          0,
+          0,
+          503,
+          1023
+        ],
+        "freigestellt": false,
+        "exception": "menu-rail-background",
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T07:30:30.563812+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:45:19.613Z",
+      "notes": "Freigegeben — Menü-Holzpaneel (menu-rail-background, nicht freigestellt). · Freigabe 2026-10-09: Gebäude-Right-Rail Hintergrund.",
+      "category": "ui",
+      "source": "game/public/icons/ui/menu-rail-brown-tile.png"
+    },
+    "fanBlue1": {
+      "id": "fanBlue1",
+      "file": "fan-blue-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fan-blue-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.824,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          81,
+          45,
+          173,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T08:07:51.954887+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T08:07:51.968Z",
+      "notes": "Freigegeben — saubere Kopfversion; grau/rot aus blauer Basis.",
+      "category": "persons",
+      "source": "game/public/icons/units/fan-blue-1.png"
+    },
+    "fanGrey1": {
+      "id": "fanGrey1",
+      "file": "fan-grey-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fan-grey-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.824,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          81,
+          45,
+          173,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T08:07:52.114818+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T08:07:52.128Z",
+      "notes": "Freigegeben — saubere Kopfversion; grau/rot aus blauer Basis.",
+      "category": "persons",
+      "source": "game/public/icons/units/fan-grey-1.png"
+    },
+    "fanRed1": {
+      "id": "fanRed1",
+      "file": "fan-red-1.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fan-red-1.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.824,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          81,
+          45,
+          173,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T08:07:52.241219+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T08:07:52.254Z",
+      "notes": "Freigegeben — saubere Kopfversion; grau/rot aus blauer Basis.",
+      "category": "persons",
+      "source": "game/public/icons/units/fan-red-1.png"
+    },
+    "ultraBlue2": {
+      "id": "ultraBlue2",
+      "file": "ultra-blue-2.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-blue-2.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7884,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          65,
+          54,
+          190,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T08:54:07.809826+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T08:54:07.826Z",
+      "notes": "Kopf nahtlos, Schuhe weiß ohne Blau, Pyro gut. Bitte erneut freigeben."
+    },
+    "ultraGrey2": {
+      "id": "ultraGrey2",
+      "file": "ultra-grey-2.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-grey-2.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7884,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          65,
+          54,
+          190,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:00:46.540713+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:00:46.554Z",
+      "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen."
+    },
+    "ultraRed2": {
+      "id": "ultraRed2",
+      "file": "ultra-red-2.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-red-2.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7884,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          65,
+          54,
+          190,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:00:46.669476+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:00:46.683Z",
+      "notes": "Aus freigegebenem ultraBlue2 eingefärbt (Palette wie alte 52/57 bzw. ultraGrey1/ultraRed1). Bitte vor Freigabe prüfen."
+    },
+    "ultraBlue3": {
+      "id": "ultraBlue3",
+      "file": "ultra-blue-3.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-blue-3.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7865,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          54,
+          54,
+          200,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:38:35.270255+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:38:35.288Z",
+      "notes": "Neu: Kopf nahtlos, Schuhe ohne Blau, Props erhalten. Bitte freigeben, dann Grau/Rot ableiten."
+    },
+    "ultraBlue4": {
+      "id": "ultraBlue4",
+      "file": "ultra-blue-4.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-blue-4.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7855,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          53,
+          54,
+          201,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:38:35.448700+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:38:35.462Z",
+      "notes": "Neu: Kopf nahtlos, Schuhe ohne Blau, Props erhalten. Bitte freigeben, dann Grau/Rot ableiten."
+    },
+    "ultraGrey3": {
+      "id": "ultraGrey3",
+      "file": "ultra-grey-3.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-grey-3.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7865,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          54,
+          54,
+          200,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:53:29.582391+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:53:29.596Z",
+      "notes": "Aus freigegebenem ultraBlue3 eingefärbt. Bitte vor Freigabe prüfen."
+    },
+    "ultraGrey4": {
+      "id": "ultraGrey4",
+      "file": "ultra-grey-4.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-grey-4.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7855,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          53,
+          54,
+          201,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:53:29.715371+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:53:29.729Z",
+      "notes": "Aus freigegebenem ultraBlue4 eingefärbt. Bitte vor Freigabe prüfen."
+    },
+    "ultraRed3": {
+      "id": "ultraRed3",
+      "file": "ultra-red-3.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-red-3.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7865,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          54,
+          54,
+          200,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:53:29.842924+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:53:29.856Z",
+      "notes": "Aus freigegebenem ultraBlue3 eingefärbt. Bitte vor Freigabe prüfen."
+    },
+    "ultraRed4": {
+      "id": "ultraRed4",
+      "file": "ultra-red-4.png",
+      "status": "released",
+      "role": "unit",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/ultra-red-4.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7855,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          53,
+          54,
+          201,
+          247
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T09:53:29.972009+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-09T09:53:29.985Z",
+      "notes": "Aus freigegebenem ultraBlue4 eingefärbt. Bitte vor Freigabe prüfen."
+    },
+    "currencyBier": {
+      "id": "currencyBier",
+      "file": "currency-bier.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/currency-bier.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6002,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          20,
+          213,
+          234
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T18:51:55.342924+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:51:55.139Z",
+      "notes": "Freigabe 2026-10-09: Währungssymbol + Wallet-Counter. Reines Icon ohne Zahl/Label; Zahl live im DOM/Chip.",
+      "chrome": false,
+      "bakedLabel": false,
+      "assetClass": "currency-icon",
+      "category": "ui"
+    },
+    "currencyGold": {
+      "id": "currencyGold",
+      "file": "currency-gold.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/currency-gold.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.4857,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          25,
+          20,
+          230,
+          234
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T18:51:55.246067+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:51:55.139Z",
+      "notes": "Freigabe 2026-10-09: Währungssymbol + Wallet-Counter. Reines Icon ohne Zahl/Label; Zahl live im DOM/Chip.",
+      "chrome": false,
+      "bakedLabel": false,
+      "assetClass": "currency-icon",
+      "category": "ui"
+    },
+    "currencySicherheit": {
+      "id": "currencySicherheit",
+      "file": "currency-sicherheit.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/currency-sicherheit.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5847,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          40,
+          20,
+          214,
+          234
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T18:51:55.537605+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:51:55.139Z",
+      "notes": "Freigabe 2026-10-09: Währungssymbol + Wallet-Counter. Reines Icon ohne Zahl/Label; Zahl live im DOM/Chip.",
+      "chrome": false,
+      "bakedLabel": false,
+      "assetClass": "currency-icon",
+      "category": "ui"
+    },
+    "currencyFanartikel": {
+      "id": "currencyFanartikel",
+      "file": "currency-fanartikel.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/currency-fanartikel.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5698,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          27,
+          234,
+          228
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T18:51:55.441542+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-09T18:51:55.139Z",
+      "notes": "Freigabe 2026-10-09: Währungssymbol + Wallet-Counter. Reines Icon ohne Zahl/Label; Zahl live im DOM/Chip. Trikot (flächig).",
+      "chrome": false,
+      "bakedLabel": false,
+      "assetClass": "currency-icon",
+      "category": "ui"
+    },
+    "currencyGoldPlus": {
+      "id": "currencyGoldPlus",
+      "file": "currency-gold-plus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-gold-plus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.536,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          29,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:27.592720+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:27.606Z",
+      "notes": "Live-FX: Gold erzeugt. Freigestellt 256². Badge grün +."
+    },
+    "currencyGoldMinus": {
+      "id": "currencyGoldMinus",
+      "file": "currency-gold-minus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-gold-minus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.536,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          29,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:27.720690+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:27.734Z",
+      "notes": "Live-FX: Gold verbraucht. Freigestellt 256². Badge rot −."
+    },
+    "currencyBierPlus": {
+      "id": "currencyBierPlus",
+      "file": "currency-bier-plus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-bier-plus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6122,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          44,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:27.847388+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:27.860Z",
+      "notes": "Live-FX: Bier erzeugt. Freigestellt 256². Badge grün +."
+    },
+    "currencyBierMinus": {
+      "id": "currencyBierMinus",
+      "file": "currency-bier-minus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-bier-minus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6122,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          44,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:27.980562+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:27.996Z",
+      "notes": "Live-FX: Bier verbraucht. Freigestellt 256². Badge rot −."
+    },
+    "currencyFanartikelPlus": {
+      "id": "currencyFanartikelPlus",
+      "file": "currency-fanartikel-plus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-fanartikel-plus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.594,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          25,
+          29,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.107367+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.120Z",
+      "notes": "Live-FX: Fanartikel erzeugt. Freigestellt 256². Badge grün +."
+    },
+    "currencyFanartikelMinus": {
+      "id": "currencyFanartikelMinus",
+      "file": "currency-fanartikel-minus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-fanartikel-minus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.594,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          25,
+          29,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.231815+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.246Z",
+      "notes": "Live-FX: Fanartikel verbraucht. Freigestellt 256². Badge rot −."
+    },
+    "currencySicherheitPlus": {
+      "id": "currencySicherheitPlus",
+      "file": "currency-sicherheit-plus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-sicherheit-plus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5982,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.361067+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.375Z",
+      "notes": "Live-FX: Sicherheit erzeugt. Freigestellt 256². Badge grün +."
+    },
+    "currencySicherheitMinus": {
+      "id": "currencySicherheitMinus",
+      "file": "currency-sicherheit-minus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/currency-sicherheit-minus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5982,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          42,
+          23,
+          250,
+          250
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.483956+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.497Z",
+      "notes": "Live-FX: Sicherheit verbraucht. Freigestellt 256². Badge rot −."
+    },
+    "moodPlus": {
+      "id": "moodPlus",
+      "file": "mood-plus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/mood-plus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5976,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          29,
+          27,
+          226,
+          227
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.608499+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.621Z",
+      "notes": "Live-FX: Stimmung/Momentum steigt. Freigestellt 256²."
+    },
+    "moodMinus": {
+      "id": "moodMinus",
+      "file": "mood-minus.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/mood-minus.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5985,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          26,
+          28,
+          228,
+          227
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.732732+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.745Z",
+      "notes": "Live-FX: Stimmung/Momentum sinkt. Freigestellt 256²."
+    },
+    "waitAnger": {
+      "id": "waitAnger",
+      "file": "wait-anger.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/wait-anger.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6919,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          40,
+          24,
+          214,
+          230
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.859007+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:28.872Z",
+      "notes": "Live-FX: Wutsmiley bei Wartezeit (mild). Freigestellt 256²."
+    },
+    "waitAngerHot": {
+      "id": "waitAngerHot",
+      "file": "wait-anger-hot.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/wait-anger-hot.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6533,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          18,
+          35,
+          237,
+          221
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T06:33:28.987894+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T06:33:29.001Z",
+      "notes": "Live-FX: Wutsmiley bei langer Wartezeit (stark). Freigestellt 256²."
+    },
+    "btnIconUltraBlue": {
+      "id": "btnIconUltraBlue",
+      "file": "btn-icon-ultra-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-ultra-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:54.719685+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:54.734Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconBierAmber": {
+      "id": "btnIconBierAmber",
+      "file": "btn-icon-bier-amber.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-bier-amber.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:54.906946+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:54.922Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconAngriffRed": {
+      "id": "btnIconAngriffRed",
+      "file": "btn-icon-angriff-red.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-angriff-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:55.051983+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:55.066Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconSquareRed": {
+      "id": "btnIconSquareRed",
+      "file": "btn-icon-square-red.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-square-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:55.194549+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:55.210Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconSquareBlue": {
+      "id": "btnIconSquareBlue",
+      "file": "btn-icon-square-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-square-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:55.336503+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:55.351Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconSquareAmber": {
+      "id": "btnIconSquareAmber",
+      "file": "btn-icon-square-amber.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-square-amber.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:55.480536+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:55.495Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "iconAngriffBlocksturm": {
+      "id": "iconAngriffBlocksturm",
+      "file": "icon-angriff-blocksturm.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/icon-angriff-blocksturm.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6183,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          25,
+          20,
+          229,
+          235
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T08:52:55.623346+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T08:52:55.639Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconUpgradePerson": {
+      "id": "btnIconUpgradePerson",
+      "file": "btn-icon-upgrade-person.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-upgrade-person.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T09:51:59.936058+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-10T09:51:59.952Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "btnIconUpgradeBuilding": {
+      "id": "btnIconUpgradeBuilding",
+      "file": "btn-icon-upgrade-building.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/btn-icon-upgrade-building.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.0329,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          1,
+          1,
+          255,
+          255
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T09:52:00.089177+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-10T09:52:00.108Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "iconUpgradeArrow": {
+      "id": "iconUpgradeArrow",
+      "file": "icon-upgrade-arrow.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/icon-upgrade-arrow.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7399,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          30,
+          30,
+          225,
+          230
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T09:52:00.310774+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-10T09:52:00.325Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "baustelleSchildKsc": {
+      "id": "baustelleSchildKsc",
+      "file": "baustelle-schild-ksc.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/baustelle-schild-ksc.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.875,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          15,
+          178,
+          240
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T13:02:30.969973+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-10T12:57:50.725Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "baustelleSchildVfb": {
+      "id": "baustelleSchildVfb",
+      "file": "baustelle-schild-vfb.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/baustelle-schild-vfb.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8747,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          15,
+          178,
+          240
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T13:02:31.062601+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-10T12:57:50.923Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "baustelleSchildNeutral": {
+      "id": "baustelleSchildNeutral",
+      "file": "baustelle-schild-neutral.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/game/public/icons/ui-final/baustelle-schild-neutral.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.875,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          77,
+          15,
+          178,
+          240
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T13:02:31.156357+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-10T12:57:51.138Z",
+      "notes": "Presslufthammer-Schild Neutral grau — freigegeben"
+    },
+    "fxFistBlue": {
+      "id": "fxFistBlue",
+      "file": "fx-fist-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-fist-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6655,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          30,
+          38,
+          234,
+          210
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:03:07.116188+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:03:07.130Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxFistGrey": {
+      "id": "fxFistGrey",
+      "file": "fx-fist-grey.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-fist-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6944,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          21,
+          50,
+          234,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:03:07.570537+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:03:07.595Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxFistRed": {
+      "id": "fxFistRed",
+      "file": "fx-fist-red.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-fist-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7263,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          28,
+          46,
+          225,
+          201
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:03:07.296382+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:03:07.331Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxHeal": {
+      "id": "fxHeal",
+      "file": "fx-heal.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-heal.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.5769,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          26,
+          21,
+          229,
+          231
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:03:07.762902+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:03:07.781Z",
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+    },
+    "fxPyroShotBlue": {
+      "id": "fxPyroShotBlue",
+      "file": "fx-pyro-shot-blue.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot-blue.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8504,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          14,
+          19,
+          241,
+          235
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:08:45.405034+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:08:45.419Z",
+      "notes": "Pyro: ein Ende brennt, blauer Teamrauch. Freigestellt 256²."
+    },
+    "fxPyroShotGrey": {
+      "id": "fxPyroShotGrey",
+      "file": "fx-pyro-shot-grey.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8161,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          14,
+          27,
+          241,
+          227
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:08:45.703504+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:08:45.716Z",
+      "notes": "Pyro: ein Ende brennt, grauer Teamrauch. Freigestellt 256²."
+    },
+    "fxPyroShotRed": {
+      "id": "fxPyroShotRed",
+      "file": "fx-pyro-shot-red.png",
+      "status": "released",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/fx-pyro-shot-red.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.8289,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          14,
+          20,
+          242,
+          233
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-10T11:08:45.552109+00:00"
+      },
+      "approvedBy": "user",
+      "approvedAt": "2026-10-10T11:08:45.566Z",
+      "notes": "Pyro: ein Ende brennt, roter Teamrauch. Freigestellt 256²."
+    },
+    "tribuneBlueWide150": {
+      "id": "tribuneBlueWide150",
+      "file": "tribune-block-blue-wide150.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-blue-wide150.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 639,
+          "h": 309
+        },
+        "aspectRatio": 2.067961,
+        "alphaCoverage": 0.2356,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          8,
+          6,
+          630,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-11T12:27:52.052336+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "+50% Breite freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
+    },
+    "tribuneGreyWide150": {
+      "id": "tribuneGreyWide150",
+      "file": "tribune-block-grey-wide150.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-grey-wide150.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 579,
+          "h": 308
+        },
+        "aspectRatio": 1.87987,
+        "alphaCoverage": 0.1844,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          8,
+          6,
+          570,
+          301
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-11T12:27:52.195926+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "+50% Breite freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
+    },
+    "tribuneRedWide150": {
+      "id": "tribuneRedWide150",
+      "file": "tribune-block-red-wide150.png",
+      "status": "released",
+      "role": "scene",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "/workspace/docs/icons/ui-final/pending/tribune-block-red-wide150.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 639,
+          "h": 309
+        },
+        "aspectRatio": 2.067961,
+        "alphaCoverage": 0.2356,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          8,
+          6,
+          630,
+          302
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-11T12:27:52.453684+00:00"
+      },
+      "approvedBy": "fdoepp",
+      "approvedAt": "2026-10-11T12:28:18.966291Z",
+      "notes": "+50% Breite freigeschnitten freigegeben (beide Skalierungen: Normal + wide150)."
+    }
+  },
+  "pending": {
+    "slotEmptyParallel": {
+      "id": "slotEmptyParallel",
+      "file": "slot-empty-parallel.png",
+      "source": "game/public/icons/ui/slot-empty-parallel.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.743216+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "slotEmptyOrtho": {
+      "id": "slotEmptyOrtho",
+      "file": "slot-empty-ortho.png",
+      "source": "game/public/icons/ui/slot-empty-ortho.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.2728,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          16,
+          15,
+          239,
+          240
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.480030+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "slotEmptyOrthoBlue": {
+      "id": "slotEmptyOrthoBlue",
+      "file": "slot-empty-ortho-blue.png",
+      "source": "game/public/icons/ui/slot-empty-ortho-blue.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6107,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          46,
+          61,
+          230,
+          225
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.299220+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "slotEmptyOrthoRed": {
+      "id": "slotEmptyOrthoRed",
+      "file": "slot-empty-ortho-red.png",
+      "source": "game/public/icons/ui/slot-empty-ortho-red.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6107,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          46,
+          61,
+          231,
+          225
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.391071+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "slotEmptyPersp": {
+      "id": "slotEmptyPersp",
+      "file": "slot-empty-persp.png",
+      "source": "game/public/icons/ui/slot-empty-persp.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6609,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          20,
+          65,
+          236,
+          199
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:02.008907+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "slotEmptyPerspBlue": {
+      "id": "slotEmptyPerspBlue",
+      "file": "slot-empty-persp-blue.png",
+      "source": "game/public/icons/ui/slot-empty-persp-blue.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7082,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          21,
+          66,
+          207,
+          198
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.831048+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "slotEmptyPerspRed": {
+      "id": "slotEmptyPerspRed",
+      "file": "slot-empty-persp-red.png",
+      "source": "game/public/icons/ui/slot-empty-persp-red.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7083,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          21,
+          66,
+          207,
+          198
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.917625+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "btnKaufenGrey": {
+      "id": "btnKaufenGrey",
+      "file": "btn-kaufen-grey.png",
+      "source": "icon-ui-einzeln-3755/btn-vorschlaege",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "docs/icons/ui-final/pending/btn-kaufen-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.1325,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          3,
+          2,
+          316,
+          93
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T16:04:45.441999+00:00"
+      },
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
+      "category": "ui",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "chrome-button",
+      "chrome": true,
+      "bakedLabel": false
+    },
+    "btnKaufenGreen": {
+      "id": "btnKaufenGreen",
+      "file": "btn-kaufen-green.png",
+      "source": "icon-ui-einzeln-3755/btn-vorschlaege",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "docs/icons/ui-final/pending/btn-kaufen-green.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.136,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          3,
+          2,
+          316,
+          93
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T16:19:41.355209+00:00"
+      },
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
+      "category": "ui",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "chrome-button",
+      "chrome": true,
+      "bakedLabel": false
+    },
+    "btnSendenGrey": {
+      "id": "btnSendenGrey",
+      "file": "btn-senden-grey.png",
+      "source": "icon-ui-einzeln-3755/btn-vorschlaege",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "file": "docs/icons/ui-final/pending/btn-senden-grey.png",
+        "mode": "RGBA",
+        "native": {
+          "w": 320,
+          "h": 96
+        },
+        "aspectRatio": 3.333333,
+        "alphaCoverage": 0.1247,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          3,
+          2,
+          316,
+          93
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-09T16:04:45.529901+00:00"
+      },
+      "notes": "Chrome 320×96: Holzrahmen + eine Fläche, ohne gebackenes Label und ohne Silberplatte. Live-Text im DOM (.ar-cost-btn) mit 2% Inset zur Holz-Innenkante.",
+      "category": "ui",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "chrome-button",
+      "chrome": true,
+      "bakedLabel": false
+    },
+    "scoreboardOrbHeim": {
+      "id": "scoreboardOrbHeim",
+      "file": "scoreboard-top-orb-heim.png",
+      "source": "game/public/icons/ui/scoreboard-top-orb-heim.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.267,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          15,
+          20,
+          1024,
+          487
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.963846+00:00"
+      },
+      "notes": "REFERENZ-DEMO Orb Heim-stark — nicht Runtime-Default. Orb als kleines Live-Overlay auf Chrome-Track.",
+      "category": "ui",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "reference-demo"
+    },
+    "scoreboardOrbGast": {
+      "id": "scoreboardOrbGast",
+      "file": "scoreboard-top-orb-gast.png",
+      "source": "game/public/icons/ui/scoreboard-top-orb-gast.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.266,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          16,
+          19,
+          1024,
+          488
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "checkedAt": "2026-10-08T21:52:42.981151+00:00"
+      },
+      "notes": "REFERENZ-DEMO Orb Gast-stark — nicht Runtime-Default. Orb als kleines Live-Overlay auf Chrome-Track.",
+      "category": "ui",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "reference-demo"
+    },
+    "slotEmptyParallelBlue": {
+      "id": "slotEmptyParallelBlue",
+      "file": "slot-empty-parallel-blue.png",
+      "source": "game/public/icons/ui/slot-empty-parallel-blue.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7082,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          21,
+          66,
+          207,
+          198
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.567236+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "slotEmptyParallelRed": {
+      "id": "slotEmptyParallelRed",
+      "file": "slot-empty-parallel-red.png",
+      "source": "game/public/icons/ui/slot-empty-parallel-red.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7083,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          21,
+          66,
+          207,
+          198
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.656747+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "slotEmptyIso": {
+      "id": "slotEmptyIso",
+      "file": "slot-empty-iso.png",
+      "source": "game/public/icons/ui/slot-empty-iso.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.6936,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          16,
+          40,
+          239,
+          215
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.208971+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "slotEmptyIsoBlue": {
+      "id": "slotEmptyIsoBlue",
+      "file": "slot-empty-iso-blue.png",
+      "source": "game/public/icons/ui/slot-empty-iso-blue.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7867,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          32,
+          65,
+          225,
+          201
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.026138+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "slotEmptyIsoRed": {
+      "id": "slotEmptyIsoRed",
+      "file": "slot-empty-iso-red.png",
+      "source": "game/public/icons/ui/slot-empty-iso-red.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 256,
+          "h": 256
+        },
+        "aspectRatio": 1,
+        "alphaCoverage": 0.7866,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          32,
+          65,
+          225,
+          201
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:01.115744+00:00"
+      },
+      "notes": "Leerer Bauplatz-Chrome (kein Live-Text). Native Aspect / freigestellt. Bitte freigeben wenn Optik OK.",
+      "category": "ui",
+      "assetClass": "chrome-slot",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00"
+    },
+    "scoreboardMomentum": {
+      "id": "scoreboardMomentum",
+      "file": "scoreboard-momentum.png",
+      "source": "game/public/icons/ui/scoreboard-momentum.png",
+      "status": "pendingApproval",
+      "role": "ui",
+      "category": "ui",
+      "requirements": {
+        "freigestellt": true,
+        "preserveAspect": true,
+        "format": "png"
+      },
+      "validation": {
+        "ok": true,
+        "mode": "RGBA",
+        "native": {
+          "w": 1041,
+          "h": 508
+        },
+        "aspectRatio": 2.049213,
+        "alphaCoverage": 0.2637,
+        "opaqueCornerRatio": 0,
+        "contentBBox": [
+          15,
+          14,
+          1024,
+          492
+        ],
+        "freigestellt": true,
+        "exception": null,
+        "preserveAspectRequired": true,
+        "reasons": [],
+        "checkedAt": "2026-10-08T22:34:00.570014+00:00"
+      },
+      "notes": "REFERENZ-DEMO (Broadcast-Tech) — nicht Runtime-Default. Runtime = scoreboardChrome + scoreboard-slots.json + Live-Overlays.",
+      "updatedAt": "2026-10-09T12:06:03.203227+00:00",
+      "assetClass": "reference-demo"
+    }
+  },
+  "runtimeBinding": {
+    "module": "game/src/game/uiFinal.ts",
+    "resolver": "uiFinalIconPath / UI_FINAL_PATHS",
+    "drawHelpers": [
+      "drawIcon",
+      "drawUniformInBox",
+      "fitUniform"
+    ]
+  },
+  "inventory": {
+    "pendingCount": 32,
+    "releasedCount": 111,
+    "byCategory": {
+      "ui": {
+        "pending": 23,
+        "released": 12
+      },
+      "persons": {
+        "pending": 9,
+        "released": 51
+      },
+      "buildings": {
+        "pending": 0,
+        "released": 45
+      },
+      "scene": {
+        "pending": 0,
+        "released": 3
+      }
+    },
+    "gatheredAt": "2026-10-09T08:07:52.300590+00:00",
+    "canon": {
+      "persons": "units/{fan|ordner|hooligan|ultra}-{grey|blue|red}-{1..5}.png (60)",
+      "buildings": "stands/{bier|fanshop|ordner}-{grey|blue|red}-{1..5}.png (45) as stand*",
+      "ui": "icons/ui/*.png",
+      "tribunes": "assets/tribune-block-{grey|blue|red}.png"
+    },
+    "agentsConsulted": [
+      "Personen-icons farben stufen (cursor/unit-icons-agent-4235)",
+      "Icon elemente darstellung (cursor/icon-ui-einzeln-3755)",
+      "Computerspiel UI methoden (cursor/matchday-icons-a9b1)",
+      "Team tower defense konzepte (cursor/team-td-konzept-dba3)",
+      "docs/icons/FINAL_ICON_INVENTORY.md"
+    ],
+    "excludedLegacy": "stands/{bier|fanshop|ordner}-{1..5}.png without color — prefer colored canon"
+  },
+  "rejected": {
+    "btnSendenGreen": {
+      "id": "btnSendenGreen",
+      "file": "btn-senden-green.png",
+      "role": "ui",
+      "status": "rejected",
+      "reason": "Kanon ist btnSendenBlue (released). Grünes Senden nicht verwenden.",
+      "rejectedAt": "2026-10-09T12:06:03.203227+00:00",
+      "rejectedBy": "storage-canon"
+    }
+  }
+}
