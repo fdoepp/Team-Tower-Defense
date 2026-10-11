@@ -14,9 +14,9 @@ Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../
 
 ### scene
 
-176. `tribuneBlueWide150` — `tribune-block-blue-wide150.png` — Tribüne blau **+50 % Breite** (zusätzlich zu `tribuneBlue`)
-177. `tribuneGreyWide150` — `tribune-block-grey-wide150.png` — Tribüne grau **+50 % Breite** (zusätzlich zu `tribuneGrey`)
-178. `tribuneRedWide150` — `tribune-block-red-wide150.png` — Tribüne rot **+50 % Breite** (zusätzlich zu `tribuneRed`)
+176. `tribuneBlueWide150` — `tribune-block-blue-wide150.png` — freigegebene Tribüne blau (mit Ausgängen) **+50 % Breite**
+177. `tribuneGreyWide150` — `tribune-block-grey-wide150.png` — freigegebene Tribüne grau (mit Ausgängen) **+50 % Breite**
+178. `tribuneRedWide150` — `tribune-block-red-wide150.png` — freigegebene Tribüne rot (mit Ausgängen) **+50 % Breite**
 
 ### ui
 
