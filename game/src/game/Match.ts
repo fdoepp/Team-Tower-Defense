@@ -3353,7 +3353,9 @@ export class Match {
 
     const speed = 0.22;
     const d = dist(f.x, f.y, t.x, t.y);
-    if (d < 0.012) {
+    // Slightly generous arrive so door/lane waypoints are not missed when
+    // many units share the aisle (personal depth used to fight the snap).
+    if (d < 0.02) {
       f.x = t.x;
       f.y = t.y;
       f.pathI++;
@@ -3363,8 +3365,11 @@ export class Match {
     const step = Math.min(1, (speed * dt) / d);
     f.x += (t.x - f.x) * step;
     f.y += (t.y - f.y) * step;
+    // While pathing, only *read* gangX — never rewrite world X. syncGangFromWorld
+    // clamps at gangX 0/1 and snaps X to door±depth, freezing units forever
+    // short of the center-door waypoint (empty tribunes / "lost" greys).
     if (Math.abs(f.y - laneY) < 0.08 || Math.abs(f.y - midY) < 0.08) {
-      this.syncGangFromWorld(f);
+      this.captureGangXFromWorld(f);
     }
   }
 
@@ -3569,6 +3574,14 @@ export class Match {
     }
     if (Math.abs(pushY) < 1e-5) return;
     f.y = clamp(f.y + pushY * Math.min(1, 12 * dt), y0, y1);
+  }
+
+  /** Update gangX from world X without moving the unit (safe while pathing). */
+  private captureGangXFromWorld(f: FanUnit): void {
+    const left = blockCenterX(0);
+    const right = blockCenterX(BLOCK_COUNT - 1);
+    const depth = gangLaneDepthForUnit(f.id);
+    f.gangX = clamp((f.x - depth - left) / (right - left || 1), 0, 1);
   }
 
   private syncGangFromWorld(f: FanUnit): void {
