@@ -276,24 +276,12 @@ function drawBlocks(
 
     const tribSrc = tribuneIconPath(b.id);
     // Cell already native-aspect packed — pad 0 so faces stay 0.5% apart
+    // Tribune assets have solid fronts (no arch tunnels); exit pathing unchanged.
     const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
-    const face =
-      b.id === 0 ? "#1e40af" : b.id === 2 ? "#b91c1c" : "#57534e";
     if (!drew) {
-      ctx.fillStyle = face;
-      roundRect(ctx, left, top, bw, bh, 18);
-      ctx.fill();
-    } else {
-      // Cover baked arch tunnels on the tribune front — exit pathing stays.
-      const coverH = bh * 0.28;
-      const coverY = top + bh * 0.72;
-      ctx.fillStyle = face;
-      roundRect(ctx, left + bw * 0.06, coverY, bw * 0.88, coverH, 6);
-      ctx.fill();
-      // Thin platform lip so the block still reads as a solid stand edge
       ctx.fillStyle =
-        b.id === 0 ? "#3b82f6" : b.id === 2 ? "#ef4444" : "#a8a29e";
-      roundRect(ctx, left + bw * 0.05, coverY - bh * 0.02, bw * 0.9, bh * 0.045, 3);
+        b.id === 0 ? "#2563eb" : b.id === 2 ? "#dc2626" : "#64748b";
+      roundRect(ctx, left, top, bw, bh, 18);
       ctx.fill();
     }
     // Keine Heim/Neutral/Gäste-Überschriften auf den Tribünen
