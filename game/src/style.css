@@ -234,8 +234,8 @@ select {
   --rail-w: var(--rail-action-w);
   --rail-btn-h: clamp(42px, 10vh, 54px);
   --rail-icon: clamp(40px, 7vh, 52px);
-  --wallet-icon: 25px; /* ×1.15 vs 22px baseline */
-  --hud-scale: 1.15;
+  --wallet-icon: 38px; /* ×1.5 vs prior 25px */
+  --hud-scale: 1.725; /* wallet text ×1.5 vs prior 1.15 */
   flex: 1;
   min-height: 0;
   width: 100%;
@@ -914,8 +914,7 @@ select {
 }
 
 /* Bauen/Upgrade: ein Chrome wie links — kein zweites Face hinter Live-Text */
-.match-shell.matchday .build-card .ar-cost-btn,
-.match-shell.matchday .upgrade-panel .ar-cost-btn {
+.match-shell.matchday .build-card .ar-cost-btn {
   background-color: transparent;
   box-shadow: none;
   filter: none;
@@ -932,6 +931,29 @@ select {
   /* kein extra Containment-Plate — nur Live-Text auf Face */
   container-type: inline-size;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Gebäude-Upgrade-Panel: lila Chrome sichtbar (nicht transparent strippen) */
+.match-shell.matchday .upgrade-panel .ar-cost-btn.upgrade {
+  background-color: #6d28d9;
+  background-image: url("/icons/ui-final/btn-upgrade-purple.png") !important;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  box-shadow: 0 2px 0 rgba(60, 30, 10, 0.35);
+  filter: none;
+  outline: none;
+  flex: 0 0 auto;
+  width: 100%;
+  max-height: none;
+  min-height: 44px;
+  aspect-ratio: 320 / 96;
+}
+.match-shell.matchday .upgrade-panel .ar-cost-btn.upgrade.cd,
+.match-shell.matchday .upgrade-panel .ar-cost-btn.upgrade:disabled {
+  background-color: #64748b;
+  background-image: url("/icons/ui-final/btn-upgrade-grey.png") !important;
+  opacity: 0.75;
 }
 
 .match-shell.matchday .build-card .build-top {
@@ -1309,9 +1331,9 @@ select {
 }
 
 .match-shell.matchday .upgrade-panel .ar-cost-btn {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   width: 100%;
-  max-height: 28%;
+  max-height: none;
 }
 
 .match-shell.matchday #game-wrap {
