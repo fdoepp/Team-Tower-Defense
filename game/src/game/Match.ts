@@ -108,9 +108,11 @@ import {
   boothRect,
   crowdHomePos,
   doorPos,
+  gangHeight,
   gangLanePosForUnit,
   gangLaneYForUnit,
   gangMidY,
+  gangY,
   gangXToWorld,
   plotGangX,
   slotIndicesForBlock,
@@ -2845,12 +2847,26 @@ export class Match {
     const t = f.path[f.pathI];
     const laneY = gangLaneYForUnit(f.id);
     const midY = gangMidY();
+    const after = this.getAfter(f);
+
+    // Dropping onto the fight strip: once Y is in the gang band, enter gang AI
+    // (don't require an exact lane waypoint — wider band made that stall).
+    if (
+      after === "gang" &&
+      f.y >= gangY() - 0.01 &&
+      f.y <= gangY() + gangHeight() + 0.01
+    ) {
+      this.syncGangFromWorld(f);
+      f.y = laneY;
+      this.finishPath(f);
+      return;
+    }
+
     const onGangCorridor =
       Math.abs(f.y - midY) < 0.14 ||
       Math.abs(f.y - laneY) < 0.12 ||
       Math.abs(t.y - midY) < 0.14 ||
       Math.abs(t.y - laneY) < 0.12;
-    const after = this.getAfter(f);
 
     // Only interrupt for a CLOSE corridor foe (gangX). World MELEE_RANGE spans
     // ~half the gang, so using it here froze units mid-corridor.
@@ -2906,7 +2922,7 @@ export class Match {
     if (after === "gang") {
       f.state = "gang";
       f.gangX = blockIdToGangX(f.blockId);
-      f.y = gangLaneYForUnit(f.id);
+      f.y = this.gangLaneYSpread(f);
       f.x = gangXToWorld(f.gangX);
       // seat stays reserved
     } else if (after === "steward") {
@@ -3056,12 +3072,41 @@ export class Match {
     f.x = gangXToWorld(f.gangX);
   }
 
+  /**
+   * Spread this unit's gang Y evenly across the full strip between Bau rows
+   * (among living teammates currently on the corridor).
+   */
+  private gangLaneYSpread(f: FanUnit): number {
+    const y0 = gangY();
+    const h = Math.max(0.02, gangHeight());
+    const mates = this.fans
+      .filter(
+        (o) =>
+          o.hp > 0 &&
+          o.team === f.team &&
+          !o.isSteward &&
+          (o.state === "gang" ||
+            o.state === "moving" ||
+            o.invading ||
+            o.onOffense) &&
+          (o.kind === "ultras" || o.kind === "hooligans" || o.kind === "normalos"),
+      )
+      .sort((a, b) => a.id - b.id);
+    const n = mates.length;
+    const idx = Math.max(
+      0,
+      mates.findIndex((o) => o.id === f.id),
+    );
+    const u = n <= 1 ? 0.5 : idx / (n - 1);
+    return y0 + h * (0.04 + u * 0.92);
+  }
+
   private tickGangMove(f: FanUnit, dt: number): void {
     if (f.isSteward) return;
     const dir = f.team === this.playerTeam ? 1 : -1;
     // Brisk march so the full Heim→Gast corridor reads as movement
     const speed = 0.11 * FAN_STATS[f.kind].fight;
-    const laneY = gangLaneYForUnit(f.id);
+    const laneY = this.gangLaneYSpread(f);
     const goalBlock = f.team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
     const team = f.team as TeamId;
     const homeGx = blockIdToGangX(
