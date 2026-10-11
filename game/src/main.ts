@@ -1566,10 +1566,11 @@ render();
 if (new URLSearchParams(location.search).has("demoStands")) {
   state.settings = defaultSoloSettings();
   state.setup = defaultSetup();
+  const demoAi = difficultyProfile(state.settings.difficulty);
   state.match = new Match({
     settings: state.settings,
     playerSetup: state.setup,
-    aiSetup: { mix: defaultMix() },
+    aiSetup: { mix: { ...demoAi.aiMix } },
   });
   const m = state.match;
   m.setSpeed(0);
