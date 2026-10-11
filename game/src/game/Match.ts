@@ -316,6 +316,7 @@ export class Match {
           building: null,
           greyNeutral: false,
           beer: 0,
+          merch: 0,
           capacity: 100,
           owner: isNeutral ? "neutral" : null,
           level: 1,
@@ -553,6 +554,7 @@ export class Match {
     s.prodFlash = 0;
     s.autoLevelAcc = 0;
     if (kind === "bier") s.beer = 40;
+    if (kind === "fanshop") s.merch = 40;
     if (kind === "ordner") this.initOrdnerPostHp(s);
   }
 
@@ -1520,6 +1522,7 @@ export class Match {
     s.owner = this.playerTeam;
     if (!s.level) s.level = 1;
     if (s.building === "bier" && s.beer < 20) s.beer = 40;
+    if (s.building === "fanshop" && s.merch < 20) s.merch = 40;
     if (s.building === "ordner") {
       s.stewardCd = 9999; // manual hire only
       if (s.structHp <= 0) this.initOrdnerPostHp(s);
@@ -1898,6 +1901,8 @@ export class Match {
       const rate = productionRate(s.level || 1);
       if (s.building === "bier") {
         s.beer = clamp(s.beer + 0.85 * rate * dt, 0, s.capacity);
+      } else if (s.building === "fanshop") {
+        s.merch = clamp(s.merch + 0.85 * rate * dt, 0, s.capacity);
       }
       if (s.owner === this.playerTeam) {
         const p = this.standWorld(s);
@@ -2356,6 +2361,7 @@ export class Match {
     for (const s of this.slots) {
       if (s.building !== building || s.owner !== team || s.greyNeutral) continue;
       if (building === "bier" && s.beer < 1) continue;
+      if (building === "fanshop" && s.merch < 1) continue;
       const queue = this.queueDepthAt(s);
       const dist = Math.abs(s.blockId - fromBlock);
       // Queue dominates so a far empty stand beats a packed neighbour.
@@ -2374,7 +2380,7 @@ export class Match {
       if (s.greyNeutral) return false;
       if (s.owner !== this.playerTeam && s.owner !== this.aiTeam) return false;
       if (s.building === "bier") return s.beer >= 1;
-      if (s.building === "fanshop") return true;
+      if (s.building === "fanshop") return s.merch >= 1;
       return false;
     });
   }
@@ -2723,6 +2729,7 @@ export class Match {
     const lv = f.level || 1;
     f._standArriveAt = undefined;
     f._angerCd = 0;
+    // Full wait already elapsed — shelf may have refilled while queuing.
     if (stand?.building === "bier" && stand.beer >= 1) {
       stand.beer -= 1;
       f.thirst = 5;
@@ -2738,7 +2745,8 @@ export class Match {
       this.payVisitGold(stand, pay);
       this.consumeVisitStock(stand);
       this.floatAtSlot(stand, "−1 Fass", false);
-    } else if (stand?.building === "fanshop") {
+    } else if (stand?.building === "fanshop" && stand.merch >= 1) {
+      stand.merch -= 1;
       if (f.team === "neutral") {
         f.shopUntil = this.realElapsed + 20 + Math.random() * 10;
       } else {
@@ -2748,8 +2756,10 @@ export class Match {
       const pay = visitGoldPayout("shop", lv);
       this.payVisitGold(stand, pay);
       this.consumeVisitStock(stand);
+      this.floatAtSlot(stand, "−1 Fanartikel", false);
     } else {
-      // Visit failed (empty bier / missing stand) — short backoff
+      // Still empty after waiting — leave without purchase, short backoff
+      if (stand) this.floatAtSlot(stand, "Ausverkauft", false);
       if (f.team === "neutral") {
         f.shopUntil = this.realElapsed + 8 + Math.random() * 4;
       } else {
@@ -3345,6 +3355,7 @@ export class Match {
         s.convertAcc = 0;
         s.convertBy = null;
         if (s.building === "bier" && s.beer < 20) s.beer = 35;
+        if (s.building === "fanshop" && s.merch < 20) s.merch = 35;
         this.floatAtSlot(s, "Übernommen!", true);
         this.toast(
           dominant === this.playerTeam
@@ -4213,6 +4224,7 @@ export class Match {
     s.greyNeutral = false;
     if (!s.level) s.level = 1;
     if (s.building === "bier" && s.beer < 20) s.beer = 40;
+    if (s.building === "fanshop" && s.merch < 20) s.merch = 40;
     if (s.building === "ordner") s.stewardCd = 9999; // AI hires manually
     this.floatAtSlot(s, claim ? "KI Claim" : "KI baut", false);
   }
