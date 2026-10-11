@@ -1608,6 +1608,7 @@ if (new URLSearchParams(location.search).has("demoStands")) {
     s.level = 3;
     s.stewardCd = 9999;
     if (p.kind === "bier") s.beer = 40;
+    if (p.kind === "fanshop") s.merch = 40;
     if (p.kind === "ordner") {
       s.structMaxHp = 120;
       s.structHp = 120;

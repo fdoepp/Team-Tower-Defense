@@ -86,7 +86,10 @@ export type BuildSlot = {
   index: number;
   building: BuildingKind | null;
   greyNeutral: boolean;
+  /** Bierstand shelf stock (visitors buy from this; refills while they wait). */
   beer: number;
+  /** Fanshop shelf stock (same rules as beer). */
+  merch: number;
   capacity: number;
   owner: TeamId | "neutral" | null;
   level: number;
