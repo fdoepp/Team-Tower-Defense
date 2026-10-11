@@ -60,11 +60,19 @@ import {
   difficultyLabel,
   ergebnisValue,
   loadHighscores,
+  teamShort,
   tryInsertHighscore,
   wouldEnterTop10,
   type HighscoreEntry,
   type ScoreBoardKind,
 } from "./game/highscores";
+import {
+  setAmbienceFromMatch,
+  sfx,
+  startAmbience,
+  toggleMuted,
+  unlockAudio,
+} from "./game/sound";
 
 void preloadIcons();
 
@@ -488,6 +496,7 @@ function renderMenu(): void {
       <div class="card stack">
         <button class="btn ksc" id="solo">Solo vs KI</button>
         <button class="btn secondary" id="highscores">Highscores</button>
+        <button class="btn secondary" id="mute-audio">Ton an/aus</button>
         <button class="btn secondary" id="fs-menu">Vollbild</button>
       </div>
       ${
@@ -509,14 +518,27 @@ function renderMenu(): void {
       </div>
     </div>`;
   app.querySelector("#fs-menu")!.addEventListener("click", () => {
+    unlockAudio();
     void goFullscreen();
   });
+  app.querySelector("#mute-audio")!.addEventListener("click", () => {
+    unlockAudio();
+    const muted = toggleMuted();
+    sfx("ui");
+    (app.querySelector("#mute-audio") as HTMLButtonElement).textContent = muted
+      ? "Ton aus"
+      : "Ton an/aus";
+  });
   app.querySelector("#highscores")!.addEventListener("click", () => {
+    sfx("ui");
     state.highscoreDiff = (app.querySelector("#diff") as HTMLSelectElement)
       .value as SoloSettings["difficulty"];
     go("highscores");
   });
   app.querySelector("#solo")!.addEventListener("click", () => {
+    unlockAudio();
+    sfx("ui");
+    startAmbience("menu");
     void goFullscreen();
     state.settings = {
       playerTeam: (app.querySelector("#team") as HTMLSelectElement).value as TeamId,
@@ -558,8 +580,14 @@ function renderTutorial(): void {
         <button class="btn ksc grow" id="tut-next" type="button">Zur Aufstellung</button>
       </div>
     </div>`;
-  app.querySelector("#tut-back")!.addEventListener("click", () => go("menu"));
-  app.querySelector("#tut-next")!.addEventListener("click", () => go("setup"));
+  app.querySelector("#tut-back")!.addEventListener("click", () => {
+    sfx("ui");
+    go("menu");
+  });
+  app.querySelector("#tut-next")!.addEventListener("click", () => {
+    sfx("ui");
+    go("setup");
+  });
 }
 
 function renderHighscores(): void {
@@ -569,7 +597,10 @@ function renderHighscores(): void {
     const rows = tables[d][kind];
     if (!rows.length) return `<p class="tiny">${title}: noch leer</p>`;
     return `<h3>${title}</h3><ol class="hs-list">${rows
-      .map((e, i) => `<li><b>${i + 1}. ${escapeHtml(e.name)}</b> — ${fmt(e)}</li>`)
+      .map(
+        (e, i) =>
+          `<li><b>${i + 1}. ${escapeHtml(e.name)}</b> <span class="hs-team ${e.team === "ksc" || e.team === "vfb" ? e.team : ""}">${teamShort(e.team)}</span> — ${fmt(e)}</li>`,
+      )
       .join("")}</ol>`;
   };
   app.innerHTML = `
@@ -646,6 +677,9 @@ function renderSetup(): void {
     ev.preventDefault();
     ev.stopPropagation();
     if (!isValidMix(state.setup.mix)) return;
+    unlockAudio();
+    sfx("whistle");
+    startAmbience("match");
     const aiProf = difficultyProfile(state.settings.difficulty);
     state.match = new Match({
       settings: state.settings,
@@ -1309,6 +1343,7 @@ function renderMatchScreen(): void {
   };
 
   canvas.addEventListener("pointerdown", (e) => {
+    unlockAudio();
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
@@ -1316,6 +1351,7 @@ function renderMatchScreen(): void {
     // Kauf nur über Personen-Sidebar — Block-Klick öffnet keinen Sitz-Kauf mehr
     const hit = hitSlot(m, mx, my);
     if (hit) {
+      sfx("ui");
       showBuildMenu(hit.blockId, hit.index);
       syncOverlay();
       return;
@@ -1455,6 +1491,12 @@ function renderMatchScreen(): void {
     try {
       m.update(dt);
       drawMatch(ctx, m);
+      const chAmb = m.goalChance();
+      setAmbienceFromMatch({
+        celebrating: m.scorePulse > 0.12,
+        storming: !!m.stormBanner,
+        momentumAbs: Math.abs(chAmb.momentum),
+      });
       const gold = app.querySelector("#gold");
       if (gold) gold.textContent = String(Math.floor(m.gold));
       const beer = app.querySelector("#cur-beer");
@@ -1662,7 +1704,8 @@ function renderResult(): void {
           const { placed, rank } = tryInsertHighscore(r.difficulty, "blocksturm", {
             name,
             value,
-            detail: `Blocksturm in ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
+            team: state.settings.playerTeam,
+            detail: `Blocksturm in ${formatMinute(r.minute)} · ${teamLabel(state.settings.playerTeam)} (${difficultyLabel(r.difficulty)})`,
           });
           if (placed) hsNotes.push(`Blocksturm-Highscore Platz ${rank}!`);
         }
@@ -1679,7 +1722,8 @@ function renderResult(): void {
         const { placed, rank } = tryInsertHighscore(r.difficulty, "ergebnis", {
           name,
           value: erg,
-          detail: `${playerGoals}:${aiGoals} · ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
+          team: state.settings.playerTeam,
+          detail: `${playerGoals}:${aiGoals} · ${teamLabel(state.settings.playerTeam)} · ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
         });
         if (placed) hsNotes.push(`Ergebnis-Highscore Platz ${rank}!`);
       }

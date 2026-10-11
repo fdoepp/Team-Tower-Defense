@@ -1,4 +1,4 @@
-import type { AiDifficulty } from "./types";
+import type { AiDifficulty, TeamId } from "./types";
 
 export type ScoreBoardKind = "ergebnis" | "blocksturm";
 
@@ -9,6 +9,8 @@ export type HighscoreEntry = {
   detail: string;
   at: string;
   difficulty: AiDifficulty;
+  /** Team the player won with */
+  team?: TeamId;
 };
 
 export type HighscoreTables = Record<
@@ -101,4 +103,10 @@ export function difficultyLabel(d: AiDifficulty): string {
   if (d === "easy") return "Einfach";
   if (d === "hard") return "Schwer";
   return "Mittel";
+}
+
+export function teamShort(t?: TeamId): string {
+  if (t === "ksc") return "KSC";
+  if (t === "vfb") return "VfB";
+  return "—";
 }
