@@ -29,7 +29,11 @@ const BOARD_KEYS: Record<AiDifficulty, Record<ScoreBoardKind, string>> = {
   hard: { ergebnis: "mdhs-erg-h", blocksturm: "mdhs-bst-h" },
 };
 
-const META_SEP = " ¦ ";
+/**
+ * ScoreDrop `player`: max 30 chars, only [A-Za-z0-9 _-].
+ * Layout: `{k|v|x} {name} {detail}` e.g. `k DemoFan 2-0` / `v Anna m18`.
+ */
+const PLAYER_MAX = 30;
 
 function emptyTables(): HighscoreTables {
   const blank = (): Record<ScoreBoardKind, HighscoreEntry[]> => ({
@@ -90,11 +94,38 @@ function fromRemoteScore(kind: ScoreBoardKind, remote: number): number {
   return Math.round((1_000_000 / remote) * 10) / 10;
 }
 
-function encodePlayer(entry: HighscoreEntry): string {
-  const team = entry.team === "ksc" || entry.team === "vfb" ? entry.team : "-";
-  const name = entry.name.replaceAll(META_SEP, " ").slice(0, 20);
-  const detail = entry.detail.replaceAll(META_SEP, " · ").slice(0, 80);
-  return `${name}${META_SEP}${team}${META_SEP}${detail}`;
+function sanitizeName(name: string): string {
+  return name
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^A-Za-z0-9 _-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function shortDetail(entry: HighscoreEntry, kind: ScoreBoardKind): string {
+  if (kind === "blocksturm") {
+    const m = entry.detail.match(/(\d+)(?:[.,](\d+))?/);
+    if (m) return m[2] ? `m${m[1]}-${m[2]}` : `m${m[1]}`;
+    const whole = Math.floor(entry.value);
+    const frac = Math.round((entry.value - whole) * 10);
+    return frac > 0 ? `m${whole}-${frac}` : `m${whole}`;
+  }
+  const score = entry.detail.match(/(\d+):(\d+)/);
+  if (score) return `${score[1]}-${score[2]}`;
+  return String(Math.max(0, Math.round(entry.value)));
+}
+
+function encodePlayer(entry: HighscoreEntry, kind: ScoreBoardKind): string {
+  const team =
+    entry.team === "ksc" ? "k" : entry.team === "vfb" ? "v" : "x";
+  const detail = shortDetail(entry, kind);
+  const reserve = team.length + 1 + 1 + detail.length; // "t " + " " + detail
+  const nameMax = Math.max(1, PLAYER_MAX - reserve);
+  let name = sanitizeName(entry.name).slice(0, nameMax) || "Spieler";
+  name = name.replace(/ /g, "_");
+  const encoded = `${team} ${name} ${detail}`;
+  return encoded.slice(0, PLAYER_MAX);
 }
 
 function decodePlayer(
@@ -103,24 +134,43 @@ function decodePlayer(
   difficulty: AiDifficulty,
   remoteScore: number,
 ): HighscoreEntry {
-  const parts = player.split(META_SEP);
-  if (parts.length >= 3) {
-    const teamRaw = parts[1]!;
+  const m = player.trim().match(/^([kvx])\s+(.+?)\s+(\S+)$/i);
+  if (m) {
+    const teamRaw = m[1]!.toLowerCase();
     const team: TeamId | undefined =
-      teamRaw === "ksc" || teamRaw === "vfb" ? teamRaw : undefined;
+      teamRaw === "k" ? "ksc" : teamRaw === "v" ? "vfb" : undefined;
+    const name = m[2]!.replace(/_/g, " ").slice(0, 20) || "Spieler";
+    const short = m[3]!;
+    const value = fromRemoteScore(kind, remoteScore);
+    let detail: string;
+    if (kind === "blocksturm") {
+      const mm = short.match(/^m(\d+)(?:-(\d+))?$/i);
+      const label = mm
+        ? mm[2]
+          ? `${mm[1]},${mm[2]}′`
+          : `${mm[1]}′`
+        : `${value}′`;
+      detail = `Blocksturm in ${label} (${difficultyLabel(difficulty)})`;
+    } else {
+      const sc = short.match(/^(\d+)-(\d+)$/);
+      const label = sc ? `${sc[1]}:${sc[2]}` : short;
+      detail = `${label} · ${teamShort(team)} (${difficultyLabel(difficulty)})`;
+    }
     return {
-      name: parts[0]!.slice(0, 20) || "Spieler",
+      name,
       team,
-      detail: parts.slice(2).join(" · "),
-      value: fromRemoteScore(kind, remoteScore),
+      detail,
+      value,
       difficulty,
       at: new Date(0).toISOString(),
     };
   }
-  // Legacy / plain names from the board UI
   return {
-    name: player.slice(0, 20) || "Spieler",
-    detail: kind === "ergebnis" ? String(remoteScore) : `${fromRemoteScore(kind, remoteScore)}′`,
+    name: sanitizeName(player).slice(0, 20) || "Spieler",
+    detail:
+      kind === "ergebnis"
+        ? String(remoteScore)
+        : `${fromRemoteScore(kind, remoteScore)}′`,
     value: fromRemoteScore(kind, remoteScore),
     difficulty,
     at: new Date(0).toISOString(),
@@ -226,7 +276,7 @@ async function submitRemote(
 ): Promise<boolean> {
   const key = BOARD_KEYS[difficulty][kind];
   const score = toRemoteScore(kind, entry.value);
-  const player = encodePlayer(entry);
+  const player = encodePlayer(entry, kind);
   const playerId = playerIdFor(difficulty, kind, entry.name);
   const url =
     `${REMOTE_BASE}/api/add?key=${encodeURIComponent(key)}` +
