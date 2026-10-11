@@ -1726,6 +1726,11 @@ export class Match {
       this.toast("Slot belegt");
       return false;
     }
+    // Ordnerposts must be destroyed in combat — never soft-claimed
+    if (s.building === "ordner" && s.owner !== this.playerTeam) {
+      this.toast("Ordnerposten muss bekämpft werden");
+      return false;
+    }
     const cost =
       s.greyNeutral || s.owner === "neutral"
         ? Math.floor(BUILD_COST[kind] * 0.7)
@@ -3660,14 +3665,16 @@ export class Match {
     return this.seatCountInBlock(blockId, team) > total / 2;
   }
 
-  /** Which colored Standarte currently covers this plot (if any). */
+  /**
+   * Which colored Standarte currently covers this plot.
+   * Behind Heim-Standarte ⇒ player; behind Gäste-Standarte ⇒ AI;
+   * grey buffer between the two ⇒ nobody.
+   */
   private bannerHolderAt(gx: number): TeamId | null {
-    if (this.linePlayer > gx && this.linePlayer >= this.lineAi - BANNER_MIN_GAP) {
-      return this.playerTeam;
-    }
-    if (this.lineAi < gx && this.lineAi <= this.linePlayer + BANNER_MIN_GAP) {
-      return this.aiTeam;
-    }
+    const behindPlayer = gx < this.linePlayer;
+    const behindAi = gx > this.lineAi;
+    if (behindPlayer && !behindAi) return this.playerTeam;
+    if (behindAi && !behindPlayer) return this.aiTeam;
     return null;
   }
 
@@ -4723,18 +4730,24 @@ export class Match {
     const kinds: BuildingKind[] = ["bier", "ordner", "fanshop"];
     const kind = kinds[this.aiBuildRot % kinds.length];
     this.aiBuildRot++;
-    // Only plots the AI front line has already claimed (by X) — never left early
+    // Only plots the AI front line has already claimed (by X) — never left early.
+    // Ordnerposts are never soft-claimed (must be destroyed first).
     const candidates = this.slots
       .filter(
         (x) =>
           this.inAiTerritory(x.blockId, x.index) &&
           (!x.building ||
-            ((x.owner === "neutral" || x.greyNeutral) && !!x.building)),
+            (x.building !== "ordner" &&
+              (x.owner === "neutral" || x.greyNeutral) &&
+              !!x.building)),
       )
       .sort((a, b) => plotGangX(b.blockId, b.index) - plotGangX(a.blockId, a.index));
     const empty = candidates.find((x) => !x.building);
     const claimable = candidates.find(
-      (x) => x.building && (x.owner === "neutral" || x.greyNeutral),
+      (x) =>
+        x.building &&
+        x.building !== "ordner" &&
+        (x.owner === "neutral" || x.greyNeutral),
     );
     const s = empty ?? claimable;
     if (!s) {
