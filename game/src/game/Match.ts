@@ -1417,6 +1417,11 @@ export class Match {
     f.onOffense = false;
     f.aggro = 10;
     f._homeSeat = seat;
+    // Drop any leftover stand queue so they don't look "still shopping"
+    f.standKey = null;
+    f.drinkT = 0;
+    f.shopT = 0;
+    f._standArriveAt = undefined;
     const end = crowdHomePos(home, seat);
     this.startPath(f, this.pathViaDoors(f, home, end), "home");
   }
@@ -2758,6 +2763,17 @@ export class Match {
     for (const f of this.fans) {
       if (f.hp <= 0 || f.isSteward) continue;
 
+      // No attack order + sitting in the wrong tribune → walk home
+      // (fixes greys stranded after shopping at blue/red stands).
+      if (
+        f.state === "block" &&
+        !f.invading &&
+        !f.onOffense &&
+        f.blockId !== this.homeBlockOf(f)
+      ) {
+        this.returnFanToHomeBlock(f);
+      }
+
       if (f.state === "block") {
         this.tickBlockWander(f, dt);
         if (!f.onOffense) this.maybeStartStandVisit(f);
@@ -2770,7 +2786,12 @@ export class Match {
           this.tickWaitAnger(f, dt);
           continue;
         }
-        this.finishStandVisit(f);
+        // No attack order from a stand visit — always peel home after service
+        if (!f.onOffense) {
+          this.finishStandVisit(f);
+        } else {
+          this.leaveSeatToGang(f, true);
+        }
       } else if (f.state === "gang") {
         this.tickGangMove(f, dt);
       }
@@ -2955,6 +2976,16 @@ export class Match {
   /** Grey starter Fans leave the block every 20–30s to buy at any shop. */
   private maybeStartNeutralShopTrip(f: FanUnit): void {
     if (this.realElapsed < (f.shopUntil || 0)) return;
+    // Cap concurrent grey shoppers so the mid tribune never empties at once
+    let busy = 0;
+    for (const o of this.fans) {
+      if (o.hp <= 0 || o.team !== "neutral" || o.isSteward) continue;
+      if (o.state === "stand" || o.state === "moving") busy++;
+    }
+    if (busy >= 6) {
+      f.shopUntil = this.realElapsed + 2 + Math.random() * 4;
+      return;
+    }
     const stands = this.anyOpenShopStands();
     if (!stands.length) {
       f.shopUntil = this.realElapsed + 4 + Math.random() * 4;
@@ -2965,8 +2996,7 @@ export class Match {
     const after = stand.building === "bier" ? "stand" : "shop";
     this.startPath(f, this.pathViaDoors(f, stand.blockId, wait), after);
     f.standKey = slotKey(stand.blockId, stand.index);
-    f._wanderTx = wait.x;
-    f._wanderTy = wait.y;
+    // Wait wander targets are set on arrive (finishPath), not as gang depth
   }
 
   /**
@@ -3174,12 +3204,10 @@ export class Match {
       }
     }
 
-    const home =
-      f.team === this.playerTeam
-        ? HEIM_BLOCK
-        : f.team === this.aiTeam
-          ? GAST_BLOCK
-          : f.blockId;
+    // Always the true home tribune — never the stand's blockId (neutrals
+    // temporarily set blockId to the shop block on arrive; using that as
+    // "home" stranded greys in blue/red and emptied the mid stand).
+    const home = this.homeBlockOf(f);
     const seat =
       f.seatIndex != null && !this.seatOccupied(home, f.seatIndex)
         ? f.seatIndex
@@ -3205,6 +3233,10 @@ export class Match {
     f.state = "moving";
     f.path = path;
     f.pathI = 0;
+    // Clear stand-wait absolutes so corridor sync cannot treat them as depth
+    f._wanderTx = undefined;
+    f._wanderTy = undefined;
+    f._wanderCd = 0;
     this.setAfter(f, after);
   }
 
@@ -3307,6 +3339,11 @@ export class Match {
           if (f.aggro < 80) f.aggro = 40;
           this.setAfter(f, "");
         } else {
+          // Was en route to a stand / idle path — abort shop, walk home on gang
+          f.standKey = null;
+          f.drinkT = 0;
+          f.shopT = 0;
+          f._standArriveAt = undefined;
           f.aggro = Math.max(f.aggro, 80);
           this.setAfter(f, "");
         }
@@ -3537,8 +3574,9 @@ export class Match {
   private syncGangFromWorld(f: FanUnit): void {
     const left = blockCenterX(0);
     const right = blockCenterX(BLOCK_COUNT - 1);
-    // Strip personal depth + edge wander before mapping back to logical gangX
-    const depth = gangLaneDepthForUnit(f.id) + (f._wanderTx ?? 0);
+    // Strip personal depth (+ gang edge lean only — not stand-wait absolute X)
+    const edge = f.state === "gang" ? (f._wanderTx ?? 0) : 0;
+    const depth = gangLaneDepthForUnit(f.id) + edge;
     f.gangX = clamp((f.x - depth - left) / (right - left || 1), 0, 1);
     f.x = this.gangWorldX(f);
   }
@@ -3548,7 +3586,10 @@ export class Match {
    * `_wanderTx` on gang units stores an extra depth offset (not a world X).
    */
   private gangWorldX(f: FanUnit): number {
-    const edge = f._wanderTx ?? 0;
+    // `_wanderTx` is dual-use: absolute wait-wander X while state==="stand",
+    // and a small edge-lean offset while state==="gang". Never apply the
+    // stand absolute as a gang depth — that freezes pathing on the corridor.
+    const edge = f.state === "gang" ? (f._wanderTx ?? 0) : 0;
     return gangXToWorld(f.gangX) + gangLaneDepthForUnit(f.id) + edge;
   }
 
