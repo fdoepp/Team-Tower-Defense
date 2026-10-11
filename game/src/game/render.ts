@@ -19,7 +19,6 @@ import {
   blocksRightNorm,
   boothQuad,
   boothRect,
-  doorPos,
   gangHeight,
   gangY,
   seatPos,
@@ -285,15 +284,7 @@ function drawBlocks(
       ctx.fill();
     }
     // Keine Heim/Neutral/Gäste-Überschriften auf den Tribünen
-
-    const d = doorPos(b.id);
-    const doorW = bw * L.doorFrac * 0.85;
-    const corridorTop = d.y * h;
-    const corridorH = Math.max(8, h * gangY() - corridorTop + 4);
-    const dx = d.x * w - doorW / 2;
-    ctx.fillStyle = "rgba(2,6,23,0.55)";
-    roundRect(ctx, dx, corridorTop - 2, doorW, corridorH + 4, 6);
-    ctx.fill();
+    // Keine optischen Ausgangsgänge vom Block runter — Pfad-Mechanik bleibt.
   }
 }
 
