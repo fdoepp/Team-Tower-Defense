@@ -429,12 +429,13 @@ function drawSeats(
   }
 }
 
-/** Scoreboard slots — scoreboard-slots.json (0–1 on chrome box). */
+/** Scoreboard slots — calibrated to scoreboard-chrome.png (0–1 on chrome box). */
 const SB_SLOTS = {
   logoHeim: { x: 0.08, y: 0.28, w: 0.18, h: 0.44 },
   logoGast: { x: 0.74, y: 0.28, w: 0.18, h: 0.44 },
   score: { x: 0.32, y: 0.3, w: 0.36, h: 0.36 },
-  clock: { x: 0.45, y: 0.17, w: 0.1, h: 0.14 },
+  /** Green top circle (measured): cx≈0.50, cy≈0.23, diameter≈0.094 */
+  clock: { x: 0.453, y: 0.178, w: 0.094, h: 0.094 },
   momentumTrack: { x: 0.1, y: 0.7, w: 0.8, h: 0.24 },
 } as const;
 
@@ -495,9 +496,20 @@ function drawScoreboard(
 
   const ck = slot("clock");
   const min = Math.floor(m.minute ?? 0);
+  const clockLabel = `${min}′`;
+  // Fit text inside the green circle (square slot ≈ diameter); keep padding for 90′
+  const maxPx = Math.max(8, Math.floor(Math.min(ck.w, ck.h) * 0.42));
+  let clockPx = maxPx;
+  ctx.font = `800 ${clockPx}px Outfit, Manrope, sans-serif`;
+  while (clockPx > 7 && ctx.measureText(clockLabel).width > ck.w * 0.62) {
+    clockPx -= 1;
+    ctx.font = `800 ${clockPx}px Outfit, Manrope, sans-serif`;
+  }
   ctx.fillStyle = "#0f2310";
-  ctx.font = `800 ${Math.max(10, Math.floor(ck.h * 0.55))}px Outfit, Manrope, sans-serif`;
-  ctx.fillText(`${min}′`, ck.x + ck.w / 2, ck.y + ck.h / 2);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  // Optical center: Outfit + prime sits high with middle baseline
+  ctx.fillText(clockLabel, ck.x + ck.w / 2, ck.y + ck.h * 0.58);
 
   // Momentum bar only (Torwahrscheinlichkeit label removed — LIVE ticker below)
   const mt = slot("momentumTrack");
