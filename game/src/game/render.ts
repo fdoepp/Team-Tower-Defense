@@ -432,8 +432,9 @@ function drawSeats(
 
 /** Scoreboard slots — calibrated to scoreboard-chrome.png (0–1 on chrome box). */
 const SB_SLOTS = {
-  logoHeim: { x: 0.08, y: 0.28, w: 0.18, h: 0.44 },
-  logoGast: { x: 0.74, y: 0.28, w: 0.18, h: 0.44 },
+  /** Wide parchment plates — must fully hide baked KSC/VfB shields */
+  logoHeim: { x: 0.02, y: 0.14, w: 0.30, h: 0.58 },
+  logoGast: { x: 0.68, y: 0.14, w: 0.30, h: 0.58 },
   score: { x: 0.32, y: 0.3, w: 0.36, h: 0.36 },
   /** Green top circle (measured): cx≈0.50, cy≈0.23, diameter≈0.094 */
   clock: { x: 0.453, y: 0.178, w: 0.094, h: 0.094 },
@@ -482,42 +483,58 @@ function drawScoreboard(
     };
   };
 
-  // Live club badges over baked logo slots (multi-team test branch)
+  // Cover baked KSC/VfB shields (beige plate), then paint live club discs
   const paintCrest = (side: "ksc" | "vfb", key: "logoHeim" | "logoGast") => {
     const r = slot(key);
-    const pad = Math.min(r.w, r.h) * 0.08;
-    const x = r.x + pad;
-    const y = r.y + pad;
-    const ww = r.w - pad * 2;
-    const hh = r.h - pad * 2;
+    // Match chrome parchment so baked shields disappear cleanly
+    roundRect(ctx, r.x, r.y, r.w, r.h, Math.min(10, r.h * 0.18));
+    ctx.fillStyle = "#e7dfc8";
+    ctx.fill();
+    const cx = r.x + r.w / 2;
+    const cy = r.y + r.h / 2;
+    const rad = Math.min(r.w, r.h) * 0.42;
     const prim = clubPrimary(side);
     const sec = clubSecondary(side);
-    roundRect(ctx, x, y, ww, hh, Math.min(8, hh * 0.22));
-    ctx.fillStyle = prim;
-    ctx.fill();
-    ctx.strokeStyle = sec;
-    ctx.lineWidth = Math.max(1.5, hh * 0.06);
-    ctx.stroke();
-    ctx.fillStyle = sec === "#FFFFFF" || sec.toLowerCase() === "#fff" ? "#f8fafc" : sec;
-    // Prefer readable contrast on dark kits
     const dark =
       prim === "#000000" ||
       prim.toLowerCase() === "#000" ||
       prim === "#241F20" ||
       prim === "#010E80" ||
       prim === "#132257" ||
-      prim === "#004812";
-    ctx.fillStyle = dark || sec === "#FFFFFF" || sec.toLowerCase() === "#fff" ? "#f8fafc" : sec;
+      prim === "#004812" ||
+      prim === "#003DA5" ||
+      prim === "#004170";
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.fillStyle = prim;
+    ctx.fill();
+    ctx.strokeStyle =
+      sec === "#FFFFFF" || sec.toLowerCase() === "#fff"
+        ? "rgba(248,250,252,0.9)"
+        : sec;
+    ctx.lineWidth = Math.max(2, rad * 0.12);
+    ctx.stroke();
+    const secDark =
+      sec === "#000000" ||
+      sec.toLowerCase() === "#000" ||
+      sec === "#8B4513";
+    ctx.fillStyle =
+      dark ||
+      secDark ||
+      sec === "#FFFFFF" ||
+      sec.toLowerCase() === "#fff"
+        ? "#f8fafc"
+        : sec;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     const short = clubShort(side);
-    let px = Math.max(9, Math.floor(hh * 0.42));
+    let px = Math.max(10, Math.floor(rad * 0.78));
     ctx.font = `900 ${px}px Outfit, Manrope, sans-serif`;
-    while (px > 7 && ctx.measureText(short).width > ww * 0.88) {
+    while (px > 7 && ctx.measureText(short).width > rad * 1.55) {
       px -= 1;
       ctx.font = `900 ${px}px Outfit, Manrope, sans-serif`;
     }
-    ctx.fillText(short, x + ww / 2, y + hh / 2 + 0.5);
+    ctx.fillText(short, cx, cy + 0.5);
   };
   paintCrest("ksc", "logoHeim");
   paintCrest("vfb", "logoGast");
