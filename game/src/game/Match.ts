@@ -1830,7 +1830,7 @@ export class Match {
       this.tickToasts(dt);
       this.tickConfetti(dt);
       this.tickMoodFx(dt);
-      if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - dt * 0.55);
+      if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - dt * 0.28);
       return;
     }
     const step = dt * this.speed;
@@ -1865,7 +1865,7 @@ export class Match {
       this.tickFloats(step);
       this.tickToasts(step);
       this.tickConfetti(step);
-      if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - step * 0.55);
+      if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - step * 0.28);
       return;
     }
 
@@ -1878,7 +1878,7 @@ export class Match {
       this.moodFloatCd.gast = Math.max(0, this.moodFloatCd.gast - step);
     // Slower decay so Torjubel scoreboard flash stays readable longer
     if (this.scorePulse > 0)
-      this.scorePulse = Math.max(0, this.scorePulse - step * 0.55);
+      this.scorePulse = Math.max(0, this.scorePulse - step * 0.28);
 
     this.tickEconomy(step);
     this.tickSecurityBaseline(step);
@@ -1917,18 +1917,24 @@ export class Match {
         // Keep arms lively + denser FX for the whole Torjubel window
         if (f.armSwing < 0.55) f.armSwing = 0.7 + Math.random() * 0.25;
         // Mid-celebration re-bursts (schema: Fans confetti · Ultra smoke · Hool props)
-        if (prevCheer > 6 && f.cheerT <= 6) {
-          const club = f.team === "ksc" ? "#1d4ed8" : "#b91c1c";
-          if (f.kind === "normalos") this.burstFanConfetti(f, "#f8fafc");
-          else if (f.kind === "ultras") {
-            f.throwT = Math.max(f.throwT, 2.2);
+        const club = f.team === "ksc" ? "#1d4ed8" : "#b91c1c";
+        if (
+          (prevCheer > 8.5 && f.cheerT <= 8.5) ||
+          (prevCheer > 5.5 && f.cheerT <= 5.5) ||
+          (prevCheer > 2.8 && f.cheerT <= 2.8)
+        ) {
+          if (f.kind === "normalos") {
+            this.burstFanConfetti(f, "#f8fafc");
+            this.burstFanConfetti(f, club);
+          } else if (f.kind === "ultras") {
+            f.throwT = Math.max(f.throwT, 2.4);
             this.burstUltraSmoke(f, club);
           } else if (f.kind === "hooligans") {
             if (f.id % 2 === 0) this.burstBeerMug(f);
             else this.burstFireworkRocket(f, club);
           }
         }
-        if (Math.random() < 0.55 * step * 10) {
+        if (Math.random() < 0.7 * step * 12) {
           const isPyro = f.kind === "ultras";
           const isHool = f.kind === "hooligans";
           const color =
@@ -3252,29 +3258,45 @@ export class Match {
    * skirmish pockets instead of one packed scrum.
    */
   private applySkirmishSeparation(f: FanUnit, dt: number): void {
-    const y0 = gangY() + 0.012;
-    const y1 = gangY() + gangHeight() - 0.012;
+    const onGang =
+      f.state === "gang" ||
+      f.state === "stand" ||
+      (f.state === "moving" && Math.abs(f.y - gangMidY()) < gangHeight());
+    let y0: number;
+    let y1: number;
+    if (onGang) {
+      y0 = gangY() + 0.012;
+      y1 = gangY() + gangHeight() - 0.012;
+    } else {
+      const r = blockCrowdRect(f.blockId);
+      y0 = r.top + 0.01;
+      y1 = r.top + r.height - 0.01;
+    }
     let pushY = 0;
     for (const o of this.fans) {
-      if (o === f || o.hp <= 0 || o.team !== f.team || o.isSteward) continue;
+      if (o === f || o.hp <= 0 || o.isSteward) continue;
+      // Separate from allies always; light push vs overlapping hostiles too
+      const ally = o.team === f.team;
       if (
         o.state !== "gang" &&
         !o.invading &&
         o.state !== "moving" &&
-        o.state !== "stand"
+        o.state !== "stand" &&
+        !(o.state === "block" && (f.invading || f.state === "block"))
       )
         continue;
       const dx = f.x - o.x;
       const dy = f.y - o.y;
       const d = Math.hypot(dx, dy);
-      if (d < 1e-4 || d > 0.055) continue;
+      const minD = ally ? 0.07 : 0.045;
+      if (d < 1e-4 || d > minD) continue;
       // Prefer pushing on Y so X contact (the fight) stays; stronger when stacked
-      const falloff = (0.055 - d) / 0.055;
-      const ny = Math.abs(dy) < 0.004 ? (f.id < o.id ? -1 : 1) : dy / d;
-      pushY += ny * falloff * 0.042;
+      const falloff = (minD - d) / minD;
+      const ny = Math.abs(dy) < 0.006 ? (f.id < o.id ? -1 : 1) : dy / d;
+      pushY += ny * falloff * (ally ? 0.085 : 0.035);
     }
     if (Math.abs(pushY) < 1e-5) return;
-    f.y = clamp(f.y + pushY * Math.min(1, 9 * dt), y0, y1);
+    f.y = clamp(f.y + pushY * Math.min(1, 12 * dt), y0, y1);
   }
 
   private syncGangFromWorld(f: FanUnit): void {
@@ -3772,6 +3794,10 @@ export class Match {
 
       a.armSwing = 1;
       a.attackCd = HIT_CD / Math.max(0.4, this.attackOf(a));
+      // Keep melee pockets readable while trading blows
+      if (a.state === "gang" || a.invading || a.state === "moving") {
+        this.applySkirmishSeparation(a, 0.08);
+      }
 
       if (target.kind === "post") {
         const pos = this.ordnerPostGangPos(target.post);
@@ -4076,10 +4102,10 @@ export class Match {
     else this.scoreVfb++;
     // No direct mood/momentum bump — celebration leaves the block (Bierrunde)
     this.lastGoalTeam = team;
-    this.scorePulse = 1.85; // longer scoreboard flash for Torjubel
+    this.scorePulse = 2.6; // longer scoreboard flash for Torjubel
     this.spawnGoalConfetti(team);
     this.startGoalCelebration(team);
-    this.toast(`TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`, 9);
+    this.toast(`TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`, 10);
   }
 
   /**

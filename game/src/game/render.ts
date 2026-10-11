@@ -790,25 +790,33 @@ function drawBuilding(
 
   if (s.building === "ordner" && s.structMaxHp > 0) {
     const pct = Math.max(0, Math.min(1, s.structHp / s.structMaxHp));
-    const barW = Math.max(18, bw - 6);
-    const barH = Math.max(7, Math.floor(bh * 0.09));
+    const barW = Math.max(28, bw * 0.92);
+    const barH = Math.max(10, Math.floor(bh * 0.13));
     const barX = x + (bw - barW) / 2;
-    const barY = y + bh - barH - 3;
-    // High-contrast plate so the Ordnerpost HP bar reads at a glance
-    ctx.fillStyle = "rgba(15,23,42,0.88)";
-    ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
-    ctx.strokeStyle = "rgba(248,250,252,0.55)";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(barX - 1, barY - 1, barW + 2, barH + 2);
-    ctx.fillStyle = "rgba(30,41,59,0.95)";
+    // Sit just above the booth so it doesn't hide under feet / floor grid
+    const barY = y + bh * 0.02;
+    ctx.fillStyle = "rgba(15,23,42,0.92)";
+    ctx.fillRect(barX - 2, barY - 2, barW + 4, barH + 4);
+    ctx.strokeStyle = "rgba(248,250,252,0.75)";
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(barX - 2, barY - 2, barW + 4, barH + 4);
+    ctx.fillStyle = "rgba(30,41,59,0.98)";
     ctx.fillRect(barX, barY, barW, barH);
     const fillCol =
       pct > 0.55 ? "#22c55e" : pct > 0.28 ? "#f59e0b" : "#ef4444";
     ctx.fillStyle = fillCol;
     ctx.fillRect(barX, barY, barW * pct, barH);
-    // Soft highlight on the fill for readability on busy Bau tiles
-    ctx.fillStyle = "rgba(255,255,255,0.22)";
-    ctx.fillRect(barX, barY, barW * pct, Math.max(2, barH * 0.35));
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.fillRect(barX, barY, barW * pct, Math.max(3, barH * 0.4));
+    // Tiny HP readout for damaged posts
+    if (pct < 0.98) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.font = `800 ${Math.max(9, Math.floor(barH * 0.85))}px Outfit, Manrope, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(`${Math.round(pct * 100)}%`, barX + barW / 2, barY + barH / 2 + 0.5);
+      ctx.textBaseline = "alphabetic";
+    }
   }
 
   // level pips
