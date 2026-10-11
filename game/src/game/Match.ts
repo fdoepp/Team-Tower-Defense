@@ -627,6 +627,15 @@ export class Match {
     return plotGangX(s.blockId, s.index);
   }
 
+  private isGreyBuilding(s: BuildSlot): boolean {
+    return !!(s.owner === "neutral" || s.greyNeutral);
+  }
+
+  /** Active attack order or block invasion — not shopping / walking home. */
+  private isActiveAttacker(f: FanUnit): boolean {
+    return !!(f.onOffense || f.invading);
+  }
+
   private isHostileOrdnerPost(s: BuildSlot, team: TeamId): boolean {
     if (s.building !== "ordner" || s.structHp <= 0) return false;
     if (s.owner === team) return false;
@@ -1517,6 +1526,10 @@ export class Match {
     ) {
       for (const s of this.slots) {
         if (!this.isHostileOrdnerPost(s, a.team as TeamId)) continue;
+        // Grey / neutral buildings: only under an active attack order
+        if (this.isGreyBuilding(s) && !this.isActiveAttacker(a)) {
+          continue;
+        }
         const pos = this.ordnerPostGangPos(s);
         const d = dist(a.x, a.y, pos.x, pos.y);
         // Prefer posts ahead / nearby; ignore far behind
@@ -2134,12 +2147,14 @@ export class Match {
   }
 
   /**
-   * Sicherheit bedroht: Gegner im Heimblock, nahe Heim-Tür/Gang, oder nahe
-   * eigener Buden auf der Gang-Ebene.
+   * Sicherheit bedroht: nur echte Angreifer (Angriffsauftrag / Invasion)
+   * im Heimblock oder nahe Heim-Tür/Buden — nicht KI-Einkäufer auf dem Gang.
    */
   playerSecurityThreatened(): boolean {
     for (const f of this.fans) {
       if (f.hp <= 0 || f.isSteward || f.team !== this.aiTeam) continue;
+      // Shoppers / wanderers must not freeze Ordnerpost Sicherheit
+      if (!this.isActiveAttacker(f)) continue;
       if (f.blockId === HEIM_BLOCK && (f.state === "block" || f.invading)) {
         return true;
       }
@@ -2647,6 +2662,8 @@ export class Match {
       if (o.kind !== "ultras" && o.kind !== "hooligans") continue;
       if (o.team === f.team) continue;
       if (o.team === "neutral") continue;
+      // Neutral Ordner: only chase active attackers — never shoppers
+      if (f.team === "neutral" && !this.isActiveAttacker(o)) continue;
       const onGang =
         o.state === "gang" ||
         o.invading ||
@@ -3485,7 +3502,17 @@ export class Match {
   private isHostileUnit(f: FanUnit, o: FanUnit): boolean {
     if (o === f || o.hp <= 0) return false;
     if (o.team === f.team) return false;
+    // Grey Fans never fight (only Ordner defend)
     if (o.team === "neutral" && !o.isSteward) return false;
+    if (f.team === "neutral" && !f.isSteward) return false;
+    // Neutral Ordner only engage units on an active attack / invasion
+    if (f.isSteward && f.team === "neutral") {
+      return this.isActiveAttacker(o);
+    }
+    // Team units only treat grey Ordner as foes when attacking
+    if (o.isSteward && o.team === "neutral") {
+      return this.isActiveAttacker(f);
+    }
     return true;
   }
 
