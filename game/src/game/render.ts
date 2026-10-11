@@ -29,7 +29,6 @@ import {
   SCENE_ASSETS,
   UI_ICONS,
   drawIcon,
-  drawIconQuad,
   drawToyIcon,
   drawToyProp,
   getIcon,
@@ -45,9 +44,7 @@ import {
   type SlotControl,
 } from "./assets";
 import {
-  PLOT_DRAW_INSET,
   boothFacadeQuad,
-  insetQuad,
   scaleQuad,
   type ScreenQuad,
 } from "./floorGrid";
@@ -703,25 +700,29 @@ function drawBaustelle(
   let drew = false;
   let footX = x + bw / 2;
   let footY = y + bh / 2;
-  ctx.save();
-  // Same opacity top/bottom so far plots stay as readable as near.
-  ctx.globalAlpha = sel ? 1 : 0.88;
   if (FLOOR_GRID_COUPLE) {
     const cell = boothQuad(s.blockId, s.index);
-    const q = scaleQuad(insetQuad(cell, PLOT_DRAW_INSET), m.width, m.height);
+    const q = scaleQuad(cell, m.width, m.height);
     footX = (q.tl.x + q.tr.x + q.br.x + q.bl.x) / 4;
     footY = (q.tl.y + q.tr.y + q.br.y + q.bl.y) / 4;
-    drew = drawIconQuad(ctx, src, q.tl, q.tr, q.br, q.bl);
-  } else {
-    const padX = bw * PLOT_DRAW_INSET * 0.5;
-    const padY = bh * PLOT_DRAW_INSET * 0.5;
-    drew = drawIcon(ctx, src, x + padX, y + padY, bw - padX * 2, bh - padY * 2, 0.02);
   }
-  ctx.restore();
-
-  // Jackhammer sign: same large size top & bottom (near-row size for both).
+  // Same screen-size Bauplatz marker top & bottom (no far-row shrink).
   const standarte = standarteSizePx(m.width, m.height);
   const signSize = standarte * 1.25;
+  const padSize = signSize * 0.95;
+  ctx.save();
+  ctx.globalAlpha = sel ? 1 : 0.9;
+  drew = drawIcon(
+    ctx,
+    src,
+    footX - padSize * 0.5,
+    footY - padSize * 0.35,
+    padSize,
+    padSize * 0.7,
+    0.02,
+  );
+  ctx.restore();
+
   const signSrc = baustelleSchildIconPath(control);
   drawPennantUpright(ctx, signSrc, footX, footY, signSize);
 
@@ -768,17 +769,17 @@ function drawBuilding(
   let footY = y + bh * 0.78;
   // Mid-gang Ordner sits in the fight corridor — keep it compact vs Bau-row stands
   const midGang = s.blockId === 1 && s.index === 4;
-  // Gebäude ×2.8125 on Bau rows; mid-gang Ordner ~half so it doesn't dominate the Gang
-  const BUILD_SCALE = midGang ? 1.35 : 2.8125;
+  // Gebäude ×2.8125 on Bau rows; mid-gang much smaller so it doesn't dominate the Gang
+  const BUILD_SCALE = midGang ? 0.95 : 2.8125;
   let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
     facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, {
-      widthScale: midGang ? 0.85 : 1.35,
-      heightScale: midGang ? 1.15 : 1.92,
-      taper: midGang ? 0.2 : 0.32,
+      widthScale: midGang ? 0.7 : 1.35,
+      heightScale: midGang ? 0.95 : 1.92,
+      taper: midGang ? 0.15 : 0.32,
     });
   }
 
@@ -795,7 +796,8 @@ function drawBuilding(
     const baseW = Math.hypot(facade.br.x - facade.bl.x, facade.br.y - facade.bl.y);
     const topY = (facade.tl.y + facade.tr.y) / 2;
     const facadeH = Math.max(1, footY - topY);
-    size = Math.max(34, Math.min(baseW * 1.05, facadeH) * BUILD_SCALE);
+    const raw = Math.min(baseW * 1.05, facadeH) * BUILD_SCALE;
+    size = midGang ? Math.max(28, Math.min(52, raw)) : Math.max(34, raw);
     ctx.fillStyle = "rgba(15,23,42,0.35)";
     ctx.beginPath();
     ctx.ellipse(cx, footY + 2, baseW * 0.32, baseW * 0.08, 0, 0, Math.PI * 2);
