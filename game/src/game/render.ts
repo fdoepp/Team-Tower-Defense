@@ -700,14 +700,12 @@ function drawBaustelle(
 ): void {
   const control = slotControlForPlot(m, s);
   const src = slotEmptyIconPath(control, "persp", false);
-  // Heim/Gäste: 0..2 far · 3..5 near · Neutral Bau: 0..1 far · 2..3 near
-  const farRow = s.blockId === 1 ? s.index < 2 : s.index < 3;
   let drew = false;
   let footX = x + bw / 2;
   let footY = y + bh / 2;
   ctx.save();
-  // Far row quieter so the near band and gang stay readable.
-  ctx.globalAlpha = sel ? 1 : farRow ? 0.52 : 0.78;
+  // Same opacity top/bottom so far plots stay as readable as near.
+  ctx.globalAlpha = sel ? 1 : 0.88;
   if (FLOOR_GRID_COUPLE) {
     const cell = boothQuad(s.blockId, s.index);
     const q = scaleQuad(insetQuad(cell, PLOT_DRAW_INSET), m.width, m.height);
@@ -721,9 +719,9 @@ function drawBaustelle(
   }
   ctx.restore();
 
-  // Jackhammer sign: Standarte size at gang mid × 75% (far) / 125% (near).
+  // Jackhammer sign: same large size top & bottom (near-row size for both).
   const standarte = standarteSizePx(m.width, m.height);
-  const signSize = standarte * (farRow ? 0.75 : 1.25);
+  const signSize = standarte * 1.25;
   const signSrc = baustelleSchildIconPath(control);
   drawPennantUpright(ctx, signSrc, footX, footY, signSize);
 
@@ -768,17 +766,19 @@ function drawBuilding(
   // sets foot position + size from the VP facade math — no icon warp/yaw.
   let cx = x + bw / 2;
   let footY = y + bh * 0.78;
-  // Gebäude ×2.8125 vs prior ×1.40625 (nochmals verdoppelt)
-  const BUILD_SCALE = 2.8125;
+  // Mid-gang Ordner sits in the fight corridor — keep it compact vs Bau-row stands
+  const midGang = s.blockId === 1 && s.index === 4;
+  // Gebäude ×2.8125 on Bau rows; mid-gang Ordner ~half so it doesn't dominate the Gang
+  const BUILD_SCALE = midGang ? 1.35 : 2.8125;
   let size = Math.min(bw, bh) * 0.98 * BUILD_SCALE;
   let pq: ReturnType<typeof scaleQuad> | null = null;
   let facade: ReturnType<typeof boothFacadeQuad> | null = null;
   if (FLOOR_GRID_COUPLE) {
     pq = scaleQuad(boothQuad(s.blockId, s.index), m.width, m.height);
     facade = boothFacadeQuad(s.blockId, s.index, m.width, m.height, {
-      widthScale: 1.35,
-      heightScale: 1.92,
-      taper: 0.32,
+      widthScale: midGang ? 0.85 : 1.35,
+      heightScale: midGang ? 1.15 : 1.92,
+      taper: midGang ? 0.2 : 0.32,
     });
   }
 
