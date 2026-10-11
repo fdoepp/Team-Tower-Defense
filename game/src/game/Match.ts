@@ -103,6 +103,7 @@ import {
 } from "./types";
 import {
   applyClubCssVars,
+  clubPrimary,
   getClub,
   setSideBranding,
 } from "./clubs";
@@ -2096,7 +2097,10 @@ export class Match {
         // Keep arms lively + denser FX for the whole Torjubel window
         if (f.armSwing < 0.55) f.armSwing = 0.7 + Math.random() * 0.25;
         // Mid-celebration re-bursts (schema: Fans confetti · Ultra smoke · Hool props)
-        const club = f.team === "ksc" ? "#1d4ed8" : "#b91c1c";
+        const club =
+          f.team === "ksc" || f.team === "vfb"
+            ? clubPrimary(f.team)
+            : "#9ca3af";
         if (
           (prevCheer > 8.5 && f.cheerT <= 8.5) ||
           (prevCheer > 5.5 && f.cheerT <= 5.5) ||
@@ -2118,7 +2122,9 @@ export class Match {
           const isPyro = f.kind === "ultras";
           const isHool = f.kind === "hooligans";
           const color =
-            f.team === "ksc" ? "#3b82f6" : f.team === "vfb" ? "#ef4444" : "#9ca3af";
+            f.team === "ksc" || f.team === "vfb"
+              ? clubPrimary(f.team)
+              : "#9ca3af";
           this.moodFx.push({
             kind: isPyro ? "smoke" : isHool ? "spark" : "note",
             x: f.x + (Math.random() - 0.5) * 0.03,
@@ -4765,7 +4771,7 @@ export class Match {
     blockId: number,
     opening: boolean,
   ): void {
-    const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
+    const club = clubPrimary(team);
     const white = "#f8fafc";
     const holders = this.fans.filter(
       (f) =>
@@ -4910,7 +4916,7 @@ export class Match {
   private startGoalCelebration(team: TeamId): void {
     const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
     const white = "#f8fafc";
-    const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
+    const club = clubPrimary(team);
     let fanI = 0;
     let ultraI = 0;
     let hoolI = 0;
@@ -5025,7 +5031,7 @@ export class Match {
     const blockId = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
     const r = blockCrowdRect(blockId);
     const white = "#f8fafc";
-    const club = team === "ksc" ? "#1d4ed8" : "#b91c1c";
+    const club = clubPrimary(team);
     for (let i = 0; i < 22; i++) {
       this.confetti.push({
         x: r.left + Math.random() * r.width,

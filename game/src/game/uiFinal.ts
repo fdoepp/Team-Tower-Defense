@@ -166,6 +166,13 @@ export type UiFinalId =
   | "waitAngerHot"
 ;
 
+export type LiveTintMeta = {
+  enabled: true;
+  basePalette: "blue" | "red";
+  pullsFrom: "sideKitPrimary";
+  side: "heim" | "gast";
+};
+
 export type UiFinalEntry = {
   file: string;
   path: string;
@@ -173,6 +180,7 @@ export type UiFinalEntry = {
   aspectRatio: number;
   preserveAspect: true;
   freigestellt: boolean;
+  liveTint?: LiveTintMeta;
 };
 
 /** Runtime paths under game/public — only user-approved releases. */
@@ -224,6 +232,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "btnIconBierAmber": {
     file: "btn-icon-bier-amber.png",
@@ -248,6 +262,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "btnIconSquareRed": {
     file: "btn-icon-square-red.png",
@@ -256,6 +276,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "btnIconUltraBlue": {
     file: "btn-icon-ultra-blue.png",
@@ -264,6 +290,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "btnIconUpgradeBuilding": {
     file: "btn-icon-upgrade-building.png",
@@ -288,6 +320,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 3.333333,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "btnUpgradeGrey": {
     file: "btn-upgrade-grey.png",
@@ -408,6 +446,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "fanBlue2": {
     file: "fan-blue-2.png",
@@ -416,6 +460,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "fanBlue3": {
     file: "fan-blue-3.png",
@@ -424,6 +474,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "fanBlue4": {
     file: "fan-blue-4.png",
@@ -432,6 +488,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "fanBlue5": {
     file: "fan-blue-5.png",
@@ -440,6 +502,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "fanGrey1": {
     file: "fan-grey-1.png",
@@ -488,6 +556,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "fanRed2": {
     file: "fan-red-2.png",
@@ -496,6 +570,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "fanRed3": {
     file: "fan-red-3.png",
@@ -504,6 +584,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "fanRed4": {
     file: "fan-red-4.png",
@@ -512,6 +598,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "fanRed5": {
     file: "fan-red-5.png",
@@ -520,6 +612,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "fxFistBlue": {
     file: "fx-fist-blue.png",
@@ -528,6 +626,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "fxFistGrey": {
     file: "fx-fist-grey.png",
@@ -544,6 +648,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "fxHeal": {
     file: "fx-heal.png",
@@ -560,6 +670,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "fxPyroShotGrey": {
     file: "fx-pyro-shot-grey.png",
@@ -576,6 +692,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "hooliganBlue1": {
     file: "hooligan-blue-1.png",
@@ -584,6 +706,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "hooliganBlue2": {
     file: "hooligan-blue-2.png",
@@ -592,6 +720,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "hooliganBlue3": {
     file: "hooligan-blue-3.png",
@@ -600,6 +734,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "hooliganBlue4": {
     file: "hooligan-blue-4.png",
@@ -608,6 +748,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "hooliganBlue5": {
     file: "hooligan-blue-5.png",
@@ -616,6 +762,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "hooliganGrey1": {
     file: "hooligan-grey-1.png",
@@ -664,6 +816,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "hooliganRed2": {
     file: "hooligan-red-2.png",
@@ -672,6 +830,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "hooliganRed3": {
     file: "hooligan-red-3.png",
@@ -680,6 +844,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "hooliganRed4": {
     file: "hooligan-red-4.png",
@@ -688,6 +858,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "hooliganRed5": {
     file: "hooligan-red-5.png",
@@ -696,6 +872,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "iconAngriffBlocksturm": {
     file: "icon-angriff-blocksturm.png",
@@ -752,6 +934,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "ordnerBlue2": {
     file: "ordner-blue-2.png",
@@ -760,6 +948,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "ordnerBlue3": {
     file: "ordner-blue-3.png",
@@ -768,6 +962,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "ordnerBlue4": {
     file: "ordner-blue-4.png",
@@ -776,6 +976,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "ordnerBlue5": {
     file: "ordner-blue-5.png",
@@ -784,6 +990,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "ordnerGrey1": {
     file: "ordner-grey-1.png",
@@ -832,6 +1044,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "ordnerRed2": {
     file: "ordner-red-2.png",
@@ -840,6 +1058,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "ordnerRed3": {
     file: "ordner-red-3.png",
@@ -848,6 +1072,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "ordnerRed4": {
     file: "ordner-red-4.png",
@@ -856,6 +1086,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "ordnerRed5": {
     file: "ordner-red-5.png",
@@ -864,6 +1100,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "pennantKsc": {
     file: "pennant-ksc.png",
@@ -912,6 +1154,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standBierBlue2": {
     file: "bier-blue-2.png",
@@ -920,6 +1168,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standBierBlue3": {
     file: "bier-blue-3.png",
@@ -928,6 +1182,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standBierBlue4": {
     file: "bier-blue-4.png",
@@ -936,6 +1196,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standBierBlue5": {
     file: "bier-blue-5.png",
@@ -944,6 +1210,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standBierGrey1": {
     file: "bier-grey-1.png",
@@ -992,6 +1264,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standBierRed2": {
     file: "bier-red-2.png",
@@ -1000,6 +1278,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standBierRed3": {
     file: "bier-red-3.png",
@@ -1008,6 +1292,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standBierRed4": {
     file: "bier-red-4.png",
@@ -1016,6 +1306,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standBierRed5": {
     file: "bier-red-5.png",
@@ -1024,6 +1320,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standFanshopBlue1": {
     file: "fanshop-blue-1.png",
@@ -1032,6 +1334,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standFanshopBlue2": {
     file: "fanshop-blue-2.png",
@@ -1040,6 +1348,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standFanshopBlue3": {
     file: "fanshop-blue-3.png",
@@ -1048,6 +1362,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standFanshopBlue4": {
     file: "fanshop-blue-4.png",
@@ -1056,6 +1376,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standFanshopBlue5": {
     file: "fanshop-blue-5.png",
@@ -1064,6 +1390,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standFanshopGrey1": {
     file: "fanshop-grey-1.png",
@@ -1112,6 +1444,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standFanshopRed2": {
     file: "fanshop-red-2.png",
@@ -1120,6 +1458,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standFanshopRed3": {
     file: "fanshop-red-3.png",
@@ -1128,6 +1472,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standFanshopRed4": {
     file: "fanshop-red-4.png",
@@ -1136,6 +1486,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standFanshopRed5": {
     file: "fanshop-red-5.png",
@@ -1144,6 +1500,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standOrdnerBlue1": {
     file: "stand-ordner-blue-1.png",
@@ -1152,6 +1514,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standOrdnerBlue2": {
     file: "stand-ordner-blue-2.png",
@@ -1160,6 +1528,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standOrdnerBlue3": {
     file: "stand-ordner-blue-3.png",
@@ -1168,6 +1542,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standOrdnerBlue4": {
     file: "stand-ordner-blue-4.png",
@@ -1176,6 +1556,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standOrdnerBlue5": {
     file: "stand-ordner-blue-5.png",
@@ -1184,6 +1570,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "standOrdnerGrey1": {
     file: "stand-ordner-grey-1.png",
@@ -1232,6 +1624,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standOrdnerRed2": {
     file: "stand-ordner-red-2.png",
@@ -1240,6 +1638,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standOrdnerRed3": {
     file: "stand-ordner-red-3.png",
@@ -1248,6 +1652,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standOrdnerRed4": {
     file: "stand-ordner-red-4.png",
@@ -1256,6 +1666,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "standOrdnerRed5": {
     file: "stand-ordner-red-5.png",
@@ -1264,6 +1680,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "tribuneBlue": {
     file: "tribune-block-blue.png",
@@ -1272,6 +1694,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1.378641,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "tribuneBlueWide150": {
     file: "tribune-block-blue-wide150.png",
@@ -1280,6 +1708,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 2.067961,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "tribuneGrey": {
     file: "tribune-block-grey.png",
@@ -1304,6 +1738,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1.378641,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "tribuneRedWide150": {
     file: "tribune-block-red-wide150.png",
@@ -1312,6 +1752,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 2.067961,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "ultraBlue1": {
     file: "ultra-blue-1.png",
@@ -1320,6 +1766,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "ultraBlue2": {
     file: "ultra-blue-2.png",
@@ -1328,6 +1780,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "ultraBlue3": {
     file: "ultra-blue-3.png",
@@ -1336,6 +1794,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "ultraBlue4": {
     file: "ultra-blue-4.png",
@@ -1344,6 +1808,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "ultraBlue5": {
     file: "ultra-blue-5.png",
@@ -1352,6 +1822,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "ultraGrey1": {
     file: "ultra-grey-1.png",
@@ -1400,6 +1876,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "ultraRed2": {
     file: "ultra-red-2.png",
@@ -1408,6 +1890,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "ultraRed3": {
     file: "ultra-red-3.png",
@@ -1416,6 +1904,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "ultraRed4": {
     file: "ultra-red-4.png",
@@ -1424,6 +1918,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "ultraRed5": {
     file: "ultra-red-5.png",
@@ -1432,6 +1932,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "waitAnger": {
     file: "wait-anger.png",

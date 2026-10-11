@@ -35,7 +35,7 @@ import {
   drawIcon,
   drawToyIcon,
   drawToyProp,
-  getIcon,
+  getRawIcon,
   type ToyAnimMode,
   baustelleSchildIconPath,
   pyroShotIconPath,
@@ -48,6 +48,7 @@ import {
   type SlotControl,
 } from "./assets";
 import { clubPrimary, clubSecondary, clubShort } from "./clubs";
+import { sideKitHex, sideKitRgba } from "./liveTint";
 import {
   boothFacadeQuad,
   scaleQuad,
@@ -211,7 +212,7 @@ function drawStadiumBackdrop(
   w: number,
   h: number,
 ): boolean {
-  const img = getIcon(SCENE_ASSETS.stadiumFloodlightDerby);
+  const img = getRawIcon(SCENE_ASSETS.stadiumFloodlightDerby);
   if (!img?.complete || !img.naturalWidth) return false;
   const iw = img.naturalWidth;
   const ih = img.naturalHeight;
@@ -297,20 +298,20 @@ function drawStadiumAtmosphere(
     ctx.fill();
   }
 
-  // pyro / flare glow — guest side warm, heim cool
+  // pyro / flare glow — kit colors from live branding
   {
     const gx = blockCenterX(GAST_BLOCK) * w;
     const gy = h * L.blockTop * 0.75;
     const a = 0.22 + Math.min(0.5, m.moodGaeste * 0.2);
     const g = ctx.createRadialGradient(gx, gy, 6, gx, gy, w * 0.32);
-    g.addColorStop(0, `rgba(251,146,60,${a})`);
-    g.addColorStop(0.35, `rgba(239,68,68,${a * 0.65})`);
-    g.addColorStop(1, "rgba(239,68,68,0)");
+    g.addColorStop(0, sideKitRgba("vfb", a));
+    g.addColorStop(0.35, sideKitRgba("vfb", a * 0.65));
+    g.addColorStop(1, sideKitRgba("vfb", 0));
     ctx.fillStyle = g;
     ctx.fillRect(gx - w * 0.32, gy - h * 0.14, w * 0.64, h * 0.32);
     for (let i = 0; i < 7; i++) {
       const ox = Math.sin(m.realElapsed * 0.85 + i * 1.1) * w * 0.05;
-      ctx.fillStyle = `rgba(248,113,113,${0.06 + a * 0.18})`;
+      ctx.fillStyle = sideKitRgba("vfb", 0.06 + a * 0.18);
       ctx.beginPath();
       ctx.ellipse(
         gx + ox + (i - 3) * w * 0.028,
@@ -329,8 +330,8 @@ function drawStadiumAtmosphere(
     const hy = h * L.blockTop * 0.75;
     const a = 0.14 + Math.min(0.4, m.moodHeim * 0.16);
     const g = ctx.createRadialGradient(hx, hy, 6, hx, hy, w * 0.26);
-    g.addColorStop(0, `rgba(96,165,250,${a})`);
-    g.addColorStop(1, "rgba(96,165,250,0)");
+    g.addColorStop(0, sideKitRgba("ksc", a));
+    g.addColorStop(1, sideKitRgba("ksc", 0));
     ctx.fillStyle = g;
     ctx.fillRect(hx - w * 0.26, hy - h * 0.12, w * 0.52, h * 0.28);
   }
@@ -385,9 +386,9 @@ function drawBlocks(
     const pressure = Math.min(1, crowd / 8) * Math.abs(lean);
     const glow =
       owner === "ksc" || (owner === "neutral" && lean > 0.15)
-        ? `rgba(59,130,246,${0.18 + pressure * 0.3})`
+        ? sideKitRgba("ksc", 0.18 + pressure * 0.3)
         : owner === "vfb" || (owner === "neutral" && lean < -0.15)
-          ? `rgba(248,113,113,${0.18 + pressure * 0.3})`
+          ? sideKitRgba("vfb", 0.18 + pressure * 0.3)
           : "rgba(148,163,184,0.14)";
 
     const g = ctx.createRadialGradient(cx, top + bh * 0.45, 8, cx, top + bh * 0.5, bw * 0.72);
@@ -402,7 +403,11 @@ function drawBlocks(
     const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
     if (!drew) {
       ctx.fillStyle =
-        b.id === 0 ? "#2563eb" : b.id === 2 ? "#dc2626" : "#64748b";
+        b.id === 0
+          ? sideKitHex("ksc")
+          : b.id === 2
+            ? sideKitHex("vfb")
+            : "#64748b";
       roundRect(ctx, left, top, bw, bh, 18);
       ctx.fill();
     }
@@ -1166,8 +1171,7 @@ function drawFans(
 }
 
 function teamJersey(f: FanUnit): string {
-  if (f.team === "ksc") return "#1f6feb";
-  if (f.team === "vfb") return "#dc2626";
+  if (f.team === "ksc" || f.team === "vfb") return sideKitHex(f.team);
   // Grey fans stay permanently grey (no lean / capture tint)
   return "#9ca3af";
 }

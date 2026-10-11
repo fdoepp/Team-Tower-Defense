@@ -70,6 +70,50 @@ import {
   type ClubId,
 } from "./game/clubs";
 import {
+  applyLiveTintToDomImages,
+  getLiveTintedCanvas,
+} from "./game/liveTint";
+import { getRawIcon } from "./game/assets";
+
+/** Set team icon src once, then live-tint to current club kit. */
+function setLiveTintImg(ico: HTMLImageElement | null, src: string): void {
+  if (!ico) return;
+  if (
+    ico.dataset.liveTintSrc === src &&
+    ico.dataset.liveTint === "1" &&
+    (ico.getAttribute("src") || "").startsWith("data:")
+  ) {
+    return;
+  }
+  ico.dataset.liveTintSrc = src;
+  const paint = (raw: HTMLImageElement) => {
+    const canvas = getLiveTintedCanvas(raw, src);
+    if (!canvas) {
+      ico.setAttribute("src", src);
+      ico.dataset.liveTint = "0";
+      return;
+    }
+    try {
+      const url = canvas.toDataURL("image/png");
+      ico.setAttribute("src", url);
+      ico.src = url;
+      ico.dataset.liveTint = "1";
+    } catch {
+      ico.setAttribute("src", src);
+      ico.dataset.liveTint = "0";
+    }
+  };
+  const cached = getRawIcon(src);
+  if (cached) {
+    paint(cached);
+    return;
+  }
+  const raw = new Image();
+  raw.decoding = "async";
+  raw.onload = () => paint(raw);
+  raw.src = src;
+}
+import {
   blocksturmValue,
   difficultyLabel,
   ergebnisValue,
@@ -1120,6 +1164,13 @@ function renderMatchScreen(): void {
   const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
   type RailId = "person" | "build" | "attack" | null;
   let openRail: RailId = null;
+  // Pull club kit colors into blue/red rail icons (live tint)
+  app.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
+    const src = img.getAttribute("src") || "";
+    if (/-(?:blue|red)-|tribune-block-(?:blue|red)/.test(src)) {
+      setLiveTintImg(img, src);
+    }
+  });
 
   const layoutHud = () => {
     const rect = wrap.getBoundingClientRect();
@@ -1147,8 +1198,10 @@ function renderMatchScreen(): void {
 
       const src = unitIconPath(kind, tc, m.unitTechLevel(kind));
       for (const suffix of ["one", "all"] as const) {
-        const ico = app.querySelector<HTMLImageElement>(`#atk-ico-${prefix}-${suffix}`);
-        if (ico) ico.src = src;
+        setLiveTintImg(
+          app.querySelector<HTMLImageElement>(`#atk-ico-${prefix}-${suffix}`),
+          src,
+        );
       }
 
       const level = m.unitTechLevel(kind);
@@ -1232,6 +1285,9 @@ function renderMatchScreen(): void {
     syncToolActive();
     if (id === "build") syncBuildingRailUi();
     if (id === "attack") syncAttackRailUi();
+    applyLiveTintToDomImages(
+      id === "person" ? personRail : id === "build" ? buildRail : attackRail,
+    );
   };
 
   const closeBuildRail = () => {
@@ -1379,14 +1435,14 @@ function renderMatchScreen(): void {
         : 1;
       const next = Math.min(UPGRADE_MAX, refLv + 1);
 
-      const bauIco = app.querySelector<HTMLImageElement>(`#build-ico-${kind}`);
-      if (bauIco) {
-        bauIco.src = standIconPath(kind, tc, 1);
-      }
-      const upIco = app.querySelector<HTMLImageElement>(`#build-up-ico-${kind}`);
-      if (upIco) {
-        upIco.src = standIconPath(kind, tc, next);
-      }
+      setLiveTintImg(
+        app.querySelector<HTMLImageElement>(`#build-ico-${kind}`),
+        standIconPath(kind, tc, 1),
+      );
+      setLiveTintImg(
+        app.querySelector<HTMLImageElement>(`#build-up-ico-${kind}`),
+        standIconPath(kind, tc, next),
+      );
 
       setPayAmt(app, `build-pay-${kind}`, BUILD_COST[kind]);
       const bauPayImg = app.querySelector<HTMLImageElement>(`#build-pay-${kind} img`);
@@ -1771,22 +1827,14 @@ function renderMatchScreen(): void {
         const next = Math.min(UPGRADE_MAX, tech + 1);
         const meta = app.querySelector(`[data-person-meta="${kind}"]`);
         if (meta) meta.textContent = personMetaLabel(m, kind, counts[kind]);
-        const buyIco = app.querySelector<HTMLImageElement>(`#buy-ico-${kind}`);
-        if (buyIco) {
-          buyIco.src = unitIconPath(
-            kind === "ordner" ? "ordner" : kind,
-            tc,
-            tech,
-          );
-        }
-        const upIco = app.querySelector<HTMLImageElement>(`#up-ico-${kind}`);
-        if (upIco) {
-          upIco.src = unitIconPath(
-            kind === "ordner" ? "ordner" : kind,
-            tc,
-            next,
-          );
-        }
+        setLiveTintImg(
+          app.querySelector<HTMLImageElement>(`#buy-ico-${kind}`),
+          unitIconPath(kind === "ordner" ? "ordner" : kind, tc, tech),
+        );
+        setLiveTintImg(
+          app.querySelector<HTMLImageElement>(`#up-ico-${kind}`),
+          unitIconPath(kind === "ordner" ? "ordner" : kind, tc, next),
+        );
         const buy = personBuyCost(kind);
         setPayAmt(app, `buy-pay-${kind}`, buy.amount);
         const buyPayImg = app.querySelector<HTMLImageElement>(

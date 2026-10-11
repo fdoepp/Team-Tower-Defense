@@ -421,6 +421,8 @@ let brandGast: Club = CLUBS.vfb!;
 export function setSideBranding(heimClubId: ClubId, gastClubId: ClubId): void {
   brandHeim = getClub(heimClubId);
   brandGast = getClub(gastClubId);
+  // Invalidate live-tinted sprite cache (lazy import avoids cycles)
+  void import("./liveTint").then((m) => m.bumpLiveTintEpoch()).catch(() => {});
 }
 
 export function brandingForSide(side: "ksc" | "vfb" | "neutral" | null | undefined): Club | null {

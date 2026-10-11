@@ -32,6 +32,7 @@ Alles, was sich ändert (Score, Minute, Momentum-%, Kosten, Level), gehört **ni
 | `btnBauenAmber/Grey`, `btnUpgradePurple/Grey`, `btnSendenBlue` | Chrome **freigegeben** (Right-Rail / Baubutton 2026-10-09) | Live-Text im DOM |
 | `btnSendenGreen` | **veraltet** | Entfernen — Kanon = `btnSendenBlue` (released) |
 | `scoreboardChrome` | Chrome (released, Blank 2026-10-11) | Durchgängiger Holzrand, keine Logos; Runtime + `scoreboard-slots.json` |
+| Unit/Stand/Tribune `*-blue-*` / `*-red-*` | liveTint (released) | Runtime zieht `sideKitPrimary` (heim←blue, gast←red); Originale bleiben, Tint wird live generiert |
 | `scoreboardMomentum`, `scoreboardOrbHeim/Gast` | Referenz-Demos | Nicht als Runtime-Default; Notes setzen |
 | `slotEmpty*` | Chrome (leer) | Freigabe OK wenn Optik stimmt |
 

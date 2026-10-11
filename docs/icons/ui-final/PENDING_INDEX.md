@@ -8,6 +8,8 @@ Ablage-Regel: [`STORAGE_CANON.md`](./STORAGE_CANON.md) — Chrome vs Live-Werte.
 
 **Scoreboard Chrome (2026-10-11):** `scoreboardChrome` ersetzt durch Blank-Asset mit durchgängigem braunen Holzrand, freigestellt, ohne KSC/VfB-Logos (`scoreboard-chrome.png`, 1216×472).
 
+**LiveTint (2026-10-11):** 83 blue/red Unit/Stand/Tribune/Slot-Assets mit `liveTint.enabled` — Runtime `liveTint.ts` zieht Vereinsfarben live.
+
 Mock Personen-Rail ohne Senden: [`docs/mockups/personen-rail-no-senden/`](../../mockups/personen-rail-no-senden/).
 
 ## Pending
