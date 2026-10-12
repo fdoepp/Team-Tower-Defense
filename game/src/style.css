@@ -3251,6 +3251,9 @@ html.is-fs .fs-gate {
   background: rgba(255, 255, 255, 0.15);
   flex: 0 0 auto;
 }
+.hs-team .hs-logo-b {
+  opacity: 0.95;
+}
 .hs-team .hs-vs-label {
   font-size: 0.78rem;
   font-weight: 800;

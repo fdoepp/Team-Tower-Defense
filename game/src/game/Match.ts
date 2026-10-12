@@ -12,6 +12,8 @@ import {
   BLOCK_WANDER_RETARGET_MIN,
   BLOCK_WANDER_SPEED,
   BUILD_COST,
+  BUILD_LABEL,
+  buildingForUnitKind,
   BUY_COST,
   BANNER_ADVANCE_SPEED,
   BANNER_CATCHUP,
@@ -1983,12 +1985,33 @@ export class Match {
     return Math.max(1, Math.min(UPGRADE_MAX, this.aiTech[kind] || 1));
   }
 
-  /** Soft-Cap: Einfach max Lv3, Mittel Lv4, Schwer Lv5 */
+  /** Alle Schwierigkeiten dürfen bis Lv5 — Easy nur langsamer. */
   private aiTechSoftCap(): number {
-    const d = this.cfg.settings.difficulty;
-    if (d === "easy") return 3;
-    if (d === "hard") return UPGRADE_MAX;
-    return 4;
+    return UPGRADE_MAX;
+  }
+
+  /** Highest owned building level of a kind for a team (0 if none). */
+  maxOwnedBuildingLevel(kind: BuildingKind, team: TeamId): number {
+    let max = 0;
+    for (const s of this.slots) {
+      if (
+        s.building === kind &&
+        s.owner === team &&
+        !s.greyNeutral &&
+        (s.structHp == null || s.structHp > 0 || kind !== "ordner")
+      ) {
+        max = Math.max(max, s.level || 1);
+      }
+    }
+    return max;
+  }
+
+  /** Unit tech next level requires matching building ≥ that level. */
+  unitUpgradeBuildingCap(
+    kind: FanKind | "ordner",
+    team: TeamId = this.playerTeam,
+  ): number {
+    return this.maxOwnedBuildingLevel(buildingForUnitKind(kind), team);
   }
 
   minUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
@@ -2027,8 +2050,10 @@ export class Match {
   canUpgradeUnit(kind: FanKind | "ordner"): boolean {
     const cost = this.unitUpgradeCostFor(kind);
     if (cost == null || this.gold < cost) return false;
-    // Mindestens eine lebende Einheit dieses Typs nötig
-    return this.lowestLevelUnit(kind, this.playerTeam) != null;
+    if (this.lowestLevelUnit(kind, this.playerTeam) == null) return false;
+    const tech = this.unitTechLevel(kind);
+    const next = tech + 1;
+    return this.unitUpgradeBuildingCap(kind, this.playerTeam) >= next;
   }
 
   tryUpgradeUnit(kind: FanKind | "ordner"): boolean {
@@ -2043,12 +2068,18 @@ export class Match {
       this.toast("Max. Stufe");
       return false;
     }
+    const next = tech + 1;
+    const bKind = buildingForUnitKind(kind);
+    const bLv = this.unitUpgradeBuildingCap(kind, this.playerTeam);
+    if (bLv < next) {
+      this.toast(`${BUILD_LABEL[bKind]} erst Lv${next}`);
+      return false;
+    }
     if (this.gold < cost) {
       this.toast(`${cost}€ nötig`);
       return false;
     }
     this.gold -= cost;
-    const next = tech + 1;
     this.unitTech[kind] = next;
     let raised = 0;
     for (const f of this.fans) {
@@ -2358,7 +2389,9 @@ export class Match {
     const nrm = this.countInBlock(this.playerTeam, HEIM_BLOCK, "normalos");
     this.gold += (1.0 + nrm * 0.2) * dt;
     const aiN = this.countInBlock(this.aiTeam, GAST_BLOCK, "normalos");
-    this.aiGold += (1.1 + aiN * 0.22) * dt;
+    const d = this.cfg.settings.difficulty;
+    const aiGoldMul = d === "hard" ? 1.4 : d === "easy" ? 0.95 : 1.25;
+    this.aiGold += (1.15 + aiN * 0.24) * aiGoldMul * dt;
 
     // Steward upkeep €/s per person
     const stewards = this.fans.filter(
@@ -5369,7 +5402,9 @@ export class Match {
     if (this.aiAcc < interval) return;
     this.aiAcc = 0;
     // Character: patient/beer build more often; aggro skips builds more
-    if (Math.random() < 0.55 * pers.buildMul) this.aiTryBuild();
+    // Aggressive plot fill + building upgrades (all diffs → volle Plots / Lv5)
+    if (Math.random() < 0.72 * pers.buildMul) this.aiTryBuild();
+    this.aiTryUpgradeBuildings();
     this.aiTryHireSteward();
     this.aiTryBuyFans();
     this.aiTryUpgradeUnits();
@@ -5450,11 +5485,11 @@ export class Match {
     const trailing = this.aiTrailingCrowd();
     const phaseBoost =
       this.minute >= this.diffProf.lateMinute
-        ? 0.22
+        ? 0.28
         : this.minute >= this.diffProf.midMinute
-          ? 0.12
+          ? 0.16
           : 0;
-    const chance = (trailing ? 0.72 : 0.48) + phaseBoost;
+    const chance = (trailing ? 0.8 : 0.58) + phaseBoost;
     if (Math.random() > chance) return;
     // When behind on Kurve, prioritize combat upgrades over Fans
     const kinds: (FanKind | "ordner")[] = trailing
@@ -5466,10 +5501,12 @@ export class Match {
       if (!living) continue;
       const tech = this.aiUnitTechLevel(kind);
       if (tech >= softCap || tech >= UPGRADE_MAX) continue;
+      const next = tech + 1;
+      // Same gate as player: matching building must already be ≥ Ziellevel
+      if (this.unitUpgradeBuildingCap(kind, this.aiTeam) < next) continue;
       const cost = unitUpgradeCost(tech);
       if (cost == null || this.aiGold < cost) continue;
       this.aiGold -= cost;
-      const next = tech + 1;
       this.aiTech[kind] = next;
       for (const f of this.fans) {
         if (f.hp <= 0 || f.team !== this.aiTeam) continue;
@@ -5481,6 +5518,36 @@ export class Match {
           this.applyUnitLevelStats(f);
         }
       }
+      return;
+    }
+  }
+
+  /** Push owned buildings toward Lv5 so unit tech can follow. */
+  private aiTryUpgradeBuildings(): void {
+    if (this.aiGold < 40) return;
+    const phase =
+      this.minute >= this.diffProf.lateMinute
+        ? 0.85
+        : this.minute >= this.diffProf.midMinute
+          ? 0.7
+          : 0.45;
+    if (Math.random() > phase) return;
+    const ups = this.slots
+      .filter(
+        (x) =>
+          x.owner === this.aiTeam &&
+          x.building &&
+          !x.greyNeutral &&
+          x.level < UPGRADE_MAX &&
+          (x.building !== "ordner" || (x.structHp ?? 1) > 0),
+      )
+      .sort((a, b) => (a.level || 1) - (b.level || 1));
+    for (const up of ups) {
+      const cost = UPGRADE_COST[(up.level || 1) + 1] ?? 999;
+      if (this.aiGold < cost) continue;
+      this.aiGold -= cost;
+      up.level++;
+      if (up.building === "ordner") this.initOrdnerPostHp(up);
       return;
     }
   }
@@ -5578,18 +5645,8 @@ export class Match {
     );
     const s = empty ?? claimable;
     if (!s) {
-      // upgrade own
-      const up = this.slots.find(
-        (x) =>
-          x.owner === this.aiTeam &&
-          x.building &&
-          !x.greyNeutral &&
-          x.level < UPGRADE_MAX,
-      );
-      if (up && this.aiGold >= (UPGRADE_COST[up.level + 1] ?? 999)) {
-        this.aiGold -= UPGRADE_COST[up.level + 1]!;
-        up.level++;
-      }
+      // No empty plot in reach — push existing buildings toward Lv5
+      this.aiTryUpgradeBuildings();
       return;
     }
     const claim = !!(s.building && (s.owner === "neutral" || s.greyNeutral));
@@ -5604,7 +5661,10 @@ export class Match {
     if (!s.level) s.level = 1;
     if (s.building === "bier" && s.beer < 20) s.beer = 40;
     if (s.building === "fanshop" && s.merch < 20) s.merch = 40;
-    if (s.building === "ordner") s.stewardCd = 9999; // AI hires manually
+    if (s.building === "ordner") {
+      s.stewardCd = 9999; // AI hires manually
+      this.initOrdnerPostHp(s);
+    }
     this.floatAtSlot(s, claim ? "KI Claim" : "KI baut", false);
   }
 

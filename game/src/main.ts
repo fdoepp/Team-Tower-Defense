@@ -129,6 +129,7 @@ function setLiveTintImg(ico: HTMLImageElement | null, src: string): void {
 import {
   bierValue,
   blocksturmValue,
+  clubCode,
   difficultyLabel,
   entryClubPrimary,
   ergebnisValue,
@@ -433,7 +434,7 @@ function personBuyUpHtml(
         delta: true,
         id: `up-yield-${kind}`,
       }),
-      btnAttrs: `data-unit-up="${kind}" title="Upgrade"`,
+      btnAttrs: `data-unit-up="${kind}" title="Upgrade (Gebäude ≥ Lv${next})"`,
     })
   );
 }
@@ -1337,31 +1338,31 @@ function renderTutorial(stepIndex = 0): void {
 }
 
 /**
- * Winner badge from the *stored* match — inspired logo + frozen matchup.
+ * Winner badge from the *stored* match — both logos (player + opponent)
+ * like club highscores; works for nationals too (flags).
  * Never uses current menu club / live --ksc/--vfb branding.
  */
 function hsMatchupBadge(e: HighscoreEntry): string {
-  const frozen = {
-    ...e,
-    playerShort: e.playerShort,
-    opponentShort: e.opponentShort,
-  };
+  const frozen = freezeEntryClubs(e);
   const label = matchupLabel(frozen);
-  const winnerId = resolveEntryClubId(e.playerClub, e.playerShort);
+  const winnerId = resolveEntryClubId(frozen.playerClub, frozen.playerShort);
+  const oppId = resolveEntryClubId(frozen.opponentClub, frozen.opponentShort);
   const prim =
-    entryClubPrimary(e.playerClub, e.playerShort) || "#64748b";
-  let mark = "";
-  if (winnerId) {
+    entryClubPrimary(frozen.playerClub, frozen.playerShort) || "#64748b";
+  const logoImg = (id: string | undefined, cls: string) => {
+    if (!id) return "";
     try {
-      const logo = clubLogoDataUrl(winnerId, 64);
-      if (logo) mark = `<img class="hs-logo" src="${logo}" alt="">`;
+      const logo = clubLogoDataUrl(id, 64);
+      return logo ? `<img class="hs-logo ${cls}" src="${logo}" alt="">` : "";
     } catch {
-      mark = "";
+      return "";
     }
-  }
-  if (!label && !mark) return "";
-  const text = label || e.playerShort || "Sieg";
-  return `<span class="hs-team hs-winner" style="background:${prim}">${mark}<span class="hs-vs-label">${escapeHtml(text)}</span></span>`;
+  };
+  const markA = logoImg(winnerId, "hs-logo-a");
+  const markB = logoImg(oppId, "hs-logo-b");
+  if (!label && !markA && !markB) return "";
+  const text = label || frozen.playerShort || "Sieg";
+  return `<span class="hs-team hs-winner" style="background:${prim}">${markA}<span class="hs-vs-label">${escapeHtml(text)}</span>${markB}</span>`;
 }
 
 /** Detail without matchup (badge shows Gegner separately). */
@@ -2861,10 +2862,13 @@ function renderMatchScreen(): void {
             `#up-pay-${kind} img`,
           );
           if (upPayImg) upPayImg.src = UI_ICONS.currencyGold;
+          const bCap = m.unitUpgradeBuildingCap(kind);
           upBtn.title =
             cost == null
               ? "Max. Stufe"
-              : `Alle ${kind} → Lv${next} · ${cost}€`;
+              : bCap < next
+                ? `Gebäude erst Lv${next} nötig`
+                : `Alle ${kind} → Lv${next} · ${cost}€`;
         }
       }
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
@@ -3021,6 +3025,8 @@ function renderResult(): void {
           localStorage.setItem("matchday-player-name", name);
           const playerClub = state.settings.playerClub;
           const opponentClub = state.settings.aiClub;
+          const playerShort = clubCode(playerClub) || undefined;
+          const opponentShort = clubCode(opponentClub) || undefined;
           const vs = matchupLabel({
             name,
             value,
@@ -3030,6 +3036,8 @@ function renderResult(): void {
             team: state.settings.playerTeam,
             playerClub,
             opponentClub,
+            playerShort,
+            opponentShort,
           });
           const { placed, rank, shared } = await tryInsertHighscoreShared(
             r.difficulty,
@@ -3040,6 +3048,8 @@ function renderResult(): void {
               team: state.settings.playerTeam,
               playerClub,
               opponentClub,
+              playerShort,
+              opponentShort,
               detail: `Blocksturm in ${formatMinute(r.minute)}${vs ? ` · ${vs}` : ""} (${difficultyLabel(r.difficulty)})`,
             },
           );
@@ -3061,6 +3071,8 @@ function renderResult(): void {
         localStorage.setItem("matchday-player-name", name);
         const playerClub = state.settings.playerClub;
         const opponentClub = state.settings.aiClub;
+        const playerShort = clubCode(playerClub) || undefined;
+        const opponentShort = clubCode(opponentClub) || undefined;
         const vs = matchupLabel({
           name,
           value: erg,
@@ -3070,6 +3082,8 @@ function renderResult(): void {
           team: state.settings.playerTeam,
           playerClub,
           opponentClub,
+          playerShort,
+          opponentShort,
         });
         const { placed, rank, shared } = await tryInsertHighscoreShared(
           r.difficulty,
@@ -3080,6 +3094,8 @@ function renderResult(): void {
             team: state.settings.playerTeam,
             playerClub,
             opponentClub,
+            playerShort,
+            opponentShort,
             detail: `${playerGoals}:${aiGoals}${vs ? ` · ${vs}` : ""} · ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
           },
         );
@@ -3100,6 +3116,8 @@ function renderResult(): void {
         localStorage.setItem("matchday-player-name", name);
         const playerClub = state.settings.playerClub;
         const opponentClub = state.settings.aiClub;
+        const playerShort = clubCode(playerClub) || undefined;
+        const opponentShort = clubCode(opponentClub) || undefined;
         const vs = matchupLabel({
           name,
           value: beers,
@@ -3109,6 +3127,8 @@ function renderResult(): void {
           team: state.settings.playerTeam,
           playerClub,
           opponentClub,
+          playerShort,
+          opponentShort,
         });
         const { placed, rank, shared } = await tryInsertHighscoreShared(
           r.difficulty,
@@ -3119,6 +3139,8 @@ function renderResult(): void {
             team: state.settings.playerTeam,
             playerClub,
             opponentClub,
+            playerShort,
+            opponentShort,
             detail: `${beers} Bier${vs ? ` · ${vs}` : ""} (${difficultyLabel(r.difficulty)})`,
           },
         );
