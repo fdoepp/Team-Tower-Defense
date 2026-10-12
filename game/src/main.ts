@@ -151,6 +151,23 @@ import {
   HALF_BOOSTS,
   type HalfBoostId,
 } from "./game/feelPack";
+import {
+  attemptFromMatch,
+  challengeFromLocation,
+  challengeSetupLine,
+  challengeShareUrl,
+  challengeVerdictLabel,
+  CHALLENGE_GOAL_BLURB,
+  CHALLENGE_GOAL_LABEL,
+  clearChallengeFromUrl,
+  compareChallengeAttempts,
+  createChallenge,
+  decodeChallenge,
+  markPlayedChallengeRole,
+  openChallengeRole,
+  type Challenge,
+  type ChallengeGoal,
+} from "./game/challenge";
 
 void preloadIcons();
 bindAudioGestures();
@@ -519,7 +536,16 @@ function setPayAmt(root: ParentNode, payId: string, amount: number | string): vo
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
-type Screen = "menu" | "tutorial" | "setup" | "match" | "result" | "highscores";
+type Screen =
+  | "menu"
+  | "tutorial"
+  | "setup"
+  | "match"
+  | "result"
+  | "highscores"
+  | "challengeCreate"
+  | "challengeLobby"
+  | "challengeResult";
 
 type PickMode = "derby" | "free";
 
@@ -546,6 +572,12 @@ const state = {
   menuPlayAsA: true,
   menuPlayerClub: DEFAULT_PLAYER_CLUB as ClubId,
   menuAiClub: DEFAULT_AI_CLUB as ClubId,
+  /** Active challenge (create / accept / compare) */
+  challenge: null as Challenge | null,
+  /** Which slot this device fills for the active challenge */
+  challengeRole: null as "a" | "b" | null,
+  /** Draft goal on create screen */
+  challengeGoal: "ergebnis" as ChallengeGoal,
 };
 
 function syncMenuBrandingPreview(): void {
@@ -660,7 +692,51 @@ function render(): void {
   else if (state.screen === "setup") renderSetup();
   else if (state.screen === "match") renderMatchScreen();
   else if (state.screen === "highscores") renderHighscores();
+  else if (state.screen === "challengeCreate") renderChallengeCreate();
+  else if (state.screen === "challengeLobby") renderChallengeLobby();
+  else if (state.screen === "challengeResult") renderChallengeResult();
   else renderResult();
+}
+
+/** Apply frozen challenge clubs/diff into solo settings (player always heim/ksc). */
+function applyChallengeSettings(c: Challenge): void {
+  state.settings = {
+    playerTeam: "ksc",
+    playerClub: c.playerClub,
+    aiClub: c.aiClub,
+    difficulty: c.difficulty,
+    behavior: c.behavior || "balanced",
+  };
+  setClubSoundIdentity(c.playerClub, c.aiClub);
+  syncMenuBrandingPreview();
+}
+
+function readMenuDifficulty(): SoloSettings["difficulty"] {
+  return (
+    (app.querySelector("#diff") as HTMLSelectElement | null)?.value ||
+    "normal"
+  ) as SoloSettings["difficulty"];
+}
+
+function readMenuBehavior(): AiBehavior {
+  return (
+    (app.querySelector("#ai-behavior") as HTMLSelectElement | null)?.value ||
+    "balanced"
+  ) as AiBehavior;
+}
+
+function menuClubsFromState(): { playerClub: string; aiClub: string } {
+  syncMenuBrandingPreview();
+  return {
+    playerClub: state.menuPlayerClub,
+    aiClub: state.menuAiClub,
+  };
+}
+
+function askChallengeName(defaultName = "Spieler"): string | null {
+  const raw = window.prompt("Dein Name für die Challenge:", defaultName);
+  if (raw == null) return null;
+  return raw.trim().slice(0, 20) || defaultName;
 }
 
 function renderMenu(): void {
@@ -714,6 +790,8 @@ function renderMenu(): void {
       </div>
       <div class="card stack">
         <button class="btn ksc" id="solo">Solo vs KI</button>
+        <button class="btn secondary" id="challenge">Challenge</button>
+        <button class="btn secondary" id="tutorial">Tutorial</button>
         <button class="btn secondary" id="highscores">Highscores</button>
         <button class="btn secondary" id="mute-audio">${muteButtonLabel()}</button>
         <button class="btn secondary" id="fs-menu">Vollbild</button>
@@ -771,9 +849,20 @@ function renderMenu(): void {
   });
   app.querySelector("#highscores")!.addEventListener("click", () => {
     sfx("ui");
-    state.highscoreDiff = (app.querySelector("#diff") as HTMLSelectElement)
-      .value as SoloSettings["difficulty"];
+    state.highscoreDiff = readMenuDifficulty();
     go("highscores");
+  });
+  app.querySelector("#tutorial")!.addEventListener("click", () => {
+    unlockAudio();
+    sfx("ui");
+    go("tutorial");
+  });
+  app.querySelector("#challenge")!.addEventListener("click", () => {
+    unlockAudio();
+    sfx("ui");
+    state.challenge = null;
+    state.challengeRole = null;
+    go("challengeCreate");
   });
   app.querySelectorAll<HTMLButtonElement>("[data-pick]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -841,20 +930,19 @@ function renderMenu(): void {
     const playerClub = state.menuPlayerClub;
     const aiClub = state.menuAiClub;
     // Side slots: player always on heim (ksc) for consistent controls/HUD
-    const behavior = ((app.querySelector("#ai-behavior") as HTMLSelectElement | null)
-      ?.value || "balanced") as AiBehavior;
+    state.challenge = null;
+    state.challengeRole = null;
     state.settings = {
       playerTeam: "ksc",
       playerClub,
       aiClub,
       derbyId: state.pickMode === "derby" ? state.menuDerbyId : undefined,
-      difficulty: (app.querySelector("#diff") as HTMLSelectElement)
-        .value as SoloSettings["difficulty"],
-      behavior,
+      difficulty: readMenuDifficulty(),
+      behavior: readMenuBehavior(),
     };
     setClubSoundIdentity(playerClub, aiClub);
     state.setup = defaultSetup();
-    go("tutorial");
+    go("setup");
   });
 }
 
@@ -959,7 +1047,7 @@ function renderTutorial(stepIndex = 0): void {
       </div>
       <div class="row setup-actions">
         <button class="btn secondary grow" id="tut-back" type="button">${i === 0 ? "Menü" : "Zurück"}</button>
-        <button class="btn ksc grow" id="tut-next" type="button">${last ? "Zur Aufstellung" : "Weiter"}</button>
+        <button class="btn ksc grow" id="tut-next" type="button">${last ? "Fertig" : "Weiter"}</button>
       </div>
     </div>`;
   app.querySelector("#tut-back")!.addEventListener("click", () => {
@@ -969,7 +1057,7 @@ function renderTutorial(stepIndex = 0): void {
   });
   app.querySelector("#tut-next")!.addEventListener("click", () => {
     sfx("ui");
-    if (last) go("setup");
+    if (last) go("menu");
     else renderTutorial(i + 1);
   });
 }
@@ -1106,8 +1194,300 @@ function askPlayerName(defaultName = "Spieler"): string | null {
   return name || defaultName;
 }
 
+function attemptCardHtml(
+  title: string,
+  attempt: Challenge["a"],
+  highlight: boolean,
+): string {
+  if (!attempt) {
+    return `<div class="chal-slot"><b>${escapeHtml(title)}</b><p class="tiny">Noch offen</p></div>`;
+  }
+  return `<div class="chal-slot ${highlight ? "win" : ""}">
+    <b>${escapeHtml(attempt.name)}</b>
+    <p class="sub" style="margin:4px 0 0">${escapeHtml(attempt.detail)}</p>
+    <p class="tiny">${attempt.beatAi ? "Sieg vs KI" : "Niederlage vs KI"}</p>
+  </div>`;
+}
+
+function renderChallengeCreate(): void {
+  syncMenuBrandingPreview();
+  const brand = currentBranding();
+  const matchLine = `${brand.heim.short} vs ${brand.gast.short}`;
+  const goal = state.challengeGoal;
+  const goals = (["ergebnis", "blocksturm", "bier"] as ChallengeGoal[])
+    .map(
+      (g) =>
+        `<button type="button" class="pick-mode ${goal === g ? "on" : ""}" data-chal-goal="${g}">${CHALLENGE_GOAL_LABEL[g]}</button>`,
+    )
+    .join("");
+
+  app.innerHTML = `
+    <div class="screen menu">
+      <p class="sub">1 Versuch · gleiches Setup · Sieger vergleichen</p>
+      <h1 class="brand" style="font-size:1.55rem">Challenge</h1>
+      <p class="sub match-line">${escapeHtml(matchLine)}</p>
+      <div class="kit-preview" aria-hidden="true">
+        ${kitSwatchHtml(brand.heim.id)}
+        <span class="kit-vs">vs</span>
+        ${kitSwatchHtml(brand.gast.id)}
+      </div>
+      <div class="card stack">
+        <p class="tiny">Ziel</p>
+        <div class="pick-mode-row chal-goals" role="group" aria-label="Challenge-Ziel">${goals}</div>
+        <p class="tiny">${escapeHtml(CHALLENGE_GOAL_BLURB[goal])}</p>
+        <label class="field">Schwierigkeit
+          <select id="chal-diff">
+            <option value="easy">Einfach</option>
+            <option value="normal" selected>Mittel</option>
+            <option value="hard">Schwer</option>
+          </select>
+        </label>
+        <p class="tiny">Matchup kommt aus dem Hauptmenü (Derby/Frei). Vorher Vereine wählen, dann Challenge.</p>
+      </div>
+      <div class="row setup-actions">
+        <button class="btn secondary grow" id="chal-back" type="button">Menü</button>
+        <button class="btn ksc grow" id="chal-start" type="button">Herausfordern</button>
+      </div>
+      <p class="tiny">Oder Challenge-Link einfügen:</p>
+      <div class="row" style="gap:8px">
+        <input id="chal-paste" class="chal-input" type="text" placeholder="?c=… oder ganzer Link" autocomplete="off" />
+        <button class="btn secondary" id="chal-join" type="button">Öffnen</button>
+      </div>
+    </div>`;
+
+  app.querySelectorAll<HTMLButtonElement>("[data-chal-goal]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      sfx("ui");
+      state.challengeGoal = btn.dataset.chalGoal as ChallengeGoal;
+      renderChallengeCreate();
+    });
+  });
+  app.querySelector("#chal-back")!.addEventListener("click", () => {
+    sfx("ui");
+    go("menu");
+  });
+  app.querySelector("#chal-start")!.addEventListener("click", () => {
+    unlockAudio();
+    sfx("ui");
+    const clubs = menuClubsFromState();
+    const name =
+      askChallengeName(localStorage.getItem("matchday-player-name") || "Spieler");
+    if (!name) return;
+    localStorage.setItem("matchday-player-name", name);
+    const diff = (
+      (app.querySelector("#chal-diff") as HTMLSelectElement).value || "normal"
+    ) as SoloSettings["difficulty"];
+    const c = createChallenge({
+      goal: state.challengeGoal,
+      difficulty: diff,
+      behavior: "balanced",
+      playerClub: clubs.playerClub,
+      aiClub: clubs.aiClub,
+    });
+    state.challenge = c;
+    state.challengeRole = "a";
+    applyChallengeSettings(c);
+    state.setup = defaultSetup();
+    go("setup");
+  });
+  app.querySelector("#chal-join")!.addEventListener("click", () => {
+    sfx("ui");
+    const raw = (app.querySelector("#chal-paste") as HTMLInputElement).value.trim();
+    let decoded: Challenge | null = null;
+    if (raw.startsWith("http")) {
+      try {
+        const u = new URL(raw);
+        decoded = challengeFromLocation(u.search, u.hash);
+      } catch {
+        decoded = null;
+      }
+    }
+    if (!decoded && raw.includes("c=")) {
+      const q = raw.includes("?") ? raw.slice(raw.indexOf("?")) : `?${raw}`;
+      decoded = challengeFromLocation(q, "");
+    }
+    if (!decoded) {
+      const payload = raw.replace(/^.*[?&#]c=/, "").split(/[&#]/)[0] || raw;
+      decoded = decodeChallenge(decodeURIComponent(payload));
+    }
+    if (!decoded) {
+      window.alert("Challenge-Link ungültig.");
+      return;
+    }
+    state.challenge = decoded;
+    state.challengeRole = null;
+    clearChallengeFromUrl();
+    go("challengeLobby");
+  });
+}
+
+function renderChallengeLobby(): void {
+  const c = state.challenge;
+  if (!c) {
+    go("challengeCreate");
+    return;
+  }
+  applyChallengeSettings(c);
+  const role = openChallengeRole(c);
+  const winner = compareChallengeAttempts(c.goal, c.a, c.b);
+  const verdict = challengeVerdictLabel(c, winner);
+  const canPlay = role === "a" || role === "b";
+  const already = role === "full";
+  const done = role === "done";
+
+  app.innerHTML = `
+    <div class="screen menu">
+      <p class="sub">Challenge</p>
+      <h1 class="brand" style="font-size:1.45rem">${escapeHtml(CHALLENGE_GOAL_LABEL[c.goal])}</h1>
+      <p class="sub">${escapeHtml(challengeSetupLine(c))}</p>
+      <div class="kit-preview" aria-hidden="true">
+        ${kitSwatchHtml(c.playerClub as ClubId)}
+        <span class="kit-vs">vs</span>
+        ${kitSwatchHtml(c.aiClub as ClubId)}
+      </div>
+      <div class="chal-compare">
+        ${attemptCardHtml(c.a ? c.a.name : "Spieler 1", c.a, winner === "a")}
+        ${attemptCardHtml(c.b ? c.b.name : "Spieler 2", c.b, winner === "b")}
+      </div>
+      <p class="sub chal-verdict">${escapeHtml(verdict)}</p>
+      <p class="tiny">${escapeHtml(CHALLENGE_GOAL_BLURB[c.goal])} · Nur 1 Versuch pro Spieler.</p>
+      <div class="row setup-actions">
+        <button class="btn secondary grow" id="chal-lobby-back" type="button">Menü</button>
+        ${
+          canPlay
+            ? `<button class="btn ksc grow" id="chal-play" type="button">${c.a ? "Annehmen (1×)" : "Spielen (1×)"}</button>`
+            : done
+              ? `<button class="btn ksc grow" id="chal-copy" type="button">Link kopieren</button>`
+              : already
+                ? `<button class="btn secondary grow" id="chal-copy" type="button">Link teilen</button>`
+                : ""
+        }
+      </div>
+      ${already && !done ? `<p class="tiny">Du hast deinen Versuch auf diesem Gerät schon verbraucht.</p>` : ""}
+    </div>`;
+
+  app.querySelector("#chal-lobby-back")!.addEventListener("click", () => {
+    sfx("ui");
+    state.challenge = null;
+    state.challengeRole = null;
+    go("menu");
+  });
+  const playBtn = app.querySelector("#chal-play");
+  if (playBtn) {
+    playBtn.addEventListener("click", () => {
+      unlockAudio();
+      sfx("ui");
+      const open = openChallengeRole(c);
+      if (open !== "a" && open !== "b") {
+        renderChallengeLobby();
+        return;
+      }
+      const name = askChallengeName(
+        localStorage.getItem("matchday-player-name") || "Spieler",
+      );
+      if (!name) return;
+      localStorage.setItem("matchday-player-name", name);
+      state.challengeRole = open;
+      applyChallengeSettings(c);
+      state.setup = defaultSetup();
+      go("setup");
+    });
+  }
+  const copyBtn = app.querySelector("#chal-copy");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      sfx("ui");
+      void copyChallengeLink(c);
+    });
+  }
+}
+
+async function copyChallengeLink(c: Challenge): Promise<void> {
+  const url = challengeShareUrl(c);
+  try {
+    await navigator.clipboard.writeText(url);
+    window.alert("Challenge-Link kopiert — an den Gegner senden.");
+  } catch {
+    window.prompt("Link kopieren:", url);
+  }
+}
+
+function renderChallengeResult(): void {
+  const c = state.challenge;
+  if (!c) {
+    go("menu");
+    return;
+  }
+  const winner = compareChallengeAttempts(c.goal, c.a, c.b);
+  const verdict = challengeVerdictLabel(c, winner);
+  app.innerHTML = `
+    <div class="screen menu">
+      <p class="sub">Challenge-Ergebnis</p>
+      <h1 class="brand" style="font-size:1.5rem">${escapeHtml(
+        winner === "draw"
+          ? "Unentschieden"
+          : winner === "pending"
+            ? "Dein Versuch zählt"
+            : "Sieger!",
+      )}</h1>
+      <p class="sub">${escapeHtml(challengeSetupLine(c))}</p>
+      <div class="chal-compare">
+        ${attemptCardHtml(c.a?.name || "Spieler 1", c.a, winner === "a")}
+        ${attemptCardHtml(c.b?.name || "Spieler 2", c.b, winner === "b")}
+      </div>
+      <p class="sub chal-verdict">${escapeHtml(verdict)}</p>
+      <div class="row setup-actions">
+        <button class="btn secondary grow" id="chal-res-menu" type="button">Menü</button>
+        <button class="btn ksc grow" id="chal-res-copy" type="button">Link teilen</button>
+      </div>
+      <p class="tiny">${
+        winner === "pending"
+          ? "Gegner öffnet den Link und spielt dasselbe Setup einmal."
+          : "Beide Versuche sind im Link — Gegner sieht dasselbe Ergebnis."
+      }</p>
+    </div>`;
+  app.querySelector("#chal-res-menu")!.addEventListener("click", () => {
+    sfx("ui");
+    state.challenge = null;
+    state.challengeRole = null;
+    go("menu");
+  });
+  app.querySelector("#chal-res-copy")!.addEventListener("click", () => {
+    sfx("ui");
+    void copyChallengeLink(c);
+  });
+}
+
+function finishChallengeAttempt(): void {
+  const c = state.challenge;
+  const role = state.challengeRole;
+  const m = state.match;
+  if (!c || !role || !m?.result) {
+    go("result");
+    return;
+  }
+  const r = m.result;
+  const name = localStorage.getItem("matchday-player-name") || "Spieler";
+  const attempt = attemptFromMatch({
+    goal: c.goal,
+    name,
+    playerTeam: state.settings.playerTeam,
+    winner: r.winner,
+    reason: r.reason,
+    score: r.score,
+    minute: r.minute,
+    beersDrunk: m.beersDrunkPlayer,
+  });
+  if (role === "a") c.a = attempt;
+  else c.b = attempt;
+  markPlayedChallengeRole(c.id, role);
+  state.challenge = c;
+  go("challengeResult");
+}
+
 function renderSetup(): void {
   const mix = state.setup.mix;
+  const chal = state.challenge;
   const row = (key: keyof FanMix, label: string) => `
     <div class="row" style="justify-content:space-between">
       <span>${label}</span>
@@ -1120,7 +1500,11 @@ function renderSetup(): void {
   app.innerHTML = `
     <div class="screen menu">
       <div>
-        <p class="sub">8 Fans für den Heimblock (Startaufstellung)</p>
+        <p class="sub">${
+          chal
+            ? `Challenge · ${escapeHtml(challengeSetupLine(chal))} · 1 Versuch`
+            : "8 Fans für den Heimblock (Startaufstellung)"
+        }</p>
         <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
       </div>
       <div class="card stack">
@@ -1134,13 +1518,23 @@ function renderSetup(): void {
         <button class="btn ksc grow anpfiff-btn" id="start" type="button" ${isValidMix(mix) ? "" : "disabled"}>Anpfiff</button>
       </div>
     </div>`;
-  app.querySelector("#back")!.addEventListener("click", () => go("menu"));
+  app.querySelector("#back")!.addEventListener("click", () => {
+    if (state.challenge && state.challengeRole) {
+      // Don't burn the attempt until the match ends
+      go("challengeLobby");
+      return;
+    }
+    go("menu");
+  });
   // Start requires an active click; do not gate match entry on fullscreen
   // (FS is optional after kickoff — otherwise playtests look like Anpfiff "failed").
   app.querySelector("#start")!.addEventListener("click", (ev) => {
     ev.preventDefault();
     ev.stopPropagation();
     if (!isValidMix(state.setup.mix)) return;
+    if (state.challenge && state.challengeRole) {
+      applyChallengeSettings(state.challenge);
+    }
     unlockAudio();
     sfx("whistle");
     startAmbience("match");
@@ -2195,6 +2589,12 @@ function renderMatchScreen(): void {
 }
 
 function renderResult(): void {
+  // Challenge: record 1 attempt and show head-to-head (no rematch)
+  if (state.challenge && state.challengeRole) {
+    finishChallengeAttempt();
+    return;
+  }
+
   const m = state.match!;
   const r = m.result!;
   const youWin = r.winner === state.settings.playerTeam;
@@ -2351,6 +2751,17 @@ function renderResult(): void {
     if (state.screen !== "result") return;
     paint(hsNotes);
   })();
+}
+
+// Deep-link: Challenge ?c=…
+{
+  const linked = challengeFromLocation();
+  if (linked) {
+    state.challenge = linked;
+    state.challengeRole = null;
+    clearChallengeFromUrl();
+    state.screen = "challengeLobby";
+  }
 }
 
 render();
