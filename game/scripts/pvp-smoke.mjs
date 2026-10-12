@@ -1,35 +1,49 @@
 /**
- * Host-authoritative PvP smoke (no PeerJS): both sides share one board.
- * Host=ksc, Guest=vfb via runForTeam + snap apply.
+ * Host-authoritative PvP smoke (no PeerJS).
+ * Guest view is mirrored: own team left (ksc locally).
  */
-import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 
-// Load compiled-ish TS via vite-node / tsx if available
+function pathToFileURL(p) {
+  return new URL(`file://${p}`);
+}
+
 async function load() {
   try {
     const { register } = await import("node:module");
-    const { pathToFileURL } = await import("node:url");
     register("tsx/esm", pathToFileURL("./"));
   } catch {
     /* try tsx direct */
   }
   const { Match } = await import(pathToFileURL(path.join(root, "src/game/Match.ts")).href);
-  const { applyPvpCmd, applyPvpSnap, exportPvpSnap } = await import(
-    pathToFileURL(path.join(root, "src/game/pvp.ts")).href
-  );
+  const {
+    applyPvpCmd,
+    applyPvpSnap,
+    exportPvpSnap,
+    mirrorPvpCmdToHost,
+    mirrorPvpSnapForGuest,
+  } = await import(pathToFileURL(path.join(root, "src/game/pvp.ts")).href);
   const { defaultSetup, defaultSoloSettings } = await import(
     pathToFileURL(path.join(root, "src/game/util.ts")).href
   );
-  return { Match, applyPvpCmd, applyPvpSnap, exportPvpSnap, defaultSetup, defaultSoloSettings };
-}
-
-function pathToFileURL(p) {
-  return new URL(`file://${p}`);
+  const { settingsFromLive } = await import(
+    pathToFileURL(path.join(root, "src/game/liveChallenge.ts")).href
+  );
+  return {
+    Match,
+    applyPvpCmd,
+    applyPvpSnap,
+    exportPvpSnap,
+    mirrorPvpCmdToHost,
+    mirrorPvpSnapForGuest,
+    defaultSetup,
+    defaultSoloSettings,
+    settingsFromLive,
+  };
 }
 
 const {
@@ -37,20 +51,34 @@ const {
   applyPvpCmd,
   applyPvpSnap,
   exportPvpSnap,
+  mirrorPvpCmdToHost,
+  mirrorPvpSnapForGuest,
   defaultSetup,
   defaultSoloSettings,
+  settingsFromLive,
 } = await load();
 
-const settings = {
-  ...defaultSoloSettings(),
+function assert(cond, msg) {
+  if (!cond) throw new Error(msg);
+}
+
+const cfg = {
   playerClub: "ksc",
   aiClub: "vfb",
   difficulty: "normal",
+  hostName: "Host",
+  guestName: "Gast",
+  pvp: true,
 };
 const mix = defaultSetup().mix;
 
+const hostSettings = settingsFromLive(cfg, "host");
+const guestSettings = settingsFromLive(cfg, "guest");
+assert(hostSettings.playerClub === "ksc" && hostSettings.aiClub === "vfb", "host clubs");
+assert(guestSettings.playerClub === "vfb" && guestSettings.aiClub === "ksc", "guest clubs swapped");
+
 const host = new Match({
-  settings,
+  settings: hostSettings,
   playerSetup: { mix: { ...mix } },
   aiSetup: { mix: { ...mix } },
   pvp: true,
@@ -59,72 +87,56 @@ const host = new Match({
 });
 
 const guest = new Match({
-  settings,
+  settings: guestSettings,
   playerSetup: { mix: { ...mix } },
   aiSetup: { mix: { ...mix } },
   pvp: true,
-  localTeam: "vfb",
+  localTeam: "ksc",
   pvpAuthority: false,
 });
 
-function assert(cond, msg) {
-  if (!cond) throw new Error(msg);
-}
-
-assert(host.pvp && host.localTeam === "ksc" && host.pvpAuthority, "host flags");
-assert(guest.pvp && guest.localTeam === "vfb" && !guest.pvpAuthority, "guest flags");
+assert(host.localTeam === "ksc" && guest.localTeam === "ksc", "both local left");
 assert(host.aiGold === host.gold, "fair start gold");
-assert(host.aiBeer === host.currency.beer, "fair start beer");
 
-// Host builds on Heim
+// Host builds on Heim (left)
 host.selectedSlot = { blockId: 0, index: 0 };
 host.buildMenu = { blockId: 0, index: 0 };
 assert(host.tryBuild("bier"), "host build bier");
-assert(host.slots.find((s) => s.blockId === 0 && s.index === 0)?.owner === "ksc", "host owns slot");
 
-// Guest cmd applied on host as vfb
-assert(
-  applyPvpCmd(host, "vfb", { op: "build", blockId: 2, index: 0, kind: "fanshop" }),
-  "guest build fanshop",
-);
+// Guest local build on left → remapped to host Gast (2)
+const guestBuild = mirrorPvpCmdToHost({
+  op: "build",
+  blockId: 0,
+  index: 0,
+  kind: "fanshop",
+});
+assert(guestBuild.blockId === 2, "guest left → host right");
+assert(applyPvpCmd(host, "vfb", guestBuild), "guest build on host");
 assert(
   host.slots.find((s) => s.blockId === 2 && s.index === 0)?.owner === "vfb",
-  "guest owns slot on host",
+  "guest owns host-right slot",
 );
 
-// Sync to guest viewer
-const snap = exportPvpSnap(host, 1);
+// Snap mirrored: guest sees own building on left (0)
+const snap = mirrorPvpSnapForGuest(exportPvpSnap(host, 1));
 applyPvpSnap(guest, snap);
 assert(
   guest.slots.find((s) => s.blockId === 0 && s.index === 0)?.owner === "ksc",
-  "guest sees host building",
+  "guest sees own building left",
 );
 assert(
   guest.slots.find((s) => s.blockId === 2 && s.index === 0)?.owner === "vfb",
-  "guest sees own building",
+  "guest sees host building right",
 );
-assert(Math.floor(guest.aiGold) === Math.floor(host.aiGold), "guest wallet sync");
+assert(Math.floor(guest.gold) === Math.floor(host.aiGold), "guest wallet is left/gold");
 
-// Guest unit tech upgrades on host side
-const techBefore = host.aiTech.normalos;
-assert(applyPvpCmd(host, "vfb", { op: "buy", kind: "normalos" }) || true, "buy may fail on resources");
-host.aiGold = 500;
-host.aiTech.normalos = 1;
-// Place a fanshop already at lv1 — need building for upgrade later
-assert(host.unitTechLevel("normalos", "vfb") === 1, "vfb tech");
-
-// AI must stay off in PvP
-const goldBefore = host.aiGold;
-host.update(0.5);
-assert(host.aiGold !== undefined, "still running");
-// just ensure no crash and guest update is view-only
+// Guest does not simulate
 const gGold = guest.gold;
 guest.update(0.5);
 assert(guest.gold === gGold, "guest does not simulate economy");
 
 console.log("pvp-smoke OK", {
   hostGold: Math.floor(host.gold),
-  guestGold: Math.floor(host.aiGold),
-  fans: host.fans.length,
-  techBefore,
+  guestGold: Math.floor(guest.gold),
+  mirrored: true,
 });

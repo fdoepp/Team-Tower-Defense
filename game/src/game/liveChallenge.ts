@@ -405,17 +405,22 @@ function attachConn(session: SessionInternal, conn: DataConn): void {
   });
 }
 
-/** Shared board: both see Heim=host club, Gast=guest club. */
+/**
+ * Shared board, local perspective: each client sees own club as Heim (left).
+ * Host config: playerClub=host, aiClub=guest. Guest settings swap clubs.
+ */
 export function settingsFromLive(
   cfg: LiveRoomConfig,
-  _role: LiveRole,
+  role: LiveRole,
 ): SoloSettings {
+  const hostClub = cfg.playerClub;
+  const guestClub = cfg.aiClub;
   return {
     difficulty: cfg.difficulty,
     behavior: "balanced",
     playerTeam: "ksc",
-    playerClub: cfg.playerClub,
-    aiClub: cfg.aiClub,
+    playerClub: role === "guest" ? guestClub : hostClub,
+    aiClub: role === "guest" ? hostClub : guestClub,
   };
 }
 

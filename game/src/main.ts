@@ -199,7 +199,14 @@ import {
   type LiveKpis,
   type LiveSession,
 } from "./game/liveChallenge";
-import { applyPvpCmd, applyPvpSnap, exportPvpSnap, type PvpCmd } from "./game/pvp";
+import {
+  applyPvpCmd,
+  applyPvpSnap,
+  exportPvpSnap,
+  mirrorPvpCmdToHost,
+  mirrorPvpSnapForGuest,
+  type PvpCmd,
+} from "./game/pvp";
 import {
   BADGE_DEFS,
   badgeCount,
@@ -757,13 +764,13 @@ function kpisFromMatch(m: Match, name: string): LiveKpis {
   };
 }
 
-/** Live PvP: guest sends cmd; host applies locally (own team via try*). */
+/** Live PvP: guest sends mirrored cmd; host applies locally (own team via try*). */
 function livePvpAction(cmd: PvpCmd, localApply: () => boolean): boolean {
   const live = state.live;
   const m = state.match;
   if (!live || !m?.pvp) return localApply();
   if (live.role === "guest") {
-    live.sendInput(cmd);
+    live.sendInput(mirrorPvpCmdToHost(cmd));
     return true;
   }
   return localApply();
@@ -2417,7 +2424,7 @@ function renderLiveHub(): void {
     ${moodHead({
       eyebrow: "Multiplayer",
       title: "Live-PvP",
-      lead: "Ein Spielfeld · Host steuert Heim · Gast steuert die Gäste",
+      lead: "Ein Spielfeld · jeder steuert seine Mannschaft (bei sich links)",
     })}
     <div class="chal-stats card stack">
       <p class="card-label">Persönliche Live-Stats</p>
@@ -2525,12 +2532,13 @@ function bindLiveSession(session: LiveSession): void {
   session.onInput((cmd) => {
     const m = state.match;
     if (!m?.pvp || !m.pvpAuthority || state.screen !== "match") return;
+    // Guest cmds already remapped to host coords; guest is always vfb on host.
     applyPvpCmd(m, "vfb", cmd);
   });
   session.onSnap((snap) => {
     const m = state.match;
     if (!m?.pvp || m.pvpAuthority || state.screen !== "match") return;
-    applyPvpSnap(m, snap);
+    applyPvpSnap(m, mirrorPvpSnapForGuest(snap));
   });
 }
 
@@ -2543,12 +2551,15 @@ function startLivePvpMatch(): void {
   startAmbience("match");
   const hostMix = state.livePvpHostMix ?? defaultSetup().mix;
   const guestMix = state.livePvpGuestMix ?? defaultSetup().mix;
+  // Each client: own mix left (Heim), opponent mix right — guest view is mirrored snaps.
+  const ownMix = live.role === "host" ? hostMix : guestMix;
+  const oppMix = live.role === "host" ? guestMix : hostMix;
   state.match = new Match({
     settings: state.settings,
-    playerSetup: { mix: { ...hostMix } },
-    aiSetup: { mix: { ...guestMix } },
+    playerSetup: { mix: { ...ownMix } },
+    aiSetup: { mix: { ...oppMix } },
     pvp: true,
-    localTeam: live.role === "guest" ? "vfb" : "ksc",
+    localTeam: "ksc",
     pvpAuthority: live.role === "host",
   });
   state.resultBadges = [];
@@ -2579,7 +2590,7 @@ function renderLiveLobby(): void {
       title: "Lobby",
       lead: escapeHtml(matchLine),
       extra: `<p class="live-code">${escapeHtml(live.code)}</p>
-        <p class="tiny mood-center">Live-PvP · ein Spielfeld · Host Heim · Gast rechts</p>
+        <p class="tiny mood-center">Live-PvP · ein Spielfeld · jeder sieht die eigene Mannschaft links</p>
         <div class="kit-preview" aria-hidden="true">
           ${kitSwatchHtml((cfg?.playerClub || brand.heim.id) as ClubId)}
           <span class="kit-vs">vs</span>
@@ -2589,11 +2600,11 @@ function renderLiveLobby(): void {
     ${
       live.role === "host"
         ? `<div class="card stack">
-        <p class="card-label">Matchup (Host = Heim links)</p>
+        <p class="card-label">Matchup (du links · Gegner rechts — bei dir)</p>
         ${matchupPickHtml({ showDiff: true, showBehavior: false })}
-        <p class="tiny">Gegner steuert die Gäste-Seite. Keine KI — echtes Duell.</p>
+        <p class="tiny">Gegner sieht bei sich ebenfalls die eigene Mannschaft links. Keine KI — echtes Duell.</p>
       </div>`
-        : `<div class="card stack"><p class="tiny">Du bist <b>Gast (rechts)</b>. Host legt das Matchup fest — gleiches Spielfeld, live gegeneinander.</p></div>`
+        : `<div class="card stack"><p class="tiny">Du bist <b>Gast</b> — deine Mannschaft liegt bei dir <b>links</b>. Host legt das Matchup fest; gleiches Spielfeld, live gegeneinander.</p></div>`
     }
     <div class="card stack">
       <div class="live-ready-row">
@@ -2663,11 +2674,11 @@ function syncLiveKpiPanel(): void {
   const m = state.match;
   if (!panel || !live) return;
   if (m?.pvp) {
-    const side = live.role === "host" ? "Du · Heim" : "Du · Gast";
+    const side = live.role === "host" ? "Du · Host (links)" : "Du · Gast (links)";
     panel.innerHTML = `<b>Live-PvP</b>
       <span>${escapeHtml(side)}</span>
       <span>${escapeHtml(live.localName)} vs ${escapeHtml(live.remoteName || "…")}</span>
-      <span class="tiny">${live.connected ? "verbunden" : "offline"} · ${live.role === "host" ? "Host simuliert" : "Empfange Sync"}</span>`;
+      <span class="tiny">${live.connected ? "verbunden" : "offline"} · ${live.role === "host" ? "Host simuliert" : "Sync · eigene Seite links"}</span>`;
     return;
   }
   const k = live.remoteKpi;
@@ -2716,14 +2727,14 @@ function renderLiveResult(): void {
       })}
       <div class="live-compare">
         <div class="live-slot">
-          <p class="tiny">Du · ${live.role === "host" ? "Heim" : "Gast"}</p>
+          <p class="tiny">Du (links)</p>
           <p class="card-strong">${escapeHtml(me.name)}</p>
           <p>${me.scoreFor}:${me.scoreAgainst}</p>
           <p class="tiny">${formatMinute(me.minute)} · Biere ${me.beers}</p>
           <p class="tiny">${escapeHtml(me.detail || "")}</p>
         </div>
         <div class="live-slot">
-          <p class="tiny">Gegner · ${live.role === "host" ? "Gast" : "Heim"}</p>
+          <p class="tiny">Gegner</p>
           <p class="card-strong">${escapeHtml(them?.name || live.remoteName || "…")}</p>
           <p>${them ? `${them.scoreFor}:${them.scoreAgainst}` : "—"}</p>
           <p class="tiny">${them ? `${formatMinute(them.minute)} · läuft…` : "verbindet…"}</p>
@@ -2761,14 +2772,14 @@ function renderLiveResult(): void {
     })}
     <div class="live-compare">
       <div class="live-slot ${outcome === "win" ? "win" : outcome === "loss" ? "loss" : ""}">
-        <p class="tiny">Du · ${live.role === "host" ? "Heim" : "Gast"}</p>
+        <p class="tiny">Du (links)</p>
         <p class="card-strong">${escapeHtml(me.name)}</p>
         <p>${me.scoreFor}:${me.scoreAgainst}</p>
         <p class="tiny">${formatMinute(me.minute)} · Biere ${me.beers} · Gold ${me.gold}</p>
         <p class="tiny">${escapeHtml(me.detail || me.reason || "")}</p>
       </div>
       <div class="live-slot ${outcome === "loss" ? "win" : outcome === "win" ? "loss" : ""}">
-        <p class="tiny">Gegner · ${live.role === "host" ? "Gast" : "Heim"}</p>
+        <p class="tiny">Gegner</p>
         <p class="card-strong">${escapeHtml(them.name)}</p>
         <p>${them.scoreFor}:${them.scoreAgainst}</p>
         <p class="tiny">${formatMinute(them.minute)} · Biere ${them.beers} · Gold ${them.gold}</p>

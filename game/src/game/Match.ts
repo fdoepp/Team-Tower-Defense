@@ -162,9 +162,9 @@ export type MatchConfig = {
   guided?: boolean;
   /** Live PvP: both sides human-controlled */
   pvp?: boolean;
-  /** Team this client controls (host ksc / guest vfb). Defaults to settings.playerTeam */
+  /** Team this client controls. Live PvP: always ksc (own side left); guest snaps are mirrored. */
   localTeam?: TeamId;
-  /** Host runs sim; guest only applies snapshots */
+  /** Host runs sim; guest only applies mirrored snapshots */
   pvpAuthority?: boolean;
 };
 
@@ -428,11 +428,11 @@ export class Match {
   constructor(cfg: MatchConfig) {
     this.cfg = cfg;
     this.pvp = !!cfg.pvp;
-    // PvP board is always Heim=ksc / Gast=vfb; localTeam chooses who you control
+    // PvP: each client treats own side as Heim/ksc (left). Guest applies mirrored snaps.
     if (this.pvp) {
       this.playerTeam = "ksc";
       this.aiTeam = "vfb";
-      this.localTeam = cfg.localTeam === "vfb" ? "vfb" : "ksc";
+      this.localTeam = "ksc";
       this.pvpAuthority = cfg.pvpAuthority !== false;
     } else {
       this.playerTeam = cfg.settings.playerTeam;
