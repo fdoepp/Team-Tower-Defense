@@ -195,6 +195,28 @@ import {
   type LiveKpis,
   type LiveSession,
 } from "./game/liveChallenge";
+import {
+  BADGE_DEFS,
+  badgeCount,
+  evaluateMatchBadges,
+  loadBadges,
+  tierLabel,
+  type BadgeDef,
+  type BadgeUnlock,
+} from "./game/badges";
+import {
+  applyTournamentMatchResult,
+  clearTournament,
+  createTournament,
+  currentOpponent,
+  loadTournament,
+  saveTournament,
+  settingsFromTournament,
+  tournamentProgressLabel,
+  tourneyDiffLabel,
+  type TournamentDifficulty,
+  type TournamentState,
+} from "./game/tournament";
 
 void preloadIcons();
 bindAudioGestures();
@@ -577,7 +599,10 @@ type Screen =
   | "challengeResult"
   | "liveHub"
   | "liveLobby"
-  | "liveResult";
+  | "liveResult"
+  | "badges"
+  | "tournamentHub"
+  | "tournamentBracket";
 
 /** Top-level: clubs vs national teams */
 type TeamScope = "clubs" | "nations";
@@ -623,6 +648,13 @@ const state = {
   liveMyKpi: null as LiveKpis | null,
   liveOutcome: null as "win" | "loss" | "draw" | null,
   liveWaitingOpponent: false,
+  /** Guided first solo after tutorial */
+  guidedOnboarding: false,
+  /** Badges unlocked this result screen */
+  resultBadges: [] as { id: string; def: BadgeDef; unlock: BadgeUnlock }[],
+  /** Solo tournament run */
+  tournament: null as TournamentState | null,
+  tournamentDiff: "normal" as TournamentDifficulty,
 };
 
 function menuAtmosphereHtml(): string {
@@ -861,6 +893,9 @@ function render(): void {
   else if (state.screen === "liveHub") renderLiveHub();
   else if (state.screen === "liveLobby") renderLiveLobby();
   else if (state.screen === "liveResult") renderLiveResult();
+  else if (state.screen === "badges") renderBadges();
+  else if (state.screen === "tournamentHub") renderTournamentHub();
+  else if (state.screen === "tournamentBracket") renderTournamentBracket();
   else renderResult();
   if (state.screen !== "match") enhanceMenuMood();
 }
@@ -1214,19 +1249,29 @@ function renderMenu(): void {
       <div class="menu-actions stack">
         <button class="btn secondary" id="tutorial">Tutorial</button>
         <div class="menu-group">
-          <p class="menu-group-label">Spielen</p>
+          <p class="menu-group-label">Solo</p>
           <button class="btn ksc menu-cta" id="solo">Solo vs KI</button>
+          <button class="btn secondary" id="tournament">Solo-Turnier</button>
+        </div>
+        <div class="menu-group">
+          <p class="menu-group-label">Multiplayer</p>
           <button class="btn secondary" id="live">Live Challenge</button>
           <button class="btn secondary" id="challenge">Challenge</button>
         </div>
-        <button class="btn secondary" id="highscores">Highscores</button>
-        <details class="menu-settings">
-          <summary class="btn secondary menu-settings-summary">Einstellungen</summary>
+        <div class="menu-group">
+          <p class="menu-group-label">Allgemein</p>
           <div class="menu-util-row">
-            <button class="btn secondary util" id="mute-audio">${muteButtonLabel()}</button>
-            <button class="btn secondary util" id="fs-menu">Vollbild</button>
+            <button class="btn secondary util" id="badges">Badges</button>
+            <button class="btn secondary util" id="highscores">Highscores</button>
           </div>
-        </details>
+          <details class="menu-settings">
+            <summary class="btn secondary menu-settings-summary">Einstellungen</summary>
+            <div class="menu-util-row">
+              <button class="btn secondary util" id="mute-audio">${muteButtonLabel()}</button>
+              <button class="btn secondary util" id="fs-menu">Vollbild</button>
+            </div>
+          </details>
+        </div>
       </div>
       ${
         iosHint
@@ -1250,6 +1295,16 @@ function renderMenu(): void {
     sfx("ui");
     state.highscoreDiff = state.menuDifficulty;
     go("highscores");
+  });
+  app.querySelector("#badges")!.addEventListener("click", () => {
+    sfx("ui");
+    go("badges");
+  });
+  app.querySelector("#tournament")!.addEventListener("click", () => {
+    unlockAudio();
+    sfx("ui");
+    state.tournament = loadTournament();
+    go("tournamentHub");
   });
   app.querySelector("#tutorial")!.addEventListener("click", () => {
     unlockAudio();
@@ -1417,7 +1472,38 @@ const TUTORIAL_STEPS: TutStep[] = [
         <div class="tut-timer">5 s</div>
       </div>`,
   },
+  {
+    id: "path",
+    title: "Dein erster Weg",
+    lead: "Vier Meilensteine — dann kickst du selbst.",
+    body: "Im geführten Solo auf <b>Einfach</b> erscheinen Toasts, sobald du sie schaffst:<br>1) Gebäude bauen · 2) Person holen · 3) In den Gang senden · 4) Tor oder Sturm-Moment. Danach bist du frei — Badges sammeln sich mit der Schwierigkeit (Bronze → Silber → Gold).",
+    diagram: `
+      <div class="tut-diagram tut-path" aria-hidden="true">
+        <div class="tut-mile">🏗</div>
+        <div class="tut-mile">👤</div>
+        <div class="tut-mile">→</div>
+        <div class="tut-mile">⚽</div>
+      </div>`,
+  },
 ];
+
+function startGuidedSolo(): void {
+  state.guidedOnboarding = true;
+  state.challenge = null;
+  state.challengeRole = null;
+  state.tournament = null;
+  state.live = null;
+  state.menuDifficulty = "easy";
+  state.menuBehavior = "patient";
+  applySoloSettingsFromMenu();
+  state.settings = {
+    ...state.settings,
+    difficulty: "easy",
+    behavior: "patient",
+  };
+  state.setup = defaultSetup();
+  go("setup");
+}
 
 function renderTutorial(stepIndex = 0): void {
   const i = Math.max(0, Math.min(TUTORIAL_STEPS.length - 1, stepIndex));
@@ -1436,8 +1522,9 @@ function renderTutorial(stepIndex = 0): void {
       </div>
       <div class="row setup-actions">
         <button class="btn secondary grow" id="tut-back" type="button">${i === 0 ? "Menü" : "Zurück"}</button>
-        <button class="btn ksc grow" id="tut-next" type="button">${last ? "Fertig" : "Weiter"}</button>
+        <button class="btn ksc grow" id="tut-next" type="button">${last ? "Erstes Solo (Einfach)" : "Weiter"}</button>
       </div>
+      ${last ? `<button class="btn secondary" id="tut-skip" type="button">Nur Menü</button>` : ""}
     `, "tutorial-screen tut-guided");
   app.querySelector("#tut-back")!.addEventListener("click", () => {
     sfx("ui");
@@ -1445,9 +1532,14 @@ function renderTutorial(stepIndex = 0): void {
     else renderTutorial(i - 1);
   });
   app.querySelector("#tut-next")!.addEventListener("click", () => {
+    unlockAudio();
     sfx("ui");
-    if (last) go("menu");
+    if (last) startGuidedSolo();
     else renderTutorial(i + 1);
+  });
+  app.querySelector("#tut-skip")?.addEventListener("click", () => {
+    sfx("ui");
+    go("menu");
   });
 }
 
@@ -1966,6 +2058,163 @@ function finishChallengeAttempt(): void {
   go("challengeResult");
 }
 
+function renderBadges(): void {
+  const save = loadBadges();
+  const counts = badgeCount();
+  const cards = BADGE_DEFS.map((def) => {
+    const u = save[def.id];
+    const tier = u?.tier;
+    const locked = !tier;
+    const cls = locked ? "locked" : tier;
+    return `<div class="badge-card ${cls}">
+      <div class="badge-mark" aria-hidden="true">${escapeHtml(def.mark)}</div>
+      <div class="badge-meta">
+        <b>${escapeHtml(def.title)}</b>
+        <p class="tiny">${escapeHtml(def.blurb)}</p>
+        <p class="badge-tier">${locked ? "Gesperrt" : `${tierLabel(tier!)} · ${tier === "gold" ? "Schwer" : tier === "silver" ? "Mittel" : "Einfach"}`}</p>
+      </div>
+    </div>`;
+  }).join("");
+
+  app.innerHTML = moodMenu(`
+    <p class="sub">Bronze = Einfach · Silber = Mittel · Gold = Schwer</p>
+    <h1 class="brand">Badges</h1>
+    <p class="tiny">${counts.unlocked}/${counts.total} freigeschaltet · ${counts.gold}× Gold</p>
+    <div class="badge-grid">${cards}</div>
+    <button class="btn secondary" id="badges-back" type="button">Menü</button>
+  `);
+  app.querySelector("#badges-back")!.addEventListener("click", () => {
+    sfx("ui");
+    go("menu");
+  });
+}
+
+function renderTournamentHub(): void {
+  const existing = loadTournament();
+  state.tournament = existing;
+  const d = state.tournamentDiff;
+  app.innerHTML = moodMenu(`
+    <p class="sub">5 Runden · Gegner werden stärker · du immer Heim links</p>
+    <h1 class="brand">Solo-Turnier</h1>
+    ${
+      existing?.active
+        ? `<div class="card stack">
+        <p class="sub" style="margin:0">Laufendes Turnier</p>
+        <p>${escapeHtml(tournamentProgressLabel(existing))} · ${tourneyDiffLabel(existing.tourneyDiff)}</p>
+        <p class="tiny">${existing.wins} Siege</p>
+        <button class="btn ksc" id="tourney-continue" type="button">Weiterspielen</button>
+        <button class="btn secondary" id="tourney-abandon" type="button">Aufgeben</button>
+      </div>`
+        : ""
+    }
+    <div class="card stack">
+      <p class="tiny">Turnier-Schwierigkeit</p>
+      <div class="pick-mode-row" role="group">
+        ${(["easy", "normal", "hard"] as TournamentDifficulty[])
+          .map(
+            (x) =>
+              `<button type="button" class="pick-mode ${d === x ? "on" : ""}" data-tdiff="${x}">${tourneyDiffLabel(x)}</button>`,
+          )
+          .join("")}
+      </div>
+      <p class="tiny">Einfach startet weich, Schwer startet hart — beide steigern den Baumfortschritt der Gegner.</p>
+      <button class="btn ksc" id="tourney-new" type="button">${existing?.active ? "Neues Turnier" : "Turnier starten"}</button>
+    </div>
+    <button class="btn secondary" id="tourney-back" type="button">Menü</button>
+  `);
+  app.querySelectorAll<HTMLButtonElement>("[data-tdiff]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      sfx("ui");
+      state.tournamentDiff = btn.dataset.tdiff as TournamentDifficulty;
+      renderTournamentHub();
+    });
+  });
+  app.querySelector("#tourney-back")!.addEventListener("click", () => {
+    sfx("ui");
+    go("menu");
+  });
+  app.querySelector("#tourney-abandon")?.addEventListener("click", () => {
+    sfx("ui");
+    clearTournament();
+    state.tournament = null;
+    renderTournamentHub();
+  });
+  app.querySelector("#tourney-continue")?.addEventListener("click", () => {
+    sfx("ui");
+    go("tournamentBracket");
+  });
+  app.querySelector("#tourney-new")!.addEventListener("click", () => {
+    unlockAudio();
+    sfx("ui");
+    syncMenuBrandingPreview();
+    const clubs = menuClubsFromState();
+    const t = createTournament(state.tournamentDiff, clubs.playerClub as ClubId);
+    saveTournament(t);
+    state.tournament = t;
+    state.guidedOnboarding = false;
+    state.challenge = null;
+    state.live = null;
+    go("tournamentBracket");
+  });
+}
+
+function renderTournamentBracket(): void {
+  const t = state.tournament ?? loadTournament();
+  if (!t?.active) {
+    go("tournamentHub");
+    return;
+  }
+  state.tournament = t;
+  const opp = currentOpponent(t);
+  const rows = t.opponents
+    .map((o, i) => {
+      const done = i < t.round;
+      const cur = i === t.round;
+      const cls = done ? "done" : cur ? "current" : "upcoming";
+      return `<li class="tourney-round ${cls}">
+        <b>R${i + 1}</b> ${escapeHtml(o.label)}
+        <span class="tiny">${clubCode(o.aiClub) || o.aiClub} · ${difficultyLabel(o.difficulty)} · ${AI_BEHAVIOR_LABEL[o.behavior] || o.behavior}</span>
+      </li>`;
+    })
+    .join("");
+
+  app.innerHTML = moodMenu(`
+    <p class="sub">${tourneyDiffLabel(t.tourneyDiff)}-Turnier · ${escapeHtml(tournamentProgressLabel(t))}</p>
+    <h1 class="brand">Bracket</h1>
+    <ul class="tourney-list">${rows}</ul>
+    ${
+      opp
+        ? `<div class="card stack">
+        <p class="sub" style="margin:0">Nächster Gegner</p>
+        <p><b>${escapeHtml(opp.label)}</b> — ${clubCode(opp.aiClub) || opp.aiClub}</p>
+        <p class="tiny">${difficultyLabel(opp.difficulty)} · ${AI_BEHAVIOR_LABEL[opp.behavior] || opp.behavior}</p>
+        <div class="kit-preview" aria-hidden="true">
+          ${kitSwatchHtml(opp.playerClub)}
+          <span class="kit-vs">vs</span>
+          ${kitSwatchHtml(opp.aiClub)}
+        </div>
+        <button class="btn ksc" id="tourney-play" type="button">Anpfiff Runde ${t.round + 1}</button>
+      </div>`
+        : ""
+    }
+    <button class="btn secondary" id="tourney-br-back" type="button">Turnier-Hub</button>
+  `);
+  app.querySelector("#tourney-br-back")!.addEventListener("click", () => {
+    sfx("ui");
+    go("tournamentHub");
+  });
+  app.querySelector("#tourney-play")?.addEventListener("click", () => {
+    unlockAudio();
+    sfx("ui");
+    const settings = settingsFromTournament(t);
+    if (!settings) return;
+    state.settings = settings;
+    setClubSoundIdentity(settings.playerClub, settings.aiClub);
+    state.setup = defaultSetup();
+    go("setup");
+  });
+}
+
 function renderLiveHub(): void {
   const stats = loadLiveStats();
   const hist = loadLiveHistory();
@@ -2295,6 +2544,7 @@ function renderLiveResult(): void {
         <p class="tiny">${escapeHtml(them.detail || them.reason || "")}</p>
       </div>
     </div>
+    ${badgesResultHtml()}
     <div class="chal-stats card stack">
       <p class="sub" style="margin:0">Persönliche Stats</p>
       <p class="chal-stats-line"><b>${stats.wins}</b> W · <b>${stats.losses}</b> L · <b>${stats.draws}</b> D · ${stats.played} Spiele</p>
@@ -2334,9 +2584,13 @@ function renderSetup(): void {
         <p class="sub">${
           live
             ? `Live Challenge · du Heim links · Gegner-Club rechts`
-            : chal
-              ? `Challenge · ${escapeHtml(challengeSetupLine(chal))} · 1 Versuch`
-              : "8 Fans für den Heimblock (Startaufstellung)"
+            : state.tournament?.active
+              ? `Turnier · ${escapeHtml(tournamentProgressLabel(state.tournament))}`
+              : state.guidedOnboarding
+                ? "Geführtes Solo (Einfach) — Meilensteine im Match"
+              : chal
+                ? `Challenge · ${escapeHtml(challengeSetupLine(chal))} · 1 Versuch`
+                : "8 Fans für den Heimblock (Startaufstellung)"
         }</p>
         <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
       </div>
@@ -2356,9 +2610,17 @@ function renderSetup(): void {
       go("liveLobby");
       return;
     }
+    if (state.tournament?.active) {
+      go("tournamentBracket");
+      return;
+    }
     if (state.challenge && state.challengeRole) {
       // Don't burn the attempt until the match ends
       go("challengeLobby");
+      return;
+    }
+    if (state.guidedOnboarding) {
+      go("tutorial");
       return;
     }
     go("soloMatchup");
@@ -2372,6 +2634,13 @@ function renderSetup(): void {
     if (state.challenge && state.challengeRole) {
       applyChallengeSettings(state.challenge);
     }
+    if (state.tournament?.active) {
+      const s = settingsFromTournament(state.tournament);
+      if (s) {
+        state.settings = s;
+        setClubSoundIdentity(s.playerClub, s.aiClub);
+      }
+    }
     unlockAudio();
     sfx("whistle");
     startAmbience("match");
@@ -2380,7 +2649,9 @@ function renderSetup(): void {
       settings: state.settings,
       playerSetup: state.setup,
       aiSetup: { mix: { ...aiProf.aiMix } },
+      guided: state.guidedOnboarding,
     });
+    state.resultBadges = [];
     // QA / playtest hook (read-only introspection)
     (window as unknown as { __match?: Match }).__match = state.match;
     go("match");
@@ -2413,6 +2684,18 @@ function renderMatchScreen(): void {
       ${
         state.live
           ? `<aside class="live-kpi-panel" id="live-kpi-panel" aria-live="polite"><b>Gegner · rechts</b><span>…</span></aside>`
+          : ""
+      }
+      <div class="match-flash hidden" id="match-flash" aria-live="assertive"></div>
+      ${
+        state.guidedOnboarding
+          ? `<aside class="guided-panel" id="guided-panel" aria-live="polite">
+        <b>Onboarding</b>
+        <span data-g="build">🏗 Bauen</span>
+        <span data-g="fans">👤 Person</span>
+        <span data-g="send">→ Gang</span>
+        <span data-g="goal">⚽ Moment</span>
+      </aside>`
           : ""
       }
       <div class="rail-slot" id="rail-slot" hidden>
@@ -3408,9 +3691,36 @@ function renderMatchScreen(): void {
       if (bar) {
         bar.classList.remove("kick");
       }
-      // Extra mid-screen hint strips off — only the LIVE ticker under momentum
-      const banner = app.querySelector("#combat-banner");
-      if (banner) banner.classList.add("hidden");
+      // Match feedback: combat banner + big flash
+      const banner = app.querySelector<HTMLElement>("#combat-banner");
+      const combat = m.combatStatus();
+      if (banner) {
+        if (combat) {
+          banner.textContent = combat;
+          banner.classList.remove("hidden");
+          banner.classList.add("show");
+        } else {
+          banner.classList.add("hidden");
+          banner.classList.remove("show");
+        }
+      }
+      const flashEl = app.querySelector<HTMLElement>("#match-flash");
+      if (flashEl) {
+        if (m.uiFlash && m.uiFlash.t > 0) {
+          flashEl.textContent = m.uiFlash.text;
+          flashEl.dataset.tone = m.uiFlash.tone;
+          flashEl.classList.remove("hidden");
+        } else {
+          flashEl.classList.add("hidden");
+        }
+      }
+      const guidedPanel = app.querySelector("#guided-panel");
+      if (guidedPanel) {
+        for (const key of ["build", "fans", "send", "goal"] as const) {
+          const el = guidedPanel.querySelector(`[data-g="${key}"]`);
+          if (el) el.classList.toggle("done", m.guidedDone.has(key));
+        }
+      }
       const toast = app.querySelector("#toast");
       if (toast) toast.classList.remove("show");
       // Halbzeit boost picker
@@ -3459,9 +3769,56 @@ function renderMatchScreen(): void {
   state.raf = requestAnimationFrame(loop);
 }
 
+function collectResultBadges(opts?: {
+  tournamentChampion?: boolean;
+  fromTournamentRound?: boolean;
+  fromLiveWin?: boolean;
+}): void {
+  const m = state.match;
+  if (!m?.result) return;
+  const r = m.result;
+  const playerIsKsc = m.playerTeam === "ksc";
+  const scoreFor = playerIsKsc ? r.score[0] : r.score[1];
+  const scoreAgainst = playerIsKsc ? r.score[1] : r.score[0];
+  state.resultBadges = evaluateMatchBadges({
+    difficulty: r.difficulty,
+    playerTeam: m.playerTeam,
+    winner: r.winner,
+    reason: r.reason,
+    scoreFor,
+    scoreAgainst,
+    minute: r.minute,
+    beers: m.beersDrunkPlayer,
+    buildingsOwned: m.countPlayerBuildings(),
+    wasBehind: m.wasBehind,
+    fromTournamentRound: opts?.fromTournamentRound,
+    tournamentChampion: opts?.tournamentChampion,
+    fromLiveWin: opts?.fromLiveWin,
+  });
+}
+
+function badgesResultHtml(): string {
+  if (!state.resultBadges.length) return "";
+  return `<div class="badge-unlocks card stack">
+    <p class="sub" style="margin:0">Neue Badges</p>
+    ${state.resultBadges
+      .map(
+        (b) =>
+          `<div class="badge-unlock-row ${b.unlock.tier}">
+            <span class="badge-mark">${escapeHtml(b.def.mark)}</span>
+            <span><b>${escapeHtml(b.def.title)}</b> · ${tierLabel(b.unlock.tier)}</span>
+          </div>`,
+      )
+      .join("")}
+  </div>`;
+}
+
 function renderResult(): void {
   // Live Challenge: summary + personal stats
   if (state.live) {
+    if (state.liveMyKpi?.winner === "player") {
+      collectResultBadges({ fromLiveWin: true });
+    }
     go("liveResult");
     return;
   }
@@ -3478,25 +3835,63 @@ function renderResult(): void {
   const playerGoals = playerIsKsc ? r.score[0] : r.score[1];
   const aiGoals = playerIsKsc ? r.score[1] : r.score[0];
 
+  // Tournament advancement
+  let tourneyNote = "";
+  let tourneyChampion = false;
+  const playedTournament = !!state.tournament?.active;
+  if (playedTournament && state.tournament) {
+    const { state: next, champion, eliminated } = applyTournamentMatchResult(
+      state.tournament,
+      youWin,
+    );
+    state.tournament = next;
+    tourneyChampion = champion;
+    if (champion) tourneyNote = "Turnier gewonnen — Champion!";
+    else if (eliminated) tourneyNote = "Turnier vorbei — Ausscheiden.";
+    else tourneyNote = `Runde gewonnen · weiter zu ${tournamentProgressLabel(next)}`;
+  }
+
+  collectResultBadges({
+    fromTournamentRound: playedTournament && youWin,
+    tournamentChampion: tourneyChampion,
+  });
+  state.guidedOnboarding = false;
+
   const paint = (hsNotes: string[]) => {
-    app.innerHTML = `
-    <div class="screen menu">
+    const againLabel = state.tournament?.active
+      ? "Nächste Runde"
+      : tourneyChampion
+        ? "Turnier-Hub"
+        : "Rematch";
+    app.innerHTML = moodMenu(`
       <p class="sub">${r.detail}</p>
       <h1 class="brand">${youWin ? "Sieg!" : "Niederlage"}</h1>
       <p class="sub">${teamLabel(r.winner)} · ${r.score[0]}:${r.score[1]} · ${formatMinute(m.minute)} · ${difficultyLabel(r.difficulty)}</p>
+      ${tourneyNote ? `<p class="sub hs-note">${escapeHtml(tourneyNote)}</p>` : ""}
+      ${badgesResultHtml()}
       ${hsNotes.length ? `<p class="sub hs-note">${hsNotes.join(" · ")}</p>` : ""}
       <div class="row">
         <button class="btn secondary grow" id="menu">Menü</button>
         <button class="btn secondary grow" id="hs">Highscores</button>
-        <button class="btn ksc grow" id="again">Rematch</button>
+        <button class="btn ksc grow" id="again">${againLabel}</button>
       </div>
-    </div>`;
+    `);
     app.querySelector("#menu")!.addEventListener("click", () => go("menu"));
     app.querySelector("#hs")!.addEventListener("click", () => {
       state.highscoreDiff = r.difficulty;
       go("highscores");
     });
-    app.querySelector("#again")!.addEventListener("click", () => go("setup"));
+    app.querySelector("#again")!.addEventListener("click", () => {
+      if (state.tournament?.active) {
+        go("tournamentBracket");
+        return;
+      }
+      if (tourneyChampion || (state.tournament && !state.tournament.active)) {
+        go("tournamentHub");
+        return;
+      }
+      go("setup");
+    });
   };
 
   if (!youWin) {
