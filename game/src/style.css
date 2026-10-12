@@ -334,8 +334,14 @@ button {
   gap: 10px;
 }
 
+.menu-group + .menu-group {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(248, 250, 252, 0.08);
+}
+
 .menu-group-label {
-  margin: 4px 0 0;
+  margin: 0;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.16em;

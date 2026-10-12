@@ -1249,9 +1249,12 @@ function renderMenu(): void {
       <div class="menu-actions stack">
         <button class="btn secondary" id="tutorial">Tutorial</button>
         <div class="menu-group">
-          <p class="menu-group-label">Spielen</p>
+          <p class="menu-group-label">Solo</p>
           <button class="btn ksc menu-cta" id="solo">Solo vs KI</button>
           <button class="btn secondary" id="tournament">Solo-Turnier</button>
+        </div>
+        <div class="menu-group">
+          <p class="menu-group-label">Multiplayer</p>
           <button class="btn secondary" id="live">Live Challenge</button>
           <button class="btn secondary" id="challenge">Challenge</button>
         </div>
