@@ -1258,17 +1258,20 @@ function renderMenu(): void {
           <button class="btn secondary" id="live">Live Challenge</button>
           <button class="btn secondary" id="challenge">Challenge</button>
         </div>
-        <div class="menu-util-row">
-          <button class="btn secondary util" id="badges">Badges</button>
-          <button class="btn secondary util" id="highscores">Highscores</button>
-        </div>
-        <details class="menu-settings">
-          <summary class="btn secondary menu-settings-summary">Einstellungen</summary>
+        <div class="menu-group">
+          <p class="menu-group-label">Allgemein</p>
           <div class="menu-util-row">
-            <button class="btn secondary util" id="mute-audio">${muteButtonLabel()}</button>
-            <button class="btn secondary util" id="fs-menu">Vollbild</button>
+            <button class="btn secondary util" id="badges">Badges</button>
+            <button class="btn secondary util" id="highscores">Highscores</button>
           </div>
-        </details>
+          <details class="menu-settings">
+            <summary class="btn secondary menu-settings-summary">Einstellungen</summary>
+            <div class="menu-util-row">
+              <button class="btn secondary util" id="mute-audio">${muteButtonLabel()}</button>
+              <button class="btn secondary util" id="fs-menu">Vollbild</button>
+            </div>
+          </details>
+        </div>
       </div>
       ${
         iosHint
