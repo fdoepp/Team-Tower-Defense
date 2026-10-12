@@ -2596,6 +2596,7 @@ function renderMatchScreen(): void {
   const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
   const halfPanel = app.querySelector<HTMLDivElement>("#halftime-panel")!;
   const choreoChip = app.querySelector<HTMLDivElement>("#choreo-chip")!;
+  if (state.live) syncLiveKpiPanel();
 
   halfPanel.querySelectorAll<HTMLButtonElement>("[data-boost]").forEach((btn) => {
     btn.addEventListener("click", () => {
