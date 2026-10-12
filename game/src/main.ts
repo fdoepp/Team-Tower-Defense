@@ -154,8 +154,11 @@ import {
 import {
   attemptFromMatch,
   challengeFromLocation,
+  challengeOutcomeForMe,
+  challengeOutcomeLabel,
   challengeSetupLine,
   challengeShareUrl,
+  challengeStats,
   challengeVerdictLabel,
   CHALLENGE_GOAL_BLURB,
   CHALLENGE_GOAL_LABEL,
@@ -163,8 +166,10 @@ import {
   compareChallengeAttempts,
   createChallenge,
   decodeChallenge,
+  loadChallengeHistory,
   markPlayedChallengeRole,
   openChallengeRole,
+  upsertChallengeHistory,
   type Challenge,
   type ChallengeGoal,
 } from "./game/challenge";
@@ -544,6 +549,7 @@ type Screen =
   | "match"
   | "result"
   | "highscores"
+  | "challengeHub"
   | "challengeCreate"
   | "challengeLobby"
   | "challengeResult";
@@ -696,6 +702,7 @@ function render(): void {
   else if (state.screen === "setup") renderSetup();
   else if (state.screen === "match") renderMatchScreen();
   else if (state.screen === "highscores") renderHighscores();
+  else if (state.screen === "challengeHub") renderChallengeHub();
   else if (state.screen === "challengeCreate") renderChallengeCreate();
   else if (state.screen === "challengeLobby") renderChallengeLobby();
   else if (state.screen === "challengeResult") renderChallengeResult();
@@ -951,7 +958,7 @@ function renderMenu(): void {
     sfx("ui");
     state.challenge = null;
     state.challengeRole = null;
-    go("challengeCreate");
+    go("challengeHub");
   });
   app.querySelector("#solo")!.addEventListener("click", () => {
     unlockAudio();
@@ -1274,6 +1281,123 @@ function attemptCardHtml(
   </div>`;
 }
 
+function parseChallengePaste(raw: string): Challenge | null {
+  let decoded: Challenge | null = null;
+  if (raw.startsWith("http")) {
+    try {
+      const u = new URL(raw);
+      decoded = challengeFromLocation(u.search, u.hash);
+    } catch {
+      decoded = null;
+    }
+  }
+  if (!decoded && raw.includes("c=")) {
+    const q = raw.includes("?") ? raw.slice(raw.indexOf("?")) : `?${raw}`;
+    decoded = challengeFromLocation(q, "");
+  }
+  if (!decoded) {
+    const payload = raw.replace(/^.*[?&#]c=/, "").split(/[&#]/)[0] || raw;
+    decoded = decodeChallenge(decodeURIComponent(payload));
+  }
+  return decoded;
+}
+
+function openChallengeFromPayload(c: Challenge): void {
+  upsertChallengeHistory(c);
+  state.challenge = c;
+  state.challengeRole = null;
+  clearChallengeFromUrl();
+  go("challengeLobby");
+}
+
+/** Challenge-Hub: Bilanz, Historie, neue Challenge / Link öffnen */
+function renderChallengeHub(): void {
+  const stats = challengeStats();
+  const history = loadChallengeHistory();
+  const histHtml = history.length
+    ? `<ul class="chal-history">${history
+        .map((e) => {
+          const outcome = challengeOutcomeForMe(e, e.myRole);
+          const badge = challengeOutcomeLabel(outcome);
+          const cls =
+            outcome === "win"
+              ? "win"
+              : outcome === "loss"
+                ? "loss"
+                : outcome === "draw"
+                  ? "draw"
+                  : "open";
+          const scores =
+            e.a || e.b
+              ? `${e.a ? escapeHtml(e.a.name) + " " + escapeHtml(e.a.detail) : "—"} · ${e.b ? escapeHtml(e.b.name) + " " + escapeHtml(e.b.detail) : "—"}`
+              : "Noch niemand gespielt";
+          return `<li class="chal-history-item" data-chal-id="${escapeHtml(e.id)}">
+            <div class="chal-history-top">
+              <b>${escapeHtml(CHALLENGE_GOAL_LABEL[e.goal])}</b>
+              <span class="chal-badge ${cls}">${escapeHtml(badge)}</span>
+            </div>
+            <p class="tiny">${escapeHtml(challengeSetupLine(e))}</p>
+            <p class="tiny">${scores}</p>
+          </li>`;
+        })
+        .join("")}</ul>`
+    : `<p class="tiny">Noch keine Challenges — Link generieren und teilen.</p>`;
+
+  app.innerHTML = `
+    <div class="screen menu">
+      <p class="sub">1 Versuch · Einladungslink · Sieger vergleichen</p>
+      <h1 class="brand" style="font-size:1.55rem">Challenge</h1>
+      <div class="chal-stats card stack">
+        <p class="sub" style="margin:0">Deine Bilanz</p>
+        <p class="chal-stats-line"><b>${stats.wins}</b> Siege · <b>${stats.losses}</b> Niederlagen · <b>${stats.draws}</b> Unentschieden</p>
+        <p class="tiny">${stats.played} abgeschlossene Challenge${stats.played === 1 ? "" : "s"} auf diesem Gerät</p>
+      </div>
+      <div class="card stack">
+        <button class="btn ksc" id="chal-new" type="button">Neue Challenge</button>
+        <p class="tiny" style="margin:0">Einladungslink einfügen:</p>
+        <div class="row" style="gap:8px">
+          <input id="chal-paste" class="chal-input" type="text" placeholder="https://…?c=… oder Code" autocomplete="off" />
+          <button class="btn secondary" id="chal-join" type="button">Öffnen</button>
+        </div>
+      </div>
+      <div class="card stack">
+        <p class="sub" style="margin:0">Vergangene Challenges</p>
+        ${histHtml}
+      </div>
+      <button class="btn secondary" id="chal-hub-back" type="button">Menü</button>
+    </div>`;
+
+  app.querySelector("#chal-hub-back")!.addEventListener("click", () => {
+    sfx("ui");
+    go("menu");
+  });
+  app.querySelector("#chal-new")!.addEventListener("click", () => {
+    sfx("ui");
+    go("challengeCreate");
+  });
+  app.querySelector("#chal-join")!.addEventListener("click", () => {
+    sfx("ui");
+    const raw = (app.querySelector("#chal-paste") as HTMLInputElement).value.trim();
+    const decoded = parseChallengePaste(raw);
+    if (!decoded) {
+      window.alert("Challenge-Link ungültig.");
+      return;
+    }
+    openChallengeFromPayload(decoded);
+  });
+  app.querySelectorAll<HTMLElement>("[data-chal-id]").forEach((el) => {
+    el.addEventListener("click", () => {
+      sfx("ui");
+      const id = el.dataset.chalId;
+      const hit = loadChallengeHistory().find((h) => h.id === id);
+      if (!hit) return;
+      state.challenge = hit;
+      state.challengeRole = null;
+      go("challengeLobby");
+    });
+  });
+}
+
 function renderChallengeCreate(): void {
   syncMenuBrandingPreview();
   const brand = currentBranding();
@@ -1288,8 +1412,8 @@ function renderChallengeCreate(): void {
 
   app.innerHTML = `
     <div class="screen menu">
-      <p class="sub">1 Versuch · gleiches Setup · Sieger vergleichen</p>
-      <h1 class="brand" style="font-size:1.55rem">Challenge</h1>
+      <p class="sub">Setup wählen → Einladungslink generieren</p>
+      <h1 class="brand" style="font-size:1.45rem">Neue Challenge</h1>
       <p class="sub match-line">${escapeHtml(matchLine)}</p>
       <div class="kit-preview" aria-hidden="true">
         ${kitSwatchHtml(brand.heim.id)}
@@ -1303,14 +1427,10 @@ function renderChallengeCreate(): void {
       </div>
       ${matchupPickHtml({ showDiff: true, showBehavior: false })}
       <div class="row setup-actions">
-        <button class="btn secondary grow" id="chal-back" type="button">Menü</button>
-        <button class="btn ksc grow" id="chal-start" type="button">Herausfordern</button>
+        <button class="btn secondary grow" id="chal-back" type="button">Zurück</button>
+        <button class="btn ksc grow" id="chal-invite" type="button">Einladungslink generieren</button>
       </div>
-      <p class="tiny">Oder Challenge-Link einfügen:</p>
-      <div class="row" style="gap:8px">
-        <input id="chal-paste" class="chal-input" type="text" placeholder="?c=… oder ganzer Link" autocomplete="off" />
-        <button class="btn secondary" id="chal-join" type="button">Öffnen</button>
-      </div>
+      <p class="tiny">Danach Link teilen — du und der Gegner spielt jeweils 1× über denselben Link.</p>
     </div>`;
 
   app.querySelectorAll<HTMLButtonElement>("[data-chal-goal]").forEach((btn) => {
@@ -1323,9 +1443,9 @@ function renderChallengeCreate(): void {
   bindMatchupPickHandlers(() => renderChallengeCreate());
   app.querySelector("#chal-back")!.addEventListener("click", () => {
     sfx("ui");
-    go("menu");
+    go("challengeHub");
   });
-  app.querySelector("#chal-start")!.addEventListener("click", () => {
+  app.querySelector("#chal-invite")!.addEventListener("click", () => {
     unlockAudio();
     sfx("ui");
     const clubs = menuClubsFromState();
@@ -1340,50 +1460,24 @@ function renderChallengeCreate(): void {
       behavior: "balanced",
       playerClub: clubs.playerClub,
       aiClub: clubs.aiClub,
+      hostName: name,
     });
+    upsertChallengeHistory(c);
     state.challenge = c;
-    state.challengeRole = "a";
-    applyChallengeSettings(c);
-    state.setup = defaultSetup();
-    go("setup");
-  });
-  app.querySelector("#chal-join")!.addEventListener("click", () => {
-    sfx("ui");
-    const raw = (app.querySelector("#chal-paste") as HTMLInputElement).value.trim();
-    let decoded: Challenge | null = null;
-    if (raw.startsWith("http")) {
-      try {
-        const u = new URL(raw);
-        decoded = challengeFromLocation(u.search, u.hash);
-      } catch {
-        decoded = null;
-      }
-    }
-    if (!decoded && raw.includes("c=")) {
-      const q = raw.includes("?") ? raw.slice(raw.indexOf("?")) : `?${raw}`;
-      decoded = challengeFromLocation(q, "");
-    }
-    if (!decoded) {
-      const payload = raw.replace(/^.*[?&#]c=/, "").split(/[&#]/)[0] || raw;
-      decoded = decodeChallenge(decodeURIComponent(payload));
-    }
-    if (!decoded) {
-      window.alert("Challenge-Link ungültig.");
-      return;
-    }
-    state.challenge = decoded;
     state.challengeRole = null;
-    clearChallengeFromUrl();
+    applyChallengeSettings(c);
     go("challengeLobby");
+    void copyChallengeLink(c, true);
   });
 }
 
 function renderChallengeLobby(): void {
   const c = state.challenge;
   if (!c) {
-    go("challengeCreate");
+    go("challengeHub");
     return;
   }
+  upsertChallengeHistory(c);
   applyChallengeSettings(c);
   const role = openChallengeRole(c);
   const winner = compareChallengeAttempts(c.goal, c.a, c.b);
@@ -1391,10 +1485,11 @@ function renderChallengeLobby(): void {
   const canPlay = role === "a" || role === "b";
   const already = role === "full";
   const done = role === "done";
+  const url = challengeShareUrl(c);
 
   app.innerHTML = `
     <div class="screen menu">
-      <p class="sub">Challenge</p>
+      <p class="sub">Challenge · Einladungslink</p>
       <h1 class="brand" style="font-size:1.45rem">${escapeHtml(CHALLENGE_GOAL_LABEL[c.goal])}</h1>
       <p class="sub">${escapeHtml(challengeSetupLine(c))}</p>
       <div class="kit-preview" aria-hidden="true">
@@ -1408,26 +1503,31 @@ function renderChallengeLobby(): void {
       </div>
       <p class="sub chal-verdict">${escapeHtml(verdict)}</p>
       <p class="tiny">${escapeHtml(CHALLENGE_GOAL_BLURB[c.goal])} · Nur 1 Versuch pro Spieler.</p>
+      <label class="field">Einladungslink
+        <input class="chal-input" id="chal-link-view" type="text" readonly value="${escapeHtml(url)}" />
+      </label>
       <div class="row setup-actions">
-        <button class="btn secondary grow" id="chal-lobby-back" type="button">Menü</button>
-        ${
-          canPlay
-            ? `<button class="btn ksc grow" id="chal-play" type="button">${c.a ? "Annehmen (1×)" : "Spielen (1×)"}</button>`
-            : done
-              ? `<button class="btn ksc grow" id="chal-copy" type="button">Link kopieren</button>`
-              : already
-                ? `<button class="btn secondary grow" id="chal-copy" type="button">Link teilen</button>`
-                : ""
-        }
+        <button class="btn secondary grow" id="chal-lobby-back" type="button">Übersicht</button>
+        <button class="btn secondary grow" id="chal-copy" type="button">Link kopieren</button>
       </div>
-      ${already && !done ? `<p class="tiny">Du hast deinen Versuch auf diesem Gerät schon verbraucht.</p>` : ""}
+      ${
+        canPlay
+          ? `<button class="btn ksc" id="chal-play" type="button" style="width:100%;margin-top:8px">${c.a || c.b ? "Spielen (1×)" : "Jetzt spielen (1×)"}</button>`
+          : already && !done
+            ? `<p class="tiny">Du hast deinen Versuch auf diesem Gerät schon verbraucht — warte auf den Gegner / aktualisiere den Link.</p>`
+            : ""
+      }
     </div>`;
 
   app.querySelector("#chal-lobby-back")!.addEventListener("click", () => {
     sfx("ui");
     state.challenge = null;
     state.challengeRole = null;
-    go("menu");
+    go("challengeHub");
+  });
+  app.querySelector("#chal-copy")!.addEventListener("click", () => {
+    sfx("ui");
+    void copyChallengeLink(c);
   });
   const playBtn = app.querySelector("#chal-play");
   if (playBtn) {
@@ -1440,7 +1540,9 @@ function renderChallengeLobby(): void {
         return;
       }
       const name = askChallengeName(
-        localStorage.getItem("matchday-player-name") || "Spieler",
+        localStorage.getItem("matchday-player-name") ||
+          c.hostName ||
+          "Spieler",
       );
       if (!name) return;
       localStorage.setItem("matchday-player-name", name);
@@ -1450,33 +1552,35 @@ function renderChallengeLobby(): void {
       go("setup");
     });
   }
-  const copyBtn = app.querySelector("#chal-copy");
-  if (copyBtn) {
-    copyBtn.addEventListener("click", () => {
-      sfx("ui");
-      void copyChallengeLink(c);
-    });
-  }
 }
 
-async function copyChallengeLink(c: Challenge): Promise<void> {
+async function copyChallengeLink(
+  c: Challenge,
+  silentOk = false,
+): Promise<void> {
   const url = challengeShareUrl(c);
   try {
     await navigator.clipboard.writeText(url);
-    window.alert("Challenge-Link kopiert — an den Gegner senden.");
+    if (!silentOk) {
+      window.alert("Einladungslink kopiert — an den Gegner senden.");
+    } else {
+      window.alert("Einladungslink generiert und kopiert — teile ihn mit dem Gegner.");
+    }
   } catch {
-    window.prompt("Link kopieren:", url);
+    window.prompt("Einladungslink kopieren:", url);
   }
 }
 
 function renderChallengeResult(): void {
   const c = state.challenge;
   if (!c) {
-    go("menu");
+    go("challengeHub");
     return;
   }
+  upsertChallengeHistory(c);
   const winner = compareChallengeAttempts(c.goal, c.a, c.b);
   const verdict = challengeVerdictLabel(c, winner);
+  const mine = challengeOutcomeForMe(c, state.challengeRole);
   app.innerHTML = `
     <div class="screen menu">
       <p class="sub">Challenge-Ergebnis</p>
@@ -1485,7 +1589,11 @@ function renderChallengeResult(): void {
           ? "Unentschieden"
           : winner === "pending"
             ? "Dein Versuch zählt"
-            : "Sieger!",
+            : mine === "win"
+              ? "Du hast gewonnen!"
+              : mine === "loss"
+                ? "Du hast verloren"
+                : "Sieger!",
       )}</h1>
       <p class="sub">${escapeHtml(challengeSetupLine(c))}</p>
       <div class="chal-compare">
@@ -1494,20 +1602,20 @@ function renderChallengeResult(): void {
       </div>
       <p class="sub chal-verdict">${escapeHtml(verdict)}</p>
       <div class="row setup-actions">
-        <button class="btn secondary grow" id="chal-res-menu" type="button">Menü</button>
+        <button class="btn secondary grow" id="chal-res-hub" type="button">Übersicht</button>
         <button class="btn ksc grow" id="chal-res-copy" type="button">Link teilen</button>
       </div>
       <p class="tiny">${
         winner === "pending"
-          ? "Gegner öffnet den Link und spielt dasselbe Setup einmal."
-          : "Beide Versuche sind im Link — Gegner sieht dasselbe Ergebnis."
+          ? "Gegner öffnet denselben Einladungslink und spielt 1× — danach siehst du den Sieger in der Historie."
+          : "Beide Versuche stecken im Link. In der Challenge-Übersicht bleibt die Partie gespeichert."
       }</p>
     </div>`;
-  app.querySelector("#chal-res-menu")!.addEventListener("click", () => {
+  app.querySelector("#chal-res-hub")!.addEventListener("click", () => {
     sfx("ui");
     state.challenge = null;
     state.challengeRole = null;
-    go("menu");
+    go("challengeHub");
   });
   app.querySelector("#chal-res-copy")!.addEventListener("click", () => {
     sfx("ui");
@@ -1538,6 +1646,7 @@ function finishChallengeAttempt(): void {
   if (role === "a") c.a = attempt;
   else c.b = attempt;
   markPlayedChallengeRole(c.id, role);
+  upsertChallengeHistory(c);
   state.challenge = c;
   go("challengeResult");
 }
@@ -2810,10 +2919,11 @@ function renderResult(): void {
   })();
 }
 
-// Deep-link: Challenge ?c=…
+// Deep-link: Challenge ?c=… (Einladungslink)
 {
   const linked = challengeFromLocation();
   if (linked) {
+    upsertChallengeHistory(linked);
     state.challenge = linked;
     state.challengeRole = null;
     clearChallengeFromUrl();
