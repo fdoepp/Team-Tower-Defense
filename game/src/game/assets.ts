@@ -651,19 +651,12 @@ export function drawToyIcon(
   ctx.transform(1, 0, 0, persp, 0, 0);
   ctx.drawImage(img, -dw / 2, -dh * 0.92, dw, dh);
 
-  if (
-    mode === "cheer" ||
-    mode === "fight" ||
-    mode === "throw" ||
-    strike > 0.2
-  ) {
+  // Fight/throw flash only — never on cheer (armSwing stays high while cheering
+  // and the additive pass looked like scarf/halo rings over heads).
+  if (mode === "fight" || mode === "throw") {
     ctx.globalCompositeOperation = "lighter";
     ctx.globalAlpha =
-      mode === "cheer"
-        ? 0.22
-        : mode === "throw"
-          ? 0.12 + ap * 0.18
-          : 0.1 + strike * 0.15;
+      mode === "throw" ? 0.12 + ap * 0.18 : 0.1 + strike * 0.15;
     ctx.drawImage(img, -dw / 2, -dh * 0.92, dw, dh);
   }
   ctx.restore();
@@ -777,43 +770,19 @@ export function drawToyProp(
       ctx.fill();
     }
   } else if (kind === "scarf") {
-    const sx = facing * size * 0.05;
-    const a = opts.accent || (color === "red" ? "#ef4444" : color === "blue" ? "#3b82f6" : "#94a3b8");
-    const b = opts.accentB || "#f8fafc";
-    ctx.strokeStyle = a;
-    ctx.lineWidth = Math.max(2.5, size * 0.06);
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(sx - size * 0.14, -size * 0.52);
-    ctx.quadraticCurveTo(
-      sx,
-      -size * (0.78 + 0.05 * Math.sin(t * 8)),
-      sx + size * 0.14,
-      -size * 0.52,
-    );
-    ctx.stroke();
-    ctx.strokeStyle = b;
-    ctx.lineWidth = Math.max(1.2, size * 0.025);
-    ctx.beginPath();
-    ctx.moveTo(sx - size * 0.1, -size * 0.54);
-    ctx.quadraticCurveTo(
-      sx,
-      -size * (0.72 + 0.04 * Math.sin(t * 8)),
-      sx + size * 0.1,
-      -size * 0.54,
-    );
-    ctx.stroke();
+    // Overhead scarf arcs removed — they read as floating rings above heads.
   } else if (kind === "flag") {
     const flag = opts.flag;
     if (flag) {
-      const fx = facing * size * 0.22;
-      const fy = -size * (0.62 + 0.04 * Math.sin(t * 7));
-      const fw = size * 0.42;
-      const fh = size * 0.28;
+      // Hand-held beside the body (not floating above the scalp)
+      const fx = facing * size * 0.38;
+      const fy = -size * (0.28 + 0.03 * Math.sin(t * 7));
+      const fw = size * 0.36;
+      const fh = size * 0.24;
       ctx.strokeStyle = "#334155";
       ctx.lineWidth = Math.max(1.5, size * 0.035);
       ctx.beginPath();
-      ctx.moveTo(fx, -size * 0.15);
+      ctx.moveTo(fx, size * 0.05);
       ctx.lineTo(fx, fy);
       ctx.stroke();
       drawFlagRect(ctx, flag, fx + 1, fy, fw, fh);

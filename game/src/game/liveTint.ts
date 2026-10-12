@@ -255,8 +255,110 @@ export function getLiveTintedCanvas(
   return cachePut(key, canvas);
 }
 
+const ATMOS_GREY = "#64748b";
+
+function hexLuma(hex: string): number {
+  const [r, g, b] = parseHex(hex);
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+function mixRgb(
+  a: [number, number, number],
+  b: [number, number, number],
+  t: number,
+): [number, number, number] {
+  const u = Math.max(0, Math.min(1, t));
+  return [
+    Math.round(a[0]! * (1 - u) + b[0]! * u),
+    Math.round(a[1]! * (1 - u) + b[1]! * u),
+    Math.round(a[2]! * (1 - u) + b[2]! * u),
+  ];
+}
+
+function toHex([r, g, b]: [number, number, number]): string {
+  const h = (n: number) => n.toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+
+/**
+ * Night-safe wash for stadium backdrop / glows.
+ * White kits must not bleach the floodlight photo — pull toward cool grey + secondary.
+ */
+export function atmosphereWashHex(primary: string, secondary: string): string {
+  const [pr, pg, pb] = parseHex(primary);
+  const [sr, sg, sb] = parseHex(secondary);
+  const [gr, gg, gb] = parseHex(ATMOS_GREY);
+  const luma = hexLuma(primary);
+  if (luma > 200) {
+    // DE weiß → silber/slate + Sekundär-Stich, kein Vollweiß
+    return toHex(mixRgb([gr, gg, gb], [sr, sg, sb], 0.28));
+  }
+  if (luma < 40) {
+    // Schwarz-Kits → tiefes Nachtgrau, kein Loch
+    return toHex(mixRgb([30, 41, 59], [pr, pg, pb], 0.45));
+  }
+  // etwas abdunkeln für Flutlichtnacht
+  const [h, s, l] = rgbToHsl(pr, pg, pb);
+  return toHex(hslToRgb(h, Math.min(1, s * 0.9), Math.min(0.52, l * 0.85)));
+}
+
+export function atmosphereAccentHex(primary: string, secondary: string): string {
+  const lumaP = hexLuma(primary);
+  const lumaS = hexLuma(secondary);
+  // Accent = secondary, unless it's also blown-out white
+  if (lumaS < 210) return secondary;
+  if (lumaP < 210) return primary;
+  return ATMOS_GREY;
+}
+
+/**
+ * Crowd wash for floodlight BG: primary + secondary + grey, weak blend
+ * so the night stadium photo stays dominant.
+ */
+function recolorAtmosphereCrowd(
+  data: ImageData,
+  base: BasePalette,
+  washHex: string,
+  accentHex: string,
+  greyHex: string = ATMOS_GREY,
+): void {
+  const wash = parseHex(washHex);
+  const accent = parseHex(accentHex);
+  const grey = parseHex(greyHex);
+  const px = data.data;
+  for (let i = 0; i < px.length; i += 4) {
+    const a = px[i + 3]!;
+    if (a < 10) continue;
+    const r = px[i]!;
+    const g = px[i + 1]!;
+    const b = px[i + 2]!;
+    const m = teamMask(r, g, b, base);
+    if (m < 0.1) continue;
+    const [, , l] = rgbToHsl(r, g, b);
+    let tr: number;
+    let tg: number;
+    let tb: number;
+    if (l < 0.32) {
+      const t = l / 0.32;
+      [tr, tg, tb] = mixRgb(grey, wash, t * 0.85);
+    } else if (l < 0.62) {
+      const t = (l - 0.32) / 0.3;
+      [tr, tg, tb] = mixRgb(wash, mixRgb(wash, accent, 0.35), t);
+    } else {
+      const t = Math.min(1, (l - 0.62) / 0.3);
+      [tr, tg, tb] = mixRgb(wash, accent, 0.25 + t * 0.55);
+    }
+    // Keep most of the photo — kit only seasons the crowd
+    const strength = m * 0.48;
+    px[i] = Math.round(r * (1 - strength) + tr * strength);
+    px[i + 1] = Math.round(g * (1 - strength) + tg * strength);
+    px[i + 2] = Math.round(b * (1 - strength) + tb * strength);
+  }
+}
+
 /**
  * Dual-side tint for stadium backdrop (baked blue crowd ↔ heim, red ↔ gast).
+ * Feeds on both kit colors per side + grey; never blows out white kits.
  */
 export function getDualKitTintedCanvas(
   img: HTMLImageElement,
@@ -266,7 +368,11 @@ export function getDualKitTintedCanvas(
   const gast = clubPrimary("vfb");
   const heimSec = clubSecondary("ksc");
   const gastSec = clubSecondary("vfb");
-  const key = `${brandEpoch}|dual|${src}|${heim}|${gast}`;
+  const heimWash = atmosphereWashHex(heim, heimSec);
+  const gastWash = atmosphereWashHex(gast, gastSec);
+  const heimAccent = atmosphereAccentHex(heim, heimSec);
+  const gastAccent = atmosphereAccentHex(gast, gastSec);
+  const key = `${brandEpoch}|dualAtm|${src}|${heimWash}|${heimAccent}|${gastWash}|${gastAccent}`;
   const hit = tintCache.get(key);
   if (hit) return hit;
 
@@ -281,9 +387,8 @@ export function getDualKitTintedCanvas(
   if (!ctx) return null;
   ctx.drawImage(img, 0, 0);
   const imageData = ctx.getImageData(0, 0, w, h);
-  // Apply both palettes onto the same bitmap (blue→heim, red→gast)
-  recolorImageData(imageData, "blue", heim, heimSec);
-  recolorImageData(imageData, "red", gast, gastSec);
+  recolorAtmosphereCrowd(imageData, "blue", heimWash, heimAccent, ATMOS_GREY);
+  recolorAtmosphereCrowd(imageData, "red", gastWash, gastAccent, ATMOS_GREY);
   ctx.putImageData(imageData, 0, 0);
   return cachePut(key, canvas);
 }
@@ -295,6 +400,14 @@ export function sideKitHex(side: "ksc" | "vfb"): string {
 
 export function sideKitRgba(side: "ksc" | "vfb", alpha: number): string {
   const [r, g, b] = parseHex(clubPrimary(side));
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/** Night-safe glow for stadium wash / block pyro (won't bleach on white kits). */
+export function sideAtmosphereRgba(side: "ksc" | "vfb", alpha: number): string {
+  const p = clubPrimary(side);
+  const s = clubSecondary(side);
+  const [r, g, b] = parseHex(atmosphereWashHex(p, s));
   return `rgba(${r},${g},${b},${alpha})`;
 }
 

@@ -2210,8 +2210,12 @@ export class Match {
           (prevCheer > 2.8 && f.cheerT <= 2.8)
         ) {
           if (f.kind === "normalos") {
-            this.burstFanConfetti(f, "#f8fafc");
-            this.burstFanConfetti(f, club);
+            // Light kits: skip white confetti orbs (read as head-halos)
+            if (club !== "#f8fafc" && club.toLowerCase() !== "#ffffff") {
+              this.burstFanConfetti(f, club);
+            } else {
+              this.burstFanConfetti(f, "#fde68a");
+            }
           } else if (f.kind === "ultras") {
             f.throwT = Math.max(f.throwT, 2.4);
             this.burstUltraSmoke(f, club);
@@ -2228,8 +2232,9 @@ export class Match {
             f.team === "ksc" || f.team === "vfb"
               ? clubFxColor(f.team)
               : "#9ca3af";
+          // No floating ♪/♫ above heads — they read as scarf/Kringel arcs.
           this.moodFx.push({
-            kind: isPyro ? "smoke" : isHool ? "spark" : "note",
+            kind: isPyro ? "smoke" : "spark",
             x: f.x + (Math.random() - 0.5) * 0.03,
             y: f.y - 0.03,
             vx: (Math.random() - 0.5) * 0.04,
@@ -2241,7 +2246,7 @@ export class Match {
                 : "#fde68a",
             t: 0,
             life: isPyro ? 1.1 : 0.85,
-            size: isPyro ? 0.022 : isHool ? 0.009 : 0.012,
+            size: isPyro ? 0.022 : isHool ? 0.009 : 0.008,
           });
         }
       }
