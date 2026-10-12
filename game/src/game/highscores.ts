@@ -1,11 +1,11 @@
 import { clubIdFromShort, getClub } from "./clubs";
 import type { AiDifficulty, TeamId } from "./types";
 
-export type ScoreBoardKind = "ergebnis" | "blocksturm";
+export type ScoreBoardKind = "ergebnis" | "blocksturm" | "bier";
 
 export type HighscoreEntry = {
   name: string;
-  /** Ergebnis: Tor-Differenz gewichtet; Blocksturm: Spielminute (niedriger = besser) */
+  /** Ergebnis: Tor-Diff; Blocksturm: Minute (niedriger besser); Bier: getrunkene Biere */
   value: number;
   detail: string;
   at: string;
@@ -36,10 +36,29 @@ export type HighscoreScope = "gesamt" | "persoenlich";
 /** Shared boards via ScoreDrop (browser CORS, free tier). */
 const REMOTE_BASE = "https://leaderboard-game.vercel.app";
 const BOARD_KEYS: Record<AiDifficulty, Record<ScoreBoardKind, string>> = {
-  easy: { ergebnis: "mdhs-erg-e", blocksturm: "mdhs-bst-e" },
-  normal: { ergebnis: "mdhs-erg-n", blocksturm: "mdhs-bst-n" },
-  hard: { ergebnis: "mdhs-erg-h", blocksturm: "mdhs-bst-h" },
+  easy: {
+    ergebnis: "mdhs-erg-e",
+    blocksturm: "mdhs-bst-e",
+    bier: "mdhs-bier-e",
+  },
+  normal: {
+    ergebnis: "mdhs-erg-n",
+    blocksturm: "mdhs-bst-n",
+    bier: "mdhs-bier-n",
+  },
+  hard: {
+    ergebnis: "mdhs-erg-h",
+    blocksturm: "mdhs-bst-h",
+    bier: "mdhs-bier-h",
+  },
 };
+
+const ALL_KINDS: ScoreBoardKind[] = ["ergebnis", "blocksturm", "bier"];
+
+/** Blocksturm: niedriger besser; Ergebnis + Bier: höher besser. */
+function higherIsBetter(kind: ScoreBoardKind): boolean {
+  return kind !== "blocksturm";
+}
 
 /**
  * ScoreDrop `player`: max 30 chars, only [A-Za-z0-9 _-].
@@ -51,6 +70,7 @@ function emptyTables(): HighscoreTables {
   const blank = (): Record<ScoreBoardKind, HighscoreEntry[]> => ({
     ergebnis: [],
     blocksturm: [],
+    bier: [],
   });
   return { easy: blank(), normal: blank(), hard: blank() };
 }
@@ -71,7 +91,7 @@ export function loadHighscores(): HighscoreTables {
     const parsed = JSON.parse(raw) as HighscoreTables;
     const base = emptyTables();
     for (const d of ["easy", "normal", "hard"] as AiDifficulty[]) {
-      for (const k of ["ergebnis", "blocksturm"] as ScoreBoardKind[]) {
+      for (const k of ALL_KINDS) {
         const list = parsed?.[d]?.[k];
         base[d][k] = Array.isArray(list)
           ? list.slice(0, TOP_N).map((e) => freezeEntryClubs(e))
@@ -95,17 +115,26 @@ export function blocksturmValue(minute: number): number {
   return Math.max(0.1, minute);
 }
 
+/** Higher is better — beers drunk by own figures this match. */
+export function bierValue(beersDrunk: number): number {
+  return Math.max(0, Math.floor(beersDrunk));
+}
+
 /** ScoreDrop ranks higher-is-better; invert Blocksturm minutes. */
 function toRemoteScore(kind: ScoreBoardKind, value: number): number {
-  if (kind === "ergebnis") return Math.max(1, Math.round(value));
-  const minute = Math.max(0.1, value);
-  return Math.max(1, Math.round(1_000_000 / minute));
+  if (kind === "blocksturm") {
+    const minute = Math.max(0.1, value);
+    return Math.max(1, Math.round(1_000_000 / minute));
+  }
+  return Math.max(1, Math.round(value));
 }
 
 function fromRemoteScore(kind: ScoreBoardKind, remote: number): number {
-  if (kind === "ergebnis") return remote;
-  if (remote <= 0) return 90;
-  return Math.round((1_000_000 / remote) * 10) / 10;
+  if (kind === "blocksturm") {
+    if (remote <= 0) return 90;
+    return Math.round((1_000_000 / remote) * 10) / 10;
+  }
+  return remote;
 }
 
 function sanitizeName(name: string): string {
@@ -275,6 +304,9 @@ function shortDetail(entry: HighscoreEntry, kind: ScoreBoardKind): string {
       const frac = Math.round((entry.value - whole) * 10);
       base = frac > 0 ? `m${whole}-${frac}` : `m${whole}`;
     }
+  } else if (kind === "bier") {
+    const n = entry.detail.match(/(\d+)\s*Bier/i);
+    base = `b${n ? n[1] : Math.max(0, Math.round(entry.value))}`;
   } else {
     const score = entry.detail.match(/(\d+):(\d+)/);
     base = score
@@ -346,6 +378,12 @@ function decodePlayer(
       detail = vs
         ? `Blocksturm in ${label} · ${vs} (${difficultyLabel(difficulty)})`
         : `Blocksturm in ${label} (${difficultyLabel(difficulty)})`;
+    } else if (kind === "bier") {
+      const bm = core.match(/^b(\d+)$/i);
+      const n = bm ? Number(bm[1]) : Math.round(value);
+      detail = vs
+        ? `${n} Bier · ${vs} (${difficultyLabel(difficulty)})`
+        : `${n} Bier · ${teamShort(team)} (${difficultyLabel(difficulty)})`;
     } else {
       const sc = core.match(/^(\d+)-(\d+)$/);
       const label = sc ? `${sc[1]}:${sc[2]}` : core;
@@ -367,13 +405,16 @@ function decodePlayer(
       opponentClub: opponentShort ? `short:${opponentShort}` : undefined,
     });
   }
+  const fallbackVal = fromRemoteScore(kind, remoteScore);
   return freezeEntryClubs({
     name: sanitizeName(player).slice(0, 20) || "Spieler",
     detail:
       kind === "ergebnis"
         ? String(remoteScore)
-        : `${fromRemoteScore(kind, remoteScore)}′`,
-    value: fromRemoteScore(kind, remoteScore),
+        : kind === "bier"
+          ? `${Math.round(fallbackVal)} Bier`
+          : `${fallbackVal}′`,
+    value: fallbackVal,
     difficulty,
     at: new Date(0).toISOString(),
   });
@@ -438,7 +479,7 @@ export async function fetchSharedHighscores(): Promise<{
 }> {
   try {
     const diffs: AiDifficulty[] = ["easy", "normal", "hard"];
-    const kinds: ScoreBoardKind[] = ["ergebnis", "blocksturm"];
+    const kinds = ALL_KINDS;
     const prev = loadHighscores();
     const tables = emptyTables();
     await Promise.all(
@@ -481,8 +522,9 @@ export async function wouldEnterTop10Shared(
     const list = await fetchBoard(difficulty, kind);
     if (list.length < TOP_N) return true;
     const worst = list[list.length - 1]!;
-    if (kind === "ergebnis") return value > worst.value;
-    return value < worst.value;
+    return higherIsBetter(kind)
+      ? value > worst.value
+      : value < worst.value;
   } catch {
     return wouldEnterTop10Local(difficulty, kind, value);
   }
@@ -496,8 +538,7 @@ function wouldEnterTop10Local(
   const list = loadHighscores()[difficulty][kind];
   if (list.length < TOP_N) return true;
   const worst = list[list.length - 1]!;
-  if (kind === "ergebnis") return value > worst.value;
-  return value < worst.value;
+  return higherIsBetter(kind) ? value > worst.value : value < worst.value;
 }
 
 /** @deprecated Prefer wouldEnterTop10Shared — uses local cache only. */
@@ -557,7 +598,7 @@ export function loadPersonalHighscores(playerName: string): HighscoreTables {
   if (!raw) return emptyTables();
   const base = emptyTables();
   for (const d of ["easy", "normal", "hard"] as AiDifficulty[]) {
-    for (const k of ["ergebnis", "blocksturm"] as ScoreBoardKind[]) {
+    for (const k of ALL_KINDS) {
       const list = raw?.[d]?.[k];
       base[d][k] = Array.isArray(list)
         ? list.slice(0, TOP_N).map((e) => freezeEntryClubs(e))
@@ -574,7 +615,7 @@ function insertPersonal(entry: HighscoreEntry, kind: ScoreBoardKind): void {
   const tables = store[nameKey] ?? emptyTables();
   const list = [...tables[frozen.difficulty][kind], frozen];
   list.sort((a, b) =>
-    kind === "ergebnis" ? b.value - a.value : a.value - b.value,
+    higherIsBetter(kind) ? b.value - a.value : a.value - b.value,
   );
   tables[frozen.difficulty][kind] = list.slice(0, TOP_N);
   store[nameKey] = tables;
@@ -593,7 +634,7 @@ function insertLocal(
   const without = list.filter((e) => entryMatchKey(e) !== entryMatchKey(frozen));
   without.push(frozen);
   without.sort((a, b) =>
-    kind === "ergebnis" ? b.value - a.value : a.value - b.value,
+    higherIsBetter(kind) ? b.value - a.value : a.value - b.value,
   );
   const rank =
     without.findIndex((e) => entryMatchKey(e) === entryMatchKey(frozen)) + 1;

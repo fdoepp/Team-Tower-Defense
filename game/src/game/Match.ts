@@ -366,6 +366,11 @@ export class Match {
   halfBoost: HalfBoostId | null = null;
   /** Cinematic highlight (Tor / Blocksturm) */
   highlight: HighlightState | null = null;
+  /**
+   * Biere, die eigene Figuren getrunken haben (eigene + fremde Stände,
+   * inkl. kostenloses Leer-Trinken unter Banner-Kontrolle).
+   */
+  beersDrunkPlayer = 0;
 
   constructor(cfg: MatchConfig) {
     this.cfg = cfg;
@@ -3252,6 +3257,8 @@ export class Match {
     if (stand?.building === "bier" && stand.beer >= 1) {
       stand.beer -= 1;
       f.thirst = 5;
+      // Highscore: eigene Figuren zählen jedes getrunkene Bier (auch gratis fremd)
+      if (f.team === this.playerTeam) this.beersDrunkPlayer += 1;
       if (f.team === "neutral") {
         f.satisfiedUntil = 1e9;
         f.shopUntil = this.realElapsed + 20 + Math.random() * 10;

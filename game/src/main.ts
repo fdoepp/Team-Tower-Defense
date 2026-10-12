@@ -116,6 +116,7 @@ function setLiveTintImg(ico: HTMLImageElement | null, src: string): void {
   raw.src = src;
 }
 import {
+  bierValue,
   blocksturmValue,
   difficultyLabel,
   entryClubPrimary,
@@ -1063,6 +1064,7 @@ function renderHighscores(): void {
       <div class="card stack">
         ${listHtml("ergebnis", "Höchstes Ergebnis")}
         ${listHtml("blocksturm", "Schnellster Blocksturm")}
+        ${listHtml("bier", "Meiste Biere")}
       </div>
       <button class="btn secondary" id="hs-back">Zurück</button>
     </div>`;
@@ -2303,6 +2305,45 @@ function renderResult(): void {
         if (placed) {
           hsNotes.push(
             `Ergebnis-Highscore Platz ${rank}${shared ? " (global)" : ""}!`,
+          );
+        }
+      }
+    }
+    const beers = bierValue(m.beersDrunkPlayer);
+    if (beers > 0 && (await wouldEnterTop10Shared(r.difficulty, "bier", beers))) {
+      const name =
+        hsNotes.length > 0
+          ? localStorage.getItem("matchday-player-name") || "Spieler"
+          : askPlayerName(lastName);
+      if (name) {
+        localStorage.setItem("matchday-player-name", name);
+        const playerClub = state.settings.playerClub;
+        const opponentClub = state.settings.aiClub;
+        const vs = matchupLabel({
+          name,
+          value: beers,
+          detail: "",
+          at: "",
+          difficulty: r.difficulty,
+          team: state.settings.playerTeam,
+          playerClub,
+          opponentClub,
+        });
+        const { placed, rank, shared } = await tryInsertHighscoreShared(
+          r.difficulty,
+          "bier",
+          {
+            name,
+            value: beers,
+            team: state.settings.playerTeam,
+            playerClub,
+            opponentClub,
+            detail: `${beers} Bier${vs ? ` · ${vs}` : ""} (${difficultyLabel(r.difficulty)})`,
+          },
+        );
+        if (placed) {
+          hsNotes.push(
+            `Bier-Highscore Platz ${rank}${shared ? " (global)" : ""}!`,
           );
         }
       }
