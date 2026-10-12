@@ -333,8 +333,8 @@ button {
 }
 
 .pick-mode.on {
-  background: var(--ksc);
-  color: #fff;
+  background: var(--ksc-ui, var(--ksc));
+  color: var(--ksc-ink, #fff);
   border-color: transparent;
 }
 
@@ -439,9 +439,9 @@ button {
 }
 
 .btn.ksc {
-  background: var(--ksc);
-  color: #fff;
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
+  background: var(--ksc-ui, var(--ksc));
+  color: var(--ksc-ink, #fff);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--ksc-ui, var(--ksc)) 40%, transparent);
 }
 
 .btn:disabled {

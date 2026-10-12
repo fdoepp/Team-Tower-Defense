@@ -824,12 +824,39 @@ export function currentBranding(): { heim: Club; gast: Club } {
   return { heim: brandHeim, gast: brandGast };
 }
 
+function hexLuma(hex: string): number {
+  const h = hex.replace("#", "").trim();
+  const full =
+    h.length === 3 ? h.split("").map((c) => c + c).join("") : h.padEnd(6, "0");
+  const r = parseInt(full.slice(0, 2), 16) || 0;
+  const g = parseInt(full.slice(2, 4), 16) || 0;
+  const b = parseInt(full.slice(4, 6), 16) || 0;
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+/** Solid UI fill when kit primary is too light (e.g. Germany white). */
+function uiFill(primary: string, secondary: string): string {
+  if (hexLuma(primary) < 180) return primary;
+  if (hexLuma(secondary) < 180) return secondary;
+  return "#0f172a";
+}
+
+function uiInk(fill: string): string {
+  return hexLuma(fill) < 160 ? "#ffffff" : "#0f172a";
+}
+
 /** Push club colors into CSS variables used by HUD / buttons. */
 export function applyClubCssVars(root: HTMLElement = document.documentElement): void {
   root.style.setProperty("--ksc", brandHeim.primary);
   root.style.setProperty("--vfb", brandGast.primary);
   root.style.setProperty("--ksc-secondary", brandHeim.secondary);
   root.style.setProperty("--vfb-secondary", brandGast.secondary);
+  const kscUi = uiFill(brandHeim.primary, brandHeim.secondary);
+  const vfbUi = uiFill(brandGast.primary, brandGast.secondary);
+  root.style.setProperty("--ksc-ui", kscUi);
+  root.style.setProperty("--vfb-ui", vfbUi);
+  root.style.setProperty("--ksc-ink", uiInk(kscUi));
+  root.style.setProperty("--vfb-ink", uiInk(vfbUi));
 }
 
 export function ensureRequiredClubsPresent(): { liverpool: boolean; leverkusen: boolean } {

@@ -1115,13 +1115,18 @@ function renderSoloMatchup(): void {
   syncMenuBrandingPreview();
   const brand = currentBranding();
   const derby = findDerby(state.menuDerbyId);
+  const nationFix = findNationalFixture(state.menuNationalFixtureId);
   const matchLine = `${brand.heim.short} vs ${brand.gast.short}`;
   const derbyHint =
     state.pickMode === "derby" && derby
       ? derby.rank != null
         ? `Derby #${derby.rank} · ${derby.name}`
         : derby.name
-      : "Freie Vereinswahl";
+      : state.pickMode === "national"
+        ? nationFix
+          ? `Länderspiel · ${nationFix.name}`
+          : "Nationalmannschaften"
+        : "Freie Vereinswahl";
 
   app.innerHTML = `
     <div class="screen menu menu-derby">
