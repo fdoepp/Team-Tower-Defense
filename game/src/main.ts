@@ -42,6 +42,7 @@ import {
   visitGoldPayout,
   visitInterval,
   difficultyProfile,
+  type AiBehavior,
   type BuildingKind,
   type FanKind,
   type FanMix,
@@ -132,11 +133,19 @@ import {
   bindAudioGestures,
   isMuted,
   setAmbienceFromMatch,
+  setClubSoundIdentity,
   sfx,
   startAmbience,
   toggleMuted,
   unlockAudio,
 } from "./game/sound";
+import {
+  AI_BEHAVIOR_BLURB,
+  AI_BEHAVIOR_LABEL,
+  CHOREO_LABEL,
+  HALF_BOOSTS,
+  type HalfBoostId,
+} from "./game/feelPack";
 
 void preloadIcons();
 bindAudioGestures();
@@ -721,6 +730,24 @@ function renderMenu(): void {
             <option value="hard">Schwer</option>
           </select>
         </label>
+        <label class="field">Rivalen-Charakter
+          <select id="ai-behavior">
+            ${(
+              [
+                "balanced",
+                "patient",
+                "aggro",
+                "beer",
+                "earlywin",
+              ] as AiBehavior[]
+            )
+              .map(
+                (b) =>
+                  `<option value="${b}" ${b === "balanced" ? "selected" : ""}>${AI_BEHAVIOR_LABEL[b]} — ${AI_BEHAVIOR_BLURB[b]}</option>`,
+              )
+              .join("")}
+          </select>
+        </label>
       </div>
     </div>`;
   app.querySelector("#fs-menu")!.addEventListener("click", () => {
@@ -807,6 +834,8 @@ function renderMenu(): void {
     const playerClub = state.menuPlayerClub;
     const aiClub = state.menuAiClub;
     // Side slots: player always on heim (ksc) for consistent controls/HUD
+    const behavior = ((app.querySelector("#ai-behavior") as HTMLSelectElement | null)
+      ?.value || "balanced") as AiBehavior;
     state.settings = {
       playerTeam: "ksc",
       playerClub,
@@ -814,8 +843,9 @@ function renderMenu(): void {
       derbyId: state.pickMode === "derby" ? state.menuDerbyId : undefined,
       difficulty: (app.querySelector("#diff") as HTMLSelectElement)
         .value as SoloSettings["difficulty"],
-      behavior: "balanced",
+      behavior,
     };
+    setClubSoundIdentity(playerClub, aiClub);
     state.setup = defaultSetup();
     go("tutorial");
   });
@@ -842,6 +872,17 @@ function renderTutorial(): void {
             <li><b>Personen</b> — Fans (Momentum), Ultras (Senden/Pyro), Hooligans (Nahkampf), Ordner (Posten).</li>
             <li><b>Senden</b> — Einheiten gehen über die Ausgänge in den Gang und kämpfen um Raum.</li>
             <li><b>LIVE-Ticker</b> — Torchance, Kampf und Bau-Hinweise unter dem Balken.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Matchday-Feel</h2>
+          <ul>
+            <li><b>Kurven-Choreo</b> — ab 5 Ultras im eigenen Block startet automatisch eine Choreo (10 mittel · 20 groß · 30 gigantisch) und schiebt Momentum.</li>
+            <li><b>Rivalen-Charakter</b> — die KI spielt abwartend, aggressiv, bierlastig oder mit frühem Druck (Menü).</li>
+            <li><b>Highlight</b> — bei Tor und Blocksturm kurze Slow-Mo mit TOR!/BLOCKSTURM!-Einblendung.</li>
+            <li><b>Territory</b> — eroberte Blöcke bekommen Kit-Muster (Graffiti), nicht nur Farbe.</li>
+            <li><b>Halbzeit</b> — bei 45′ pausiert das Spiel; du wählst einen Boost für die 2. Hälfte.</li>
+            <li><b>Sound-Identität</b> — jeder Club hat einen eigenen prozeduralen Chant-Klang (keine Original-Hymnen).</li>
           </ul>
         </section>
       </div>
@@ -1135,6 +1176,19 @@ function renderMatchScreen(): void {
         <canvas id="c"></canvas>
         <!-- Live ticker is drawn on canvas under the momentum bar -->
         <div class="toast" id="toast"></div>
+        <div class="choreo-chip hidden" id="choreo-chip" aria-live="polite"></div>
+        <div class="halftime-panel hidden" id="halftime-panel" role="dialog" aria-label="Halbzeit">
+          <div class="halftime-card">
+            <h2>Halbzeit</h2>
+            <p class="sub">Wähle einen Boost für die 2. Hälfte</p>
+            <div class="halftime-boosts" id="halftime-boosts">
+              ${HALF_BOOSTS.map(
+                (b) =>
+                  `<button type="button" class="btn secondary halftime-boost" data-boost="${b.id}"><b>${escapeHtml(b.title)}</b><span>${escapeHtml(b.blurb)}</span></button>`,
+              ).join("")}
+            </div>
+          </div>
+        </div>
         <div class="popup-menu hidden" id="build-menu">
           <p class="popup-title" id="build-title">Gebäude</p>
           <div id="build-options" class="hidden"></div>
@@ -1186,6 +1240,17 @@ function renderMatchScreen(): void {
   const buildRail = app.querySelector<HTMLElement>("#build-rail")!;
   const attackRail = app.querySelector<HTMLElement>("#attack-rail")!;
   const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
+  const halfPanel = app.querySelector<HTMLDivElement>("#halftime-panel")!;
+  const choreoChip = app.querySelector<HTMLDivElement>("#choreo-chip")!;
+
+  halfPanel.querySelectorAll<HTMLButtonElement>("[data-boost]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.boost as HalfBoostId;
+      m.applyHalfBoost(id);
+      halfPanel.classList.add("hidden");
+      sfx("ui");
+    });
+  });
   type RailId = "person" | "build" | "attack" | null;
   let openRail: RailId = null;
   // Pull club kit colors into blue/red rail icons (live tint)
@@ -1977,8 +2042,28 @@ function renderMatchScreen(): void {
       if (banner) banner.classList.add("hidden");
       const toast = app.querySelector("#toast");
       if (toast) toast.classList.remove("show");
+      // Halbzeit boost picker
+      halfPanel.classList.toggle("hidden", !m.halfTimePending);
+      // Choreo status chip
+      if (m.choreo && m.choreo.team === m.playerTeam) {
+        choreoChip.textContent = CHOREO_LABEL[m.choreo.tier];
+        choreoChip.classList.remove("hidden");
+      } else {
+        const ready = m.playerChoreoTier();
+        if (ready) {
+          choreoChip.textContent = `${CHOREO_LABEL[ready]} bereit`;
+          choreoChip.classList.remove("hidden");
+        } else {
+          choreoChip.classList.add("hidden");
+        }
+      }
       if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
       if (m.result) {
+        // Let storm/goal highlight finish briefly before result screen
+        if (m.highlight && m.highlight.t > 0.4) {
+          state.raf = requestAnimationFrame(loop);
+          return;
+        }
         unFs();
         setTimeout(() => go("result"), 800);
         return;
