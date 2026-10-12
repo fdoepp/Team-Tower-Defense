@@ -673,6 +673,21 @@ function moodMenu(body: string, extraClass = ""): string {
   </div>`;
 }
 
+/** Consistent page header for all mood submenus */
+function moodHead(opts: {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  extra?: string;
+}): string {
+  return `<header class="mood-head">
+    ${opts.eyebrow ? `<p class="mood-eyebrow">${opts.eyebrow}</p>` : ""}
+    <h1 class="brand">${opts.title}</h1>
+    ${opts.lead ? `<p class="mood-lead">${opts.lead}</p>` : ""}
+    ${opts.extra ?? ""}
+  </header>`;
+}
+
 function playerNameStored(): string {
   return (localStorage.getItem("matchday-player-name") || "").trim().slice(0, 20);
 }
@@ -1359,19 +1374,19 @@ function renderSoloMatchup(): void {
   }
 
   app.innerHTML = moodMenu(`
-      <div>
-        <p class="sub">Solo vs KI</p>
-        <h1 class="brand">Matchup</h1>
-        <p class="sub match-line">${escapeHtml(matchLine)}</p>
-        <p class="tiny derby-hint">${escapeHtml(derbyHint)}</p>
+      ${moodHead({
+        eyebrow: "Solo vs KI",
+        title: "Matchup",
+        lead: escapeHtml(matchLine),
+        extra: `<p class="tiny derby-hint">${escapeHtml(derbyHint)}</p>
         <div class="kit-preview" aria-hidden="true">
           ${kitSwatchHtml(brand.heim.id)}
           <span class="kit-vs">vs</span>
           ${kitSwatchHtml(brand.gast.id)}
-        </div>
-      </div>
+        </div>`,
+      })}
       ${matchupPickHtml({ showDiff: true, showBehavior: true })}
-      <div class="row setup-actions">
+      <div class="row mood-actions">
         <button class="btn secondary grow" id="solo-back" type="button">Menü</button>
         <button class="btn ksc grow" id="solo-next" type="button">Weiter</button>
       </div>
@@ -1404,33 +1419,47 @@ const TUTORIAL_STEPS: TutStep[] = [
     id: "welcome",
     title: "Willkommen im Stadion",
     lead: "Kurz geführt — dann kickst du selbst.",
-    body: "Du spielst die <b>Heimkurve</b>: baue Stände, hole Fans, sende Ultras/Hools in den Gang und schiebe Momentum bis zum Tor — oder stürme den Gästeblock.",
+    body: `<ul class="tut-points">
+      <li>Du spielst die <b>Heimkurve</b> links.</li>
+      <li>Baue Stände, hole Fans, sende Ultras/Hools in den <b>Gang</b>.</li>
+      <li>Schiebe Momentum bis zum Tor — oder stürme den Gästeblock.</li>
+    </ul>`,
     diagram: `
       <div class="tut-diagram tut-stadion" aria-hidden="true">
         <div class="tut-block heim">Heim</div>
-        <div class="tut-gang">Gang</div>
+        <div class="tut-gang"><span>Gang</span></div>
         <div class="tut-block gast">Gast</div>
       </div>`,
   },
   {
     id: "build",
     title: "Wie baut man?",
-    lead: "Gebäude-Rail → Bauplatz tippen → Stand wählen.",
-    body: "<b>Bier</b> füllt Bier (Hools), <b>Fanshop</b> Fanartikel (Ultras), <b>Ordner</b> Sicherheit & Posten. Nur Plots hinter deiner Standarte / Frontlinie. Upgrade erhöht die Produktion.",
+    lead: "Gebäude-Rail → Bauplatz → Stand wählen.",
+    body: `<ul class="tut-points">
+      <li><b>Bier</b> produziert Bier (für Hools).</li>
+      <li><b>Fanshop</b> produziert Fanartikel (für Ultras).</li>
+      <li><b>Ordner</b> gibt Sicherheit & Posten.</li>
+      <li>Nur Plots hinter deiner Frontlinie — Upgrade steigert die Produktion.</li>
+    </ul>`,
     diagram: `
       <div class="tut-diagram tut-build" aria-hidden="true">
-        <div class="tut-rail">Gebäude</div>
-        <div class="tut-arrow">→</div>
-        <div class="tut-plot">Bauplatz</div>
-        <div class="tut-arrow">→</div>
+        <div class="tut-chip">Gebäude</div>
+        <div class="tut-arrow" aria-hidden="true"></div>
+        <div class="tut-chip">Bauplatz</div>
+        <div class="tut-arrow" aria-hidden="true"></div>
         <div class="tut-stands"><span>Bier</span><span>Shop</span><span>Ordner</span></div>
       </div>`,
   },
   {
     id: "fans",
     title: "Personen holen",
-    lead: "Personen-Rail: Fans, Ultras, Hooligans kaufen.",
-    body: "<b>Fans</b> pushen Momentum & brauchen Sicherheit. <b>Ultras</b> senden/pyro (Fanartikel). <b>Hooligans</b> Nahkampf (Bier). Mehr Ultras im Block → stärkere <b>Choreo</b> (ab 5 / 10 / 20 / 30).",
+    lead: "Personen-Rail: Fans, Ultras, Hooligans.",
+    body: `<ul class="tut-points">
+      <li><b>Fans</b> pushen Momentum und brauchen Sicherheit.</li>
+      <li><b>Ultras</b> senden / Pyro (kosten Fanartikel).</li>
+      <li><b>Hooligans</b> Nahkampf (kosten Bier).</li>
+      <li>Mehr Ultras → stärkere <b>Choreo</b> (ab 5 / 10 / 20 / 30).</li>
+    </ul>`,
     diagram: `
       <div class="tut-diagram tut-fans" aria-hidden="true">
         <div class="tut-fan f">Fan</div>
@@ -1441,8 +1470,12 @@ const TUTORIAL_STEPS: TutStep[] = [
   {
     id: "fight",
     title: "Wie kämpft man?",
-    lead: "Angriff-Rail: Ultras (Fernkampf) oder Hools (Nahkampf) senden.",
-    body: "Einheiten gehen über den <b>Ausgang</b> in den Gang, kämpfen um Raum und können den Gegnerblock besetzen. LIVE-Ticker unter dem Balken zeigt Kampfhinweise.",
+    lead: "Angriff-Rail: Ultras oder Hools in den Gang.",
+    body: `<ul class="tut-points">
+      <li>Einheiten gehen über den <b>Ausgang</b> in den Gang.</li>
+      <li>Dort kämpfen sie um Raum und können den Gegnerblock besetzen.</li>
+      <li>Der LIVE-Ticker unter dem Balken zeigt Kampfhinweise.</li>
+    </ul>`,
     diagram: `
       <div class="tut-diagram tut-fight" aria-hidden="true">
         <div class="tut-block heim">Kurve</div>
@@ -1453,19 +1486,27 @@ const TUTORIAL_STEPS: TutStep[] = [
   {
     id: "goals",
     title: "Wie entstehen Tore?",
-    lead: "Momentum-Balken bis ganz in die Gegnerhälfte → Tor.",
-    body: "Fans in deinem Block + Stimmung füllen den Balken. Volle Füllung = <b>Tor</b>, dann Feier im Block, danach Glücksbiergang. Highlight mit Slow-Mo. Bei 45′ wählst du einen <b>Halbzeit-Boost</b>.",
+    lead: "Momentum bis in die Gegnerhälfte → Tor.",
+    body: `<ul class="tut-points">
+      <li>Fans + Stimmung füllen den Momentum-Balken.</li>
+      <li>Volle Füllung = <b>Tor</b>, danach Feier und Glücksbiergang.</li>
+      <li>Bei 45′ wählst du einen <b>Halbzeit-Boost</b>.</li>
+    </ul>`,
     diagram: `
       <div class="tut-diagram tut-mom" aria-hidden="true">
-        <div class="tut-mom-bar"><i style="width:86%"></i><b>⚽</b></div>
+        <div class="tut-mom-bar"><i style="width:86%"></i><span class="tut-mom-ball">Tor</span></div>
         <p class="tut-mom-cap">Kurve schiebt → Torchance steigt</p>
       </div>`,
   },
   {
     id: "storm",
     title: "Blocksturm",
-    lead: "Genug Angreifer im Gegnerblock halten ≈ 5 s.",
-    body: "Ultras/Hools besetzen den Gästeblock und halten das Banner „Hier regiert …“. Das ist ein alternativer Siegweg — und landet im Highscore als schnellster Blocksturm.",
+    lead: "Angreifer im Gegnerblock halten ≈ 5 s.",
+    body: `<ul class="tut-points">
+      <li>Ultras/Hools besetzen den Gästeblock.</li>
+      <li>Banner halten = alternativer Siegweg.</li>
+      <li>Schnellster Blocksturm landet in den Highscores.</li>
+    </ul>`,
     diagram: `
       <div class="tut-diagram tut-storm" aria-hidden="true">
         <div class="tut-banner">Hier regiert …</div>
@@ -1476,14 +1517,14 @@ const TUTORIAL_STEPS: TutStep[] = [
     id: "path",
     title: "Dein erster Weg",
     lead: "Vier Meilensteine — dann kickst du selbst.",
-    body: "Im geführten Solo auf <b>Einfach</b> erscheinen Toasts, sobald du sie schaffst:<br>1) Gebäude bauen · 2) Person holen · 3) In den Gang senden · 4) Tor oder Sturm-Moment. Danach bist du frei — Badges sammeln sich mit der Schwierigkeit (Bronze → Silber → Gold).",
-    diagram: `
-      <div class="tut-diagram tut-path" aria-hidden="true">
-        <div class="tut-mile">🏗</div>
-        <div class="tut-mile">👤</div>
-        <div class="tut-mile">→</div>
-        <div class="tut-mile">⚽</div>
-      </div>`,
+    body: `<ul class="tut-points tut-miles">
+      <li><span class="tut-n">1</span> Gebäude bauen</li>
+      <li><span class="tut-n">2</span> Person holen</li>
+      <li><span class="tut-n">3</span> In den Gang senden</li>
+      <li><span class="tut-n">4</span> Tor oder Sturm-Moment</li>
+    </ul>
+    <p class="tut-foot">Geführtes Solo auf <b>Einfach</b> zeigt Toasts zu jedem Schritt. Danach Badges nach Schwierigkeit: Bronze → Silber → Gold.</p>`,
+    diagram: "",
   },
 ];
 
@@ -1509,23 +1550,28 @@ function renderTutorial(stepIndex = 0): void {
   const i = Math.max(0, Math.min(TUTORIAL_STEPS.length - 1, stepIndex));
   const step = TUTORIAL_STEPS[i]!;
   const last = i >= TUTORIAL_STEPS.length - 1;
-  app.innerHTML = moodMenu(`
-      <p class="sub">Schritt ${i + 1} / ${TUTORIAL_STEPS.length}</p>
-      <h1 class="brand">${escapeHtml(step.title)}</h1>
-      <p class="sub">${step.lead}</p>
+  app.innerHTML = moodMenu(
+    `
+      ${moodHead({
+        eyebrow: `Tutorial · Schritt ${i + 1} / ${TUTORIAL_STEPS.length}`,
+        title: escapeHtml(step.title),
+        lead: escapeHtml(step.lead),
+      })}
       <div class="card stack tutorial-card">
-        ${step.diagram}
-        <p class="tut-body">${step.body}</p>
+        ${step.diagram ? step.diagram : ""}
+        <div class="tut-body">${step.body}</div>
         <div class="tut-dots" aria-hidden="true">
           ${TUTORIAL_STEPS.map((_, di) => `<i class="${di === i ? "on" : ""}"></i>`).join("")}
         </div>
       </div>
-      <div class="row setup-actions">
+      <div class="row mood-actions">
         <button class="btn secondary grow" id="tut-back" type="button">${i === 0 ? "Menü" : "Zurück"}</button>
         <button class="btn ksc grow" id="tut-next" type="button">${last ? "Erstes Solo (Einfach)" : "Weiter"}</button>
       </div>
       ${last ? `<button class="btn secondary" id="tut-skip" type="button">Nur Menü</button>` : ""}
-    `, "tutorial-screen tut-guided");
+    `,
+    "tutorial-screen tut-guided",
+  );
   app.querySelector("#tut-back")!.addEventListener("click", () => {
     sfx("ui");
     if (i === 0) go("menu");
@@ -1607,17 +1653,20 @@ function renderHighscores(): void {
         })
         .join("")}</ol>`;
     };
-    const status =
+    const statusLead =
       scope === "persoenlich"
-        ? `<p class="tiny hs-sync">Persönliche Top-10${myName ? ` — ${escapeHtml(myName)}` : ""} (mehrere Ergebnisse möglich)</p>`
+        ? `Persönliche Top-10${myName ? ` — ${escapeHtml(myName)}` : ""}`
         : shared === null
-          ? `<p class="tiny hs-sync">Globale Liste wird geladen…</p>`
+          ? "Globale Liste wird geladen…"
           : shared
-            ? `<p class="tiny hs-sync">Gesamt Top-10 — mehrere Einträge pro Name möglich</p>`
-            : `<p class="tiny hs-sync">Offline — lokale Gesamt-Liste</p>`;
+            ? "Gesamt Top-10 — mehrere Einträge pro Name möglich"
+            : "Offline — lokale Gesamt-Liste";
     app.innerHTML = moodMenu(`
-      <h1 class="brand">Highscores</h1>
-      ${status}
+      ${moodHead({
+        eyebrow: "Allgemein",
+        title: "Highscores",
+        lead: statusLead,
+      })}
       <div class="pick-mode-row hs-scope-row" role="group" aria-label="Highscore-Ansicht">
         <button type="button" class="pick-mode ${scope === "gesamt" ? "on" : ""}" data-hs-scope="gesamt">Gesamt Top-10</button>
         <button type="button" class="pick-mode ${scope === "persoenlich" ? "on" : ""}" data-hs-scope="persoenlich">Persönliche Top-10</button>
@@ -1629,12 +1678,12 @@ function renderHighscores(): void {
           <option value="hard" ${d === "hard" ? "selected" : ""}>Schwer</option>
         </select>
       </label>
-      <div class="card stack">
+      <div class="card stack hs-card">
         ${listHtml("ergebnis", "Höchstes Ergebnis")}
         ${listHtml("blocksturm", "Schnellster Blocksturm")}
         ${listHtml("bier", "Meiste Biere")}
       </div>
-      <button class="btn secondary" id="hs-back">Zurück</button>
+      <button class="btn secondary" id="hs-back">Menü</button>
     `);
     app.querySelectorAll<HTMLButtonElement>("[data-hs-scope]").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -1752,23 +1801,26 @@ function renderChallengeHub(): void {
     : `<p class="tiny">Noch keine Challenges — Link generieren und teilen.</p>`;
 
   app.innerHTML = moodMenu(`
-      <p class="sub">1 Versuch · Einladungslink · Sieger vergleichen</p>
-      <h1 class="brand">Challenge</h1>
+      ${moodHead({
+        eyebrow: "Multiplayer",
+        title: "Challenge",
+        lead: "1 Versuch · Einladungslink · Sieger vergleichen",
+      })}
       <div class="chal-stats card stack">
-        <p class="sub" style="margin:0">Deine Bilanz</p>
+        <p class="card-label">Deine Bilanz</p>
         <p class="chal-stats-line"><b>${stats.wins}</b> Siege · <b>${stats.losses}</b> Niederlagen · <b>${stats.draws}</b> Unentschieden</p>
         <p class="tiny">${stats.played} abgeschlossene Challenge${stats.played === 1 ? "" : "s"} auf diesem Gerät</p>
       </div>
       <div class="card stack">
         <button class="btn ksc" id="chal-new" type="button">Neue Challenge</button>
         <p class="tiny" style="margin:0">Einladungslink einfügen:</p>
-        <div class="row" style="gap:8px">
+        <div class="row mood-inline">
           <input id="chal-paste" class="chal-input" type="text" placeholder="https://…?c=… oder Code" autocomplete="off" />
           <button class="btn secondary" id="chal-join" type="button">Öffnen</button>
         </div>
       </div>
       <div class="card stack">
-        <p class="sub" style="margin:0">Vergangene Challenges</p>
+        <p class="card-label">Vergangene Challenges</p>
         ${histHtml}
       </div>
       <button class="btn secondary" id="chal-hub-back" type="button">Menü</button>
@@ -1817,28 +1869,29 @@ function renderChallengeCreate(): void {
     )
     .join("");
 
-  app.innerHTML = `
-    <div class="screen menu">
-      <p class="sub">Setup wählen → Einladungslink generieren</p>
-      <h1 class="brand" style="font-size:1.45rem">Neue Challenge</h1>
-      <p class="sub match-line">${escapeHtml(matchLine)}</p>
-      <div class="kit-preview" aria-hidden="true">
-        ${kitSwatchHtml(brand.heim.id)}
-        <span class="kit-vs">vs</span>
-        ${kitSwatchHtml(brand.gast.id)}
-      </div>
+  app.innerHTML = moodMenu(`
+      ${moodHead({
+        eyebrow: "Challenge",
+        title: "Neue Challenge",
+        lead: escapeHtml(matchLine),
+        extra: `<div class="kit-preview" aria-hidden="true">
+          ${kitSwatchHtml(brand.heim.id)}
+          <span class="kit-vs">vs</span>
+          ${kitSwatchHtml(brand.gast.id)}
+        </div>`,
+      })}
       <div class="card stack">
-        <p class="tiny">Ziel</p>
+        <p class="card-label">Ziel</p>
         <div class="pick-mode-row chal-goals" role="group" aria-label="Challenge-Ziel">${goals}</div>
         <p class="tiny">${escapeHtml(CHALLENGE_GOAL_BLURB[goal])}</p>
       </div>
       ${matchupPickHtml({ showDiff: true, showBehavior: false })}
-      <div class="row setup-actions">
+      <div class="row mood-actions">
         <button class="btn secondary grow" id="chal-back" type="button">Zurück</button>
-        <button class="btn ksc grow" id="chal-invite" type="button">Einladungslink generieren</button>
+        <button class="btn ksc grow" id="chal-invite" type="button">Link generieren</button>
       </div>
-      <p class="tiny">Danach Link teilen — du und der Gegner spielt jeweils 1× über denselben Link.</p>
-    </div>`;
+      <p class="tiny">Danach Link teilen — jeder spielt 1× über denselben Link.</p>
+    `);
 
   app.querySelectorAll<HTMLButtonElement>("[data-chal-goal]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -1894,37 +1947,38 @@ function renderChallengeLobby(): void {
   const done = role === "done";
   const url = challengeShareUrl(c);
 
-  app.innerHTML = `
-    <div class="screen menu">
-      <p class="sub">Challenge · Einladungslink</p>
-      <h1 class="brand" style="font-size:1.45rem">${escapeHtml(CHALLENGE_GOAL_LABEL[c.goal])}</h1>
-      <p class="sub">${escapeHtml(challengeSetupLine(c))}</p>
-      <div class="kit-preview" aria-hidden="true">
-        ${kitSwatchHtml(c.playerClub as ClubId)}
-        <span class="kit-vs">vs</span>
-        ${kitSwatchHtml(c.aiClub as ClubId)}
-      </div>
+  app.innerHTML = moodMenu(`
+      ${moodHead({
+        eyebrow: "Challenge · Einladungslink",
+        title: escapeHtml(CHALLENGE_GOAL_LABEL[c.goal]),
+        lead: escapeHtml(challengeSetupLine(c)),
+        extra: `<div class="kit-preview" aria-hidden="true">
+          ${kitSwatchHtml(c.playerClub as ClubId)}
+          <span class="kit-vs">vs</span>
+          ${kitSwatchHtml(c.aiClub as ClubId)}
+        </div>`,
+      })}
       <div class="chal-compare">
         ${attemptCardHtml(c.a ? c.a.name : "Spieler 1", c.a, winner === "a")}
         ${attemptCardHtml(c.b ? c.b.name : "Spieler 2", c.b, winner === "b")}
       </div>
-      <p class="sub chal-verdict">${escapeHtml(verdict)}</p>
+      <p class="chal-verdict">${escapeHtml(verdict)}</p>
       <p class="tiny">${escapeHtml(CHALLENGE_GOAL_BLURB[c.goal])} · Nur 1 Versuch pro Spieler.</p>
       <label class="field">Einladungslink
         <input class="chal-input" id="chal-link-view" type="text" readonly value="${escapeHtml(url)}" />
       </label>
-      <div class="row setup-actions">
+      <div class="row mood-actions">
         <button class="btn secondary grow" id="chal-lobby-back" type="button">Übersicht</button>
         <button class="btn secondary grow" id="chal-copy" type="button">Link kopieren</button>
       </div>
       ${
         canPlay
-          ? `<button class="btn ksc" id="chal-play" type="button" style="width:100%;margin-top:8px">${c.a || c.b ? "Spielen (1×)" : "Jetzt spielen (1×)"}</button>`
+          ? `<button class="btn ksc" id="chal-play" type="button">${c.a || c.b ? "Spielen (1×)" : "Jetzt spielen (1×)"}</button>`
           : already && !done
-            ? `<p class="tiny">Du hast deinen Versuch auf diesem Gerät schon verbraucht — warte auf den Gegner / aktualisiere den Link.</p>`
+            ? `<p class="tiny">Dein Versuch auf diesem Gerät ist verbraucht — warte auf den Gegner oder aktualisiere den Link.</p>`
             : ""
       }
-    </div>`;
+    `);
 
   app.querySelector("#chal-lobby-back")!.addEventListener("click", () => {
     sfx("ui");
@@ -1988,27 +2042,28 @@ function renderChallengeResult(): void {
   const winner = compareChallengeAttempts(c.goal, c.a, c.b);
   const verdict = challengeVerdictLabel(c, winner);
   const mine = challengeOutcomeForMe(c, state.challengeRole);
-  app.innerHTML = `
-    <div class="screen menu">
-      <p class="sub">Challenge-Ergebnis</p>
-      <h1 class="brand" style="font-size:1.5rem">${escapeHtml(
-        winner === "draw"
-          ? "Unentschieden"
-          : winner === "pending"
-            ? "Dein Versuch zählt"
-            : mine === "win"
-              ? "Du hast gewonnen!"
-              : mine === "loss"
-                ? "Du hast verloren"
-                : "Sieger!",
-      )}</h1>
-      <p class="sub">${escapeHtml(challengeSetupLine(c))}</p>
+  app.innerHTML = moodMenu(`
+      ${moodHead({
+        eyebrow: "Challenge-Ergebnis",
+        title: escapeHtml(
+          winner === "draw"
+            ? "Unentschieden"
+            : winner === "pending"
+              ? "Dein Versuch zählt"
+              : mine === "win"
+                ? "Du hast gewonnen!"
+                : mine === "loss"
+                  ? "Du hast verloren"
+                  : "Sieger!",
+        ),
+        lead: escapeHtml(challengeSetupLine(c)),
+      })}
       <div class="chal-compare">
         ${attemptCardHtml(c.a?.name || "Spieler 1", c.a, winner === "a")}
         ${attemptCardHtml(c.b?.name || "Spieler 2", c.b, winner === "b")}
       </div>
-      <p class="sub chal-verdict">${escapeHtml(verdict)}</p>
-      <div class="row setup-actions">
+      <p class="chal-verdict">${escapeHtml(verdict)}</p>
+      <div class="row mood-actions">
         <button class="btn secondary grow" id="chal-res-hub" type="button">Übersicht</button>
         <button class="btn ksc grow" id="chal-res-copy" type="button">Link teilen</button>
       </div>
@@ -2017,7 +2072,7 @@ function renderChallengeResult(): void {
           ? "Gegner öffnet denselben Einladungslink und spielt 1× — danach siehst du den Sieger in der Historie."
           : "Beide Versuche stecken im Link. In der Challenge-Übersicht bleibt die Partie gespeichert."
       }</p>
-    </div>`;
+    `);
   app.querySelector("#chal-res-hub")!.addEventListener("click", () => {
     sfx("ui");
     state.challenge = null;
@@ -2077,9 +2132,12 @@ function renderBadges(): void {
   }).join("");
 
   app.innerHTML = moodMenu(`
-    <p class="sub">Bronze = Einfach · Silber = Mittel · Gold = Schwer</p>
-    <h1 class="brand">Badges</h1>
-    <p class="tiny">${counts.unlocked}/${counts.total} freigeschaltet · ${counts.gold}× Gold</p>
+    ${moodHead({
+      eyebrow: "Allgemein",
+      title: "Badges",
+      lead: `Bronze = Einfach · Silber = Mittel · Gold = Schwer`,
+      extra: `<p class="tiny">${counts.unlocked}/${counts.total} freigeschaltet · ${counts.gold}× Gold</p>`,
+    })}
     <div class="badge-grid">${cards}</div>
     <button class="btn secondary" id="badges-back" type="button">Menü</button>
   `);
@@ -2094,13 +2152,16 @@ function renderTournamentHub(): void {
   state.tournament = existing;
   const d = state.tournamentDiff;
   app.innerHTML = moodMenu(`
-    <p class="sub">5 Runden · Gegner werden stärker · du immer Heim links</p>
-    <h1 class="brand">Solo-Turnier</h1>
+    ${moodHead({
+      eyebrow: "Solo",
+      title: "Solo-Turnier",
+      lead: "5 Runden · Gegner werden stärker · du immer Heim links",
+    })}
     ${
       existing?.active
         ? `<div class="card stack">
-        <p class="sub" style="margin:0">Laufendes Turnier</p>
-        <p>${escapeHtml(tournamentProgressLabel(existing))} · ${tourneyDiffLabel(existing.tourneyDiff)}</p>
+        <p class="card-label">Laufendes Turnier</p>
+        <p class="card-strong">${escapeHtml(tournamentProgressLabel(existing))} · ${tourneyDiffLabel(existing.tourneyDiff)}</p>
         <p class="tiny">${existing.wins} Siege</p>
         <button class="btn ksc" id="tourney-continue" type="button">Weiterspielen</button>
         <button class="btn secondary" id="tourney-abandon" type="button">Aufgeben</button>
@@ -2108,7 +2169,7 @@ function renderTournamentHub(): void {
         : ""
     }
     <div class="card stack">
-      <p class="tiny">Turnier-Schwierigkeit</p>
+      <p class="card-label">Turnier-Schwierigkeit</p>
       <div class="pick-mode-row" role="group">
         ${(["easy", "normal", "hard"] as TournamentDifficulty[])
           .map(
@@ -2179,14 +2240,17 @@ function renderTournamentBracket(): void {
     .join("");
 
   app.innerHTML = moodMenu(`
-    <p class="sub">${tourneyDiffLabel(t.tourneyDiff)}-Turnier · ${escapeHtml(tournamentProgressLabel(t))}</p>
-    <h1 class="brand">Bracket</h1>
+    ${moodHead({
+      eyebrow: `${tourneyDiffLabel(t.tourneyDiff)}-Turnier`,
+      title: "Bracket",
+      lead: escapeHtml(tournamentProgressLabel(t)),
+    })}
     <ul class="tourney-list">${rows}</ul>
     ${
       opp
         ? `<div class="card stack">
-        <p class="sub" style="margin:0">Nächster Gegner</p>
-        <p><b>${escapeHtml(opp.label)}</b> — ${clubCode(opp.aiClub) || opp.aiClub}</p>
+        <p class="card-label">Nächster Gegner</p>
+        <p class="card-strong">${escapeHtml(opp.label)} — ${clubCode(opp.aiClub) || opp.aiClub}</p>
         <p class="tiny">${difficultyLabel(opp.difficulty)} · ${AI_BEHAVIOR_LABEL[opp.behavior] || opp.behavior}</p>
         <div class="kit-preview" aria-hidden="true">
           ${kitSwatchHtml(opp.playerClub)}
@@ -2242,23 +2306,26 @@ function renderLiveHub(): void {
     : `<p class="tiny">Noch keine Live-Spiele auf diesem Gerät.</p>`;
 
   app.innerHTML = moodMenu(`
-    <p class="sub">Gleichzeitig · du Heim links · Gegner rechts (KPI)</p>
-    <h1 class="brand">Live Challenge</h1>
+    ${moodHead({
+      eyebrow: "Multiplayer",
+      title: "Live Challenge",
+      lead: "Gleichzeitig · du Heim links · Gegner rechts (KPI)",
+    })}
     <div class="chal-stats card stack">
-      <p class="sub" style="margin:0">Persönliche Live-Stats</p>
+      <p class="card-label">Persönliche Live-Stats</p>
       <p class="chal-stats-line"><b>${stats.wins}</b> Siege · <b>${stats.losses}</b> Niederlagen · <b>${stats.draws}</b> Remis</p>
       <p class="tiny">${stats.played} Spiele · Tore ${stats.goalsFor}:${stats.goalsAgainst} · Biere ${stats.beers}</p>
     </div>
     <div class="card stack">
       <button class="btn ksc" id="live-host" type="button">Raum erstellen</button>
       <p class="tiny" style="margin:0">Oder Raumcode eingeben:</p>
-      <div class="row" style="gap:8px">
+      <div class="row mood-inline">
         <input id="live-code" class="chal-input" type="text" maxlength="8" placeholder="z. B. AB12CD" autocomplete="off" style="text-transform:uppercase" />
         <button class="btn secondary" id="live-join" type="button">Beitreten</button>
       </div>
     </div>
     <div class="card stack">
-      <p class="sub" style="margin:0">Letzte Live-Spiele</p>
+      <p class="card-label">Letzte Live-Spiele</p>
       ${histHtml}
     </div>
     <button class="btn secondary" id="live-back" type="button">Menü</button>
@@ -2362,20 +2429,22 @@ function renderLiveLobby(): void {
   const bothReady = live.localReady && live.remoteReady && live.connected;
 
   app.innerHTML = moodMenu(`
-    <p class="sub">Live · ${escapeHtml(live.status)}</p>
-    <h1 class="brand">Lobby</h1>
-    <p class="live-code">${escapeHtml(live.code)}</p>
-    <p class="tiny" style="text-align:center">Raumcode teilen — Gegner tritt bei</p>
-    <p class="sub match-line" style="text-align:center">${escapeHtml(matchLine)}</p>
-    <div class="kit-preview" aria-hidden="true">
-      ${kitSwatchHtml((cfg?.playerClub || brand.heim.id) as ClubId)}
-      <span class="kit-vs">vs</span>
-      ${kitSwatchHtml((cfg?.aiClub || brand.gast.id) as ClubId)}
-    </div>
+    ${moodHead({
+      eyebrow: `Live · ${escapeHtml(live.status)}`,
+      title: "Lobby",
+      lead: escapeHtml(matchLine),
+      extra: `<p class="live-code">${escapeHtml(live.code)}</p>
+        <p class="tiny mood-center">Raumcode teilen — Gegner tritt bei</p>
+        <div class="kit-preview" aria-hidden="true">
+          ${kitSwatchHtml((cfg?.playerClub || brand.heim.id) as ClubId)}
+          <span class="kit-vs">vs</span>
+          ${kitSwatchHtml((cfg?.aiClub || brand.gast.id) as ClubId)}
+        </div>`,
+    })}
     ${
       live.role === "host"
         ? `<div class="card stack">
-        <p class="tiny">Matchup (Host wählt)</p>
+        <p class="card-label">Matchup (Host wählt)</p>
         ${matchupPickHtml({ showDiff: true, showBehavior: false })}
       </div>`
         : `<div class="card stack"><p class="tiny">Host legt Matchup fest. Du spielst Heim links mit deinem Club — Gegner-Club rechts.</p></div>`
@@ -2393,7 +2462,7 @@ function renderLiveLobby(): void {
     ${
       live.role === "host"
         ? `<button class="btn ksc" id="live-start" type="button" ${bothReady ? "" : "disabled"}>Anpfiff (beide bereit)</button>`
-        : `<p class="tiny" style="text-align:center">Warte auf Host-Anpfiff…</p>`
+        : `<p class="tiny mood-center">Warte auf Host-Anpfiff…</p>`
     }
     <button class="btn secondary" id="live-lobby-back" type="button">Abbrechen</button>
   `);
@@ -2482,19 +2551,22 @@ function renderLiveResult(): void {
   if (!them?.done) {
     state.liveWaitingOpponent = true;
     app.innerHTML = moodMenu(`
-      <p class="sub">Live Challenge</p>
-      <h1 class="brand">Warte auf Gegner…</h1>
+      ${moodHead({
+        eyebrow: "Live Challenge",
+        title: "Warte auf Gegner…",
+        lead: "Dein Match ist fertig — KPI-Vergleich folgt",
+      })}
       <div class="live-compare">
         <div class="live-slot">
           <p class="tiny">Du</p>
-          <p><b>${escapeHtml(me.name)}</b></p>
+          <p class="card-strong">${escapeHtml(me.name)}</p>
           <p>${me.scoreFor}:${me.scoreAgainst}</p>
           <p class="tiny">${formatMinute(me.minute)} · Biere ${me.beers}</p>
           <p class="tiny">${escapeHtml(me.detail || "")}</p>
         </div>
         <div class="live-slot">
           <p class="tiny">Gegner</p>
-          <p><b>${escapeHtml(them?.name || live.remoteName || "…")}</b></p>
+          <p class="card-strong">${escapeHtml(them?.name || live.remoteName || "…")}</p>
           <p>${them ? `${them.scoreFor}:${them.scoreAgainst}` : "—"}</p>
           <p class="tiny">${them ? `${formatMinute(them.minute)} · läuft…` : "verbindet…"}</p>
         </div>
@@ -2525,20 +2597,21 @@ function renderLiveResult(): void {
         ? "Niederlage"
         : "Unentschieden";
   app.innerHTML = moodMenu(`
-    <p class="sub">Live Challenge · Zusammenfassung</p>
-    <h1 class="brand">${verdict}</h1>
-    <p class="live-verdict">${escapeHtml(verdict)}</p>
+    ${moodHead({
+      eyebrow: "Live Challenge · Zusammenfassung",
+      title: verdict,
+    })}
     <div class="live-compare">
       <div class="live-slot ${outcome === "win" ? "win" : outcome === "loss" ? "loss" : ""}">
         <p class="tiny">Du · Heim</p>
-        <p><b>${escapeHtml(me.name)}</b></p>
+        <p class="card-strong">${escapeHtml(me.name)}</p>
         <p>${me.scoreFor}:${me.scoreAgainst}</p>
         <p class="tiny">${formatMinute(me.minute)} · Biere ${me.beers} · Gold ${me.gold}</p>
         <p class="tiny">${escapeHtml(me.detail || me.reason || "")}</p>
       </div>
       <div class="live-slot ${outcome === "loss" ? "win" : outcome === "win" ? "loss" : ""}">
         <p class="tiny">Gegner · rechts</p>
-        <p><b>${escapeHtml(them.name)}</b></p>
+        <p class="card-strong">${escapeHtml(them.name)}</p>
         <p>${them.scoreFor}:${them.scoreAgainst}</p>
         <p class="tiny">${formatMinute(them.minute)} · Biere ${them.beers} · Gold ${them.gold}</p>
         <p class="tiny">${escapeHtml(them.detail || them.reason || "")}</p>
@@ -2546,11 +2619,11 @@ function renderLiveResult(): void {
     </div>
     ${badgesResultHtml()}
     <div class="chal-stats card stack">
-      <p class="sub" style="margin:0">Persönliche Stats</p>
+      <p class="card-label">Persönliche Stats</p>
       <p class="chal-stats-line"><b>${stats.wins}</b> W · <b>${stats.losses}</b> L · <b>${stats.draws}</b> D · ${stats.played} Spiele</p>
       <p class="tiny">Tore gesamt ${stats.goalsFor}:${stats.goalsAgainst} · Biere ${stats.beers}</p>
     </div>
-    <div class="row">
+    <div class="row mood-actions">
       <button class="btn secondary grow" id="live-res-menu" type="button">Menü</button>
       <button class="btn ksc grow" id="live-res-again" type="button">Live-Hub</button>
     </div>
@@ -2578,33 +2651,32 @@ function renderSetup(): void {
         <button class="btn secondary" data-mix="${key}" data-d="1" style="min-height:40px;min-width:40px;padding:0">+</button>
       </div>
     </div>`;
-  app.innerHTML = `
-    <div class="screen menu">
-      <div>
-        <p class="sub">${
-          live
-            ? `Live Challenge · du Heim links · Gegner-Club rechts`
-            : state.tournament?.active
-              ? `Turnier · ${escapeHtml(tournamentProgressLabel(state.tournament))}`
-              : state.guidedOnboarding
-                ? "Geführtes Solo (Einfach) — Meilensteine im Match"
-              : chal
-                ? `Challenge · ${escapeHtml(challengeSetupLine(chal))} · 1 Versuch`
-                : "8 Fans für den Heimblock (Startaufstellung)"
-        }</p>
-        <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
-      </div>
+  const setupLead = live
+    ? "Live Challenge · du Heim links · Gegner-Club rechts"
+    : state.tournament?.active
+      ? `Turnier · ${escapeHtml(tournamentProgressLabel(state.tournament))}`
+      : state.guidedOnboarding
+        ? "Geführtes Solo (Einfach) — Meilensteine im Match"
+        : chal
+          ? `Challenge · ${escapeHtml(challengeSetupLine(chal))} · 1 Versuch`
+          : "8 Fans für den Heimblock";
+  app.innerHTML = moodMenu(`
+      ${moodHead({
+        eyebrow: "Vor dem Anpfiff",
+        title: "Aufstellung",
+        lead: setupLead,
+      })}
       <div class="card stack">
         ${row("normalos", "Fans (Momentum · Sicherheit)")}
         ${row("ultras", "Ultras (Senden · Fanartikel)")}
         ${row("hooligans", "Hooligans (Nahkampf · Bier)")}
         <p class="tiny">Summe ${mixSum(mix)} / 8 ${isValidMix(mix) ? "✓" : ""}</p>
       </div>
-      <div class="row setup-actions">
+      <div class="row mood-actions">
         <button class="btn secondary grow" id="back" type="button">Zurück</button>
         <button class="btn ksc grow anpfiff-btn" id="start" type="button" ${isValidMix(mix) ? "" : "disabled"}>Anpfiff</button>
       </div>
-    </div>`;
+    `);
   app.querySelector("#back")!.addEventListener("click", () => {
     if (state.live) {
       go("liveLobby");
