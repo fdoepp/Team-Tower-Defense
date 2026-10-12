@@ -57,6 +57,63 @@ import {
   teamLabel,
 } from "./game/util";
 import {
+  applyClubCssVars,
+  clubsByCountry,
+  currentBranding,
+  DEFAULT_AI_CLUB,
+  DEFAULT_DERBY_ID,
+  DEFAULT_PLAYER_CLUB,
+  derbiesByCountry,
+  findDerby,
+  getClub,
+  setSideBranding,
+  type ClubId,
+} from "./game/clubs";
+import {
+  applyLiveTintToDomImages,
+  getLiveTintedCanvas,
+} from "./game/liveTint";
+import { getRawIcon } from "./game/assets";
+
+/** Set team icon src once, then live-tint to current club kit. */
+function setLiveTintImg(ico: HTMLImageElement | null, src: string): void {
+  if (!ico) return;
+  if (
+    ico.dataset.liveTintSrc === src &&
+    ico.dataset.liveTint === "1" &&
+    (ico.getAttribute("src") || "").startsWith("data:")
+  ) {
+    return;
+  }
+  ico.dataset.liveTintSrc = src;
+  const paint = (raw: HTMLImageElement) => {
+    const canvas = getLiveTintedCanvas(raw, src);
+    if (!canvas) {
+      ico.setAttribute("src", src);
+      ico.dataset.liveTint = "0";
+      return;
+    }
+    try {
+      const url = canvas.toDataURL("image/png");
+      ico.setAttribute("src", url);
+      ico.src = url;
+      ico.dataset.liveTint = "1";
+    } catch {
+      ico.setAttribute("src", src);
+      ico.dataset.liveTint = "0";
+    }
+  };
+  const cached = getRawIcon(src);
+  if (cached) {
+    paint(cached);
+    return;
+  }
+  const raw = new Image();
+  raw.decoding = "async";
+  raw.onload = () => paint(raw);
+  raw.src = src;
+}
+import {
   blocksturmValue,
   difficultyLabel,
   ergebnisValue,
@@ -448,6 +505,8 @@ const app = document.querySelector<HTMLDivElement>("#app")!;
 
 type Screen = "menu" | "tutorial" | "setup" | "match" | "result" | "highscores";
 
+type PickMode = "derby" | "free";
+
 const state = {
   screen: "menu" as Screen,
   settings: defaultSoloSettings() as SoloSettings,
@@ -462,7 +521,92 @@ const state = {
   /** place = Bau-Karten · upgrade = nur Upgrade-Card für geklicktes Gebäude */
   buildRailMode: "place" as "place" | "upgrade",
   highscoreDiff: "normal" as SoloSettings["difficulty"],
+  /** Menu: derby preset vs free club pick */
+  pickMode: "derby" as PickMode,
+  menuCountry: "Deutschland",
+  menuDerbyId: DEFAULT_DERBY_ID,
+  /** In derby mode: play as side a (true) or b (false) */
+  menuPlayAsA: true,
+  menuPlayerClub: DEFAULT_PLAYER_CLUB as ClubId,
+  menuAiClub: DEFAULT_AI_CLUB as ClubId,
 };
+
+function syncMenuBrandingPreview(): void {
+  let player: ClubId;
+  let ai: ClubId;
+  if (state.pickMode === "derby") {
+    const d = findDerby(state.menuDerbyId);
+    if (d) {
+      player = state.menuPlayAsA ? d.a : d.b;
+      ai = state.menuPlayAsA ? d.b : d.a;
+    } else {
+      player = state.menuPlayerClub;
+      ai = state.menuAiClub;
+    }
+  } else {
+    player = state.menuPlayerClub;
+    ai = state.menuAiClub;
+    if (ai === player) {
+      const other = clubsByCountry()
+        .flatMap((g) => g.clubs)
+        .find((c) => c.id !== player);
+      if (other) ai = other.id;
+    }
+  }
+  state.menuPlayerClub = player!;
+  state.menuAiClub = ai!;
+  setSideBranding(player!, ai!);
+  applyClubCssVars();
+}
+
+function clubOptionsGroupedHtml(selected: ClubId, selectId: string): string {
+  const groups = clubsByCountry();
+  return `<select id="${selectId}">${groups
+    .map(
+      (g) =>
+        `<optgroup label="${escapeHtml(g.country)}">${g.clubs
+          .map(
+            (c) =>
+              `<option value="${c.id}" ${c.id === selected ? "selected" : ""}>${escapeHtml(c.short)} — ${escapeHtml(c.name)}</option>`,
+          )
+          .join("")}</optgroup>`,
+    )
+    .join("")}</select>`;
+}
+
+function derbyOptionsGroupedHtml(
+  country: string,
+  selected: string,
+): string {
+  const groups = derbiesByCountry();
+  const inCountry = groups.find((g) => g.country === country)?.derbies ?? [];
+  const list = inCountry.length
+    ? inCountry
+    : groups.flatMap((g) => g.derbies);
+  return `<select id="derby">${list
+    .map((d) => {
+      const a = getClub(d.a);
+      const b = getClub(d.b);
+      const rank = d.rank != null ? `#${d.rank} · ` : "";
+      return `<option value="${d.id}" ${d.id === selected ? "selected" : ""}>${rank}${escapeHtml(d.name)} (${escapeHtml(a.short)}–${escapeHtml(b.short)})</option>`;
+    })
+    .join("")}</select>`;
+}
+
+function countryOptionsHtml(selected: string): string {
+  const countries = derbiesByCountry().map((g) => g.country);
+  return `<select id="country">${countries
+    .map(
+      (c) =>
+        `<option value="${escapeHtml(c)}" ${c === selected ? "selected" : ""}>${escapeHtml(c)}</option>`,
+    )
+    .join("")}</select>`;
+}
+
+function kitSwatchHtml(clubId: ClubId): string {
+  const c = getClub(clubId);
+  return `<span class="kit-swatch" title="${escapeHtml(c.name)}" style="--kit-a:${c.primary};--kit-b:${c.secondary}"><i></i><b>${escapeHtml(c.short)}</b></span>`;
+}
 
 applyCssIconUrls();
 document.documentElement.classList.toggle("standalone", isStandalone());
@@ -499,12 +643,52 @@ function render(): void {
 
 function renderMenu(): void {
   const iosHint = isIos() && !isStandalone();
+  syncMenuBrandingPreview();
+  const brand = currentBranding();
+  const derby = findDerby(state.menuDerbyId);
+  const matchLine = `${brand.heim.short} vs ${brand.gast.short}`;
+  const derbyHint =
+    state.pickMode === "derby" && derby
+      ? derby.rank != null
+        ? `Derby #${derby.rank} · ${derby.name}`
+        : derby.name
+      : "Freie Vereinswahl";
+
+  const pickControls =
+    state.pickMode === "derby"
+      ? `
+        <label class="field">Land
+          ${countryOptionsHtml(state.menuCountry)}
+        </label>
+        <label class="field">Derby
+          ${derbyOptionsGroupedHtml(state.menuCountry, state.menuDerbyId)}
+        </label>
+        <label class="field">Deine Seite
+          <select id="side">
+            <option value="a" ${state.menuPlayAsA ? "selected" : ""}>${derby ? escapeHtml(getClub(derby.a).name) : "Heim"}</option>
+            <option value="b" ${!state.menuPlayAsA ? "selected" : ""}>${derby ? escapeHtml(getClub(derby.b).name) : "Gast"}</option>
+          </select>
+        </label>`
+      : `
+        <label class="field">Dein Verein
+          ${clubOptionsGroupedHtml(state.menuPlayerClub, "player-club")}
+        </label>
+        <label class="field">Gegner (KI)
+          ${clubOptionsGroupedHtml(state.menuAiClub, "ai-club")}
+        </label>`;
+
   app.innerHTML = `
-    <div class="screen menu">
+    <div class="screen menu menu-derby">
       <div>
         <p class="sub">Stadion · Blöcke · Gang · Stimmung</p>
         <h1 class="brand">LaneLink</h1>
-        <p class="sub">KSC vs VfB — Querformat</p>
+        <p class="sub match-line">${escapeHtml(matchLine)} — Querformat</p>
+        <p class="tiny derby-hint">${escapeHtml(derbyHint)}</p>
+        <div class="kit-preview" aria-hidden="true">
+          ${kitSwatchHtml(brand.heim.id)}
+          <span class="kit-vs">vs</span>
+          ${kitSwatchHtml(brand.gast.id)}
+        </div>
       </div>
       <div class="card stack">
         <button class="btn ksc" id="solo">Solo vs KI</button>
@@ -517,10 +701,12 @@ function renderMenu(): void {
           ? `<p class="tiny fs-hint">iPhone: Teilen → <b>Zum Home-Bildschirm</b> — dann ohne Tabs/Adressleiste.</p>`
           : `<p class="tiny fs-hint">Tipp: Vollbild für volle Spielfläche (ohne Browser-Leisten).</p>`
       }
-      <div class="card stack">
-        <label class="field">Verein
-          <select id="team"><option value="ksc">KSC</option><option value="vfb">VfB</option></select>
-        </label>
+      <div class="card stack team-pick">
+        <div class="pick-mode-row" role="group" aria-label="Auswahlmodus">
+          <button type="button" class="pick-mode ${state.pickMode === "derby" ? "on" : ""}" data-pick="derby">Derby</button>
+          <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
+        </div>
+        ${pickControls}
         <label class="field">KI
           <select id="diff">
             <option value="easy" selected>Einfach</option>
@@ -548,13 +734,77 @@ function renderMenu(): void {
       .value as SoloSettings["difficulty"];
     go("highscores");
   });
+  app.querySelectorAll<HTMLButtonElement>("[data-pick]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      sfx("ui");
+      state.pickMode = btn.dataset.pick as PickMode;
+      renderMenu();
+    });
+  });
+  const countryEl = app.querySelector("#country") as HTMLSelectElement | null;
+  if (countryEl) {
+    countryEl.addEventListener("change", () => {
+      state.menuCountry = countryEl.value;
+      const first = derbiesByCountry().find((g) => g.country === state.menuCountry)
+        ?.derbies[0];
+      if (first) {
+        state.menuDerbyId = first.id;
+        state.menuPlayAsA = true;
+      }
+      renderMenu();
+    });
+  }
+  const derbyEl = app.querySelector("#derby") as HTMLSelectElement | null;
+  if (derbyEl) {
+    derbyEl.addEventListener("change", () => {
+      state.menuDerbyId = derbyEl.value;
+      state.menuPlayAsA = true;
+      renderMenu();
+    });
+  }
+  const sideEl = app.querySelector("#side") as HTMLSelectElement | null;
+  if (sideEl) {
+    sideEl.addEventListener("change", () => {
+      state.menuPlayAsA = sideEl.value === "a";
+      renderMenu();
+    });
+  }
+  const playerClubEl = app.querySelector(
+    "#player-club",
+  ) as HTMLSelectElement | null;
+  if (playerClubEl) {
+    playerClubEl.addEventListener("change", () => {
+      state.menuPlayerClub = playerClubEl.value;
+      if (state.menuAiClub === state.menuPlayerClub) {
+        const alt = clubsByCountry()
+          .flatMap((g) => g.clubs)
+          .find((c) => c.id !== state.menuPlayerClub);
+        if (alt) state.menuAiClub = alt.id;
+      }
+      renderMenu();
+    });
+  }
+  const aiClubEl = app.querySelector("#ai-club") as HTMLSelectElement | null;
+  if (aiClubEl) {
+    aiClubEl.addEventListener("change", () => {
+      state.menuAiClub = aiClubEl.value;
+      renderMenu();
+    });
+  }
   app.querySelector("#solo")!.addEventListener("click", () => {
     unlockAudio();
     sfx("ui");
     startAmbience("menu");
     void goFullscreen();
+    syncMenuBrandingPreview();
+    const playerClub = state.menuPlayerClub;
+    const aiClub = state.menuAiClub;
+    // Side slots: player always on heim (ksc) for consistent controls/HUD
     state.settings = {
-      playerTeam: (app.querySelector("#team") as HTMLSelectElement).value as TeamId,
+      playerTeam: "ksc",
+      playerClub,
+      aiClub,
+      derbyId: state.pickMode === "derby" ? state.menuDerbyId : undefined,
       difficulty: (app.querySelector("#diff") as HTMLSelectElement)
         .value as SoloSettings["difficulty"],
       behavior: "balanced",
@@ -914,6 +1164,13 @@ function renderMatchScreen(): void {
   const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
   type RailId = "person" | "build" | "attack" | null;
   let openRail: RailId = null;
+  // Pull club kit colors into blue/red rail icons (live tint)
+  app.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
+    const src = img.getAttribute("src") || "";
+    if (/-(?:blue|red)-|tribune-block-(?:blue|red)/.test(src)) {
+      setLiveTintImg(img, src);
+    }
+  });
 
   const layoutHud = () => {
     const rect = wrap.getBoundingClientRect();
@@ -941,8 +1198,10 @@ function renderMatchScreen(): void {
 
       const src = unitIconPath(kind, tc, m.unitTechLevel(kind));
       for (const suffix of ["one", "all"] as const) {
-        const ico = app.querySelector<HTMLImageElement>(`#atk-ico-${prefix}-${suffix}`);
-        if (ico) ico.src = src;
+        setLiveTintImg(
+          app.querySelector<HTMLImageElement>(`#atk-ico-${prefix}-${suffix}`),
+          src,
+        );
       }
 
       const level = m.unitTechLevel(kind);
@@ -1026,6 +1285,9 @@ function renderMatchScreen(): void {
     syncToolActive();
     if (id === "build") syncBuildingRailUi();
     if (id === "attack") syncAttackRailUi();
+    applyLiveTintToDomImages(
+      id === "person" ? personRail : id === "build" ? buildRail : attackRail,
+    );
   };
 
   const closeBuildRail = () => {
@@ -1173,14 +1435,14 @@ function renderMatchScreen(): void {
         : 1;
       const next = Math.min(UPGRADE_MAX, refLv + 1);
 
-      const bauIco = app.querySelector<HTMLImageElement>(`#build-ico-${kind}`);
-      if (bauIco) {
-        bauIco.src = standIconPath(kind, tc, 1);
-      }
-      const upIco = app.querySelector<HTMLImageElement>(`#build-up-ico-${kind}`);
-      if (upIco) {
-        upIco.src = standIconPath(kind, tc, next);
-      }
+      setLiveTintImg(
+        app.querySelector<HTMLImageElement>(`#build-ico-${kind}`),
+        standIconPath(kind, tc, 1),
+      );
+      setLiveTintImg(
+        app.querySelector<HTMLImageElement>(`#build-up-ico-${kind}`),
+        standIconPath(kind, tc, next),
+      );
 
       setPayAmt(app, `build-pay-${kind}`, BUILD_COST[kind]);
       const bauPayImg = app.querySelector<HTMLImageElement>(`#build-pay-${kind} img`);
@@ -1565,22 +1827,14 @@ function renderMatchScreen(): void {
         const next = Math.min(UPGRADE_MAX, tech + 1);
         const meta = app.querySelector(`[data-person-meta="${kind}"]`);
         if (meta) meta.textContent = personMetaLabel(m, kind, counts[kind]);
-        const buyIco = app.querySelector<HTMLImageElement>(`#buy-ico-${kind}`);
-        if (buyIco) {
-          buyIco.src = unitIconPath(
-            kind === "ordner" ? "ordner" : kind,
-            tc,
-            tech,
-          );
-        }
-        const upIco = app.querySelector<HTMLImageElement>(`#up-ico-${kind}`);
-        if (upIco) {
-          upIco.src = unitIconPath(
-            kind === "ordner" ? "ordner" : kind,
-            tc,
-            next,
-          );
-        }
+        setLiveTintImg(
+          app.querySelector<HTMLImageElement>(`#buy-ico-${kind}`),
+          unitIconPath(kind === "ordner" ? "ordner" : kind, tc, tech),
+        );
+        setLiveTintImg(
+          app.querySelector<HTMLImageElement>(`#up-ico-${kind}`),
+          unitIconPath(kind === "ordner" ? "ordner" : kind, tc, next),
+        );
         const buy = personBuyCost(kind);
         setPayAmt(app, `buy-pay-${kind}`, buy.amount);
         const buyPayImg = app.querySelector<HTMLImageElement>(

@@ -60,6 +60,13 @@ export function syncMirror(db = readDb()) {
     lines.push(";");
   }
   lines.push("");
+  lines.push("export type LiveTintMeta = {");
+  lines.push("  enabled: true;");
+  lines.push('  basePalette: "blue" | "red";');
+  lines.push('  pullsFrom: "sideKitPrimary";');
+  lines.push('  side: "heim" | "gast";');
+  lines.push("};");
+  lines.push("");
   lines.push("export type UiFinalEntry = {");
   lines.push("  file: string;");
   lines.push("  path: string;");
@@ -67,6 +74,7 @@ export function syncMirror(db = readDb()) {
   lines.push("  aspectRatio: number;");
   lines.push("  preserveAspect: true;");
   lines.push("  freigestellt: boolean;");
+  lines.push("  liveTint?: LiveTintMeta;");
   lines.push("};");
   lines.push("");
   lines.push("/** Runtime paths under game/public — only user-approved releases. */");
@@ -75,6 +83,7 @@ export function syncMirror(db = readDb()) {
     const native = e.validation?.native ?? e.native ?? { w: 0, h: 0 };
     const ar = e.validation?.aspectRatio ?? e.aspectRatio ?? 1;
     const freigestellt = e.validation?.freigestellt ?? true;
+    const lt = e.liveTint;
     lines.push(`  ${JSON.stringify(id)}: {`);
     lines.push(`    file: ${JSON.stringify(e.file)},`);
     lines.push(`    path: ${JSON.stringify("icons/ui-final/" + e.file)},`);
@@ -82,6 +91,14 @@ export function syncMirror(db = readDb()) {
     lines.push(`    aspectRatio: ${ar},`);
     lines.push(`    preserveAspect: true,`);
     lines.push(`    freigestellt: ${freigestellt ? "true" : "false"},`);
+    if (lt?.enabled && (lt.basePalette === "blue" || lt.basePalette === "red")) {
+      lines.push(`    liveTint: {`);
+      lines.push(`      enabled: true,`);
+      lines.push(`      basePalette: ${JSON.stringify(lt.basePalette)},`);
+      lines.push(`      pullsFrom: "sideKitPrimary",`);
+      lines.push(`      side: ${JSON.stringify(lt.side === "gast" ? "gast" : "heim")},`);
+      lines.push(`    },`);
+    }
     lines.push(`  },`);
   }
   lines.push("} as const satisfies Record<string, UiFinalEntry>;");

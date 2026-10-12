@@ -2,48 +2,48 @@
   "asset": "scoreboard-chrome.png",
   "id": "scoreboardChrome",
   "native": {
-    "w": 1041,
-    "h": 508
+    "w": 1216,
+    "h": 472
   },
-  "notes": "Normkoordinaten 0–1 relativ zur Asset-Box. Live-Overlays nur hier platzieren. Clock-Slot an reale Mulde kalibriert.",
+  "notes": "Blank-Chrome mit durchgängigem Holzrand (ohne gebackene Logos). Normkoordinaten 0–1. Clock = grüner Knopf.",
   "slots": {
     "logoHeim": {
       "x": 0.08,
-      "y": 0.28,
-      "w": 0.18,
-      "h": 0.44
+      "y": 0.3,
+      "w": 0.16,
+      "h": 0.4
     },
     "logoGast": {
-      "x": 0.74,
-      "y": 0.28,
-      "w": 0.18,
-      "h": 0.44
+      "x": 0.76,
+      "y": 0.3,
+      "w": 0.16,
+      "h": 0.4
     },
     "score": {
-      "x": 0.32,
-      "y": 0.3,
-      "w": 0.36,
-      "h": 0.36,
+      "x": 0.3,
+      "y": 0.34,
+      "w": 0.4,
+      "h": 0.3,
       "align": "center"
     },
     "clock": {
-      "x": 0.453,
-      "y": 0.178,
-      "w": 0.094,
-      "h": 0.094,
+      "x": 0.455,
+      "y": 0.07,
+      "w": 0.09,
+      "h": 0.23,
       "align": "center",
-      "notes": "Grüner Kreisknopf gemessen (cx≈0.50, cy≈0.23, Ø≈0.094). Dynamische Minute muss in diesen Kreis passen."
+      "notes": "Grüner Kreisknopf (cx≈0.50, cy≈0.196). Minute muss in den Kreis passen."
     },
     "momentumTrack": {
-      "x": 0.1,
-      "y": 0.78,
-      "w": 0.8,
-      "h": 0.14
+      "x": 0.12,
+      "y": 0.7,
+      "w": 0.76,
+      "h": 0.16
     },
     "orbTrack": {
-      "x": 0.1,
-      "y": 0.76,
-      "w": 0.8,
+      "x": 0.12,
+      "y": 0.68,
+      "w": 0.76,
       "h": 0.18
     }
   }

@@ -1,3 +1,4 @@
+import { clubShort } from "./clubs";
 import type { AiDifficulty, TeamId } from "./types";
 
 export type ScoreBoardKind = "ergebnis" | "blocksturm";
@@ -375,7 +376,6 @@ export function difficultyLabel(d: AiDifficulty): string {
 }
 
 export function teamShort(t?: TeamId): string {
-  if (t === "ksc") return "KSC";
-  if (t === "vfb") return "VfB";
+  if (t === "ksc" || t === "vfb") return clubShort(t);
   return "—";
 }

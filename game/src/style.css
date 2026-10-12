@@ -140,8 +140,85 @@ button {
   color: #fff;
   background: #64748b;
 }
-.hs-team.ksc { background: #0051a2; }
-.hs-team.vfb { background: #e30613; }
+.hs-team.ksc { background: var(--ksc, #0051a2); }
+.hs-team.vfb { background: var(--vfb, #e30613); }
+
+.menu-derby .match-line {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.menu-derby .derby-hint {
+  margin-top: -4px;
+}
+
+.kit-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.kit-vs {
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kit-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 6px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.kit-swatch i {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--kit-a) 50%, var(--kit-b) 50%);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  flex: 0 0 auto;
+}
+
+.kit-swatch b {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.pick-mode-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.pick-mode {
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.pick-mode.on {
+  background: var(--ksc);
+  color: #fff;
+  border-color: transparent;
+}
+
+.team-pick {
+  max-height: min(48vh, 420px);
+  overflow: auto;
+}
 
 .hs-list li:has(.hs-team) .hs-team {
   vertical-align: middle;

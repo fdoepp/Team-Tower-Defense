@@ -35,7 +35,7 @@ import {
   drawIcon,
   drawToyIcon,
   drawToyProp,
-  getIcon,
+  getRawIcon,
   type ToyAnimMode,
   baustelleSchildIconPath,
   pyroShotIconPath,
@@ -47,6 +47,8 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
+import { clubPrimary, clubSecondary, clubShort } from "./clubs";
+import { getDualKitTintedCanvas, sideKitHex, sideKitRgba } from "./liveTint";
 import {
   boothFacadeQuad,
   scaleQuad,
@@ -104,11 +106,11 @@ function drawStormBanner(
   const baseY = (r.y + r.h * 0.42) * h;
   const y = baseY - poleH * raise + wind;
   const x = cx - bw / 2;
-  const isKsc = b.team === "ksc";
-  const fill = isKsc ? "#1d4ed8" : "#b91c1c";
-  const fillMid = isKsc ? "#3b82f6" : "#ef4444";
-  const edge = isKsc ? "#bfdbfe" : "#fecaca";
-  const label = isKsc ? "KSC" : "VfB";
+  // Club kit colors from live branding (testbranch multi-team)
+  const fill = clubPrimary(b.team);
+  const fillMid = fill;
+  const edge = clubSecondary(b.team);
+  const label = clubShort(b.team);
 
   ctx.save();
   ctx.globalAlpha = 0.35 + raise * 0.65;
@@ -210,10 +212,16 @@ function drawStadiumBackdrop(
   w: number,
   h: number,
 ): boolean {
-  const img = getIcon(SCENE_ASSETS.stadiumFloodlightDerby);
-  if (!img?.complete || !img.naturalWidth) return false;
-  const iw = img.naturalWidth;
-  const ih = img.naturalHeight;
+  const raw = getRawIcon(SCENE_ASSETS.stadiumFloodlightDerby);
+  if (!raw?.complete || !raw.naturalWidth) return false;
+  // Live dual tint: baked blue crowd → heim kit, red → gast kit
+  const tinted = getDualKitTintedCanvas(
+    raw,
+    SCENE_ASSETS.stadiumFloodlightDerby,
+  );
+  const img: CanvasImageSource = tinted ?? raw;
+  const iw = tinted ? tinted.width : raw.naturalWidth;
+  const ih = tinted ? tinted.height : raw.naturalHeight;
   const s = Math.max(w / iw, h / ih);
   const dw = iw * s;
   const dh = ih * s;
@@ -296,20 +304,20 @@ function drawStadiumAtmosphere(
     ctx.fill();
   }
 
-  // pyro / flare glow — guest side warm, heim cool
+  // pyro / flare glow — kit colors from live branding
   {
     const gx = blockCenterX(GAST_BLOCK) * w;
     const gy = h * L.blockTop * 0.75;
     const a = 0.22 + Math.min(0.5, m.moodGaeste * 0.2);
     const g = ctx.createRadialGradient(gx, gy, 6, gx, gy, w * 0.32);
-    g.addColorStop(0, `rgba(251,146,60,${a})`);
-    g.addColorStop(0.35, `rgba(239,68,68,${a * 0.65})`);
-    g.addColorStop(1, "rgba(239,68,68,0)");
+    g.addColorStop(0, sideKitRgba("vfb", a));
+    g.addColorStop(0.35, sideKitRgba("vfb", a * 0.65));
+    g.addColorStop(1, sideKitRgba("vfb", 0));
     ctx.fillStyle = g;
     ctx.fillRect(gx - w * 0.32, gy - h * 0.14, w * 0.64, h * 0.32);
     for (let i = 0; i < 7; i++) {
       const ox = Math.sin(m.realElapsed * 0.85 + i * 1.1) * w * 0.05;
-      ctx.fillStyle = `rgba(248,113,113,${0.06 + a * 0.18})`;
+      ctx.fillStyle = sideKitRgba("vfb", 0.06 + a * 0.18);
       ctx.beginPath();
       ctx.ellipse(
         gx + ox + (i - 3) * w * 0.028,
@@ -328,8 +336,8 @@ function drawStadiumAtmosphere(
     const hy = h * L.blockTop * 0.75;
     const a = 0.14 + Math.min(0.4, m.moodHeim * 0.16);
     const g = ctx.createRadialGradient(hx, hy, 6, hx, hy, w * 0.26);
-    g.addColorStop(0, `rgba(96,165,250,${a})`);
-    g.addColorStop(1, "rgba(96,165,250,0)");
+    g.addColorStop(0, sideKitRgba("ksc", a));
+    g.addColorStop(1, sideKitRgba("ksc", 0));
     ctx.fillStyle = g;
     ctx.fillRect(hx - w * 0.26, hy - h * 0.12, w * 0.52, h * 0.28);
   }
@@ -384,9 +392,9 @@ function drawBlocks(
     const pressure = Math.min(1, crowd / 8) * Math.abs(lean);
     const glow =
       owner === "ksc" || (owner === "neutral" && lean > 0.15)
-        ? `rgba(59,130,246,${0.18 + pressure * 0.3})`
+        ? sideKitRgba("ksc", 0.18 + pressure * 0.3)
         : owner === "vfb" || (owner === "neutral" && lean < -0.15)
-          ? `rgba(248,113,113,${0.18 + pressure * 0.3})`
+          ? sideKitRgba("vfb", 0.18 + pressure * 0.3)
           : "rgba(148,163,184,0.14)";
 
     const g = ctx.createRadialGradient(cx, top + bh * 0.45, 8, cx, top + bh * 0.5, bw * 0.72);
@@ -401,7 +409,11 @@ function drawBlocks(
     const drew = drawIcon(ctx, tribSrc, left, top, bw, bh, 0);
     if (!drew) {
       ctx.fillStyle =
-        b.id === 0 ? "#2563eb" : b.id === 2 ? "#dc2626" : "#64748b";
+        b.id === 0
+          ? sideKitHex("ksc")
+          : b.id === 2
+            ? sideKitHex("vfb")
+            : "#64748b";
       roundRect(ctx, left, top, bw, bh, 18);
       ctx.fill();
     }
@@ -429,15 +441,18 @@ function drawSeats(
   }
 }
 
-/** Scoreboard slots — calibrated to scoreboard-chrome.png (0–1 on chrome box). */
+/** Scoreboard slots — blank chrome (durchgängiger Holzrand), 0–1 on asset box. */
 const SB_SLOTS = {
-  logoHeim: { x: 0.08, y: 0.28, w: 0.18, h: 0.44 },
-  logoGast: { x: 0.74, y: 0.28, w: 0.18, h: 0.44 },
-  score: { x: 0.32, y: 0.3, w: 0.36, h: 0.36 },
-  /** Green top circle (measured): cx≈0.50, cy≈0.23, diameter≈0.094 */
-  clock: { x: 0.453, y: 0.178, w: 0.094, h: 0.094 },
-  momentumTrack: { x: 0.1, y: 0.7, w: 0.8, h: 0.24 },
+  logoHeim: { x: 0.08, y: 0.3, w: 0.16, h: 0.4 },
+  logoGast: { x: 0.76, y: 0.3, w: 0.16, h: 0.4 },
+  score: { x: 0.3, y: 0.34, w: 0.4, h: 0.3 },
+  /** Green gem (cx≈0.50, cy≈0.196) */
+  clock: { x: 0.455, y: 0.07, w: 0.09, h: 0.23 },
+  momentumTrack: { x: 0.12, y: 0.7, w: 0.76, h: 0.16 },
 } as const;
+
+/** Native AR of scoreboard-chrome.png (1216×472). */
+const SCOREBOARD_AR = 1216 / 472;
 
 /** Empty chrome + live overlays (STORAGE_CANON). Sizes: MATCH_LAYOUT_TOKENS. */
 function drawScoreboard(
@@ -446,8 +461,8 @@ function drawScoreboard(
   w: number,
   h: number,
 ): void {
-  const boardW = Math.min(w * 0.598, h * 0.48);
-  const boardH = Math.min(boardW * (508 / 1041), h * 0.1725);
+  const boardW = Math.min(w * 0.62, h * 0.52);
+  const boardH = Math.min(boardW / SCOREBOARD_AR, h * 0.185);
   const bx = (w - boardW) / 2;
   const by = h * 0.03;
 
@@ -481,7 +496,57 @@ function drawScoreboard(
     };
   };
 
-  // Logos are baked into scoreboardChrome — no live Wimpel overlays
+  // Live club discs on blank chrome (KSC/VfB shields removed from asset)
+  const paintCrest = (side: "ksc" | "vfb", key: "logoHeim" | "logoGast") => {
+    const r = slot(key);
+    const cx = r.x + r.w / 2;
+    const cy = r.y + r.h / 2;
+    const rad = Math.min(r.w, r.h) * 0.46;
+    const prim = clubPrimary(side);
+    const sec = clubSecondary(side);
+    const dark =
+      prim === "#000000" ||
+      prim.toLowerCase() === "#000" ||
+      prim === "#241F20" ||
+      prim === "#010E80" ||
+      prim === "#132257" ||
+      prim === "#004812" ||
+      prim === "#003DA5" ||
+      prim === "#004170";
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+    ctx.fillStyle = prim;
+    ctx.fill();
+    ctx.strokeStyle =
+      sec === "#FFFFFF" || sec.toLowerCase() === "#fff"
+        ? "rgba(248,250,252,0.9)"
+        : sec;
+    ctx.lineWidth = Math.max(2, rad * 0.12);
+    ctx.stroke();
+    const secDark =
+      sec === "#000000" ||
+      sec.toLowerCase() === "#000" ||
+      sec === "#8B4513";
+    ctx.fillStyle =
+      dark ||
+      secDark ||
+      sec === "#FFFFFF" ||
+      sec.toLowerCase() === "#fff"
+        ? "#f8fafc"
+        : sec;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const short = clubShort(side);
+    let px = Math.max(10, Math.floor(rad * 0.78));
+    ctx.font = `900 ${px}px Outfit, Manrope, sans-serif`;
+    while (px > 7 && ctx.measureText(short).width > rad * 1.55) {
+      px -= 1;
+      ctx.font = `900 ${px}px Outfit, Manrope, sans-serif`;
+    }
+    ctx.fillText(short, cx, cy + 0.5);
+  };
+  paintCrest("ksc", "logoHeim");
+  paintCrest("vfb", "logoGast");
 
   ctx.save();
   ctx.textAlign = "center";
@@ -521,10 +586,10 @@ function drawScoreboard(
   const split = mt.x + mt.w * heimPct;
   const fillY = mt.y + mt.h * 0.18;
   const fillH = mt.h * 0.72;
-  ctx.fillStyle = "#2563eb";
+  ctx.fillStyle = clubPrimary("ksc");
   roundRect(ctx, mt.x, fillY, Math.max(4, split - mt.x), fillH, 5);
   ctx.fill();
-  ctx.fillStyle = "#dc2626";
+  ctx.fillStyle = clubPrimary("vfb");
   roundRect(ctx, split, fillY, Math.max(4, mt.x + mt.w - split), fillH, 5);
   ctx.fill();
 
@@ -536,16 +601,18 @@ function drawScoreboard(
   ctx.fillStyle = "#f8fafc";
   ctx.textAlign = "left";
   ctx.textBaseline = "middle";
-  ctx.strokeText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
-  ctx.fillText(`Heim ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
+  const heimTag = clubShort("ksc");
+  const gastTag = clubShort("vfb");
+  ctx.strokeText(`${heimTag} ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
+  ctx.fillText(`${heimTag} ${Math.round(heimPct * 100)}%`, mt.x + 7, pctY);
   ctx.textAlign = "right";
   ctx.strokeText(
-    `Gast ${Math.round((1 - heimPct) * 100)}%`,
+    `${gastTag} ${Math.round((1 - heimPct) * 100)}%`,
     mt.x + mt.w - 7,
     pctY,
   );
   ctx.fillText(
-    `Gast ${Math.round((1 - heimPct) * 100)}%`,
+    `${gastTag} ${Math.round((1 - heimPct) * 100)}%`,
     mt.x + mt.w - 7,
     pctY,
   );
@@ -1110,8 +1177,7 @@ function drawFans(
 }
 
 function teamJersey(f: FanUnit): string {
-  if (f.team === "ksc") return "#1f6feb";
-  if (f.team === "vfb") return "#dc2626";
+  if (f.team === "ksc" || f.team === "vfb") return sideKitHex(f.team);
   // Grey fans stay permanently grey (no lean / capture tint)
   return "#9ca3af";
 }

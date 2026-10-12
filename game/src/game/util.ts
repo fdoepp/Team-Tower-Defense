@@ -1,4 +1,9 @@
-import type { FanKind, FanMix } from "./types";
+import {
+  clubShort,
+  DEFAULT_AI_CLUB,
+  DEFAULT_PLAYER_CLUB,
+} from "./clubs";
+import type { FanKind, FanMix, TeamId } from "./types";
 import { MIX_MAX, MIX_MIN, MIX_TOTAL } from "./types";
 
 export function clamp(n: number, a: number, b: number): number {
@@ -30,6 +35,9 @@ export function defaultSoloSettings() {
     difficulty: "easy" as const,
     behavior: "balanced" as const,
     playerTeam: "ksc" as const,
+    playerClub: DEFAULT_PLAYER_CLUB,
+    aiClub: DEFAULT_AI_CLUB,
+    derbyId: "badenwuerttemberg",
   };
 }
 
@@ -37,8 +45,9 @@ export function defaultSetup() {
   return { mix: defaultMix() };
 }
 
-export function teamLabel(team: "ksc" | "vfb"): string {
-  return team === "ksc" ? "KSC" : "VfB";
+/** Live club short name for a side slot (set via setSideBranding). */
+export function teamLabel(team: TeamId): string {
+  return clubShort(team);
 }
 
 export function formatMinute(minute: number): string {

@@ -1,4 +1,5 @@
 import type { BuildingKind, FanKind, TeamId } from "./types";
+import { getLiveTintedCanvas } from "./liveTint";
 import { uiFinalIconPath } from "./uiFinal";
 
 export type TeamColor = "blue" | "red" | "grey";
@@ -352,7 +353,21 @@ export function preloadIcons(): Promise<void> {
   return preloadPromise;
 }
 
-export function getIcon(src: string): HTMLImageElement | null {
+export type IconSource = HTMLImageElement | HTMLCanvasElement;
+
+export function getIcon(src: string): IconSource | null {
+  const img = cache.get(src);
+  if (img && img.complete && img.naturalWidth > 0) {
+    // Live kit pull for blue/red team assets (UI_FINAL liveTint)
+    const tinted = getLiveTintedCanvas(img, src);
+    return tinted ?? img;
+  }
+  if (!cache.has(src)) void loadOne(src);
+  return null;
+}
+
+/** Raw untinted image (preload / DOM rewire). */
+export function getRawIcon(src: string): HTMLImageElement | null {
   const img = cache.get(src);
   if (img && img.complete && img.naturalWidth > 0) return img;
   if (!cache.has(src)) void loadOne(src);
@@ -375,8 +390,8 @@ export function drawIconQuad(
 ): boolean {
   const img = getIcon(src);
   if (!img) return false;
-  const iw = img.naturalWidth;
-  const ih = img.naturalHeight;
+  const iw = img instanceof HTMLCanvasElement ? img.width : img.naturalWidth;
+  const ih = img instanceof HTMLCanvasElement ? img.height : img.naturalHeight;
   if (iw < 2 || ih < 2) return false;
   drawTexturedTriangle(ctx, img, tl, tr, bl, { x: 0, y: 0 }, { x: iw, y: 0 }, { x: 0, y: ih });
   drawTexturedTriangle(ctx, img, tr, br, bl, { x: iw, y: 0 }, { x: iw, y: ih }, { x: 0, y: ih });
@@ -386,7 +401,7 @@ export function drawIconQuad(
 /** Affine-map image triangle abc → screen triangle ABC. */
 function drawTexturedTriangle(
   ctx: CanvasRenderingContext2D,
-  img: HTMLImageElement,
+  img: CanvasImageSource,
   a: Pt,
   b: Pt,
   c: Pt,
@@ -444,13 +459,15 @@ export function drawIcon(
 ): boolean {
   const img = getIcon(src);
   if (!img) return false;
+  const iw = img instanceof HTMLCanvasElement ? img.width : img.naturalWidth;
+  const ih = img instanceof HTMLCanvasElement ? img.height : img.naturalHeight;
   const px = w * pad;
   const py = h * pad;
   const aw = Math.max(1, w - px * 2);
   const ah = Math.max(1, h - py * 2);
-  const scale = Math.min(aw / img.naturalWidth, ah / img.naturalHeight);
-  const dw = img.naturalWidth * scale;
-  const dh = img.naturalHeight * scale;
+  const scale = Math.min(aw / iw, ah / ih);
+  const dw = iw * scale;
+  const dh = ih * scale;
   const dx = x + (w - dw) / 2;
   const dy = y + (h - dh) / 2;
   ctx.drawImage(img, dx, dy, dw, dh);
