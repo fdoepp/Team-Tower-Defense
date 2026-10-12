@@ -724,6 +724,17 @@ button {
   margin: 8px 0 0;
 }
 
+.audio-unlock-btn {
+  width: 100%;
+  margin-top: 4px;
+}
+.audio-hint {
+  text-align: center;
+}
+.audio-hint.on {
+  color: rgba(147, 197, 253, 0.95);
+}
+
 .tutorial-screen .menu-mood-body {
   width: min(480px, 100%);
   gap: 16px;
