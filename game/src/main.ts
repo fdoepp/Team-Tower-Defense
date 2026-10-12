@@ -1104,26 +1104,38 @@ function askChallengeName(defaultName = "Spieler"): string | null {
 function renderMenu(): void {
   const iosHint = isIos() && !isStandalone();
   app.innerHTML = `
-    <div class="screen menu menu-derby">
-      <div>
-        <p class="sub">Stadion · Blöcke · Gang · Stimmung</p>
-        <h1 class="brand">LaneLink</h1>
-        <p class="sub match-line">Matchday · Querformat</p>
+    <div class="screen menu menu-home menu-derby">
+      <div class="menu-atmosphere" aria-hidden="true">
+        <span class="menu-beam menu-beam-l"></span>
+        <span class="menu-beam menu-beam-r"></span>
+        <span class="menu-ember"></span>
       </div>
-      <div class="card stack">
-        <button class="btn ksc" id="solo">Solo vs KI</button>
+      <header class="menu-hero">
+        <p class="menu-eyebrow">Matchday TD</p>
+        <h1 class="brand">LaneLink</h1>
+        <p class="sub match-line">Blöcke · Gang · Stimmung</p>
+        <div class="menu-sides" aria-hidden="true">
+          <span class="menu-side menu-side-heim">Heim</span>
+          <span class="menu-side-vs">vs</span>
+          <span class="menu-side menu-side-gast">Gast</span>
+        </div>
+      </header>
+      <div class="menu-actions stack">
+        <button class="btn ksc menu-cta" id="solo">Solo vs KI</button>
         <button class="btn secondary" id="challenge">Challenge</button>
         <button class="btn secondary" id="tutorial">Tutorial</button>
         <button class="btn secondary" id="highscores">Highscores</button>
-        <button class="btn secondary" id="mute-audio">${muteButtonLabel()}</button>
-        <button class="btn secondary" id="fs-menu">Vollbild</button>
+        <div class="menu-util-row">
+          <button class="btn secondary util" id="mute-audio">${muteButtonLabel()}</button>
+          <button class="btn secondary util" id="fs-menu">Vollbild</button>
+        </div>
       </div>
       ${
         iosHint
           ? `<p class="tiny fs-hint">iPhone: Teilen → <b>Zum Home-Bildschirm</b> — dann ohne Tabs/Adressleiste.</p>`
           : `<p class="tiny fs-hint">Tipp: Vollbild für volle Spielfläche (ohne Browser-Leisten).</p>`
       }
-      <p class="tiny fs-hint">Ton: einmal irgendwo tippen (oder „Ton: an“) — Browser blocken Audio sonst bis zur ersten Geste.</p>
+      <p class="tiny fs-hint">Ton: einmal tippen — Browser starten Audio erst nach der ersten Geste.</p>
     </div>`;
   app.querySelector("#fs-menu")!.addEventListener("click", () => {
     unlockAudio();
