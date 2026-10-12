@@ -1,6 +1,8 @@
 import type { BuildingKind, FanKind, TeamId } from "./types";
 import { getLiveTintedCanvas } from "./liveTint";
 import { uiFinalIconPath } from "./uiFinal";
+import type { FlagSpec } from "./clubs";
+import { drawFlagRect } from "./clubLogos";
 
 export type TeamColor = "blue" | "red" | "grey";
 
@@ -649,26 +651,28 @@ export function drawToyIcon(
   ctx.transform(1, 0, 0, persp, 0, 0);
   ctx.drawImage(img, -dw / 2, -dh * 0.92, dw, dh);
 
-  if (
-    mode === "cheer" ||
-    mode === "fight" ||
-    mode === "throw" ||
-    strike > 0.2
-  ) {
+  // Fight/throw flash only — never on cheer (armSwing stays high while cheering
+  // and the additive pass looked like scarf/halo rings over heads).
+  if (mode === "fight" || mode === "throw") {
     ctx.globalCompositeOperation = "lighter";
     ctx.globalAlpha =
-      mode === "cheer"
-        ? 0.22
-        : mode === "throw"
-          ? 0.12 + ap * 0.18
-          : 0.1 + strike * 0.15;
+      mode === "throw" ? 0.12 + ap * 0.18 : 0.1 + strike * 0.15;
     ctx.drawImage(img, -dw / 2, -dh * 0.92, dw, dh);
   }
   ctx.restore();
   return true;
 }
 
-export type ToyPropKind = "beer" | "pyro" | "fist" | "scarf" | "bag";
+export type ToyPropKind = "beer" | "pyro" | "fist" | "scarf" | "bag" | "flag";
+
+export type ToyPropOpts = {
+  /** Kit/scarf accent (club primary). */
+  accent?: string;
+  /** Secondary stripe for scarf. */
+  accentB?: string;
+  /** National flag paint when kind === "flag". */
+  flag?: FlagSpec;
+};
 
 export function fistIconPath(color: TeamColor): string {
   if (color === "blue") return UI_ICONS.fxFistBlue;
@@ -693,6 +697,7 @@ export function drawToyProp(
   t: number,
   intensity = 1,
   color: TeamColor = "grey",
+  opts: ToyPropOpts = {},
 ): void {
   const i = Math.max(0, Math.min(1, intensity));
   if (i < 0.05) return;
@@ -765,19 +770,26 @@ export function drawToyProp(
       ctx.fill();
     }
   } else if (kind === "scarf") {
-    const sx = facing * size * 0.05;
-    ctx.strokeStyle = "#3b82f6";
-    ctx.lineWidth = Math.max(2, size * 0.05);
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(sx - size * 0.12, -size * 0.55);
-    ctx.quadraticCurveTo(
-      sx,
-      -size * (0.75 + 0.05 * Math.sin(t * 8)),
-      sx + size * 0.12,
-      -size * 0.55,
-    );
-    ctx.stroke();
+    // Overhead scarf arcs removed — they read as floating rings above heads.
+  } else if (kind === "flag") {
+    const flag = opts.flag;
+    if (flag) {
+      // Hand-held beside the body (not floating above the scalp)
+      const fx = facing * size * 0.38;
+      const fy = -size * (0.28 + 0.03 * Math.sin(t * 7));
+      const fw = size * 0.36;
+      const fh = size * 0.24;
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = Math.max(1.5, size * 0.035);
+      ctx.beginPath();
+      ctx.moveTo(fx, size * 0.05);
+      ctx.lineTo(fx, fy);
+      ctx.stroke();
+      drawFlagRect(ctx, flag, fx + 1, fy, fw, fh);
+      ctx.strokeStyle = "rgba(15,23,42,0.4)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(fx + 1, fy, fw, fh);
+    }
   } else if (kind === "bag") {
     const bx = facing * size * 0.4;
     const by = -size * 0.15;

@@ -59,6 +59,7 @@ export type DiffProfile = {
 
 export function difficultyProfile(d: AiDifficulty): DiffProfile {
   if (d === "easy") {
+    // Langsamer, weniger Start — erreicht trotzdem Lv5 / volle Plots
     return {
       aiMix: { normalos: 4, ultras: 2, hooligans: 2 },
       aiGoldBonus: 0,
@@ -66,68 +67,68 @@ export function difficultyProfile(d: AiDifficulty): DiffProfile {
       aiStartBeer: 0,
       aiStartSecurityBonus: 0,
       aiUnitTech: 1,
-      regenMul: 0.65,
-      actionMul: 0.5,
-      tickMul: 0.55,
-      fanTarget: 10,
+      regenMul: 0.8,
+      actionMul: 0.7,
+      tickMul: 0.75,
+      fanTarget: 12,
       gangWant: 1,
-      sendChanceMul: 0.75,
-      midMinute: 35,
-      lateMinute: 65,
+      sendChanceMul: 0.85,
+      midMinute: 28,
+      lateMinute: 52,
       midGangBonus: 0,
       lateGangBonus: 1,
-      midRegenBonus: 0.1,
-      lateRegenBonus: 0.15,
-      midActionBonus: 0.05,
-      lateActionBonus: 0.1,
+      midRegenBonus: 0.12,
+      lateRegenBonus: 0.22,
+      midActionBonus: 0.08,
+      lateActionBonus: 0.16,
     };
   }
   if (d === "hard") {
     return {
       aiMix: { normalos: 2, ultras: 3, hooligans: 3 },
-      aiGoldBonus: 40,
-      aiStartMerch: 22,
-      aiStartBeer: 22,
-      aiStartSecurityBonus: 12,
+      aiGoldBonus: 55,
+      aiStartMerch: 30,
+      aiStartBeer: 30,
+      aiStartSecurityBonus: 18,
       aiUnitTech: 2,
-      regenMul: 1.35,
-      actionMul: 1.25,
-      tickMul: 1.2,
-      fanTarget: 18,
+      regenMul: 1.55,
+      actionMul: 1.45,
+      tickMul: 1.45,
+      fanTarget: 20,
       gangWant: 3,
-      sendChanceMul: 1.2,
-      midMinute: 18,
-      lateMinute: 40,
+      sendChanceMul: 1.4,
+      midMinute: 12,
+      lateMinute: 28,
       midGangBonus: 1,
       lateGangBonus: 2,
-      midRegenBonus: 0.2,
-      lateRegenBonus: 0.35,
-      midActionBonus: 0.15,
-      lateActionBonus: 0.25,
+      midRegenBonus: 0.25,
+      lateRegenBonus: 0.4,
+      midActionBonus: 0.2,
+      lateActionBonus: 0.35,
     };
   }
-  // Mittel (normal): fair mirror start, ramps mid-game
+  // Mittel: spürbar härter — früher Mid/Late, mehr Tempo & Start
   return {
     aiMix: { normalos: 3, ultras: 3, hooligans: 2 },
-    aiGoldBonus: 15,
-    aiStartMerch: 10,
-    aiStartBeer: 10,
-    aiStartSecurityBonus: 0,
+    aiGoldBonus: 35,
+    aiStartMerch: 18,
+    aiStartBeer: 18,
+    aiStartSecurityBonus: 8,
     aiUnitTech: 1,
-    regenMul: 1,
-    actionMul: 1,
-    tickMul: 0.9,
-    fanTarget: 14,
+    regenMul: 1.25,
+    actionMul: 1.2,
+    tickMul: 1.2,
+    fanTarget: 17,
     gangWant: 2,
-    sendChanceMul: 1,
-    midMinute: 25,
-    lateMinute: 50,
+    sendChanceMul: 1.2,
+    midMinute: 16,
+    lateMinute: 36,
     midGangBonus: 1,
-    lateGangBonus: 1,
-    midRegenBonus: 0.15,
-    lateRegenBonus: 0.25,
-    midActionBonus: 0.1,
-    lateActionBonus: 0.2,
+    lateGangBonus: 2,
+    midRegenBonus: 0.22,
+    lateRegenBonus: 0.38,
+    midActionBonus: 0.18,
+    lateActionBonus: 0.3,
   };
 }
 
@@ -257,6 +258,18 @@ export const BUILD_LABEL: Record<BuildingKind, string> = {
   ordner: "Ordner",
   fanshop: "Shop",
 };
+
+/**
+ * Unit tech may only rise to Lv N if the matching building is already ≥ N.
+ * Normalos/Ordner → Ordnerposten · Ultras → Fanshop · Hooligans → Bier.
+ */
+export function buildingForUnitKind(
+  kind: FanKind | "ordner",
+): BuildingKind {
+  if (kind === "ultras") return "fanshop";
+  if (kind === "hooligans") return "bier";
+  return "ordner";
+}
 
 export const UPGRADE_MAX = 5;
 /** Building upgrade gold to reach level index (Lv2..Lv5) */

@@ -59,15 +59,26 @@ import {
 } from "./game/util";
 import {
   applyClubCssVars,
+  awayKitClashActive,
+  clubPrimary,
+  clubSecondary,
   clubsByCountry,
   currentBranding,
   DEFAULT_AI_CLUB,
+  DEFAULT_AI_NATION,
   DEFAULT_DERBY_ID,
+  DEFAULT_NATIONAL_FIXTURE_ID,
   DEFAULT_PLAYER_CLUB,
+  DEFAULT_PLAYER_NATION,
   derbiesByCountry,
+  allNationals,
   findDerby,
+  findNationalFixture,
   getClub,
+  isNational,
+  NATIONAL_FIXTURES,
   setSideBranding,
+  type Club,
   type ClubId,
 } from "./game/clubs";
 import {
@@ -118,6 +129,7 @@ function setLiveTintImg(ico: HTMLImageElement | null, src: string): void {
 import {
   bierValue,
   blocksturmValue,
+  clubCode,
   difficultyLabel,
   entryClubPrimary,
   ergebnisValue,
@@ -422,7 +434,7 @@ function personBuyUpHtml(
         delta: true,
         id: `up-yield-${kind}`,
       }),
-      btnAttrs: `data-unit-up="${kind}" title="Upgrade"`,
+      btnAttrs: `data-unit-up="${kind}" title="Upgrade (Gebäude ≥ Lv${next})"`,
     })
   );
 }
@@ -554,7 +566,10 @@ type Screen =
   | "challengeLobby"
   | "challengeResult";
 
-type PickMode = "derby" | "free";
+/** Top-level: clubs vs national teams */
+type TeamScope = "clubs" | "nations";
+/** Sub-mode within scope */
+type PickMode = "derby" | "free" | "fixture";
 
 const state = {
   screen: "menu" as Screen,
@@ -571,11 +586,14 @@ const state = {
   buildRailMode: "place" as "place" | "upgrade",
   highscoreDiff: "normal" as SoloSettings["difficulty"],
   highscoreScope: "gesamt" as HighscoreScope,
-  /** Matchup pick (Solo-/Challenge-Screen, nicht Hauptmenü) */
+  /** Matchup: first Vereine/National, then Derby/Frei or Klassiker/Frei */
+  teamScope: "clubs" as TeamScope,
   pickMode: "derby" as PickMode,
   menuCountry: "Deutschland",
   menuDerbyId: DEFAULT_DERBY_ID,
-  /** In derby mode: play as side a (true) or b (false) */
+  menuNationRegion: "Europa",
+  menuNationalFixtureId: DEFAULT_NATIONAL_FIXTURE_ID,
+  /** In derby / national fixture mode: play as side a (true) or b (false) */
   menuPlayAsA: true,
   menuPlayerClub: DEFAULT_PLAYER_CLUB as ClubId,
   menuAiClub: DEFAULT_AI_CLUB as ClubId,
@@ -592,7 +610,7 @@ const state = {
 function syncMenuBrandingPreview(): void {
   let player: ClubId;
   let ai: ClubId;
-  if (state.pickMode === "derby") {
+  if (state.teamScope === "clubs" && state.pickMode === "derby") {
     const d = findDerby(state.menuDerbyId);
     if (d) {
       player = state.menuPlayAsA ? d.a : d.b;
@@ -600,6 +618,25 @@ function syncMenuBrandingPreview(): void {
     } else {
       player = state.menuPlayerClub;
       ai = state.menuAiClub;
+    }
+  } else if (state.teamScope === "nations" && state.pickMode === "fixture") {
+    const fix = findNationalFixture(state.menuNationalFixtureId);
+    if (fix) {
+      player = state.menuPlayAsA ? fix.a : fix.b;
+      ai = state.menuPlayAsA ? fix.b : fix.a;
+    } else {
+      player = isNational(state.menuPlayerClub)
+        ? state.menuPlayerClub
+        : DEFAULT_PLAYER_NATION;
+      ai = isNational(state.menuAiClub) ? state.menuAiClub : DEFAULT_AI_NATION;
+    }
+  } else if (state.teamScope === "nations") {
+    player = isNational(state.menuPlayerClub)
+      ? state.menuPlayerClub
+      : DEFAULT_PLAYER_NATION;
+    ai = isNational(state.menuAiClub) ? state.menuAiClub : DEFAULT_AI_NATION;
+    if (ai === player) {
+      ai = player === DEFAULT_AI_NATION ? DEFAULT_PLAYER_NATION : DEFAULT_AI_NATION;
     }
   } else {
     player = state.menuPlayerClub;
@@ -630,6 +667,27 @@ function clubOptionsGroupedHtml(selected: ClubId, selectId: string): string {
           .join("")}</optgroup>`,
     )
     .join("")}</select>`;
+}
+
+function nationOptionsGroupedHtml(selected: ClubId, selectId: string): string {
+  const top = allNationals().filter((c) => (c.fifaRank ?? 999) <= 25);
+  const extras = allNationals().filter((c) => (c.fifaRank ?? 999) > 25);
+  const opt = (c: Club) => {
+    const rank = c.fifaRank != null ? `#${c.fifaRank} · ` : "";
+    return `<option value="${c.id}" ${c.id === selected ? "selected" : ""}>${rank}${escapeHtml(c.short)} — ${escapeHtml(c.name)}</option>`;
+  };
+  return `<select id="${selectId}">
+    <optgroup label="FIFA Top 25">${top.map(opt).join("")}</optgroup>
+    ${extras.length ? `<optgroup label="Weitere">${extras.map(opt).join("")}</optgroup>` : ""}
+  </select>`;
+}
+
+function nationalFixtureOptionsHtml(selected: string): string {
+  return `<select id="nation-fixture">${NATIONAL_FIXTURES.map((f) => {
+    const a = getClub(f.a);
+    const b = getClub(f.b);
+    return `<option value="${f.id}" ${f.id === selected ? "selected" : ""}>${escapeHtml(f.name)} (${escapeHtml(a.short)}–${escapeHtml(b.short)})</option>`;
+  }).join("")}</select>`;
 }
 
 function derbyOptionsGroupedHtml(
@@ -663,12 +721,19 @@ function countryOptionsHtml(selected: string): string {
 
 function kitSwatchHtml(clubId: ClubId): string {
   const c = getClub(clubId);
-  // Inspired mark (not an official crest)
+  // Match preview: show effective kit (away may be secondary on clash)
+  const brand = currentBranding();
+  const side =
+    clubId === brand.heim.id ? "ksc" : clubId === brand.gast.id ? "vfb" : null;
+  const prim = side ? clubPrimary(side) : c.primary;
+  const sec = side ? clubSecondary(side) : c.secondary;
   const logo = clubLogoDataUrl(clubId, 72);
   const mark = logo
     ? `<img class="kit-logo" src="${logo}" alt="">`
     : `<i></i>`;
-  return `<span class="kit-swatch" title="${escapeHtml(c.name)}" style="--kit-a:${c.primary};--kit-b:${c.secondary}">${mark}<b>${escapeHtml(c.short)}</b></span>`;
+  const clash =
+    side === "vfb" && awayKitClashActive() ? " · Auswärtsfarbe" : "";
+  return `<span class="kit-swatch" title="${escapeHtml(c.name)}${clash}" style="--kit-a:${prim};--kit-b:${sec}">${mark}<b>${escapeHtml(c.short)}</b></span>`;
 }
 
 applyCssIconUrls();
@@ -746,15 +811,16 @@ function menuClubsFromState(): { playerClub: string; aiClub: string } {
   };
 }
 
-/** Shared Derby/Frei + optional Diff/Verhalten controls (Solo & Challenge). */
+/** Shared Vereine/National → Unterwahl + optional Diff/Verhalten (Solo & Challenge). */
 function matchupPickHtml(opts: {
   showDiff?: boolean;
   showBehavior?: boolean;
 }): string {
   const derby = findDerby(state.menuDerbyId);
-  const pickControls =
-    state.pickMode === "derby"
-      ? `
+  const fix = findNationalFixture(state.menuNationalFixtureId);
+  let pickControls = "";
+  if (state.teamScope === "clubs" && state.pickMode === "derby") {
+    pickControls = `
         <label class="field">Land
           ${countryOptionsHtml(state.menuCountry)}
         </label>
@@ -766,14 +832,61 @@ function matchupPickHtml(opts: {
             <option value="a" ${state.menuPlayAsA ? "selected" : ""}>${derby ? escapeHtml(getClub(derby.a).name) : "Heim"}</option>
             <option value="b" ${!state.menuPlayAsA ? "selected" : ""}>${derby ? escapeHtml(getClub(derby.b).name) : "Gast"}</option>
           </select>
-        </label>`
-      : `
-        <label class="field">Dein Verein
-          ${clubOptionsGroupedHtml(state.menuPlayerClub, "player-club")}
+        </label>`;
+  } else if (state.teamScope === "nations" && state.pickMode === "fixture") {
+    pickControls = `
+        <label class="field">Länderspiel-Derby
+          ${nationalFixtureOptionsHtml(state.menuNationalFixtureId)}
+        </label>
+        <label class="field">Deine Seite
+          <select id="side">
+            <option value="a" ${state.menuPlayAsA ? "selected" : ""}>${fix ? escapeHtml(getClub(fix.a).name) : "Heim"}</option>
+            <option value="b" ${!state.menuPlayAsA ? "selected" : ""}>${fix ? escapeHtml(getClub(fix.b).name) : "Gast"}</option>
+          </select>
+        </label>`;
+  } else if (state.teamScope === "nations") {
+    pickControls = `
+        <label class="field">Dein Land
+          ${nationOptionsGroupedHtml(
+            isNational(state.menuPlayerClub)
+              ? state.menuPlayerClub
+              : DEFAULT_PLAYER_NATION,
+            "player-club",
+          )}
         </label>
         <label class="field">Gegner (KI)
-          ${clubOptionsGroupedHtml(state.menuAiClub, "ai-club")}
+          ${nationOptionsGroupedHtml(
+            isNational(state.menuAiClub) ? state.menuAiClub : DEFAULT_AI_NATION,
+            "ai-club",
+          )}
         </label>`;
+  } else {
+    pickControls = `
+        <label class="field">Dein Verein
+          ${clubOptionsGroupedHtml(
+            isNational(state.menuPlayerClub)
+              ? DEFAULT_PLAYER_CLUB
+              : state.menuPlayerClub,
+            "player-club",
+          )}
+        </label>
+        <label class="field">Gegner (KI)
+          ${clubOptionsGroupedHtml(
+            isNational(state.menuAiClub) ? DEFAULT_AI_CLUB : state.menuAiClub,
+            "ai-club",
+          )}
+        </label>`;
+  }
+  const subRow =
+    state.teamScope === "clubs"
+      ? `<div class="pick-mode-row" role="group" aria-label="Vereinsmodus">
+          <button type="button" class="pick-mode ${state.pickMode === "derby" ? "on" : ""}" data-pick="derby">Derby</button>
+          <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
+        </div>`
+      : `<div class="pick-mode-row" role="group" aria-label="Nationalmodus">
+          <button type="button" class="pick-mode ${state.pickMode === "fixture" ? "on" : ""}" data-pick="fixture">Klassiker</button>
+          <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
+        </div>`;
   const diff = opts.showDiff
     ? `<label class="field">KI
           <select id="diff">
@@ -805,10 +918,11 @@ function matchupPickHtml(opts: {
     : "";
   return `
       <div class="card stack team-pick">
-        <div class="pick-mode-row" role="group" aria-label="Auswahlmodus">
-          <button type="button" class="pick-mode ${state.pickMode === "derby" ? "on" : ""}" data-pick="derby">Derby</button>
-          <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
+        <div class="pick-mode-row" role="group" aria-label="Mannschaftsart">
+          <button type="button" class="pick-mode ${state.teamScope === "clubs" ? "on" : ""}" data-scope="clubs">Vereine</button>
+          <button type="button" class="pick-mode ${state.teamScope === "nations" ? "on" : ""}" data-scope="nations">Nationalmannschaften</button>
         </div>
+        ${subRow}
         ${pickControls}
         ${diff}
         ${behavior}
@@ -816,10 +930,67 @@ function matchupPickHtml(opts: {
 }
 
 function bindMatchupPickHandlers(rerender: () => void): void {
+  app.querySelectorAll<HTMLButtonElement>("[data-scope]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      sfx("ui");
+      const next = btn.dataset.scope as TeamScope;
+      state.teamScope = next;
+      if (next === "nations") {
+        state.pickMode = "fixture";
+        const fix = findNationalFixture(state.menuNationalFixtureId);
+        if (fix) {
+          state.menuPlayerClub = fix.a;
+          state.menuAiClub = fix.b;
+        } else {
+          state.menuPlayerClub = DEFAULT_PLAYER_NATION;
+          state.menuAiClub = DEFAULT_AI_NATION;
+        }
+        state.menuPlayAsA = true;
+      } else {
+        state.pickMode = "derby";
+        if (isNational(state.menuPlayerClub)) {
+          state.menuPlayerClub = DEFAULT_PLAYER_CLUB;
+        }
+        if (isNational(state.menuAiClub)) {
+          state.menuAiClub = DEFAULT_AI_CLUB;
+        }
+        state.menuPlayAsA = true;
+      }
+      rerender();
+    });
+  });
   app.querySelectorAll<HTMLButtonElement>("[data-pick]").forEach((btn) => {
     btn.addEventListener("click", () => {
       sfx("ui");
-      state.pickMode = btn.dataset.pick as PickMode;
+      const next = btn.dataset.pick as PickMode;
+      state.pickMode = next;
+      if (state.teamScope === "nations") {
+        if (next === "fixture") {
+          const fix = findNationalFixture(state.menuNationalFixtureId);
+          if (fix) {
+            state.menuPlayerClub = fix.a;
+            state.menuAiClub = fix.b;
+          }
+          state.menuPlayAsA = true;
+        } else {
+          if (!isNational(state.menuPlayerClub)) {
+            state.menuPlayerClub = DEFAULT_PLAYER_NATION;
+          }
+          if (
+            !isNational(state.menuAiClub) ||
+            state.menuAiClub === state.menuPlayerClub
+          ) {
+            state.menuAiClub = DEFAULT_AI_NATION;
+          }
+        }
+      } else if (next === "derby" || next === "free") {
+        if (isNational(state.menuPlayerClub)) {
+          state.menuPlayerClub = DEFAULT_PLAYER_CLUB;
+        }
+        if (isNational(state.menuAiClub)) {
+          state.menuAiClub = DEFAULT_AI_CLUB;
+        }
+      }
       rerender();
     });
   });
@@ -844,6 +1015,21 @@ function bindMatchupPickHandlers(rerender: () => void): void {
       rerender();
     });
   }
+  const nationFixEl = app.querySelector(
+    "#nation-fixture",
+  ) as HTMLSelectElement | null;
+  if (nationFixEl) {
+    nationFixEl.addEventListener("change", () => {
+      state.menuNationalFixtureId = nationFixEl.value;
+      const fix = findNationalFixture(state.menuNationalFixtureId);
+      if (fix) {
+        state.menuPlayerClub = fix.a;
+        state.menuAiClub = fix.b;
+        state.menuPlayAsA = true;
+      }
+      rerender();
+    });
+  }
   const sideEl = app.querySelector("#side") as HTMLSelectElement | null;
   if (sideEl) {
     sideEl.addEventListener("change", () => {
@@ -858,9 +1044,11 @@ function bindMatchupPickHandlers(rerender: () => void): void {
     playerClubEl.addEventListener("change", () => {
       state.menuPlayerClub = playerClubEl.value;
       if (state.menuAiClub === state.menuPlayerClub) {
-        const alt = clubsByCountry()
-          .flatMap((g) => g.clubs)
-          .find((c) => c.id !== state.menuPlayerClub);
+        const pool =
+          state.teamScope === "nations"
+            ? allNationals()
+            : clubsByCountry().flatMap((g) => g.clubs);
+        const alt = pool.find((c) => c.id !== state.menuPlayerClub);
         if (alt) state.menuAiClub = alt.id;
       }
       rerender();
@@ -895,7 +1083,12 @@ function applySoloSettingsFromMenu(): void {
     playerTeam: "ksc",
     playerClub,
     aiClub,
-    derbyId: state.pickMode === "derby" ? state.menuDerbyId : undefined,
+    derbyId:
+      state.teamScope === "clubs" && state.pickMode === "derby"
+        ? state.menuDerbyId
+        : state.teamScope === "nations" && state.pickMode === "fixture"
+          ? state.menuNationalFixtureId
+          : undefined,
     difficulty: readMenuDifficulty(),
     behavior: readMenuBehavior(),
   };
@@ -976,13 +1169,23 @@ function renderSoloMatchup(): void {
   syncMenuBrandingPreview();
   const brand = currentBranding();
   const derby = findDerby(state.menuDerbyId);
+  const nationFix = findNationalFixture(state.menuNationalFixtureId);
   const matchLine = `${brand.heim.short} vs ${brand.gast.short}`;
-  const derbyHint =
-    state.pickMode === "derby" && derby
+  let derbyHint =
+    state.teamScope === "clubs" && state.pickMode === "derby" && derby
       ? derby.rank != null
         ? `Derby #${derby.rank} · ${derby.name}`
         : derby.name
-      : "Freie Vereinswahl";
+      : state.teamScope === "nations" && state.pickMode === "fixture"
+        ? nationFix
+          ? `Länderspiel · ${nationFix.name}`
+          : "Nationalmannschaften"
+        : state.teamScope === "nations"
+          ? "Freie Nationalwahl (FIFA Top 25+)"
+          : "Freie Vereinswahl";
+  if (awayKitClashActive()) {
+    derbyHint += ` · ${brand.gast.short} in Auswärtsfarbe`;
+  }
 
   app.innerHTML = `
     <div class="screen menu menu-derby">
@@ -1135,31 +1338,31 @@ function renderTutorial(stepIndex = 0): void {
 }
 
 /**
- * Winner badge from the *stored* match — inspired logo + frozen matchup.
+ * Winner badge from the *stored* match — both logos (player + opponent)
+ * like club highscores; works for nationals too (flags).
  * Never uses current menu club / live --ksc/--vfb branding.
  */
 function hsMatchupBadge(e: HighscoreEntry): string {
-  const frozen = {
-    ...e,
-    playerShort: e.playerShort,
-    opponentShort: e.opponentShort,
-  };
+  const frozen = freezeEntryClubs(e);
   const label = matchupLabel(frozen);
-  const winnerId = resolveEntryClubId(e.playerClub, e.playerShort);
+  const winnerId = resolveEntryClubId(frozen.playerClub, frozen.playerShort);
+  const oppId = resolveEntryClubId(frozen.opponentClub, frozen.opponentShort);
   const prim =
-    entryClubPrimary(e.playerClub, e.playerShort) || "#64748b";
-  let mark = "";
-  if (winnerId) {
+    entryClubPrimary(frozen.playerClub, frozen.playerShort) || "#64748b";
+  const logoImg = (id: string | undefined, cls: string) => {
+    if (!id) return "";
     try {
-      const logo = clubLogoDataUrl(winnerId, 64);
-      if (logo) mark = `<img class="hs-logo" src="${logo}" alt="">`;
+      const logo = clubLogoDataUrl(id, 64);
+      return logo ? `<img class="hs-logo ${cls}" src="${logo}" alt="">` : "";
     } catch {
-      mark = "";
+      return "";
     }
-  }
-  if (!label && !mark) return "";
-  const text = label || e.playerShort || "Sieg";
-  return `<span class="hs-team hs-winner" style="background:${prim}">${mark}<span class="hs-vs-label">${escapeHtml(text)}</span></span>`;
+  };
+  const markA = logoImg(winnerId, "hs-logo-a");
+  const markB = logoImg(oppId, "hs-logo-b");
+  if (!label && !markA && !markB) return "";
+  const text = label || frozen.playerShort || "Sieg";
+  return `<span class="hs-team hs-winner" style="background:${prim}">${markA}<span class="hs-vs-label">${escapeHtml(text)}</span>${markB}</span>`;
 }
 
 /** Detail without matchup (badge shows Gegner separately). */
@@ -2133,13 +2336,13 @@ function renderMatchScreen(): void {
           <p class="upgrade-title">${buildingKindLabel(kind)} · Lv${lv}${lv < UPGRADE_MAX ? ` → Lv${next}` : " (Max)"}</p>
           <div class="upgrade-preview">
             <div class="up-stage">
-              <img src="${curIcon.startsWith("/") ? curIcon : `/${curIcon}`}" alt="">
+              <img class="up-stand-ico" id="build-up-prev-cur" src="${curIcon}" alt="">
               <span class="up-lv">Lv${lv}</span>
               ${yieldChipHtml(kind, buildingYieldPerSec(kind, lv))}
             </div>
             <span class="up-arrow" aria-hidden="true">→</span>
             <div class="up-stage">
-              <img src="${nextIcon.startsWith("/") ? nextIcon : `/${nextIcon}`}" alt="">
+              <img class="up-stand-ico" id="build-up-prev-next" src="${nextIcon}" alt="">
               <span class="up-lv">${lv < UPGRADE_MAX ? `Lv${next}` : "Max"}</span>
               ${
                 lv < UPGRADE_MAX
@@ -2163,6 +2366,19 @@ function renderMatchScreen(): void {
             extraClass: ok ? "ready" : "cd",
           })}
         </div>`;
+      // Relative paths + live kit tint (same as Bau-Karten)
+      setLiveTintImg(
+        upRows.querySelector<HTMLImageElement>("#build-up-prev-cur"),
+        curIcon,
+      );
+      setLiveTintImg(
+        upRows.querySelector<HTMLImageElement>("#build-up-prev-next"),
+        nextIcon,
+      );
+      setLiveTintImg(
+        upRows.querySelector<HTMLImageElement>("#build-up-ico-focus"),
+        nextIcon,
+      );
       const focusBtn = upRows.querySelector<HTMLButtonElement>("[data-build-up-focus]");
       if (focusBtn) {
         focusBtn.disabled = !ok;
@@ -2646,10 +2862,13 @@ function renderMatchScreen(): void {
             `#up-pay-${kind} img`,
           );
           if (upPayImg) upPayImg.src = UI_ICONS.currencyGold;
+          const bCap = m.unitUpgradeBuildingCap(kind);
           upBtn.title =
             cost == null
               ? "Max. Stufe"
-              : `Alle ${kind} → Lv${next} · ${cost}€`;
+              : bCap < next
+                ? `Gebäude erst Lv${next} nötig`
+                : `Alle ${kind} → Lv${next} · ${cost}€`;
         }
       }
       const hireBtn = app.querySelector<HTMLButtonElement>("#btn-hire-ordner");
@@ -2806,6 +3025,8 @@ function renderResult(): void {
           localStorage.setItem("matchday-player-name", name);
           const playerClub = state.settings.playerClub;
           const opponentClub = state.settings.aiClub;
+          const playerShort = clubCode(playerClub) || undefined;
+          const opponentShort = clubCode(opponentClub) || undefined;
           const vs = matchupLabel({
             name,
             value,
@@ -2815,6 +3036,8 @@ function renderResult(): void {
             team: state.settings.playerTeam,
             playerClub,
             opponentClub,
+            playerShort,
+            opponentShort,
           });
           const { placed, rank, shared } = await tryInsertHighscoreShared(
             r.difficulty,
@@ -2825,6 +3048,8 @@ function renderResult(): void {
               team: state.settings.playerTeam,
               playerClub,
               opponentClub,
+              playerShort,
+              opponentShort,
               detail: `Blocksturm in ${formatMinute(r.minute)}${vs ? ` · ${vs}` : ""} (${difficultyLabel(r.difficulty)})`,
             },
           );
@@ -2846,6 +3071,8 @@ function renderResult(): void {
         localStorage.setItem("matchday-player-name", name);
         const playerClub = state.settings.playerClub;
         const opponentClub = state.settings.aiClub;
+        const playerShort = clubCode(playerClub) || undefined;
+        const opponentShort = clubCode(opponentClub) || undefined;
         const vs = matchupLabel({
           name,
           value: erg,
@@ -2855,6 +3082,8 @@ function renderResult(): void {
           team: state.settings.playerTeam,
           playerClub,
           opponentClub,
+          playerShort,
+          opponentShort,
         });
         const { placed, rank, shared } = await tryInsertHighscoreShared(
           r.difficulty,
@@ -2865,6 +3094,8 @@ function renderResult(): void {
             team: state.settings.playerTeam,
             playerClub,
             opponentClub,
+            playerShort,
+            opponentShort,
             detail: `${playerGoals}:${aiGoals}${vs ? ` · ${vs}` : ""} · ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
           },
         );
@@ -2885,6 +3116,8 @@ function renderResult(): void {
         localStorage.setItem("matchday-player-name", name);
         const playerClub = state.settings.playerClub;
         const opponentClub = state.settings.aiClub;
+        const playerShort = clubCode(playerClub) || undefined;
+        const opponentShort = clubCode(opponentClub) || undefined;
         const vs = matchupLabel({
           name,
           value: beers,
@@ -2894,6 +3127,8 @@ function renderResult(): void {
           team: state.settings.playerTeam,
           playerClub,
           opponentClub,
+          playerShort,
+          opponentShort,
         });
         const { placed, rank, shared } = await tryInsertHighscoreShared(
           r.difficulty,
@@ -2904,6 +3139,8 @@ function renderResult(): void {
             team: state.settings.playerTeam,
             playerClub,
             opponentClub,
+            playerShort,
+            opponentShort,
             detail: `${beers} Bier${vs ? ` · ${vs}` : ""} (${difficultyLabel(r.difficulty)})`,
           },
         );

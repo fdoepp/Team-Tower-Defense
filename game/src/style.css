@@ -319,7 +319,7 @@ button {
 
 .pick-mode-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 6px;
 }
 
@@ -333,8 +333,8 @@ button {
 }
 
 .pick-mode.on {
-  background: var(--ksc);
-  color: #fff;
+  background: var(--ksc-ui, var(--ksc));
+  color: var(--ksc-ink, #fff);
   border-color: transparent;
 }
 
@@ -439,9 +439,9 @@ button {
 }
 
 .btn.ksc {
-  background: var(--ksc);
-  color: #fff;
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.28);
+  background: var(--ksc-ui, var(--ksc));
+  color: var(--ksc-ink, #fff);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--ksc-ui, var(--ksc)) 40%, transparent);
 }
 
 .btn:disabled {
@@ -1223,8 +1223,9 @@ select {
   flex: 0 0 auto;
   width: 100%;
   max-height: none;
-  min-height: 48px;
-  aspect-ratio: 320 / 96;
+  /* Taller face so stand icon + yield stack without overlap */
+  min-height: 88px;
+  aspect-ratio: 320 / 140;
   container-type: inline-size;
 }
 .match-shell.matchday .upgrade-panel .ar-cost-btn.upgrade.cd,
@@ -1236,11 +1237,11 @@ select {
 .match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .inner.person-btn-inner {
   --face-left: 2.5%;
   --face-right: 2%;
-  --face-top: 2%;
-  --face-bot: 2%;
-  --unit-w: 36%;
+  --face-top: 3%;
+  --face-bot: 3%;
+  --unit-w: 34%;
   --col-gap: 4%;
-  --yield-gap: 4%;
+  --yield-gap: 6%;
   --pay-gap: 0.2em;
   left: calc(var(--wood-x) + var(--face-left));
   right: calc(var(--wood-x) + var(--face-right));
@@ -1268,14 +1269,18 @@ select {
 }
 .match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .unit-ico {
   display: block;
-  width: 100%;
-  height: auto;
-  max-height: 68%;
+  width: clamp(40px, 28cqw, 64px);
+  height: clamp(40px, 28cqw, 64px);
+  max-width: 100%;
   aspect-ratio: 1;
   object-fit: contain;
-  flex: 0 1 auto;
+  object-position: center;
+  flex: 0 0 auto;
   pointer-events: none;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+.match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .unit-col .yield-chip.yield-delta .yield-amt {
+  color: #bbf7d0;
 }
 .match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .unit-col .yield-chip {
   display: inline-flex;
@@ -1287,11 +1292,16 @@ select {
   padding: 0;
   box-shadow: none;
   border: 0;
-  font-size: 0.85em;
+  color: #fff;
+  font-size: clamp(7px, 9.5cqw, 11px);
+  line-height: 1;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.55);
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 .match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .unit-col .yield-chip img {
-  width: 0.95em;
-  height: 0.95em;
+  width: 1em;
+  height: 1em;
   object-fit: contain;
 }
 .match-shell.matchday .upgrade-panel .ar-cost-btn.rail-action .pay {
@@ -1636,15 +1646,17 @@ select {
   overflow: hidden;
 }
 
-.match-shell.matchday .up-stage > img {
-  width: min(56%, 64px);
+.match-shell.matchday .up-stage > img,
+.match-shell.matchday .up-stage > img.up-stand-ico {
+  width: min(72%, 72px);
   max-width: 100%;
   height: auto;
-  max-height: 55%;
+  max-height: none;
   aspect-ratio: 1;
   object-fit: contain;
+  object-position: center;
   filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.28));
-  flex: 0 1 auto;
+  flex: 0 0 auto;
 }
 
 .match-shell.matchday .up-stage .up-lv {
@@ -3238,6 +3250,9 @@ html.is-fs .fs-gate {
   display: block;
   background: rgba(255, 255, 255, 0.15);
   flex: 0 0 auto;
+}
+.hs-team .hs-logo-b {
+  opacity: 0.95;
 }
 .hs-team .hs-vs-label {
   font-size: 0.78rem;

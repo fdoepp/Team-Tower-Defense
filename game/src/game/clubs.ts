@@ -3,10 +3,22 @@
  *
  * Core list: FourFourTwo “50 Biggest Derbies in the World” (2016).
  * Extra: Bayer Leverkusen ↔ 1. FC Köln, plus original KSC ↔ VfB.
+ * Plus Nationalmannschaften (kit primary/secondary + separate flag paint).
  * Kit colors are classic primary/secondary hex approximations.
  */
 
 export type ClubId = string;
+
+export type ClubKind = "club" | "national";
+
+/** Procedural flag paint — separate from kit tint colors. */
+export type FlagSpec =
+  | { style: "h"; colors: string[] }
+  | { style: "v"; colors: string[] }
+  | { style: "cross"; field: string; cross: string }
+  | { style: "nordic"; field: string; cross: string }
+  | { style: "circle"; field: string; disc: string }
+  | { style: "saltire"; field: string; saltire: string };
 
 export type Club = {
   id: ClubId;
@@ -14,8 +26,16 @@ export type Club = {
   name: string;
   country: string;
   league: string;
+  /** Kit / jersey tint (not necessarily flag colors). */
   primary: string;
   secondary: string;
+  kind: ClubKind;
+  /** National flag paint for logos / fan props / standards. */
+  flag?: FlagSpec;
+  /** Continent / region bucket for national pick UI. */
+  region?: string;
+  /** FIFA men's ranking (approx.) — nationals only; lower = stronger. */
+  fifaRank?: number;
 };
 
 export type Derby = {
@@ -29,6 +49,15 @@ export type Derby = {
   league: string;
 };
 
+/** International fixture (Länderspiel / rivalry). */
+export type NationalFixture = {
+  id: string;
+  name: string;
+  a: ClubId;
+  b: ClubId;
+  region: string;
+};
+
 function club(
   id: ClubId,
   short: string,
@@ -38,7 +67,32 @@ function club(
   primary: string,
   secondary: string,
 ): Club {
-  return { id, short, name, country, league, primary, secondary };
+  return { id, short, name, country, league, primary, secondary, kind: "club" };
+}
+
+function nation(
+  id: ClubId,
+  short: string,
+  name: string,
+  region: string,
+  primary: string,
+  secondary: string,
+  flag: FlagSpec,
+  fifaRank?: number,
+): Club {
+  return {
+    id,
+    short,
+    name,
+    country: name,
+    league: "Nationalmannschaft",
+    primary,
+    secondary,
+    kind: "national",
+    flag,
+    region,
+    fifaRank,
+  };
 }
 
 export const CLUBS: Record<ClubId, Club> = {
@@ -285,6 +339,39 @@ export const CLUBS: Record<ClubId, Club> = {
   ),
   portland: club("portland", "PTI", "Portland Timbers", "USA", "MLS", "#004812", "#FFFFFF"),
   seattle: club("seattle", "SEA", "Seattle Sounders", "USA", "MLS", "#5D9732", "#005595"),
+
+  // --- Nationalmannschaften (FIFA Top-25 + extras; kit = home jersey) ---
+  arg: nation("arg", "ARG", "Argentinien", "Südamerika", "#74ACDF", "#FFFFFF", { style: "h", colors: ["#74ACDF", "#FFFFFF", "#74ACDF"] }, 1),
+  fra: nation("fra", "FRA", "Frankreich", "Europa", "#002395", "#FFFFFF", { style: "v", colors: ["#002395", "#FFFFFF", "#ED2939"] }, 2),
+  esp: nation("esp", "ESP", "Spanien", "Europa", "#C60B1E", "#FABD00", { style: "h", colors: ["#AA151B", "#F1BF00", "#AA151B"] }, 3),
+  eng: nation("eng", "ENG", "England", "Europa", "#FFFFFF", "#00205B", { style: "cross", field: "#FFFFFF", cross: "#C8102E" }, 4),
+  bra: nation("bra", "BRA", "Brasilien", "Südamerika", "#FEE72F", "#009C3B", { style: "h", colors: ["#009C3B", "#FFDF00", "#002776"] }, 5),
+  por: nation("por", "POR", "Portugal", "Europa", "#FF0000", "#006600", { style: "v", colors: ["#006600", "#FF0000"] }, 6),
+  ned: nation("ned", "NED", "Niederlande", "Europa", "#FF6600", "#FFFFFF", { style: "h", colors: ["#AE1C28", "#FFFFFF", "#21468B"] }, 7),
+  bel: nation("bel", "BEL", "Belgien", "Europa", "#EF3340", "#FAE100", { style: "v", colors: ["#000000", "#FAE042", "#ED2939"] }, 8),
+  ita: nation("ita", "ITA", "Italien", "Europa", "#0066B3", "#FFFFFF", { style: "v", colors: ["#009246", "#FFFFFF", "#CE2B37"] }, 9),
+  ger: nation("ger", "GER", "Deutschland", "Europa", "#FFFFFF", "#000000", { style: "h", colors: ["#000000", "#DD0000", "#FFCE00"] }, 10),
+  cro: nation("cro", "CRO", "Kroatien", "Europa", "#FF0000", "#FFFFFF", { style: "h", colors: ["#FF0000", "#FFFFFF", "#171796"] }, 11),
+  mar: nation("mar", "MAR", "Marokko", "Afrika", "#C1272D", "#006233", { style: "h", colors: ["#C1272D", "#006233"] }, 12),
+  col: nation("col", "COL", "Kolumbien", "Südamerika", "#FCD116", "#003893", { style: "h", colors: ["#FCD116", "#003893", "#CE1126"] }, 13),
+  uru: nation("uru", "URU", "Uruguay", "Südamerika", "#5BA3D9", "#000000", { style: "h", colors: ["#FFFFFF", "#0038A8"] }, 14),
+  usa: nation("usa", "USA", "USA", "Nordamerika", "#FFFFFF", "#002868", { style: "h", colors: ["#B22234", "#FFFFFF", "#3C3B6E"] }, 15),
+  mex: nation("mex", "MEX", "Mexiko", "Nordamerika", "#006847", "#FFFFFF", { style: "v", colors: ["#006847", "#FFFFFF", "#CE1126"] }, 16),
+  sui: nation("sui", "SUI", "Schweiz", "Europa", "#FF0000", "#FFFFFF", { style: "cross", field: "#FF0000", cross: "#FFFFFF" }, 17),
+  jap: nation("jap", "JPN", "Japan", "Asien", "#000080", "#FFFFFF", { style: "circle", field: "#FFFFFF", disc: "#BC002D" }, 18),
+  sen: nation("sen", "SEN", "Senegal", "Afrika", "#00853F", "#FDEF42", { style: "v", colors: ["#00853F", "#FDEF42", "#E31B23"] }, 19),
+  irn: nation("irn", "IRN", "Iran", "Asien", "#FFFFFF", "#239F40", { style: "h", colors: ["#239F40", "#FFFFFF", "#DA0000"] }, 20),
+  den: nation("den", "DEN", "Dänemark", "Europa", "#C8102E", "#FFFFFF", { style: "nordic", field: "#C8102E", cross: "#FFFFFF" }, 21),
+  kor: nation("kor", "KOR", "Südkorea", "Asien", "#C60C30", "#003478", { style: "h", colors: ["#FFFFFF", "#C60C30", "#003478"] }, 22),
+  aut: nation("aut", "AUT", "Österreich", "Europa", "#ED2939", "#FFFFFF", { style: "h", colors: ["#ED2939", "#FFFFFF", "#ED2939"] }, 23),
+  aus: nation("aus", "AUS", "Australien", "Asien", "#00008B", "#FFCD00", { style: "h", colors: ["#00008B", "#FFCD00"] }, 24),
+  ukr: nation("ukr", "UKR", "Ukraine", "Europa", "#0057B7", "#FFD700", { style: "h", colors: ["#0057B7", "#FFD700"] }, 25),
+  // Extras beyond Top-25 (free pick)
+  swe: nation("swe", "SWE", "Schweden", "Europa", "#FFCD00", "#006AA7", { style: "nordic", field: "#006AA7", cross: "#FECC00" }),
+  nor: nation("nor", "NOR", "Norwegen", "Europa", "#BA0C2F", "#00205B", { style: "nordic", field: "#BA0C2F", cross: "#FFFFFF" }),
+  pol: nation("pol", "POL", "Polen", "Europa", "#FFFFFF", "#DC143C", { style: "h", colors: ["#FFFFFF", "#DC143C"] }),
+  tur: nation("tur", "TUR", "Türkei", "Europa", "#E30A17", "#FFFFFF", { style: "circle", field: "#E30A17", disc: "#FFFFFF" }),
+  sco: nation("sco", "SCO", "Schottland", "Europa", "#0065BD", "#FFFFFF", { style: "saltire", field: "#005EB8", saltire: "#FFFFFF" }),
 };
 
 /** FFT 50 (rank) + extras (rank null). Pair order is display-only. */
@@ -344,6 +431,24 @@ export const DERBIES: Derby[] = [
   { id: "badenwuerttemberg", name: "Baden-Württemberg", rank: null, a: "ksc", b: "vfb", country: "Deutschland", league: "Bundesliga" },
 ];
 
+/** ~10 famous Länderspiel-Derbys for Nation → Klassiker. */
+export const NATIONAL_FIXTURES: NationalFixture[] = [
+  { id: "de-nl", name: "Klassiker DE–NL", a: "ger", b: "ned", region: "Europa" },
+  { id: "bra-arg", name: "Superclásico das Américas", a: "bra", b: "arg", region: "Südamerika" },
+  { id: "eng-ger", name: "England–Deutschland", a: "eng", b: "ger", region: "Europa" },
+  { id: "arg-fra", name: "WM-Finale-Feeling", a: "arg", b: "fra", region: "Welt" },
+  { id: "esp-por", name: "Iberisches Duell", a: "esp", b: "por", region: "Europa" },
+  { id: "usa-mex", name: "CONCACAF Rivalry", a: "usa", b: "mex", region: "Nordamerika" },
+  { id: "sco-eng", name: "Auld Enemy", a: "sco", b: "eng", region: "Europa" },
+  { id: "jap-kor", name: "Ostasien-Derby", a: "jap", b: "kor", region: "Asien" },
+  { id: "ita-fra", name: "Frankreich–Italien", a: "fra", b: "ita", region: "Europa" },
+  { id: "mar-sen", name: "Afrika-Klassiker", a: "mar", b: "sen", region: "Afrika" },
+];
+
+export const DEFAULT_NATIONAL_FIXTURE_ID = "de-nl";
+export const DEFAULT_PLAYER_NATION: ClubId = "ger";
+export const DEFAULT_AI_NATION: ClubId = "ned";
+
 export function getClub(id: ClubId): Club {
   const c = CLUBS[id];
   if (!c) throw new Error(`Unknown club: ${id}`);
@@ -361,12 +466,30 @@ export function clubIdFromShort(short: string | undefined): ClubId | undefined {
   return undefined;
 }
 
+export function isNational(club: Club | ClubId): boolean {
+  const c = typeof club === "string" ? CLUBS[club] : club;
+  return !!c && c.kind === "national";
+}
+
 export function allClubs(): Club[] {
-  return Object.values(CLUBS).sort((a, b) =>
-    a.country === b.country
-      ? a.name.localeCompare(b.name, "de")
-      : a.country.localeCompare(b.country, "de"),
-  );
+  return Object.values(CLUBS)
+    .filter((c) => c.kind !== "national")
+    .sort((a, b) =>
+      a.country === b.country
+        ? a.name.localeCompare(b.name, "de")
+        : a.country.localeCompare(b.country, "de"),
+    );
+}
+
+export function allNationals(): Club[] {
+  return Object.values(CLUBS)
+    .filter((c) => c.kind === "national")
+    .sort((a, b) => {
+      const ra = a.fifaRank ?? 999;
+      const rb = b.fifaRank ?? 999;
+      if (ra !== rb) return ra - rb;
+      return a.name.localeCompare(b.name, "de");
+    });
 }
 
 export function clubsByCountry(): { country: string; clubs: Club[] }[] {
@@ -379,6 +502,79 @@ export function clubsByCountry(): { country: string; clubs: Club[] }[] {
   return [...map.entries()]
     .sort((a, b) => a[0].localeCompare(b[0], "de"))
     .map(([country, clubs]) => ({ country, clubs }));
+}
+
+export function nationalsByRegion(): { region: string; nations: Club[] }[] {
+  const map = new Map<string, Club[]>();
+  for (const c of allNationals()) {
+    const region = c.region ?? "Welt";
+    const list = map.get(region) ?? [];
+    list.push(c);
+    map.set(region, list);
+  }
+  const order = ["Europa", "Südamerika", "Nordamerika", "Asien", "Afrika", "Welt"];
+  return [...map.entries()]
+    .sort((a, b) => {
+      const ia = order.indexOf(a[0]);
+      const ib = order.indexOf(b[0]);
+      const sa = ia < 0 ? 99 : ia;
+      const sb = ib < 0 ? 99 : ib;
+      return sa === sb ? a[0].localeCompare(b[0], "de") : sa - sb;
+    })
+    .map(([region, nations]) => ({
+      region,
+      nations: nations.sort(
+        (a, b) => (a.fifaRank ?? 999) - (b.fifaRank ?? 999),
+      ),
+    }));
+}
+
+/** Colors from a national flag for cheer confetti. */
+export function flagCheerColors(flag: FlagSpec): string[] {
+  if (flag.style === "h" || flag.style === "v") return [...flag.colors];
+  if (flag.style === "cross" || flag.style === "nordic") {
+    return [flag.field, flag.cross];
+  }
+  if (flag.style === "circle") return [flag.field, flag.disc];
+  if (flag.style === "saltire") return [flag.field, flag.saltire];
+  return [];
+}
+
+/** Confetti palette: flag colors for nations, kit prim/sec for clubs. */
+export function cheerPalette(side: "ksc" | "vfb"): [string, string] {
+  const flag = clubFlag(side);
+  if (flag) {
+    const cols = flagCheerColors(flag).filter(Boolean);
+    if (cols.length >= 2) return [cols[0]!, cols[1]!];
+    if (cols.length === 1) return [cols[0]!, clubSecondary(side)];
+  }
+  return [clubPrimary(side), clubSecondary(side)];
+}
+
+export function nationalFixturesByRegion(): {
+  region: string;
+  fixtures: NationalFixture[];
+}[] {
+  const map = new Map<string, NationalFixture[]>();
+  for (const f of NATIONAL_FIXTURES) {
+    const list = map.get(f.region) ?? [];
+    list.push(f);
+    map.set(f.region, list);
+  }
+  const order = ["Europa", "Südamerika", "Nordamerika", "Asien", "Afrika", "Welt"];
+  return [...map.entries()]
+    .sort((a, b) => {
+      const ia = order.indexOf(a[0]);
+      const ib = order.indexOf(b[0]);
+      const sa = ia < 0 ? 99 : ia;
+      const sb = ib < 0 ? 99 : ib;
+      return sa === sb ? a[0].localeCompare(b[0], "de") : sa - sb;
+    })
+    .map(([region, fixtures]) => ({ region, fixtures }));
+}
+
+export function findNationalFixture(id: string): NationalFixture | undefined {
+  return NATIONAL_FIXTURES.find((f) => f.id === id);
 }
 
 export function derbiesByCountry(): { country: string; derbies: Derby[] }[] {
@@ -429,9 +625,108 @@ export const DEFAULT_DERBY_ID = "badenwuerttemberg";
 let brandHeim: Club = CLUBS.ksc!;
 let brandGast: Club = CLUBS.vfb!;
 
+/** Effective kit for this matchup (away may switch to secondary on primary clash). */
+let kitHeimPrimary = CLUBS.ksc!.primary;
+let kitHeimSecondary = CLUBS.ksc!.secondary;
+let kitGastPrimary = CLUBS.vfb!.primary;
+let kitGastSecondary = CLUBS.vfb!.secondary;
+/** True when Gast plays secondary because primaries clash. */
+let gastKitClash = false;
+
+function parseHexRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "").trim();
+  const full =
+    h.length === 3 ? h.split("").map((c) => c + c).join("") : h.padEnd(6, "0");
+  return [
+    parseInt(full.slice(0, 2), 16) || 0,
+    parseInt(full.slice(2, 4), 16) || 0,
+    parseInt(full.slice(4, 6), 16) || 0,
+  ];
+}
+
+function rgbDist(a: string, b: string): number {
+  const [r1, g1, b1] = parseHexRgb(a);
+  const [r2, g2, b2] = parseHexRgb(b);
+  const dr = r1 - r2;
+  const dg = g1 - g2;
+  const db = b1 - b2;
+  return Math.sqrt(dr * dr + dg * dg + db * db);
+}
+
+function rgbToHslSimple(
+  r: number,
+  g: number,
+  b: number,
+): [number, number, number] {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else h = ((r - g) / d + 4) / 6;
+  return [h * 360, s, l];
+}
+
+/** True when two kit primaries would be hard to tell apart on pitch/tribune. */
+export function kitPrimariesClash(a: string, b: string): boolean {
+  if (rgbDist(a, b) < 72) return true;
+  const [r1, g1, b1] = parseHexRgb(a);
+  const [r2, g2, b2] = parseHexRgb(b);
+  const [h1, s1, l1] = rgbToHslSimple(r1, g1, b1);
+  const [h2, s2, l2] = rgbToHslSimple(r2, g2, b2);
+  // Both near-white / near-black
+  if (l1 > 0.85 && l2 > 0.85) return true;
+  if (l1 < 0.12 && l2 < 0.12) return true;
+  // Same hue family (e.g. Leverkusen vs Köln red)
+  if (s1 > 0.28 && s2 > 0.28) {
+    let dh = Math.abs(h1 - h2);
+    if (dh > 180) dh = 360 - dh;
+    if (dh < 32 && Math.abs(l1 - l2) < 0.28) return true;
+  }
+  return false;
+}
+
+function contrastFallback(against: string): string {
+  return hexLuma(against) > 140 ? "#0f172a" : "#f8fafc";
+}
+
+function resolveMatchKits(): void {
+  kitHeimPrimary = brandHeim.primary;
+  kitHeimSecondary = brandHeim.secondary;
+  kitGastPrimary = brandGast.primary;
+  kitGastSecondary = brandGast.secondary;
+  gastKitClash = false;
+
+  if (!kitPrimariesClash(kitHeimPrimary, kitGastPrimary)) return;
+
+  // Away plays in secondary (classic kit clash)
+  const awayAlt = brandGast.secondary;
+  if (
+    !kitPrimariesClash(kitHeimPrimary, awayAlt) &&
+    rgbDist(awayAlt, brandGast.primary) > 28
+  ) {
+    kitGastPrimary = awayAlt;
+    kitGastSecondary = brandGast.primary;
+    gastKitClash = true;
+    return;
+  }
+  // Secondary also clashes / is too close — pick high-contrast fallback
+  kitGastPrimary = contrastFallback(kitHeimPrimary);
+  kitGastSecondary = brandGast.primary;
+  gastKitClash = true;
+}
+
 export function setSideBranding(heimClubId: ClubId, gastClubId: ClubId): void {
   brandHeim = getClub(heimClubId);
   brandGast = getClub(gastClubId);
+  resolveMatchKits();
   // Invalidate live-tinted sprite cache (lazy import avoids cycles)
   void import("./liveTint").then((m) => m.bumpLiveTintEpoch()).catch(() => {});
 }
@@ -446,24 +741,85 @@ export function clubShort(side: "ksc" | "vfb"): string {
   return side === "ksc" ? brandHeim.short : brandGast.short;
 }
 
+/** Match kit primary (tribune / units) — away may be secondary on clash. */
 export function clubPrimary(side: "ksc" | "vfb"): string {
-  return side === "ksc" ? brandHeim.primary : brandGast.primary;
+  return side === "ksc" ? kitHeimPrimary : kitGastPrimary;
 }
 
+/** Match kit secondary (trim / FX accents). */
 export function clubSecondary(side: "ksc" | "vfb"): string {
-  return side === "ksc" ? brandHeim.secondary : brandGast.secondary;
+  return side === "ksc" ? kitHeimSecondary : kitGastSecondary;
+}
+
+/**
+ * Accent for pyro / smoke / signs: always the match primary
+ * (white kits → white pyro & Schilder, not leftover blue).
+ */
+export function clubFxColor(side: "ksc" | "vfb"): string {
+  return clubPrimary(side);
+}
+
+export function awayKitClashActive(): boolean {
+  return gastKitClash;
+}
+
+/** Flag paint for a side (nationals only). */
+export function clubFlag(side: "ksc" | "vfb"): FlagSpec | undefined {
+  return side === "ksc" ? brandHeim.flag : brandGast.flag;
+}
+
+export function brandingIsNational(side: "ksc" | "vfb"): boolean {
+  return (side === "ksc" ? brandHeim : brandGast).kind === "national";
 }
 
 export function currentBranding(): { heim: Club; gast: Club } {
   return { heim: brandHeim, gast: brandGast };
 }
 
+function hexLuma(hex: string): number {
+  const h = hex.replace("#", "").trim();
+  const full =
+    h.length === 3 ? h.split("").map((c) => c + c).join("") : h.padEnd(6, "0");
+  const r = parseInt(full.slice(0, 2), 16) || 0;
+  const g = parseInt(full.slice(2, 4), 16) || 0;
+  const b = parseInt(full.slice(4, 6), 16) || 0;
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+/** Solid UI fill when kit primary is too light (e.g. Germany white). */
+function uiFill(primary: string, secondary: string): string {
+  if (hexLuma(primary) < 180) return primary;
+  if (hexLuma(secondary) < 180) return secondary;
+  return "#0f172a";
+}
+
+function uiInk(fill: string): string {
+  return hexLuma(fill) < 160 ? "#ffffff" : "#0f172a";
+}
+
 /** Push club colors into CSS variables used by HUD / buttons. */
 export function applyClubCssVars(root: HTMLElement = document.documentElement): void {
-  root.style.setProperty("--ksc", brandHeim.primary);
-  root.style.setProperty("--vfb", brandGast.primary);
-  root.style.setProperty("--ksc-secondary", brandHeim.secondary);
-  root.style.setProperty("--vfb-secondary", brandGast.secondary);
+  const heimP = clubPrimary("ksc");
+  const gastP = clubPrimary("vfb");
+  const heimS = clubSecondary("ksc");
+  const gastS = clubSecondary("vfb");
+  root.style.setProperty("--ksc", heimP);
+  root.style.setProperty("--vfb", gastP);
+  root.style.setProperty("--ksc-secondary", heimS);
+  root.style.setProperty("--vfb-secondary", gastS);
+  const kscUi = uiFill(heimP, heimS);
+  const vfbUi = uiFill(gastP, gastS);
+  root.style.setProperty("--ksc-ui", kscUi);
+  root.style.setProperty("--vfb-ui", vfbUi);
+  root.style.setProperty("--ksc-ink", uiInk(kscUi));
+  root.style.setProperty("--vfb-ink", uiInk(vfbUi));
+}
+
+/** Catalog check: every entry has distinct primary + secondary. */
+export function allClubsHaveKitPair(): boolean {
+  return Object.values(CLUBS).every(
+    (c) => !!c.primary && !!c.secondary && c.primary.toLowerCase() !== c.secondary.toLowerCase(),
+  );
 }
 
 export function ensureRequiredClubsPresent(): { liverpool: boolean; leverkusen: boolean } {

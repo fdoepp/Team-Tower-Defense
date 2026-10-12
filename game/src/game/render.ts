@@ -47,9 +47,19 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
-import { clubPrimary, clubSecondary, clubShort } from "./clubs";
-import { drawSideClubLogo } from "./clubLogos";
-import { getDualKitTintedCanvas, sideKitHex, sideKitRgba } from "./liveTint";
+import {
+  brandingIsNational,
+  clubFlag,
+  clubPrimary,
+  clubSecondary,
+  clubShort,
+} from "./clubs";
+import { drawFlagOnPole, drawSideClubLogo } from "./clubLogos";
+import {
+  getDualKitTintedCanvas,
+  sideAtmosphereRgba,
+  sideKitHex,
+} from "./liveTint";
 import {
   boothFacadeQuad,
   scaleQuad,
@@ -209,6 +219,14 @@ function drawStormBanner(
   ctx.restore();
 }
 
+function kitLuma(side: "ksc" | "vfb"): number {
+  const hex = clubPrimary(side).replace("#", "");
+  const r = parseInt(hex.slice(0, 2), 16) || 0;
+  const g = parseInt(hex.slice(2, 4), 16) || 0;
+  const b = parseInt(hex.slice(4, 6), 16) || 0;
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
 /** Cover-draw stadium-floodlight-derby-bg when available (Rahmenlogik). */
 function drawStadiumBackdrop(
   ctx: CanvasRenderingContext2D,
@@ -229,6 +247,16 @@ function drawStadiumBackdrop(
   const dw = iw * s;
   const dh = ih * s;
   ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+  // White kits must not bleach the night bowl — darken only (no radial halos)
+  if (kitLuma("ksc") > 200 || kitLuma("vfb") > 200) {
+    const night = ctx.createLinearGradient(0, 0, 0, h * 0.62);
+    night.addColorStop(0, "rgba(4,8,18,0.42)");
+    night.addColorStop(0.4, "rgba(6,10,20,0.2)");
+    night.addColorStop(0.75, "rgba(8,12,22,0.07)");
+    night.addColorStop(1, "rgba(8,12,22,0)");
+    ctx.fillStyle = night;
+    ctx.fillRect(0, 0, w, h * 0.62);
+  }
   return true;
 }
 
@@ -273,11 +301,12 @@ function drawStadiumAtmosphere(
       const y = ty + h * 0.035 + Math.sin(i * 1.7 + tier) * h * 0.01;
       const side = t < 0.34 ? 0 : t < 0.66 ? 1 : 2;
       const a = 0.25 + ((i + tier) % 4) * 0.12;
+      // 5-Farben-Mix: Heim/Gast-Wash + Grau (night-safe)
       ctx.fillStyle =
         side === 0
-          ? `rgba(59,130,246,${a})`
+          ? sideAtmosphereRgba("ksc", a)
           : side === 2
-            ? `rgba(239,68,68,${a})`
+            ? sideAtmosphereRgba("vfb", a)
             : `rgba(148,163,184,${a * 0.85})`;
       ctx.fillRect(x, y, 2.4, 4.2);
     }
@@ -307,20 +336,20 @@ function drawStadiumAtmosphere(
     ctx.fill();
   }
 
-  // pyro / flare glow — kit colors from live branding
+  // pyro / flare glow — night-safe kit wash (prim+sec+grau, no white bleach)
   {
     const gx = blockCenterX(GAST_BLOCK) * w;
     const gy = h * L.blockTop * 0.75;
     const a = 0.22 + Math.min(0.5, m.moodGaeste * 0.2);
     const g = ctx.createRadialGradient(gx, gy, 6, gx, gy, w * 0.32);
-    g.addColorStop(0, sideKitRgba("vfb", a));
-    g.addColorStop(0.35, sideKitRgba("vfb", a * 0.65));
-    g.addColorStop(1, sideKitRgba("vfb", 0));
+    g.addColorStop(0, sideAtmosphereRgba("vfb", a));
+    g.addColorStop(0.35, sideAtmosphereRgba("vfb", a * 0.65));
+    g.addColorStop(1, sideAtmosphereRgba("vfb", 0));
     ctx.fillStyle = g;
     ctx.fillRect(gx - w * 0.32, gy - h * 0.14, w * 0.64, h * 0.32);
     for (let i = 0; i < 7; i++) {
       const ox = Math.sin(m.realElapsed * 0.85 + i * 1.1) * w * 0.05;
-      ctx.fillStyle = sideKitRgba("vfb", 0.06 + a * 0.18);
+      ctx.fillStyle = sideAtmosphereRgba("vfb", 0.06 + a * 0.18);
       ctx.beginPath();
       ctx.ellipse(
         gx + ox + (i - 3) * w * 0.028,
@@ -339,8 +368,8 @@ function drawStadiumAtmosphere(
     const hy = h * L.blockTop * 0.75;
     const a = 0.14 + Math.min(0.4, m.moodHeim * 0.16);
     const g = ctx.createRadialGradient(hx, hy, 6, hx, hy, w * 0.26);
-    g.addColorStop(0, sideKitRgba("ksc", a));
-    g.addColorStop(1, sideKitRgba("ksc", 0));
+    g.addColorStop(0, sideAtmosphereRgba("ksc", a));
+    g.addColorStop(1, sideAtmosphereRgba("ksc", 0));
     ctx.fillStyle = g;
     ctx.fillRect(hx - w * 0.26, hy - h * 0.12, w * 0.52, h * 0.28);
   }
@@ -393,12 +422,14 @@ function drawBlocks(
     const crowd = blue + red;
     const lean = crowd > 0 ? (blue - red) / crowd : 0;
     const pressure = Math.min(1, crowd / 8) * Math.abs(lean);
+    // Keep block glow subtle — strong radials read as head-halos on white kits
+    const glowA = 0.07 + pressure * 0.1;
     const glow =
       owner === "ksc" || (owner === "neutral" && lean > 0.15)
-        ? sideKitRgba("ksc", 0.18 + pressure * 0.3)
+        ? sideAtmosphereRgba("ksc", glowA)
         : owner === "vfb" || (owner === "neutral" && lean < -0.15)
-          ? sideKitRgba("vfb", 0.18 + pressure * 0.3)
-          : "rgba(148,163,184,0.14)";
+          ? sideAtmosphereRgba("vfb", glowA)
+          : "rgba(148,163,184,0.08)";
 
     const g = ctx.createRadialGradient(cx, top + bh * 0.45, 8, cx, top + bh * 0.5, bw * 0.72);
     g.addColorStop(0, glow);
@@ -849,10 +880,22 @@ function drawFrontStandards(
     { x: left + span * m.lineAi, team: m.aiTeam },
   ];
   for (const pole of poles) {
-    const src = pole.team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
     const baseY = y + gh * 0.88;
     const size = standarteSizePx(w, h);
     const bob = Math.sin(m.realElapsed * 3.5 + (pole.team === "ksc" ? 0 : 1)) * 2;
+    const flag = brandingIsNational(pole.team) ? clubFlag(pole.team) : undefined;
+    if (flag) {
+      drawFlagOnPole(
+        ctx,
+        flag,
+        pole.x,
+        baseY + bob,
+        size * 1.05,
+        m.realElapsed * 3.5 + (pole.team === "ksc" ? 0 : 1.7),
+      );
+      continue;
+    }
+    const src = pole.team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
     // Full standarte asset (includes pole) — upright billboard, no duplicate stroke pole.
     drawPennantUpright(ctx, src, pole.x, baseY + bob, size);
   }
@@ -1296,7 +1339,7 @@ function personAnimMode(m: Match, f: FanUnit): {
   hop: number;
   strike: number;
   actionProg: number;
-  prop: "beer" | "pyro" | "fist" | "scarf" | "bag" | null;
+  prop: "beer" | "pyro" | "fist" | "scarf" | "bag" | "flag" | null;
   propI: number;
 } {
   const onGang = f.state === "gang" || f.invading;
@@ -1318,6 +1361,8 @@ function personAnimMode(m: Match, f: FanUnit): {
     (f.cheerT > 0 ||
       (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) >
         0.7);
+  const nationalFan =
+    (f.team === "ksc" || f.team === "vfb") && brandingIsNational(f.team);
 
   let mode: ToyAnimMode = "idle";
   if (throwing) mode = "throw";
@@ -1335,7 +1380,7 @@ function personAnimMode(m: Match, f: FanUnit): {
   const shopProg =
     f.shopT > 0 ? 1 - f.shopT / Math.max(0.01, ANIM_SHOP_SEC) : 0;
 
-  let prop: "beer" | "pyro" | "fist" | "scarf" | "bag" | null = null;
+  let prop: "beer" | "pyro" | "fist" | "scarf" | "bag" | "flag" | null = null;
   let propI = 0;
   if (drinking) {
     prop = "beer";
@@ -1350,11 +1395,27 @@ function personAnimMode(m: Match, f: FanUnit): {
     prop = "bag";
     propI = 0.5 + 0.4 * shopProg;
   } else if (cheering && f.kind === "normalos" && !f.isSteward) {
-    prop = "scarf";
-    propI = Math.min(1, Math.max(0.55, f.cheerT / 3));
+    // Nationals: Flagge. Vereine: kein Schal-Kringel über dem Kopf.
+    if (
+      nationalFan &&
+      (f.team === "ksc" || f.team === "vfb") &&
+      clubFlag(f.team)
+    ) {
+      prop = "flag";
+      propI = Math.min(1, Math.max(0.55, f.cheerT / 3));
+    }
   } else if (cheering && f.kind === "ultras") {
-    prop = "pyro";
-    propI = 0.55 + 0.4 * Math.sin(m.realElapsed * 10);
+    if (
+      nationalFan &&
+      (f.team === "ksc" || f.team === "vfb") &&
+      clubFlag(f.team)
+    ) {
+      prop = "flag";
+      propI = 0.55 + 0.4 * Math.sin(m.realElapsed * 10);
+    } else {
+      prop = "pyro";
+      propI = 0.55 + 0.4 * Math.sin(m.realElapsed * 10);
+    }
   } else if (cheering && f.kind === "hooligans") {
     prop = "beer";
     propI = 0.5 + 0.35 * Math.abs(Math.sin(m.realElapsed * 7 + f.id));
@@ -1420,6 +1481,7 @@ function drawMannchen(
     actionProg: anim.actionProg,
   });
   if (drew && anim.prop) {
+    const side = f.team === "ksc" || f.team === "vfb" ? f.team : null;
     drawToyProp(
       ctx,
       anim.prop,
@@ -1430,6 +1492,11 @@ function drawMannchen(
       m.realElapsed + phase,
       anim.propI,
       teamColor(f.team),
+      {
+        accent: side ? clubPrimary(side) : undefined,
+        accentB: side ? clubSecondary(side) : undefined,
+        flag: side ? clubFlag(side) : undefined,
+      },
     );
   }
   if (!drew) {
@@ -1599,24 +1666,12 @@ function drawNormalo(
   ctx.fillStyle = "#fff";
   ctx.fillRect(-s * 0.12, -s * 0.15, s * 0.24, s * 0.45);
 
-  // Schal (Fanartikel) — always visible
+  // Neck scarf only — no overhead curve strokes
   ctx.fillStyle = jersey;
   ctx.fillRect(-s * 0.42, -s * 0.02, s * 0.84, s * 0.14);
   ctx.fillStyle = "#fff";
   ctx.fillRect(-s * 0.42, s * 0.04, s * 0.84, s * 0.05);
   const wave = Math.sin(elapsed * 4 + f.id) * 0.12;
-  ctx.strokeStyle = jersey;
-  ctx.lineWidth = Math.max(2, s * 0.18);
-  ctx.beginPath();
-  ctx.moveTo(s * 0.45, -s * 0.05);
-  ctx.quadraticCurveTo(s * 1.05, -s * 0.55 + wave, s * 0.85, s * 0.35);
-  ctx.stroke();
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = Math.max(1.2, s * 0.1);
-  ctx.beginPath();
-  ctx.moveTo(s * 0.5, 0);
-  ctx.quadraticCurveTo(s * 0.95, -s * 0.4 + wave, s * 0.8, s * 0.25);
-  ctx.stroke();
 
   // Fahne in linker Hand
   ctx.save();
