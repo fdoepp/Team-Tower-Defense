@@ -158,6 +158,8 @@ export type MatchConfig = {
   settings: SoloSettings;
   playerSetup: SetupConfig;
   aiSetup: SetupConfig;
+  /** Guided first-match onboarding tips */
+  guided?: boolean;
 };
 
 export type MatchResult = {
@@ -167,6 +169,15 @@ export type MatchResult = {
   detail: string;
   minute: number;
   difficulty: AiDifficulty;
+};
+
+export type UiFlashTone = "goal" | "danger" | "halftime" | "storm" | "ok";
+
+export type UiFlash = {
+  text: string;
+  tone: UiFlashTone;
+  /** seconds remaining */
+  t: number;
 };
 
 let nextId = 1;
@@ -278,6 +289,12 @@ export class Match {
   scorePulse = 0;
   /** last team that scored — for crest flash */
   lastGoalTeam: TeamId | null = null;
+  /** Big DOM flash (goal / danger / half) — consumed by main overlay */
+  uiFlash: UiFlash | null = null;
+  /** Ever trailed on the scoreboard (for Comeback badge) */
+  wasBehind = false;
+  /** Guided onboarding milestone keys completed */
+  guidedDone = new Set<string>();
   confetti: ConfettiBit[] = [];
   moodFx: MoodParticle[] = [];
   pyroShots: PyroProjectile[] = [];
@@ -1200,6 +1217,9 @@ export class Match {
         channel: "combat",
         prio: 95,
       });
+      if (!this.uiFlash || this.uiFlash.tone !== "danger") {
+        this.flash("Heimblock unter Druck!", "danger", 1.8);
+      }
     }
     const emptyBier = this.slots.some(
       (s) =>
@@ -1383,7 +1403,9 @@ export class Match {
       this.toast("Kein kontrollierter Block");
       return false;
     }
-    return this.tryBuyFan(kind, slot.blockId, slot.seatIndex);
+    const ok = this.tryBuyFan(kind, slot.blockId, slot.seatIndex);
+    if (ok) this.markGuided("fans");
+    return ok;
   }
 
   blockFanCount(blockId: number): number {
@@ -1744,7 +1766,10 @@ export class Match {
   }
 
   private leaveSeatToGang(f: FanUnit, offense: boolean): void {
-    if (f.team === this.playerTeam) sfx("send");
+    if (f.team === this.playerTeam) {
+      sfx("send");
+      if (offense) this.markGuided("send");
+    }
     // Keep seatIndex reserved while alive on gang
     f._homeSeat = f.seatIndex;
     f.standKey = null;
@@ -1916,6 +1941,7 @@ export class Match {
     this.toast(
       `${s.building === "bier" ? "Bierstand" : s.building === "ordner" ? "Ordnerposten" : "Fanshop"} ${cost < BUILD_COST[kind] ? "übernommen" : "gebaut"}`,
     );
+    this.markGuided("build");
     return true;
   }
 
@@ -2143,6 +2169,7 @@ export class Match {
         this.halfTimePending = true;
         sfx("whistle");
         this.toast("Halbzeit — wähle deinen Boost für die 2. Hälfte!", 5);
+        this.flash("Halbzeit! Boost wählen →", "halftime", 3.5);
         return;
       }
       if (this.realElapsed >= REGULAR_REAL_SEC) {
@@ -2214,6 +2241,15 @@ export class Match {
     this.tickFloats(step);
     this.tickToasts(step);
     this.tickTips(step);
+    if (this.uiFlash) {
+      this.uiFlash.t -= step;
+      if (this.uiFlash.t <= 0) this.uiFlash = null;
+    }
+    {
+      const pf = this.playerTeam === "ksc" ? this.scoreKsc : this.scoreVfb;
+      const pa = this.playerTeam === "ksc" ? this.scoreVfb : this.scoreKsc;
+      if (pa > pf) this.wasBehind = true;
+    }
     this.tickConfetti(step);
     this.tickMoodFx(step);
     // Highlight timer runs in real time (not slowed) so the cinematic ends cleanly
@@ -4894,6 +4930,12 @@ export class Match {
       const label = teamLabel(team);
       this.startHighlight("storm", team);
       playClubChant(team === this.playerTeam ? "player" : "ai", 1);
+      this.flash(
+        `Blocksturm! ${label}`,
+        team === this.playerTeam ? "storm" : "danger",
+        3.2,
+      );
+      if (team === this.playerTeam) this.markGuided("goal");
       this.finish(
         team,
         "invade",
@@ -5022,7 +5064,39 @@ export class Match {
     sfx("cheer");
     playClubChant(team === this.playerTeam ? "player" : "ai", 0.9);
     this.startHighlight("goal", team);
-    this.toast(`TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`, 10);
+    const line = `TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`;
+    this.toast(line, 10);
+    this.uiFlash = {
+      text: line,
+      tone: team === this.playerTeam ? "goal" : "danger",
+      t: 2.8,
+    };
+    this.markGuided("goal");
+  }
+
+  private flash(text: string, tone: UiFlashTone, t = 2.4): void {
+    this.uiFlash = { text, tone, t };
+  }
+
+  /** Count player-owned production buildings (for badges) */
+  countPlayerBuildings(): number {
+    return this.slots.filter(
+      (s) => s.owner === this.playerTeam && !!s.building && !s.greyNeutral,
+    ).length;
+  }
+
+  markGuided(key: string): void {
+    if (!this.cfg.guided) return;
+    if (this.guidedDone.has(key)) return;
+    this.guidedDone.add(key);
+    const labels: Record<string, string> = {
+      build: "✓ Gebäude gebaut",
+      fans: "✓ Person geholt",
+      send: "✓ In den Gang gesendet",
+      goal: "✓ Tor / Sturm-Moment",
+    };
+    const text = labels[key];
+    if (text) this.flash(text, "ok", 2.2);
   }
 
   private startHighlight(kind: HighlightState["kind"], team: TeamId): void {
