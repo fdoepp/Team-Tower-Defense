@@ -50,6 +50,16 @@ body,
   padding: 0;
 }
 
+/* Mood menus: no light letterbox / home-indicator bar behind the night stadium */
+html:has(.menu-home),
+html:has(.menu-mood),
+html:has(.menu-home) body,
+html:has(.menu-mood) body,
+html:has(.menu-home) #app,
+html:has(.menu-mood) #app {
+  background: var(--menu-night);
+}
+
 button {
   font: inherit;
   border: 0;
@@ -83,23 +93,35 @@ button {
   width: 100%;
   justify-content: flex-start;
   align-items: center;
-  padding: clamp(16px, 3vw, 32px) 16px 24px;
-  gap: 14px;
+  /* Safe-area first (notch/Dynamic Island); tight bottom so no empty strip */
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  gap: 12px;
   overflow: hidden;
   overflow-y: auto;
   color: var(--menu-ink);
   background:
     linear-gradient(105deg, rgba(15, 55, 130, 0.55) 0%, transparent 42%, transparent 58%, rgba(140, 28, 32, 0.5) 100%),
     linear-gradient(180deg, rgba(4, 8, 18, 0.55) 0%, rgba(7, 16, 24, 0.72) 55%, rgba(10, 14, 20, 0.88) 100%),
-    url("/assets/stadium-floodlight-derby-bg.jpg") center / cover no-repeat,
+    url("/assets/stadium-floodlight-derby-neutral-bg.jpg") center / cover no-repeat,
     var(--menu-night);
 }
 
 .screen.menu.menu-home {
-  justify-content: center;
-  padding: clamp(20px, 4vw, 40px) 20px;
-  gap: 18px;
-  overflow-y: hidden;
+  /* Sit content under the notch band; avoid a large empty strip below actions */
+  justify-content: flex-start;
+  padding-top: max(clamp(18px, 4vh, 36px), env(safe-area-inset-top, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+  padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.screen.menu.menu-home .menu-hero {
+  margin-top: min(4vh, 28px);
 }
 
 .screen.menu.menu-home::before,
@@ -299,6 +321,14 @@ button {
   border: 1px solid rgba(248, 250, 252, 0.18);
 }
 
+.screen.menu.menu-mood select {
+  min-height: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  padding: 0 16px;
+  font-weight: 700;
+}
+
 .screen.menu.menu-mood .chal-input::placeholder {
   color: rgba(148, 163, 184, 0.85);
 }
@@ -449,8 +479,8 @@ button {
 }
 
 .menu-side-gast {
-  background: color-mix(in srgb, var(--vfb) 88%, #0f172a);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--vfb) 40%, transparent);
+  background: color-mix(in srgb, var(--vfb-ui, var(--vfb)) 88%, #0f172a);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--vfb-ui, var(--vfb)) 40%, transparent);
 }
 
 .menu-side-vs {
@@ -537,6 +567,8 @@ button {
   color: rgba(148, 163, 184, 0.85);
   max-width: 420px;
   text-align: center;
+  margin-top: 4px;
+  margin-bottom: 0;
 }
 
 .screen.menu.menu-home .fs-hint b {
@@ -975,7 +1007,10 @@ button {
 
 @media (orientation: landscape) and (max-height: 500px) {
   .screen.menu {
-    padding: 8px 12px;
+    padding-top: max(8px, env(safe-area-inset-top, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
     gap: 8px;
     justify-content: flex-start;
     overflow-y: auto;
@@ -1079,13 +1114,17 @@ label.field {
 }
 
 select {
-  min-height: 44px;
-  border-radius: 12px;
+  min-height: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--line);
   background: #fff;
   color: var(--ink);
-  padding: 0 12px;
-  font-weight: 600;
+  padding: 0 16px;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-sizing: border-box;
 }
 
 .tiny {
@@ -3581,6 +3620,13 @@ html.standalone {
   background: var(--bg0);
 }
 
+html.is-fs:has(.menu-home),
+html.is-fs:has(.menu-mood),
+html.standalone:has(.menu-home),
+html.standalone:has(.menu-mood) {
+  background: var(--menu-night);
+}
+
 html.is-fs,
 html.standalone,
 html.is-fs body,
@@ -3597,6 +3643,17 @@ html.standalone #app,
   padding: 0;
   background: var(--bg0);
   overflow: hidden;
+}
+
+html.is-fs:has(.menu-home) body,
+html.is-fs:has(.menu-mood) body,
+html.standalone:has(.menu-home) body,
+html.standalone:has(.menu-mood) body,
+html.is-fs:has(.menu-home) #app,
+html.is-fs:has(.menu-mood) #app,
+html.standalone:has(.menu-home) #app,
+html.standalone:has(.menu-mood) #app {
+  background: var(--menu-night);
 }
 
 html.is-fs .match-shell.a2c,

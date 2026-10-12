@@ -87,8 +87,11 @@ export const SCENE_ASSETS = {
   tribuneBlue: uiPath("tribuneBlueWide150", "icons/ui-final/tribune-block-blue-wide150.png"),
   tribuneGrey: uiPath("tribuneGreyWide150", "icons/ui-final/tribune-block-grey-wide150.png"),
   tribuneRed: uiPath("tribuneRedWide150", "icons/ui-final/tribune-block-red-wide150.png"),
-  /** Binding match backdrop — see MATCH_LAYOUT_TOKENS.json / stadium-background rule */
-  stadiumFloodlightDerby: assetUrl("assets/stadium-floodlight-derby-bg.jpg"),
+  /**
+   * Binding match backdrop — neutral dark/grey plate; kit colors applied at runtime
+   * via getDualKitTintedCanvas (see stadium-background rule).
+   */
+  stadiumFloodlightDerby: assetUrl("assets/stadium-floodlight-derby-neutral-bg.jpg"),
 } as const;
 
 export function tribuneIconPath(blockId: number): string {

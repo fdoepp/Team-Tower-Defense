@@ -5,7 +5,7 @@
     "w": 1600,
     "h": 900
   },
-  "background": "game/public/assets/stadium-floodlight-derby-bg.jpg",
+  "background": "game/public/assets/stadium-floodlight-derby-neutral-bg.jpg",
   "notes": "Verbindliche Rahmenlogik. Rails: left +10% / right +50% vs 23.1%/19.5%. Scoreboard ohne Live-Wimpel. Far-slots ≥0.5% Gap. Gebäude ×1.2 (fixiert, kein Idle-Wobble). Gang ohne Territorium-Wash. Stand-Wait-Radius + Queue-Wutsmileys. Grau-Starter ~20 Fans shoppen. Tor-FX: Fans Konfetti / Ultras Rauch / Hools Bier|Rakete.",
   "rails": {
     "left_w": 0.2541,
