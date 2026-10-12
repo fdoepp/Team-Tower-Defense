@@ -1112,7 +1112,7 @@ function renderMenu(): void {
       </div>
       <header class="menu-hero">
         <p class="menu-eyebrow">Matchday TD</p>
-        <h1 class="brand">LaneLink</h1>
+        <h1 class="brand">Derby Time</h1>
         <p class="sub match-line">Blöcke · Gang · Stimmung</p>
         <div class="menu-sides" aria-hidden="true">
           <span class="menu-side menu-side-heim">Heim</span>
@@ -2107,7 +2107,7 @@ function renderMatchScreen(): void {
             <button class="btn ksc" type="button" id="fs-enter">Vollbild starten</button>
             ${
               iosHint
-                ? `<p class="tiny">iPhone: Teilen-Symbol → <b>Zum Home-Bildschirm</b>, dann LaneLink von dort öffnen.</p>`
+                ? `<p class="tiny">iPhone: Teilen-Symbol → <b>Zum Home-Bildschirm</b>, dann Derby Time von dort öffnen.</p>`
                 : `<p class="tiny">Danach Handy quer halten.</p>`
             }
           </div>
