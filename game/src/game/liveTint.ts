@@ -104,9 +104,11 @@ export function recolorImageData(
   secondaryHex?: string,
 ): void {
   const [tr, tg, tb] = parseHex(primaryHex);
-  const [th, ts] = rgbToHsl(tr, tg, tb);
+  const [th, ts, tl] = rgbToHsl(tr, tg, tb);
   const sec = secondaryHex ? parseHex(secondaryHex) : null;
   const [sh, ss] = sec ? rgbToHsl(sec[0], sec[1], sec[2]) : [0, 0];
+  const whiteKit = ts < 0.18 && tl > 0.82;
+  const blackKit = ts < 0.18 && tl < 0.18;
   const px = data.data;
   for (let i = 0; i < px.length; i += 4) {
     const a = px[i + 3]!;
@@ -117,11 +119,24 @@ export function recolorImageData(
     const m = teamMask(r, g, b, base);
     if (m < 0.08) continue;
     const [, , l] = rgbToHsl(r, g, b);
-    // Keep source lightness so shading/folds survive; pull hue/sat from kit
-    const sat = Math.min(1, ts * 0.75 + 0.25 * m);
-    let [nr, ng, nb] = hslToRgb(th, sat, l);
+    let nr: number;
+    let ng: number;
+    let nb: number;
+    if (whiteKit) {
+      // DE/ENG white home: lift blue/red tribune pixels to bright white kit
+      const nl = Math.min(0.97, 0.62 + l * 0.36);
+      [nr, ng, nb] = hslToRgb(th, 0.04, nl);
+    } else if (blackKit) {
+      const nl = Math.max(0.04, l * 0.28);
+      [nr, ng, nb] = hslToRgb(th, 0.05, nl);
+    } else {
+      // Keep source lightness so shading/folds survive; pull hue/sat from kit
+      const sat = Math.min(1, ts * 0.75 + 0.25 * m);
+      [nr, ng, nb] = hslToRgb(th, sat, l);
+    }
     // Soft secondary accents on very light team pixels (scarves/trim)
-    if (sec && l > 0.72 && m > 0.35 && ss > 0.15) {
+    // Skip on white kits — secondary (e.g. black) is for FX, not tribune wash
+    if (sec && !whiteKit && l > 0.72 && m > 0.35 && ss > 0.15) {
       const [sr, sg, sb] = hslToRgb(sh, Math.min(1, ss), Math.min(0.92, l));
       const t = (l - 0.72) / 0.28;
       nr = Math.round(nr * (1 - t) + sr * t);

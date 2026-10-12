@@ -59,6 +59,9 @@ import {
 } from "./game/util";
 import {
   applyClubCssVars,
+  awayKitClashActive,
+  clubPrimary,
+  clubSecondary,
   clubsByCountry,
   currentBranding,
   DEFAULT_AI_CLUB,
@@ -718,12 +721,19 @@ function countryOptionsHtml(selected: string): string {
 
 function kitSwatchHtml(clubId: ClubId): string {
   const c = getClub(clubId);
-  // Inspired mark (not an official crest)
+  // Match preview: show effective kit (away may be secondary on clash)
+  const brand = currentBranding();
+  const side =
+    clubId === brand.heim.id ? "ksc" : clubId === brand.gast.id ? "vfb" : null;
+  const prim = side ? clubPrimary(side) : c.primary;
+  const sec = side ? clubSecondary(side) : c.secondary;
   const logo = clubLogoDataUrl(clubId, 72);
   const mark = logo
     ? `<img class="kit-logo" src="${logo}" alt="">`
     : `<i></i>`;
-  return `<span class="kit-swatch" title="${escapeHtml(c.name)}" style="--kit-a:${c.primary};--kit-b:${c.secondary}">${mark}<b>${escapeHtml(c.short)}</b></span>`;
+  const clash =
+    side === "vfb" && awayKitClashActive() ? " · Auswärtsfarbe" : "";
+  return `<span class="kit-swatch" title="${escapeHtml(c.name)}${clash}" style="--kit-a:${prim};--kit-b:${sec}">${mark}<b>${escapeHtml(c.short)}</b></span>`;
 }
 
 applyCssIconUrls();
@@ -1117,7 +1127,7 @@ function renderSoloMatchup(): void {
   const derby = findDerby(state.menuDerbyId);
   const nationFix = findNationalFixture(state.menuNationalFixtureId);
   const matchLine = `${brand.heim.short} vs ${brand.gast.short}`;
-  const derbyHint =
+  let derbyHint =
     state.pickMode === "derby" && derby
       ? derby.rank != null
         ? `Derby #${derby.rank} · ${derby.name}`
@@ -1127,6 +1137,9 @@ function renderSoloMatchup(): void {
           ? `Länderspiel · ${nationFix.name}`
           : "Nationalmannschaften"
         : "Freie Vereinswahl";
+  if (awayKitClashActive()) {
+    derbyHint += ` · ${brand.gast.short} in Auswärtsfarbe`;
+  }
 
   app.innerHTML = `
     <div class="screen menu menu-derby">

@@ -786,9 +786,108 @@ export const DEFAULT_DERBY_ID = "badenwuerttemberg";
 let brandHeim: Club = CLUBS.ksc!;
 let brandGast: Club = CLUBS.vfb!;
 
+/** Effective kit for this matchup (away may switch to secondary on primary clash). */
+let kitHeimPrimary = CLUBS.ksc!.primary;
+let kitHeimSecondary = CLUBS.ksc!.secondary;
+let kitGastPrimary = CLUBS.vfb!.primary;
+let kitGastSecondary = CLUBS.vfb!.secondary;
+/** True when Gast plays secondary because primaries clash. */
+let gastKitClash = false;
+
+function parseHexRgb(hex: string): [number, number, number] {
+  const h = hex.replace("#", "").trim();
+  const full =
+    h.length === 3 ? h.split("").map((c) => c + c).join("") : h.padEnd(6, "0");
+  return [
+    parseInt(full.slice(0, 2), 16) || 0,
+    parseInt(full.slice(2, 4), 16) || 0,
+    parseInt(full.slice(4, 6), 16) || 0,
+  ];
+}
+
+function rgbDist(a: string, b: string): number {
+  const [r1, g1, b1] = parseHexRgb(a);
+  const [r2, g2, b2] = parseHexRgb(b);
+  const dr = r1 - r2;
+  const dg = g1 - g2;
+  const db = b1 - b2;
+  return Math.sqrt(dr * dr + dg * dg + db * db);
+}
+
+function rgbToHslSimple(
+  r: number,
+  g: number,
+  b: number,
+): [number, number, number] {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return [0, 0, l];
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h = 0;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else h = ((r - g) / d + 4) / 6;
+  return [h * 360, s, l];
+}
+
+/** True when two kit primaries would be hard to tell apart on pitch/tribune. */
+export function kitPrimariesClash(a: string, b: string): boolean {
+  if (rgbDist(a, b) < 72) return true;
+  const [r1, g1, b1] = parseHexRgb(a);
+  const [r2, g2, b2] = parseHexRgb(b);
+  const [h1, s1, l1] = rgbToHslSimple(r1, g1, b1);
+  const [h2, s2, l2] = rgbToHslSimple(r2, g2, b2);
+  // Both near-white / near-black
+  if (l1 > 0.85 && l2 > 0.85) return true;
+  if (l1 < 0.12 && l2 < 0.12) return true;
+  // Same hue family (e.g. Leverkusen vs Köln red)
+  if (s1 > 0.28 && s2 > 0.28) {
+    let dh = Math.abs(h1 - h2);
+    if (dh > 180) dh = 360 - dh;
+    if (dh < 32 && Math.abs(l1 - l2) < 0.28) return true;
+  }
+  return false;
+}
+
+function contrastFallback(against: string): string {
+  return hexLuma(against) > 140 ? "#0f172a" : "#f8fafc";
+}
+
+function resolveMatchKits(): void {
+  kitHeimPrimary = brandHeim.primary;
+  kitHeimSecondary = brandHeim.secondary;
+  kitGastPrimary = brandGast.primary;
+  kitGastSecondary = brandGast.secondary;
+  gastKitClash = false;
+
+  if (!kitPrimariesClash(kitHeimPrimary, kitGastPrimary)) return;
+
+  // Away plays in secondary (classic kit clash)
+  const awayAlt = brandGast.secondary;
+  if (
+    !kitPrimariesClash(kitHeimPrimary, awayAlt) &&
+    rgbDist(awayAlt, brandGast.primary) > 28
+  ) {
+    kitGastPrimary = awayAlt;
+    kitGastSecondary = brandGast.primary;
+    gastKitClash = true;
+    return;
+  }
+  // Secondary also clashes / is too close — pick high-contrast fallback
+  kitGastPrimary = contrastFallback(kitHeimPrimary);
+  kitGastSecondary = brandGast.primary;
+  gastKitClash = true;
+}
+
 export function setSideBranding(heimClubId: ClubId, gastClubId: ClubId): void {
   brandHeim = getClub(heimClubId);
   brandGast = getClub(gastClubId);
+  resolveMatchKits();
   // Invalidate live-tinted sprite cache (lazy import avoids cycles)
   void import("./liveTint").then((m) => m.bumpLiveTintEpoch()).catch(() => {});
 }
@@ -803,12 +902,29 @@ export function clubShort(side: "ksc" | "vfb"): string {
   return side === "ksc" ? brandHeim.short : brandGast.short;
 }
 
+/** Match kit primary (tribune / units) — away may be secondary on clash. */
 export function clubPrimary(side: "ksc" | "vfb"): string {
-  return side === "ksc" ? brandHeim.primary : brandGast.primary;
+  return side === "ksc" ? kitHeimPrimary : kitGastPrimary;
 }
 
+/** Match kit secondary (trim / FX accents). */
 export function clubSecondary(side: "ksc" | "vfb"): string {
-  return side === "ksc" ? brandHeim.secondary : brandGast.secondary;
+  return side === "ksc" ? kitHeimSecondary : kitGastSecondary;
+}
+
+/**
+ * Accent for pyro / confetti / smoke.
+ * Light home kits (DE weiß, ENG weiß) use secondary (schwarz/navy) like KSC uses white.
+ */
+export function clubFxColor(side: "ksc" | "vfb"): string {
+  const p = clubPrimary(side);
+  const s = clubSecondary(side);
+  if (hexLuma(p) > 200) return s;
+  return p;
+}
+
+export function awayKitClashActive(): boolean {
+  return gastKitClash;
 }
 
 /** Flag paint for a side (nationals only). */
@@ -847,16 +963,27 @@ function uiInk(fill: string): string {
 
 /** Push club colors into CSS variables used by HUD / buttons. */
 export function applyClubCssVars(root: HTMLElement = document.documentElement): void {
-  root.style.setProperty("--ksc", brandHeim.primary);
-  root.style.setProperty("--vfb", brandGast.primary);
-  root.style.setProperty("--ksc-secondary", brandHeim.secondary);
-  root.style.setProperty("--vfb-secondary", brandGast.secondary);
-  const kscUi = uiFill(brandHeim.primary, brandHeim.secondary);
-  const vfbUi = uiFill(brandGast.primary, brandGast.secondary);
+  const heimP = clubPrimary("ksc");
+  const gastP = clubPrimary("vfb");
+  const heimS = clubSecondary("ksc");
+  const gastS = clubSecondary("vfb");
+  root.style.setProperty("--ksc", heimP);
+  root.style.setProperty("--vfb", gastP);
+  root.style.setProperty("--ksc-secondary", heimS);
+  root.style.setProperty("--vfb-secondary", gastS);
+  const kscUi = uiFill(heimP, heimS);
+  const vfbUi = uiFill(gastP, gastS);
   root.style.setProperty("--ksc-ui", kscUi);
   root.style.setProperty("--vfb-ui", vfbUi);
   root.style.setProperty("--ksc-ink", uiInk(kscUi));
   root.style.setProperty("--vfb-ink", uiInk(vfbUi));
+}
+
+/** Catalog check: every entry has distinct primary + secondary. */
+export function allClubsHaveKitPair(): boolean {
+  return Object.values(CLUBS).every(
+    (c) => !!c.primary && !!c.secondary && c.primary.toLowerCase() !== c.secondary.toLowerCase(),
+  );
 }
 
 export function ensureRequiredClubsPresent(): { liverpool: boolean; leverkusen: boolean } {
