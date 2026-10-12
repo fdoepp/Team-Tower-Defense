@@ -137,9 +137,22 @@ export function recolorImageData(
 /** Infer base palette from asset path / filename. */
 export function paletteFromPath(src: string): BasePalette | null {
   const s = src.toLowerCase();
+  // Side-named assets (Bauschild / Pennant): ksc = heim/blue, vfb = gast/red
+  if (
+    /(?:^|[/-])(?:baustelle-schild|pennant|wimpel)[^/]*vfb/.test(s) ||
+    /(?:^|[/-])vfb(?:[-.]|$)/.test(s)
+  ) {
+    return "red";
+  }
+  if (
+    /(?:^|[/-])(?:baustelle-schild|pennant|wimpel)[^/]*ksc/.test(s) ||
+    /(?:^|[/-])ksc(?:[-.]|$)/.test(s)
+  ) {
+    return "blue";
+  }
   // Prefer explicit tokens; avoid matching "red" inside unrelated words
   if (
-    /(?:^|[/-])(?:fan|ultra|hooligan|ordner|bier|fanshop|stand|tribune|slot-empty|fist|pyro|pennant|wimpel)[^/]*red/.test(
+    /(?:^|[/-])(?:fan|ultra|hooligan|ordner|bier|fanshop|stand|tribune|slot-empty|fist|pyro|pennant|wimpel|fx-)[^/]*red/.test(
       s,
     ) ||
     /(?:^|[/-])red(?:[-.]|$)/.test(s) ||
@@ -149,7 +162,7 @@ export function paletteFromPath(src: string): BasePalette | null {
     return "red";
   }
   if (
-    /(?:^|[/-])(?:fan|ultra|hooligan|ordner|bier|fanshop|stand|tribune|slot-empty|fist|pyro|pennant|wimpel)[^/]*blue/.test(
+    /(?:^|[/-])(?:fan|ultra|hooligan|ordner|bier|fanshop|stand|tribune|slot-empty|fist|pyro|pennant|wimpel|fx-)[^/]*blue/.test(
       s,
     ) ||
     /(?:^|[/-])blue(?:[-.]|$)/.test(s) ||
@@ -180,6 +193,15 @@ export function liveTintMetaForPath(src: string): LiveTintMeta | null {
     pullsFrom: "sideKitPrimary",
     side: pal === "blue" ? "heim" : "gast",
   };
+}
+
+function cachePut(key: string, canvas: HTMLCanvasElement): HTMLCanvasElement {
+  tintCache.set(key, canvas);
+  if (tintCache.size > 220) {
+    const first = tintCache.keys().next().value;
+    if (first) tintCache.delete(first);
+  }
+  return canvas;
 }
 
 /**
@@ -215,13 +237,40 @@ export function getLiveTintedCanvas(
   const imageData = ctx.getImageData(0, 0, w, h);
   recolorImageData(imageData, base, primary, secondary);
   ctx.putImageData(imageData, 0, 0);
-  tintCache.set(key, canvas);
-  // Cap cache size
-  if (tintCache.size > 220) {
-    const first = tintCache.keys().next().value;
-    if (first) tintCache.delete(first);
-  }
-  return canvas;
+  return cachePut(key, canvas);
+}
+
+/**
+ * Dual-side tint for stadium backdrop (baked blue crowd ↔ heim, red ↔ gast).
+ */
+export function getDualKitTintedCanvas(
+  img: HTMLImageElement,
+  src: string,
+): HTMLCanvasElement | null {
+  const heim = clubPrimary("ksc");
+  const gast = clubPrimary("vfb");
+  const heimSec = clubSecondary("ksc");
+  const gastSec = clubSecondary("vfb");
+  const key = `${brandEpoch}|dual|${src}|${heim}|${gast}`;
+  const hit = tintCache.get(key);
+  if (hit) return hit;
+
+  const w = img.naturalWidth || img.width;
+  const h = img.naturalHeight || img.height;
+  if (w < 2 || h < 2) return null;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return null;
+  ctx.drawImage(img, 0, 0);
+  const imageData = ctx.getImageData(0, 0, w, h);
+  // Apply both palettes onto the same bitmap (blue→heim, red→gast)
+  recolorImageData(imageData, "blue", heim, heimSec);
+  recolorImageData(imageData, "red", gast, gastSec);
+  ctx.putImageData(imageData, 0, 0);
+  return cachePut(key, canvas);
 }
 
 /** Hex primary for a side — for particles / procedural FX. */

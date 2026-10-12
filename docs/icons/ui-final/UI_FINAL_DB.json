@@ -4380,7 +4380,13 @@
       "approvedAt": "2026-10-09T07:29:01.534Z",
       "notes": "Freigegeben — freigestellt, ohne Hilfslinien, upright Perspective.",
       "category": "ui",
-      "source": "game/public/icons/ui/pennant-ksc.png"
+      "source": "game/public/icons/ui/pennant-ksc.png",
+      "liveTint": {
+        "enabled": true,
+        "basePalette": "blue",
+        "pullsFrom": "sideKitPrimary",
+        "side": "heim"
+      }
     },
     "pennantVfb": {
       "id": "pennantVfb",
@@ -4419,7 +4425,13 @@
       "approvedAt": "2026-10-09T07:29:01.662Z",
       "notes": "Freigegeben — freigestellt, ohne Hilfslinien, upright Perspective.",
       "category": "ui",
-      "source": "game/public/icons/ui/pennant-vfb.png"
+      "source": "game/public/icons/ui/pennant-vfb.png",
+      "liveTint": {
+        "enabled": true,
+        "basePalette": "red",
+        "pullsFrom": "sideKitPrimary",
+        "side": "gast"
+      }
     },
     "scoreboardChrome": {
       "id": "scoreboardChrome",
@@ -6077,7 +6089,13 @@
       },
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-10T12:57:50.725Z",
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
+      "liveTint": {
+        "enabled": true,
+        "basePalette": "blue",
+        "pullsFrom": "sideKitPrimary",
+        "side": "heim"
+      }
     },
     "baustelleSchildVfb": {
       "id": "baustelleSchildVfb",
@@ -6114,7 +6132,13 @@
       },
       "approvedBy": "fdoepp",
       "approvedAt": "2026-10-10T12:57:50.923Z",
-      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden."
+      "notes": "Wartet auf manuelle Freigabe. Nicht in released/ verwenden.",
+      "liveTint": {
+        "enabled": true,
+        "basePalette": "red",
+        "pullsFrom": "sideKitPrimary",
+        "side": "gast"
+      }
     },
     "baustelleSchildNeutral": {
       "id": "baustelleSchildNeutral",

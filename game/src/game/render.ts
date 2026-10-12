@@ -48,7 +48,7 @@ import {
   type SlotControl,
 } from "./assets";
 import { clubPrimary, clubSecondary, clubShort } from "./clubs";
-import { sideKitHex, sideKitRgba } from "./liveTint";
+import { getDualKitTintedCanvas, sideKitHex, sideKitRgba } from "./liveTint";
 import {
   boothFacadeQuad,
   scaleQuad,
@@ -212,10 +212,16 @@ function drawStadiumBackdrop(
   w: number,
   h: number,
 ): boolean {
-  const img = getRawIcon(SCENE_ASSETS.stadiumFloodlightDerby);
-  if (!img?.complete || !img.naturalWidth) return false;
-  const iw = img.naturalWidth;
-  const ih = img.naturalHeight;
+  const raw = getRawIcon(SCENE_ASSETS.stadiumFloodlightDerby);
+  if (!raw?.complete || !raw.naturalWidth) return false;
+  // Live dual tint: baked blue crowd → heim kit, red → gast kit
+  const tinted = getDualKitTintedCanvas(
+    raw,
+    SCENE_ASSETS.stadiumFloodlightDerby,
+  );
+  const img: CanvasImageSource = tinted ?? raw;
+  const iw = tinted ? tinted.width : raw.naturalWidth;
+  const ih = tinted ? tinted.height : raw.naturalHeight;
   const s = Math.max(w / iw, h / ih);
   const dw = iw * s;
   const dh = ih * s;

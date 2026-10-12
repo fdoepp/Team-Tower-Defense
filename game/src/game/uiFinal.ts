@@ -192,6 +192,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "baustelleSchildNeutral": {
     file: "baustelle-schild-neutral.png",
@@ -208,6 +214,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "btnBauenAmber": {
     file: "btn-bauen-amber.png",
@@ -1114,6 +1126,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "blue",
+      pullsFrom: "sideKitPrimary",
+      side: "heim",
+    },
   },
   "pennantVfb": {
     file: "pennant-vfb.png",
@@ -1122,6 +1140,12 @@ export const UI_FINAL_PATHS = {
     aspectRatio: 1,
     preserveAspect: true,
     freigestellt: true,
+    liveTint: {
+      enabled: true,
+      basePalette: "red",
+      pullsFrom: "sideKitPrimary",
+      side: "gast",
+    },
   },
   "scoreboard": {
     file: "scoreboard-top.png",
