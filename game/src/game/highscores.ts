@@ -12,10 +12,13 @@ export type HighscoreEntry = {
   difficulty: AiDifficulty;
   /** Side slot the player won with (legacy / ScoreDrop encode) */
   team?: TeamId;
-  /** Club id the player used (stable label, not live branding) */
+  /** Club id the player used — frozen at insert, never live menu branding */
   playerClub?: string;
-  /** Club id of the AI opponent */
+  /** Club id of the AI opponent — frozen at insert */
   opponentClub?: string;
+  /** Immutable short codes snapshotted at insert (survive catalog / branding changes) */
+  playerShort?: string;
+  opponentShort?: string;
 };
 
 export type HighscoreTables = Record<
@@ -66,7 +69,9 @@ export function loadHighscores(): HighscoreTables {
     for (const d of ["easy", "normal", "hard"] as AiDifficulty[]) {
       for (const k of ["ergebnis", "blocksturm"] as ScoreBoardKind[]) {
         const list = parsed?.[d]?.[k];
-        base[d][k] = Array.isArray(list) ? list.slice(0, TOP_N) : [];
+        base[d][k] = Array.isArray(list)
+          ? list.slice(0, TOP_N).map((e) => freezeEntryClubs(e))
+          : [];
       }
     }
     return base;
@@ -108,7 +113,8 @@ function sanitizeName(name: string): string {
     .trim();
 }
 
-/** Stable club short code from stored club id or `short:CODE` placeholder. */
+/** Stable club short code from stored club id or `short:CODE` placeholder.
+ * Never uses live side branding (`clubShort("ksc"|"vfb")`). */
 export function clubCode(clubId?: string): string {
   if (!clubId) return "";
   if (clubId.startsWith("short:")) return clubId.slice(6);
@@ -119,20 +125,65 @@ export function clubCode(clubId?: string): string {
   }
 }
 
-/** Display short for a highscore side — prefers stored club id / short:CODE. */
+/** Parse "B04 vs LIV" (or "B04vLIV") out of a frozen detail string. */
+function matchupFromDetail(detail: string): {
+  playerShort?: string;
+  opponentShort?: string;
+} {
+  const m =
+    detail.match(/\b([A-Za-z0-9]{2,5})\s+vs\s+([A-Za-z0-9]{2,5})\b/i) ||
+    detail.match(/\b([A-Za-z0-9]{2,5})v([A-Za-z0-9]{2,5})\b/);
+  if (!m) return {};
+  return { playerShort: m[1], opponentShort: m[2] };
+}
+
+/**
+ * Snapshot club shorts onto the entry so display never depends on the
+ * current menu selection / live branding.
+ */
+export function freezeEntryClubs(entry: HighscoreEntry): HighscoreEntry {
+  const fromDetail = matchupFromDetail(entry.detail || "");
+  const playerShort =
+    entry.playerShort ||
+    clubCode(entry.playerClub) ||
+    fromDetail.playerShort ||
+    undefined;
+  const opponentShort =
+    entry.opponentShort ||
+    clubCode(entry.opponentClub) ||
+    fromDetail.opponentShort ||
+    undefined;
+  return {
+    ...entry,
+    playerShort,
+    opponentShort,
+    // Keep ids when present; also store short: placeholders for remote-only rows
+    playerClub:
+      entry.playerClub ||
+      (playerShort ? `short:${playerShort}` : undefined),
+    opponentClub:
+      entry.opponentClub ||
+      (opponentShort ? `short:${opponentShort}` : undefined),
+  };
+}
+
+/** Display short for a highscore side — entry snapshot only, never live branding. */
 export function entryClubShort(
   clubId: string | undefined,
   fallbackTeam?: TeamId,
+  frozenShort?: string,
 ): string {
+  if (frozenShort) return frozenShort;
   const code = clubCode(clubId);
   if (code) return code;
+  // Legacy side slot only — fixed KSC/VfB labels, NOT current kit branding
   return teamShort(fallbackTeam);
 }
 
-/** e.g. "B04 vs LIV" — empty if unknown */
+/** e.g. "B04 vs LIV" — from the entry's frozen match, never current menu clubs */
 export function matchupLabel(entry: HighscoreEntry): string {
-  const a = entryClubShort(entry.playerClub, entry.team);
-  const b = entryClubShort(entry.opponentClub);
+  const a = entryClubShort(entry.playerClub, entry.team, entry.playerShort);
+  const b = entryClubShort(entry.opponentClub, undefined, entry.opponentShort);
   if (a !== "—" && b !== "—") return `${a} vs ${b}`;
   if (a !== "—") return a;
   return "";
@@ -140,10 +191,47 @@ export function matchupLabel(entry: HighscoreEntry): string {
 
 /** Compact matchup for ScoreDrop detail: B04vLIV */
 function matchupTag(entry: HighscoreEntry): string {
-  const a = entryClubShort(entry.playerClub, entry.team);
-  const b = entryClubShort(entry.opponentClub);
+  const frozen = freezeEntryClubs(entry);
+  const a = entryClubShort(frozen.playerClub, frozen.team, frozen.playerShort);
+  const b = entryClubShort(
+    frozen.opponentClub,
+    undefined,
+    frozen.opponentShort,
+  );
   if (a !== "—" && b !== "—") return `${a}v${b}`;
   return a === "—" ? "" : a;
+}
+
+/** Primary kit color for a stored club id / short:CODE — not live branding. */
+export function entryClubPrimary(clubId?: string): string | undefined {
+  if (!clubId || clubId.startsWith("short:")) return undefined;
+  try {
+    return getClub(clubId).primary;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Prefer richer local club metadata when remote sync would drop it. */
+function mergeClubMeta(
+  remote: HighscoreEntry,
+  local?: HighscoreEntry,
+): HighscoreEntry {
+  const base = freezeEntryClubs(remote);
+  if (!local) return base;
+  const loc = freezeEntryClubs(local);
+  return freezeEntryClubs({
+    ...base,
+    playerClub: loc.playerClub || base.playerClub,
+    opponentClub: loc.opponentClub || base.opponentClub,
+    playerShort: loc.playerShort || base.playerShort,
+    opponentShort: loc.opponentShort || base.opponentShort,
+    // Keep remote detail if it already has vs; else prefer local detail with matchup
+    detail:
+      matchupFromDetail(base.detail).playerShort || !loc.detail
+        ? base.detail
+        : loc.detail,
+  });
 }
 
 function shortDetail(entry: HighscoreEntry, kind: ScoreBoardKind): string {
@@ -234,19 +322,21 @@ function decodePlayer(
         ? `${label} · ${vs} (${difficultyLabel(difficulty)})`
         : `${label} · ${teamShort(team)} (${difficultyLabel(difficulty)})`;
     }
-    return {
+    return freezeEntryClubs({
       name,
       team,
       detail,
       value,
       difficulty,
       at: new Date(0).toISOString(),
-      // Shorts only from remote tag — ids unknown after round-trip
+      // Shorts from remote tag — ids unknown after round-trip
+      playerShort: playerShort || undefined,
+      opponentShort: opponentShort || undefined,
       playerClub: playerShort ? `short:${playerShort}` : undefined,
       opponentClub: opponentShort ? `short:${opponentShort}` : undefined,
-    };
+    });
   }
-  return {
+  return freezeEntryClubs({
     name: sanitizeName(player).slice(0, 20) || "Spieler",
     detail:
       kind === "ergebnis"
@@ -255,7 +345,7 @@ function decodePlayer(
     value: fromRemoteScore(kind, remoteScore),
     difficulty,
     at: new Date(0).toISOString(),
-  };
+  });
 }
 
 function playerIdFor(difficulty: AiDifficulty, kind: ScoreBoardKind, name: string): string {
@@ -298,11 +388,19 @@ export async function fetchSharedHighscores(): Promise<{
   try {
     const diffs: AiDifficulty[] = ["easy", "normal", "hard"];
     const kinds: ScoreBoardKind[] = ["ergebnis", "blocksturm"];
+    const prev = loadHighscores();
     const tables = emptyTables();
     await Promise.all(
       diffs.flatMap((d) =>
         kinds.map(async (k) => {
-          tables[d][k] = await fetchBoard(d, k);
+          const remote = await fetchBoard(d, k);
+          const localByName = new Map(
+            prev[d][k].map((e) => [e.name.trim().toLowerCase(), e]),
+          );
+          // Keep frozen club meta from local cache when remote tag is thin
+          tables[d][k] = remote.map((e) =>
+            mergeClubMeta(e, localByName.get(e.name.trim().toLowerCase())),
+          );
         }),
       ),
     );
@@ -375,19 +473,20 @@ function insertLocal(
   kind: ScoreBoardKind,
   entry: HighscoreEntry,
 ): { placed: boolean; rank: number; tables: HighscoreTables } {
+  const frozen = freezeEntryClubs(entry);
   const tables = loadHighscores();
   const list = [...tables[difficulty][kind]];
   // Replace same-name entry if present
   const without = list.filter(
-    (e) => e.name.trim().toLowerCase() !== entry.name.trim().toLowerCase(),
+    (e) => e.name.trim().toLowerCase() !== frozen.name.trim().toLowerCase(),
   );
-  without.push(entry);
+  without.push(frozen);
   without.sort((a, b) =>
     kind === "ergebnis" ? b.value - a.value : a.value - b.value,
   );
   const rank =
     without.findIndex(
-      (e) => e.name === entry.name && e.value === entry.value,
+      (e) => e.name === frozen.name && e.value === frozen.value,
     ) + 1;
   tables[difficulty][kind] = without.slice(0, TOP_N);
   const placed = rank > 0 && rank <= TOP_N;
@@ -398,17 +497,18 @@ function insertLocal(
 /**
  * Submit to shared board + refresh local cache.
  * Rank is computed from the shared list after submit.
+ * Club meta from this match is preserved even if the remote tag is thin.
  */
 export async function tryInsertHighscoreShared(
   difficulty: AiDifficulty,
   kind: ScoreBoardKind,
   entry: Omit<HighscoreEntry, "difficulty" | "at"> & { at?: string },
 ): Promise<{ placed: boolean; rank: number; tables: HighscoreTables; shared: boolean }> {
-  const full: HighscoreEntry = {
+  const full = freezeEntryClubs({
     ...entry,
     difficulty,
     at: entry.at ?? new Date().toISOString(),
-  };
+  });
   let shared = false;
   try {
     shared = await submitRemote(difficulty, kind, full);
@@ -420,10 +520,20 @@ export async function tryInsertHighscoreShared(
   try {
     const list = await fetchBoard(difficulty, kind);
     const tables = loadHighscores();
-    tables[difficulty][kind] = list;
+    const merged = list.map((e) =>
+      e.name.trim().toLowerCase() === full.name.trim().toLowerCase()
+        ? mergeClubMeta(e, full)
+        : mergeClubMeta(
+            e,
+            tables[difficulty][kind].find(
+              (x) => x.name.trim().toLowerCase() === e.name.trim().toLowerCase(),
+            ),
+          ),
+    );
+    tables[difficulty][kind] = merged;
     saveLocal(tables);
     const rank =
-      list.findIndex(
+      merged.findIndex(
         (e) =>
           e.name.trim().toLowerCase() === full.name.trim().toLowerCase(),
       ) + 1;
@@ -441,11 +551,11 @@ export function tryInsertHighscore(
   kind: ScoreBoardKind,
   entry: Omit<HighscoreEntry, "difficulty" | "at"> & { at?: string },
 ): { placed: boolean; rank: number; tables: HighscoreTables } {
-  const full: HighscoreEntry = {
+  const full = freezeEntryClubs({
     ...entry,
     difficulty,
     at: entry.at ?? new Date().toISOString(),
-  };
+  });
   return insertLocal(difficulty, kind, full);
 }
 
@@ -455,6 +565,7 @@ export function difficultyLabel(d: AiDifficulty): string {
   return "Mittel";
 }
 
+/** Fixed side-slot labels only — must NOT call live `clubShort()`. */
 export function teamShort(t?: TeamId): string {
   if (t === "ksc") return "KSC";
   if (t === "vfb") return "VfB";

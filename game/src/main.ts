@@ -116,6 +116,7 @@ function setLiveTintImg(ico: HTMLImageElement | null, src: string): void {
 import {
   blocksturmValue,
   difficultyLabel,
+  entryClubPrimary,
   ergebnisValue,
   fetchSharedHighscores,
   loadHighscores,
@@ -856,9 +857,9 @@ function renderTutorial(): void {
 function hsMatchupBadge(e: HighscoreEntry): string {
   const label = matchupLabel(e);
   if (!label) return "";
-  const cls =
-    e.team === "ksc" || e.team === "vfb" ? `hs-team ${e.team}` : "hs-team";
-  return `<span class="${cls}">${escapeHtml(label)}</span>`;
+  // Color from the stored match clubs — never current menu --ksc/--vfb
+  const prim = entryClubPrimary(e.playerClub) || "#64748b";
+  return `<span class="hs-team" style="background:${prim}">${escapeHtml(label)}</span>`;
 }
 
 /** Detail without matchup (badge shows Gegner separately). */
