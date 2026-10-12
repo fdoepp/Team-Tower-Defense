@@ -1,4 +1,4 @@
-import { getClub } from "./clubs";
+import { clubIdFromShort, getClub } from "./clubs";
 import type { AiDifficulty, TeamId } from "./types";
 
 export type ScoreBoardKind = "ergebnis" | "blocksturm";
@@ -206,11 +206,38 @@ function matchupTag(entry: HighscoreEntry): string {
   return a === "—" ? "" : a;
 }
 
+/**
+ * Resolve a stable club id from an entry field (`leverkusen` or `short:B04`).
+ * Never uses live side branding.
+ */
+export function resolveEntryClubId(
+  clubId?: string,
+  frozenShort?: string,
+): string | undefined {
+  if (clubId && !clubId.startsWith("short:")) {
+    try {
+      getClub(clubId);
+      return clubId;
+    } catch {
+      /* fall through */
+    }
+  }
+  const short =
+    frozenShort ||
+    (clubId?.startsWith("short:") ? clubId.slice(6) : "") ||
+    clubCode(clubId);
+  return clubIdFromShort(short) || undefined;
+}
+
 /** Primary kit color for a stored club id / short:CODE — not live branding. */
-export function entryClubPrimary(clubId?: string): string | undefined {
-  if (!clubId || clubId.startsWith("short:")) return undefined;
+export function entryClubPrimary(
+  clubId?: string,
+  frozenShort?: string,
+): string | undefined {
+  const id = resolveEntryClubId(clubId, frozenShort);
+  if (!id) return undefined;
   try {
-    return getClub(clubId).primary;
+    return getClub(id).primary;
   } catch {
     return undefined;
   }

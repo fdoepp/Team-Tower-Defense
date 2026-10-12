@@ -121,9 +121,11 @@ import {
   entryClubPrimary,
   ergebnisValue,
   fetchSharedHighscores,
+  freezeEntryClubs,
   loadHighscores,
   loadPersonalHighscores,
   matchupLabel,
+  resolveEntryClubId,
   tryInsertHighscoreShared,
   wouldEnterTop10Shared,
   type HighscoreEntry,
@@ -855,62 +857,148 @@ function renderMenu(): void {
   });
 }
 
-function renderTutorial(): void {
+type TutStep = {
+  id: string;
+  title: string;
+  lead: string;
+  body: string;
+  diagram: string;
+};
+
+const TUTORIAL_STEPS: TutStep[] = [
+  {
+    id: "welcome",
+    title: "Willkommen im Stadion",
+    lead: "Kurz geführt — dann kickst du selbst.",
+    body: "Du spielst die <b>Heimkurve</b>: baue Stände, hole Fans, sende Ultras/Hools in den Gang und schiebe Momentum bis zum Tor — oder stürme den Gästeblock.",
+    diagram: `
+      <div class="tut-diagram tut-stadion" aria-hidden="true">
+        <div class="tut-block heim">Heim</div>
+        <div class="tut-gang">Gang</div>
+        <div class="tut-block gast">Gast</div>
+      </div>`,
+  },
+  {
+    id: "build",
+    title: "Wie baut man?",
+    lead: "Gebäude-Rail → Bauplatz tippen → Stand wählen.",
+    body: "<b>Bier</b> füllt Bier (Hools), <b>Fanshop</b> Fanartikel (Ultras), <b>Ordner</b> Sicherheit & Posten. Nur Plots hinter deiner Standarte / Frontlinie. Upgrade erhöht die Produktion.",
+    diagram: `
+      <div class="tut-diagram tut-build" aria-hidden="true">
+        <div class="tut-rail">Gebäude</div>
+        <div class="tut-arrow">→</div>
+        <div class="tut-plot">Bauplatz</div>
+        <div class="tut-arrow">→</div>
+        <div class="tut-stands"><span>Bier</span><span>Shop</span><span>Ordner</span></div>
+      </div>`,
+  },
+  {
+    id: "fans",
+    title: "Personen holen",
+    lead: "Personen-Rail: Fans, Ultras, Hooligans kaufen.",
+    body: "<b>Fans</b> pushen Momentum & brauchen Sicherheit. <b>Ultras</b> senden/pyro (Fanartikel). <b>Hooligans</b> Nahkampf (Bier). Mehr Ultras im Block → stärkere <b>Choreo</b> (ab 5 / 10 / 20 / 30).",
+    diagram: `
+      <div class="tut-diagram tut-fans" aria-hidden="true">
+        <div class="tut-fan f">Fan</div>
+        <div class="tut-fan u">Ultra</div>
+        <div class="tut-fan h">Hool</div>
+      </div>`,
+  },
+  {
+    id: "fight",
+    title: "Wie kämpft man?",
+    lead: "Angriff-Rail: Ultras (Fernkampf) oder Hools (Nahkampf) senden.",
+    body: "Einheiten gehen über den <b>Ausgang</b> in den Gang, kämpfen um Raum und können den Gegnerblock besetzen. LIVE-Ticker unter dem Balken zeigt Kampfhinweise.",
+    diagram: `
+      <div class="tut-diagram tut-fight" aria-hidden="true">
+        <div class="tut-block heim">Kurve</div>
+        <div class="tut-path"><span class="tut-dot"></span><span class="tut-dot"></span><span class="tut-dot on"></span></div>
+        <div class="tut-block gast">Gegner</div>
+      </div>`,
+  },
+  {
+    id: "goals",
+    title: "Wie entstehen Tore?",
+    lead: "Momentum-Balken bis ganz in die Gegnerhälfte → Tor.",
+    body: "Fans in deinem Block + Stimmung füllen den Balken. Volle Füllung = <b>Tor</b>, dann Feier im Block, danach Glücksbiergang. Highlight mit Slow-Mo. Bei 45′ wählst du einen <b>Halbzeit-Boost</b>.",
+    diagram: `
+      <div class="tut-diagram tut-mom" aria-hidden="true">
+        <div class="tut-mom-bar"><i style="width:86%"></i><b>⚽</b></div>
+        <p class="tut-mom-cap">Kurve schiebt → Torchance steigt</p>
+      </div>`,
+  },
+  {
+    id: "storm",
+    title: "Blocksturm",
+    lead: "Genug Angreifer im Gegnerblock halten ≈ 5 s.",
+    body: "Ultras/Hools besetzen den Gästeblock und halten das Banner „Hier regiert …“. Das ist ein alternativer Siegweg — und landet im Highscore als schnellster Blocksturm.",
+    diagram: `
+      <div class="tut-diagram tut-storm" aria-hidden="true">
+        <div class="tut-banner">Hier regiert …</div>
+        <div class="tut-timer">5 s</div>
+      </div>`,
+  },
+];
+
+function renderTutorial(stepIndex = 0): void {
+  const i = Math.max(0, Math.min(TUTORIAL_STEPS.length - 1, stepIndex));
+  const step = TUTORIAL_STEPS[i]!;
+  const last = i >= TUTORIAL_STEPS.length - 1;
   app.innerHTML = `
-    <div class="screen menu tutorial-screen">
-      <h1 class="brand">Tutorial</h1>
-      <p class="sub">Kurz vor dem Anpfiff — so gewinnst du</p>
+    <div class="screen menu tutorial-screen tut-guided">
+      <p class="sub">Schritt ${i + 1} / ${TUTORIAL_STEPS.length}</p>
+      <h1 class="brand" style="font-size:1.55rem">${escapeHtml(step.title)}</h1>
+      <p class="sub">${step.lead}</p>
       <div class="card stack tutorial-card">
-        <section>
-          <h2>Siegtypen</h2>
-          <ul>
-            <li><b>Tore</b> — deine Kurve füllt den Momentum-Balken vollständig in die Gegnerhälfte → Tor. Danach Feier im Block, erst danach Glücksbiergang.</li>
-            <li><b>Blocksturm</b> — besetze den gegnerischen Block mit genug Angreifern und halte das Banner (~5 s).</li>
-            <li><b>Elfmeter</b> — bei Unentschieden nach der regulären Zeit.</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Mechaniken</h2>
-          <ul>
-            <li><b>Bauen</b> — Bier / Fanshop / Ordner auf Bauplätzen hinter deiner Standarte.</li>
-            <li><b>Personen</b> — Fans (Momentum), Ultras (Senden/Pyro), Hooligans (Nahkampf), Ordner (Posten).</li>
-            <li><b>Senden</b> — Einheiten gehen über die Ausgänge in den Gang und kämpfen um Raum.</li>
-            <li><b>LIVE-Ticker</b> — Torchance, Kampf und Bau-Hinweise unter dem Balken.</li>
-          </ul>
-        </section>
-        <section>
-          <h2>Matchday-Feel</h2>
-          <ul>
-            <li><b>Kurven-Choreo</b> — ab 5 Ultras im eigenen Block startet automatisch eine Choreo (10 mittel · 20 groß · 30 gigantisch) und schiebt Momentum.</li>
-            <li><b>Rivalen-Charakter</b> — die KI spielt abwartend, aggressiv, bierlastig oder mit frühem Druck (Menü).</li>
-            <li><b>Highlight</b> — bei Tor und Blocksturm kurze Slow-Mo mit TOR!/BLOCKSTURM!-Einblendung.</li>
-            <li><b>Territory</b> — eroberte Blöcke bekommen Kit-Muster (Graffiti), nicht nur Farbe.</li>
-            <li><b>Halbzeit</b> — bei 45′ pausiert das Spiel; du wählst einen Boost für die 2. Hälfte.</li>
-            <li><b>Sound-Identität</b> — jeder Club hat einen eigenen prozeduralen Chant-Klang (keine Original-Hymnen).</li>
-          </ul>
-        </section>
+        ${step.diagram}
+        <p class="tut-body">${step.body}</p>
+        <div class="tut-dots" aria-hidden="true">
+          ${TUTORIAL_STEPS.map((_, di) => `<i class="${di === i ? "on" : ""}"></i>`).join("")}
+        </div>
       </div>
       <div class="row setup-actions">
-        <button class="btn secondary grow" id="tut-back" type="button">Zurück</button>
-        <button class="btn ksc grow" id="tut-next" type="button">Zur Aufstellung</button>
+        <button class="btn secondary grow" id="tut-back" type="button">${i === 0 ? "Menü" : "Zurück"}</button>
+        <button class="btn ksc grow" id="tut-next" type="button">${last ? "Zur Aufstellung" : "Weiter"}</button>
       </div>
     </div>`;
   app.querySelector("#tut-back")!.addEventListener("click", () => {
     sfx("ui");
-    go("menu");
+    if (i === 0) go("menu");
+    else renderTutorial(i - 1);
   });
   app.querySelector("#tut-next")!.addEventListener("click", () => {
     sfx("ui");
-    go("setup");
+    if (last) go("setup");
+    else renderTutorial(i + 1);
   });
 }
 
+/**
+ * Winner badge from the *stored* match — inspired logo + frozen matchup.
+ * Never uses current menu club / live --ksc/--vfb branding.
+ */
 function hsMatchupBadge(e: HighscoreEntry): string {
-  const label = matchupLabel(e);
-  if (!label) return "";
-  // Color from the stored match clubs — never current menu --ksc/--vfb
-  const prim = entryClubPrimary(e.playerClub) || "#64748b";
-  return `<span class="hs-team" style="background:${prim}">${escapeHtml(label)}</span>`;
+  const frozen = {
+    ...e,
+    playerShort: e.playerShort,
+    opponentShort: e.opponentShort,
+  };
+  const label = matchupLabel(frozen);
+  const winnerId = resolveEntryClubId(e.playerClub, e.playerShort);
+  const prim =
+    entryClubPrimary(e.playerClub, e.playerShort) || "#64748b";
+  let mark = "";
+  if (winnerId) {
+    try {
+      const logo = clubLogoDataUrl(winnerId, 64);
+      if (logo) mark = `<img class="hs-logo" src="${logo}" alt="">`;
+    } catch {
+      mark = "";
+    }
+  }
+  if (!label && !mark) return "";
+  const text = label || e.playerShort || "Sieg";
+  return `<span class="hs-team hs-winner" style="background:${prim}">${mark}<span class="hs-vs-label">${escapeHtml(text)}</span></span>`;
 }
 
 /** Detail without matchup (badge shows Gegner separately). */
@@ -936,7 +1024,7 @@ function renderHighscores(): void {
       : loadHighscores();
   const paint = (tables: typeof cached, shared: boolean | null) => {
     const listHtml = (kind: ScoreBoardKind, title: string) => {
-      const rows = tables[d][kind];
+      const rows = tables[d][kind].map((e) => freezeEntryClubs(e));
       if (!rows.length) {
         return scope === "persoenlich"
           ? `<p class="tiny">${title}: noch keine persönlichen Einträge${myName ? ` für „${escapeHtml(myName)}“` : ""}</p>`

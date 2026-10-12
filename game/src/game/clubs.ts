@@ -350,6 +350,17 @@ export function getClub(id: ClubId): Club {
   return c;
 }
 
+/** Resolve catalog id from short code (e.g. B04 → leverkusen). Case-insensitive. */
+export function clubIdFromShort(short: string | undefined): ClubId | undefined {
+  if (!short) return undefined;
+  const want = short.trim().toLowerCase();
+  if (!want) return undefined;
+  for (const c of Object.values(CLUBS)) {
+    if (c.short.toLowerCase() === want) return c.id;
+  }
+  return undefined;
+}
+
 export function allClubs(): Club[] {
   return Object.values(CLUBS).sort((a, b) =>
     a.country === b.country
