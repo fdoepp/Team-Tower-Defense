@@ -108,7 +108,21 @@ import {
   setSideBranding,
 } from "./clubs";
 import { clamp, expandMix, slotKey, teamLabel } from "./util";
-import { sfx, startAmbience } from "./sound";
+import { sfx, startAmbience, playClubChant, setClubSoundIdentity } from "./sound";
+import {
+  CHOREO_COOLDOWN,
+  CHOREO_DURATION,
+  CHOREO_LABEL,
+  CHOREO_MOMENTUM,
+  HIGHLIGHT_DUR,
+  HIGHLIGHT_SLOW,
+  choreoTierFromUltras,
+  personalityMods,
+  type ChoreoState,
+  type ChoreoTier,
+  type HalfBoostId,
+  type HighlightState,
+} from "./feelPack";
 import {
   BLOCK_COUNT,
   GAST_BLOCK,
@@ -342,6 +356,17 @@ export class Match {
   linePlayer = 0;
   lineAi = 1;
 
+  /** Active Kurven-Choreo (player or AI) */
+  choreo: ChoreoState | null = null;
+  private choreoCdPlayer = 0;
+  private choreoCdAi = 0;
+  /** Halbzeit: wartend auf Boost-Wahl */
+  halfTimePending = false;
+  private halfTimeFired = false;
+  halfBoost: HalfBoostId | null = null;
+  /** Cinematic highlight (Tor / Blocksturm) */
+  highlight: HighlightState | null = null;
+
   constructor(cfg: MatchConfig) {
     this.cfg = cfg;
     this.playerTeam = cfg.settings.playerTeam;
@@ -362,6 +387,11 @@ export class Match {
     // Validate clubs exist early
     getClub(playerClub);
     getClub(aiClub);
+    try {
+      setClubSoundIdentity(playerClub, aiClub);
+    } catch {
+      /* non-DOM */
+    }
     this.diffProf = difficultyProfile(cfg.settings.difficulty);
     this.aiGold = START_GOLD + this.diffProf.aiGoldBonus;
     this.aiMerch = this.diffProf.aiStartMerch;
@@ -2002,18 +2032,45 @@ export class Match {
 
   update(dt: number): void {
     syncTribuneLayout(this.width, this.height);
-    if (this.result || this.speed === 0) {
+    if (this.result) {
       this.tickFloats(dt);
       this.tickToasts(dt);
       this.tickConfetti(dt);
       this.tickMoodFx(dt);
       if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - dt * 0.28);
+      if (this.highlight) this.tickHighlight(dt);
       return;
     }
-    const step = dt * this.speed;
+    // Halbzeit-Pause: sim frozen until player picks a 2nd-half boost
+    if (this.halfTimePending) {
+      this.tickFloats(dt);
+      this.tickToasts(dt);
+      this.tickConfetti(dt);
+      this.tickMoodFx(dt);
+      if (this.choreo) this.tickChoreo(dt);
+      return;
+    }
+    if (this.speed === 0) {
+      this.tickFloats(dt);
+      this.tickToasts(dt);
+      this.tickConfetti(dt);
+      this.tickMoodFx(dt);
+      if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - dt * 0.28);
+      if (this.highlight) this.tickHighlight(dt);
+      return;
+    }
+    const slow = this.highlight ? HIGHLIGHT_SLOW : 1;
+    const step = dt * this.speed * slow;
     this.realElapsed += step;
     if (this.phase === "regular") {
       this.minute = (this.realElapsed / REGULAR_REAL_SEC) * 90;
+      if (!this.halfTimeFired && this.minute >= 45) {
+        this.halfTimeFired = true;
+        this.halfTimePending = true;
+        sfx("whistle");
+        this.toast("Halbzeit — wähle deinen Boost für die 2. Hälfte!", 5);
+        return;
+      }
       if (this.realElapsed >= REGULAR_REAL_SEC) {
         if (this.scoreKsc === this.scoreVfb) {
           this.phase = "et";
@@ -2078,12 +2135,15 @@ export class Match {
     this.tickBlockStorm(step);
     this.tickMatch(step);
     this.tickGoalParty(step);
+    this.tickChoreo(step);
     this.tickAi(step);
     this.tickFloats(step);
     this.tickToasts(step);
     this.tickTips(step);
     this.tickConfetti(step);
     this.tickMoodFx(step);
+    // Highlight timer runs in real time (not slowed) so the cinematic ends cleanly
+    if (this.highlight) this.tickHighlight(dt);
 
     for (const f of this.fans) {
       if (f.armSwing > 0) f.armSwing = Math.max(0, f.armSwing - step * 2.2);
@@ -4740,6 +4800,8 @@ export class Match {
       }
       this.blockOwner[blockId] = team;
       const label = teamLabel(team);
+      this.startHighlight("storm", team);
+      playClubChant(team === this.playerTeam ? "player" : "ai", 1);
       this.finish(
         team,
         "invade",
@@ -4866,7 +4928,107 @@ export class Match {
     this.goalPartyT = 11.5;
     sfx("goal");
     sfx("cheer");
+    playClubChant(team === this.playerTeam ? "player" : "ai", 0.9);
+    this.startHighlight("goal", team);
     this.toast(`TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`, 10);
+  }
+
+  private startHighlight(kind: HighlightState["kind"], team: TeamId): void {
+    const dur = HIGHLIGHT_DUR[kind];
+    this.highlight = { kind, team, t: dur, dur };
+  }
+
+  private tickHighlight(dt: number): void {
+    if (!this.highlight) return;
+    this.highlight.t -= dt;
+    if (this.highlight.t <= 0) this.highlight = null;
+  }
+
+  /** Ultras in home block → choreo tier; both sides can fire. */
+  private tickChoreo(dt: number): void {
+    if (this.choreoCdPlayer > 0)
+      this.choreoCdPlayer = Math.max(0, this.choreoCdPlayer - dt);
+    if (this.choreoCdAi > 0)
+      this.choreoCdAi = Math.max(0, this.choreoCdAi - dt);
+
+    if (this.choreo) {
+      this.choreo.t -= dt;
+      const sign = this.choreo.team === this.playerTeam ? 1 : -1;
+      const push = CHOREO_MOMENTUM[this.choreo.tier] * dt * 0.85;
+      this.momentum = clamp(this.momentum + sign * push, -1, 1);
+      // Keep ultras animated
+      for (const f of this.fans) {
+        if (
+          f.hp > 0 &&
+          f.team === this.choreo.team &&
+          f.kind === "ultras" &&
+          f.state === "block"
+        ) {
+          if (f.armSwing < 0.5) f.armSwing = 0.75 + Math.random() * 0.2;
+        }
+      }
+      if (this.choreo.t <= 0) {
+        const ended = this.choreo;
+        this.choreo = null;
+        if (ended.team === this.playerTeam)
+          this.choreoCdPlayer = CHOREO_COOLDOWN[ended.tier];
+        else this.choreoCdAi = CHOREO_COOLDOWN[ended.tier];
+      }
+      return;
+    }
+
+    this.tryStartChoreo(this.playerTeam, this.choreoCdPlayer === 0);
+    if (!this.choreo) this.tryStartChoreo(this.aiTeam, this.choreoCdAi === 0);
+  }
+
+  private tryStartChoreo(team: TeamId, ready: boolean): void {
+    if (!ready || this.choreo) return;
+    const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+    const n = this.countInBlock(team, home, "ultras");
+    const tier = choreoTierFromUltras(n);
+    if (!tier) return;
+    // AI: only fire when tier ≥ mittel, and randomly
+    if (team === this.aiTeam) {
+      if (tier === "klein") return;
+      if (Math.random() > 0.35) return;
+    }
+    const dur = CHOREO_DURATION[tier];
+    this.choreo = { team, tier, t: dur, dur };
+    sfx("cheer");
+    playClubChant(team === this.playerTeam ? "player" : "ai", 0.55);
+    this.toast(`${CHOREO_LABEL[tier]}! (${n} Ultras)`, 3.2);
+    this.pushTicker(`${CHOREO_LABEL[tier]} · ${n} Ultras`, "crowd", 3.5);
+  }
+
+  /** Current choreo tier available for the player (for HUD) */
+  playerChoreoTier(): ChoreoTier | null {
+    const n = this.countInBlock(this.playerTeam, HEIM_BLOCK, "ultras");
+    return choreoTierFromUltras(n);
+  }
+
+  applyHalfBoost(id: HalfBoostId): void {
+    if (!this.halfTimePending) return;
+    this.halfBoost = id;
+    this.halfTimePending = false;
+    if (id === "gold") {
+      this.gold += 45;
+      this.toast("Sponsorenschub: +45€");
+    } else if (id === "mood") {
+      this.moodHeim = clamp(this.moodHeim + 0.35, 0.4, 2.2);
+      this.toast("12. Mann: Kurve boosten!");
+    } else if (id === "vorrat") {
+      this.currency.beer += 18;
+      this.currency.merch += 18;
+      this.toast("Nachschub: +18 Bier & Fanartikel");
+    } else if (id === "sicherheit") {
+      this.currency.security += 25;
+      this.toast("Ordner-Einsatz: +25 Sicherheit");
+    } else if (id === "choreo") {
+      this.choreoCdPlayer = 0;
+      this.toast("Doppelhalter bereit — nächste Choreo freigegeben");
+    }
+    sfx("ui");
+    playClubChant("player", 0.4);
   }
 
   /** Keep celebrating in-block; when the timer ends → Glücksbiergang. */
@@ -5130,6 +5292,7 @@ export class Match {
   private tickAi(dt: number): void {
     this.aiAcc += dt;
     const diff = this.cfg.settings.difficulty;
+    const pers = personalityMods(this.cfg.settings.behavior);
     const trailing = this.aiTrailingCrowd();
     const phase = this.aiPhase();
     const regen =
@@ -5141,17 +5304,20 @@ export class Match {
     this.aiBeer = Math.min(120, this.aiBeer + dt * regen);
     this.aiSecurity = Math.min(120, this.aiSecurity + dt * regen * 0.85);
 
-    const interval = (trailing ? 5.2 : 7) / diffMul(diff);
+    const interval =
+      (trailing ? 5.2 : 7) / (diffMul(diff) * pers.tickMul);
 
     if (this.aiAcc < interval) return;
     this.aiAcc = 0;
-    this.aiTryBuild();
+    // Character: patient/beer build more often; aggro skips builds more
+    if (Math.random() < 0.55 * pers.buildMul) this.aiTryBuild();
     this.aiTryHireSteward();
     this.aiTryBuyFans();
     this.aiTryUpgradeUnits();
     const act =
       (aiActionMul(diff) + phase.actionBonus) *
       this.diffProf.sendChanceMul *
+      pers.sendMul *
       (trailing ? 1.35 : 1);
     const hools = this.fans.filter(
       (f) =>
@@ -5172,28 +5338,47 @@ export class Match {
     const onGang = this.fans.filter(
       (f) => f.team === this.aiTeam && f.state === "gang" && f.hp > 0 && !f.isSteward,
     ).length;
-    let want = this.diffProf.gangWant + phase.gangBonus;
+    let want = this.diffProf.gangWant + phase.gangBonus + pers.earlyWant;
     if (trailing) want += 1;
+    want = Math.max(1, want);
+    const hoolChance =
+      (trailing ? 0.62 : 0.45) * act * pers.hoolBias;
+    const ultraChance =
+      (trailing ? 0.5 : 0.35) * act * pers.ultraBias;
+    // beer character prefers hools; aggro/earlywin prefer ultras when both ready
+    const preferHool =
+      pers.hoolBias >= pers.ultraBias || this.cfg.settings.behavior === "beer";
     if (
+      preferHool &&
       hools.length &&
       onGang < want &&
       this.aiBeer >= HOOLIGAN_ORDER_BEER &&
-      Math.random() < (trailing ? 0.62 : 0.45) * act
+      Math.random() < hoolChance
     ) {
       this.aiBeer -= HOOLIGAN_ORDER_BEER;
-      hools[0].rangedPyro = false;
-      this.sendToGang(hools[0]);
+      hools[0]!.rangedPyro = false;
+      this.sendToGang(hools[0]!);
     } else if (
       ultras.length &&
       onGang < want &&
       this.aiMerch >= PYRO_FIGHT_MERCH &&
-      Math.random() < (trailing ? 0.5 : 0.35) * act
+      Math.random() < ultraChance
     ) {
       this.aiMerch -= PYRO_FIGHT_MERCH;
-      const u = ultras[0];
+      const u = ultras[0]!;
       u.rangedPyro = true;
       this.applyUnitLevelStats(u);
       this.sendToGang(u);
+    } else if (
+      !preferHool &&
+      hools.length &&
+      onGang < want &&
+      this.aiBeer >= HOOLIGAN_ORDER_BEER &&
+      Math.random() < hoolChance * 0.85
+    ) {
+      this.aiBeer -= HOOLIGAN_ORDER_BEER;
+      hools[0]!.rangedPyro = false;
+      this.sendToGang(hools[0]!);
     }
   }
 
@@ -5241,14 +5426,22 @@ export class Match {
     if (this.aiMerch >= BUY_COST.ultras.merch) options.push("ultras");
     if (this.aiBeer >= BUY_COST.hooligans.beer) options.push("hooligans");
     if (!options.length) return;
-    // Prefer short counts; when trailing, bias hard toward Ultras/Hools
+    const pers = personalityMods(this.cfg.settings.behavior);
+    // Prefer short counts; personality + trailing bias Ultras/Hools/Fans
     options.sort((a, b) => {
+      const rank = (k: FanKind) => {
+        if (k === "hooligans") return -pers.hoolBias;
+        if (k === "ultras") return -pers.ultraBias;
+        return -pers.fanBias;
+      };
       if (trailing) {
-        const rank = (k: FanKind) =>
+        const combat = (k: FanKind) =>
           k === "hooligans" ? 0 : k === "ultras" ? 1 : 2;
-        const d = rank(a) - rank(b);
+        const d = combat(a) - combat(b);
         if (d !== 0) return d;
       }
+      const rd = rank(a) - rank(b);
+      if (rd !== 0) return rd;
       return own[a] - own[b];
     });
     const kind = options[0];

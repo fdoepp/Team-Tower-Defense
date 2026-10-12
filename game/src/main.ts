@@ -42,6 +42,7 @@ import {
   visitGoldPayout,
   visitInterval,
   difficultyProfile,
+  type AiBehavior,
   type BuildingKind,
   type FanKind,
   type FanMix,
@@ -121,10 +122,12 @@ import {
   ergebnisValue,
   fetchSharedHighscores,
   loadHighscores,
+  loadPersonalHighscores,
   matchupLabel,
   tryInsertHighscoreShared,
   wouldEnterTop10Shared,
   type HighscoreEntry,
+  type HighscoreScope,
   type ScoreBoardKind,
 } from "./game/highscores";
 import {
@@ -132,11 +135,19 @@ import {
   bindAudioGestures,
   isMuted,
   setAmbienceFromMatch,
+  setClubSoundIdentity,
   sfx,
   startAmbience,
   toggleMuted,
   unlockAudio,
 } from "./game/sound";
+import {
+  AI_BEHAVIOR_BLURB,
+  AI_BEHAVIOR_LABEL,
+  CHOREO_LABEL,
+  HALF_BOOSTS,
+  type HalfBoostId,
+} from "./game/feelPack";
 
 void preloadIcons();
 bindAudioGestures();
@@ -523,6 +534,7 @@ const state = {
   /** place = Bau-Karten · upgrade = nur Upgrade-Card für geklicktes Gebäude */
   buildRailMode: "place" as "place" | "upgrade",
   highscoreDiff: "normal" as SoloSettings["difficulty"],
+  highscoreScope: "gesamt" as HighscoreScope,
   /** Menu: derby preset vs free club pick */
   pickMode: "derby" as PickMode,
   menuCountry: "Deutschland",
@@ -708,6 +720,7 @@ function renderMenu(): void {
           ? `<p class="tiny fs-hint">iPhone: Teilen → <b>Zum Home-Bildschirm</b> — dann ohne Tabs/Adressleiste.</p>`
           : `<p class="tiny fs-hint">Tipp: Vollbild für volle Spielfläche (ohne Browser-Leisten).</p>`
       }
+      <p class="tiny fs-hint">Ton: einmal irgendwo tippen (oder „Ton: an“) — Browser blocken Audio sonst bis zur ersten Geste.</p>
       <div class="card stack team-pick">
         <div class="pick-mode-row" role="group" aria-label="Auswahlmodus">
           <button type="button" class="pick-mode ${state.pickMode === "derby" ? "on" : ""}" data-pick="derby">Derby</button>
@@ -719,6 +732,24 @@ function renderMenu(): void {
             <option value="easy" selected>Einfach</option>
             <option value="normal">Mittel</option>
             <option value="hard">Schwer</option>
+          </select>
+        </label>
+        <label class="field">Rivalen-Charakter
+          <select id="ai-behavior">
+            ${(
+              [
+                "balanced",
+                "patient",
+                "aggro",
+                "beer",
+                "earlywin",
+              ] as AiBehavior[]
+            )
+              .map(
+                (b) =>
+                  `<option value="${b}" ${b === "balanced" ? "selected" : ""}>${AI_BEHAVIOR_LABEL[b]} — ${AI_BEHAVIOR_BLURB[b]}</option>`,
+              )
+              .join("")}
           </select>
         </label>
       </div>
@@ -807,6 +838,8 @@ function renderMenu(): void {
     const playerClub = state.menuPlayerClub;
     const aiClub = state.menuAiClub;
     // Side slots: player always on heim (ksc) for consistent controls/HUD
+    const behavior = ((app.querySelector("#ai-behavior") as HTMLSelectElement | null)
+      ?.value || "balanced") as AiBehavior;
     state.settings = {
       playerTeam: "ksc",
       playerClub,
@@ -814,8 +847,9 @@ function renderMenu(): void {
       derbyId: state.pickMode === "derby" ? state.menuDerbyId : undefined,
       difficulty: (app.querySelector("#diff") as HTMLSelectElement)
         .value as SoloSettings["difficulty"],
-      behavior: "balanced",
+      behavior,
     };
+    setClubSoundIdentity(playerClub, aiClub);
     state.setup = defaultSetup();
     go("tutorial");
   });
@@ -842,6 +876,17 @@ function renderTutorial(): void {
             <li><b>Personen</b> — Fans (Momentum), Ultras (Senden/Pyro), Hooligans (Nahkampf), Ordner (Posten).</li>
             <li><b>Senden</b> — Einheiten gehen über die Ausgänge in den Gang und kämpfen um Raum.</li>
             <li><b>LIVE-Ticker</b> — Torchance, Kampf und Bau-Hinweise unter dem Balken.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Matchday-Feel</h2>
+          <ul>
+            <li><b>Kurven-Choreo</b> — ab 5 Ultras im eigenen Block startet automatisch eine Choreo (10 mittel · 20 groß · 30 gigantisch) und schiebt Momentum.</li>
+            <li><b>Rivalen-Charakter</b> — die KI spielt abwartend, aggressiv, bierlastig oder mit frühem Druck (Menü).</li>
+            <li><b>Highlight</b> — bei Tor und Blocksturm kurze Slow-Mo mit TOR!/BLOCKSTURM!-Einblendung.</li>
+            <li><b>Territory</b> — eroberte Blöcke bekommen Kit-Muster (Graffiti), nicht nur Farbe.</li>
+            <li><b>Halbzeit</b> — bei 45′ pausiert das Spiel; du wählst einen Boost für die 2. Hälfte.</li>
+            <li><b>Sound-Identität</b> — jeder Club hat einen eigenen prozeduralen Chant-Klang (keine Original-Hymnen).</li>
           </ul>
         </section>
       </div>
@@ -883,11 +928,20 @@ function hsDetailLine(e: HighscoreEntry): string {
 
 function renderHighscores(): void {
   const d = state.highscoreDiff;
-  const cached = loadHighscores();
+  const scope = state.highscoreScope;
+  const myName = localStorage.getItem("matchday-player-name") || "";
+  const cached =
+    scope === "persoenlich"
+      ? loadPersonalHighscores(myName || "Spieler")
+      : loadHighscores();
   const paint = (tables: typeof cached, shared: boolean | null) => {
     const listHtml = (kind: ScoreBoardKind, title: string) => {
       const rows = tables[d][kind];
-      if (!rows.length) return `<p class="tiny">${title}: noch leer</p>`;
+      if (!rows.length) {
+        return scope === "persoenlich"
+          ? `<p class="tiny">${title}: noch keine persönlichen Einträge${myName ? ` für „${escapeHtml(myName)}“` : ""}</p>`
+          : `<p class="tiny">${title}: noch leer</p>`;
+      }
       return `<h3>${title}</h3><ol class="hs-list">${rows
         .map((e) => {
           const badge = hsMatchupBadge(e);
@@ -896,15 +950,21 @@ function renderHighscores(): void {
         .join("")}</ol>`;
     };
     const status =
-      shared === null
-        ? `<p class="tiny hs-sync">Globale Liste wird geladen…</p>`
-        : shared
-          ? `<p class="tiny hs-sync">Geteilte Top-10 aller Spieler</p>`
-          : `<p class="tiny hs-sync">Offline — lokale Liste (Sync fehlgeschlagen)</p>`;
+      scope === "persoenlich"
+        ? `<p class="tiny hs-sync">Persönliche Top-10${myName ? ` — ${escapeHtml(myName)}` : ""} (mehrere Ergebnisse möglich)</p>`
+        : shared === null
+          ? `<p class="tiny hs-sync">Globale Liste wird geladen…</p>`
+          : shared
+            ? `<p class="tiny hs-sync">Gesamt Top-10 — mehrere Einträge pro Name möglich</p>`
+            : `<p class="tiny hs-sync">Offline — lokale Gesamt-Liste</p>`;
     app.innerHTML = `
     <div class="screen menu">
       <h1 class="brand">Highscores</h1>
       ${status}
+      <div class="pick-mode-row hs-scope-row" role="group" aria-label="Highscore-Ansicht">
+        <button type="button" class="pick-mode ${scope === "gesamt" ? "on" : ""}" data-hs-scope="gesamt">Gesamt Top-10</button>
+        <button type="button" class="pick-mode ${scope === "persoenlich" ? "on" : ""}" data-hs-scope="persoenlich">Persönliche Top-10</button>
+      </div>
       <label class="field">Schwierigkeit
         <select id="hs-diff">
           <option value="easy" ${d === "easy" ? "selected" : ""}>Einfach</option>
@@ -918,6 +978,12 @@ function renderHighscores(): void {
       </div>
       <button class="btn secondary" id="hs-back">Zurück</button>
     </div>`;
+    app.querySelectorAll<HTMLButtonElement>("[data-hs-scope]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.highscoreScope = btn.dataset.hsScope as HighscoreScope;
+        renderHighscores();
+      });
+    });
     app.querySelector("#hs-diff")!.addEventListener("change", (ev) => {
       state.highscoreDiff = (ev.target as HTMLSelectElement)
         .value as SoloSettings["difficulty"];
@@ -925,11 +991,14 @@ function renderHighscores(): void {
     });
     app.querySelector("#hs-back")!.addEventListener("click", () => go("menu"));
   };
-  paint(cached, null);
-  void fetchSharedHighscores().then(({ tables, shared }) => {
-    if (state.screen !== "highscores") return;
-    paint(tables, shared);
-  });
+  paint(cached, scope === "persoenlich" ? false : null);
+  if (scope === "gesamt") {
+    void fetchSharedHighscores().then(({ tables, shared }) => {
+      if (state.screen !== "highscores" || state.highscoreScope !== "gesamt")
+        return;
+      paint(tables, shared);
+    });
+  }
 }
 
 function escapeHtml(s: string): string {
@@ -1135,6 +1204,19 @@ function renderMatchScreen(): void {
         <canvas id="c"></canvas>
         <!-- Live ticker is drawn on canvas under the momentum bar -->
         <div class="toast" id="toast"></div>
+        <div class="choreo-chip hidden" id="choreo-chip" aria-live="polite"></div>
+        <div class="halftime-panel hidden" id="halftime-panel" role="dialog" aria-label="Halbzeit">
+          <div class="halftime-card">
+            <h2>Halbzeit</h2>
+            <p class="sub">Wähle einen Boost für die 2. Hälfte</p>
+            <div class="halftime-boosts" id="halftime-boosts">
+              ${HALF_BOOSTS.map(
+                (b) =>
+                  `<button type="button" class="btn secondary halftime-boost" data-boost="${b.id}"><b>${escapeHtml(b.title)}</b><span>${escapeHtml(b.blurb)}</span></button>`,
+              ).join("")}
+            </div>
+          </div>
+        </div>
         <div class="popup-menu hidden" id="build-menu">
           <p class="popup-title" id="build-title">Gebäude</p>
           <div id="build-options" class="hidden"></div>
@@ -1186,6 +1268,17 @@ function renderMatchScreen(): void {
   const buildRail = app.querySelector<HTMLElement>("#build-rail")!;
   const attackRail = app.querySelector<HTMLElement>("#attack-rail")!;
   const shell = app.querySelector<HTMLElement>(".match-shell.matchday")!;
+  const halfPanel = app.querySelector<HTMLDivElement>("#halftime-panel")!;
+  const choreoChip = app.querySelector<HTMLDivElement>("#choreo-chip")!;
+
+  halfPanel.querySelectorAll<HTMLButtonElement>("[data-boost]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.boost as HalfBoostId;
+      m.applyHalfBoost(id);
+      halfPanel.classList.add("hidden");
+      sfx("ui");
+    });
+  });
   type RailId = "person" | "build" | "attack" | null;
   let openRail: RailId = null;
   // Pull club kit colors into blue/red rail icons (live tint)
@@ -1977,8 +2070,28 @@ function renderMatchScreen(): void {
       if (banner) banner.classList.add("hidden");
       const toast = app.querySelector("#toast");
       if (toast) toast.classList.remove("show");
+      // Halbzeit boost picker
+      halfPanel.classList.toggle("hidden", !m.halfTimePending);
+      // Choreo status chip
+      if (m.choreo && m.choreo.team === m.playerTeam) {
+        choreoChip.textContent = CHOREO_LABEL[m.choreo.tier];
+        choreoChip.classList.remove("hidden");
+      } else {
+        const ready = m.playerChoreoTier();
+        if (ready) {
+          choreoChip.textContent = `${CHOREO_LABEL[ready]} bereit`;
+          choreoChip.classList.remove("hidden");
+        } else {
+          choreoChip.classList.add("hidden");
+        }
+      }
       if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
       if (m.result) {
+        // Let storm/goal highlight finish briefly before result screen
+        if (m.highlight && m.highlight.t > 0.4) {
+          state.raf = requestAnimationFrame(loop);
+          return;
+        }
         unFs();
         setTimeout(() => go("result"), 800);
         return;

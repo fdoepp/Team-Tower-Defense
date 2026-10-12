@@ -81,6 +81,8 @@ export function drawMatch(ctx: CanvasRenderingContext2D, m: Match): void {
   drawConfetti(ctx, m, w, h);
   drawMoodParticles(ctx, m, w, h);
   drawFloats(ctx, m, w, h);
+  drawChoreoFx(ctx, m, w, h);
+  drawHighlightOverlay(ctx, m, w, h);
 }
 
 /**
@@ -418,8 +420,141 @@ function drawBlocks(
       roundRect(ctx, left, top, bw, bh, 18);
       ctx.fill();
     }
+    // Territory look: claimed blocks get kit-pattern graffiti (not logos)
+    drawTerritoryMark(ctx, m, b.id, owner, left, top, bw, bh);
     // Keine Heim/Neutral/Gäste-Überschriften auf den Tribünen
   }
+}
+
+/** Diagonal sash / stripe graffiti for owned territory */
+function drawTerritoryMark(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  blockId: number,
+  owner: (typeof m.blockOwner)[number],
+  left: number,
+  top: number,
+  bw: number,
+  bh: number,
+): void {
+  if (owner !== "ksc" && owner !== "vfb") return;
+  // Home blocks already show kit via tribune tint — still mark neutrals/enemy when captured
+  const claimedAway =
+    (owner === m.playerTeam && blockId !== HEIM_BLOCK) ||
+    (owner === m.aiTeam && blockId !== GAST_BLOCK) ||
+    blockId === NEUTRAL_BLOCK;
+  const intensity = claimedAway ? 0.28 : 0.12;
+  ctx.save();
+  ctx.beginPath();
+  roundRect(ctx, left + 4, top + 4, bw - 8, bh - 8, 14);
+  ctx.clip();
+  const prim = sideKitHex(owner);
+  const sec = clubSecondary(owner);
+  // Diagonal bands
+  ctx.globalAlpha = intensity;
+  ctx.strokeStyle = prim;
+  ctx.lineWidth = Math.max(6, bw * 0.08);
+  for (let i = -2; i < 6; i++) {
+    const x0 = left + i * bw * 0.28;
+    ctx.beginPath();
+    ctx.moveTo(x0, top + bh);
+    ctx.lineTo(x0 + bw * 0.55, top);
+    ctx.stroke();
+  }
+  // Corner stamp
+  ctx.globalAlpha = intensity + 0.15;
+  ctx.fillStyle = sec === "#FFFFFF" || sec.toLowerCase() === "#fff" ? prim : sec;
+  ctx.beginPath();
+  ctx.arc(left + bw * 0.82, top + bh * 0.22, Math.min(bw, bh) * 0.09, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawChoreoFx(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  const c = m.choreo;
+  if (!c) return;
+  const blockId = c.team === m.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+  const tr = tribuneRect(blockId);
+  const left = tr.x * w;
+  const top = tr.y * h;
+  const bw = tr.w * w;
+  const bh = tr.h * h;
+  const life = c.t / c.dur;
+  const pulse = 0.5 + 0.5 * Math.sin(m.realElapsed * (3 + (c.tier === "gigantisch" ? 3 : 1)));
+  const rows =
+    c.tier === "gigantisch" ? 5 : c.tier === "gross" ? 4 : c.tier === "mittel" ? 3 : 2;
+  const cols =
+    c.tier === "gigantisch" ? 8 : c.tier === "gross" ? 6 : c.tier === "mittel" ? 5 : 4;
+  ctx.save();
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const u = (col + 0.5) / cols;
+      const v = 0.2 + (row / rows) * 0.55;
+      const wobble = Math.sin(m.realElapsed * 4 + col * 0.7 + row) * 4;
+      const x = left + u * bw + wobble;
+      const y = top + v * bh;
+      const cardW = bw / cols * 0.7;
+      const cardH = bh * 0.12;
+      ctx.globalAlpha = (0.35 + 0.45 * pulse) * life;
+      ctx.fillStyle = col % 2 === 0 ? sideKitHex(c.team) : clubSecondary(c.team);
+      roundRect(ctx, x - cardW / 2, y - cardH / 2, cardW, cardH, 3);
+      ctx.fill();
+    }
+  }
+  // Tier label flash
+  ctx.globalAlpha = 0.85 * life;
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = `800 ${Math.max(12, Math.floor(h * 0.035))}px Outfit, Manrope, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const labels: Record<string, string> = {
+    klein: "CHOREO",
+    mittel: "CHOREO+",
+    gross: "GROSSE CHOREO",
+    gigantisch: "GIGA CHOREO",
+  };
+  ctx.fillText(labels[c.tier] || "CHOREO", left + bw / 2, top + bh * 0.08);
+  ctx.restore();
+}
+
+function drawHighlightOverlay(
+  ctx: CanvasRenderingContext2D,
+  m: Match,
+  w: number,
+  h: number,
+): void {
+  const hl = m.highlight;
+  if (!hl) return;
+  const k = 1 - hl.t / hl.dur;
+  const fade = k < 0.15 ? k / 0.15 : k > 0.75 ? (1 - k) / 0.25 : 1;
+  ctx.save();
+  // Vignette
+  const g = ctx.createRadialGradient(w / 2, h * 0.4, h * 0.1, w / 2, h * 0.4, h * 0.75);
+  g.addColorStop(0, "rgba(0,0,0,0)");
+  g.addColorStop(1, `rgba(0,0,0,${0.45 * fade})`);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  // Punch text
+  ctx.globalAlpha = fade;
+  ctx.fillStyle = "#f8fafc";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const title = hl.kind === "goal" ? "TOR!" : "BLOCKSTURM!";
+  const scale = 1 + (1 - k) * 0.15;
+  ctx.font = `900 ${Math.floor(h * 0.11 * scale)}px Outfit, Manrope, sans-serif`;
+  ctx.shadowColor = sideKitHex(hl.team);
+  ctx.shadowBlur = 24;
+  ctx.fillText(title, w / 2, h * 0.38);
+  ctx.shadowBlur = 0;
+  ctx.font = `700 ${Math.floor(h * 0.035)}px Outfit, Manrope, sans-serif`;
+  ctx.fillStyle = sideKitHex(hl.team);
+  ctx.fillText(clubShort(hl.team), w / 2, h * 0.48);
+  ctx.restore();
 }
 
 function drawSeats(

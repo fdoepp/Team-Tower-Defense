@@ -5,7 +5,10 @@
  * Autoplay: AudioContext often stays "suspended" until resume() finishes.
  * SFX during that window are queued and flushed after unlock — otherwise
  * Anpfiff-whistle / first UI clicks are silently dropped.
+ *
+ * Club sound identity: chant profiles hashed from club ids (not licensed hymns).
  */
+import { clubChantProfile } from "./feelPack";
 
 export type SfxKind =
   | "ui"
@@ -37,6 +40,33 @@ let resumeWait: Promise<void> | null = null;
 /** SFX waiting for AudioContext running (post-gesture). */
 let pendingSfx: SfxKind[] = [];
 const PENDING_MAX = 14;
+
+let clubPlayerId = "ksc";
+let clubAiId = "vfb";
+
+/** Bind current match clubs for procedural chant identity. */
+export function setClubSoundIdentity(playerClub: string, aiClub: string): void {
+  clubPlayerId = playerClub || "ksc";
+  clubAiId = aiClub || "vfb";
+}
+
+/**
+ * Short club-flavoured chant burst (procedural — not a real hymn).
+ * side: player|ai picks which club profile to use.
+ */
+export function playClubChant(
+  side: "player" | "ai" = "player",
+  intensity = 0.6,
+): void {
+  if (!ready()) return;
+  const id = side === "player" ? clubPlayerId : clubAiId;
+  const p = clubChantProfile(id);
+  const g = 0.05 + intensity * 0.1;
+  tone(p.baseHz, 0.22, "triangle", g * 0.9);
+  tone(p.baseHz * (1 + p.brightness * 0.5), 0.28, "sine", g * 0.7, 0.08);
+  tone(p.baseHz * 1.5, 0.18, "triangle", g * 0.55, 0.14 / p.tempo);
+  noiseBurst(0.35 * intensity, 0.04 + intensity * 0.05, 0.05, 500 + p.brightness * 400);
+}
 
 function ensure(): AudioContext | null {
   if (typeof window === "undefined") return null;
@@ -116,7 +146,24 @@ export function unlockAudio(): void {
   const c = ensure();
   if (!c) return;
   unlocked = true;
-  void resumeContext();
+  // iOS/Safari: a short silent buffer in the same gesture helps leave "suspended"
+  try {
+    if (c.state === "running" || c.state === "suspended") {
+      const buf = c.createBuffer(1, 1, c.sampleRate);
+      const src = c.createBufferSource();
+      src.buffer = buf;
+      src.connect(c.destination);
+      src.start(0);
+    }
+  } catch {
+    /* ignore */
+  }
+  void resumeContext().then(() => {
+    if (c.state === "running") {
+      flushPending();
+      if (ambience !== "off" && ambNodes.length === 0) startAmbience(ambience);
+    }
+  });
   if (c.state === "running") {
     flushPending();
     if (ambience !== "off" && ambNodes.length === 0) startAmbience(ambience);
@@ -365,9 +412,10 @@ export function startAmbience(mode: AmbienceMode): void {
     mkPad(110, "sine", 0.22);
     mkPad(164.8, "triangle", 0.14);
   } else if (mode === "match") {
-    mkPad(98, "sine", 0.24);
-    mkPad(146.8, "triangle", 0.12);
-    mkPad(196, "sine", 0.07);
+    const chant = clubChantProfile(clubPlayerId);
+    mkPad(chant.baseHz, "sine", 0.22);
+    mkPad(chant.baseHz * 1.5, "triangle", 0.11);
+    mkPad(chant.baseHz * (1 + chant.brightness), "sine", 0.06);
     const n = Math.floor(c.sampleRate * 2);
     const buf = c.createBuffer(1, n, c.sampleRate);
     const data = buf.getChannelData(0);

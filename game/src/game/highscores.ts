@@ -27,7 +27,11 @@ export type HighscoreTables = Record<
 >;
 
 const STORAGE_KEY = "matchday-highscores-v1";
+/** Per-player personal boards (multiple results per name allowed). */
+const PERSONAL_KEY = "matchday-hs-personal-v1";
 const TOP_N = 10;
+
+export type HighscoreScope = "gesamt" | "persoenlich";
 
 /** Shared boards via ScoreDrop (browser CORS, free tier). */
 const REMOTE_BASE = "https://leaderboard-game.vercel.app";
@@ -348,14 +352,34 @@ function decodePlayer(
   });
 }
 
-function playerIdFor(difficulty: AiDifficulty, kind: ScoreBoardKind, name: string): string {
+/** Unique per submission so ScoreDrop keeps multiple rows for the same display name. */
+function playerIdFor(
+  difficulty: AiDifficulty,
+  kind: ScoreBoardKind,
+  name: string,
+  entry: HighscoreEntry,
+): string {
   const slug = name
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9äöüß]+/gi, "-")
     .replace(/^-|-$/g, "")
-    .slice(0, 24);
-  return `md-${difficulty}-${kind}-${slug || "spieler"}`;
+    .slice(0, 16);
+  const stamp = (entry.at || new Date().toISOString())
+    .replace(/[^0-9]/g, "")
+    .slice(-10);
+  const val = Math.round(entry.value * 10);
+  return `md-${difficulty}-${kind}-${slug || "spieler"}-${val}-${stamp}`;
+}
+
+function entryMatchKey(e: HighscoreEntry): string {
+  return [
+    e.name.trim().toLowerCase(),
+    String(Math.round(e.value * 10)),
+    e.playerShort || clubCode(e.playerClub) || "",
+    e.opponentShort || clubCode(e.opponentClub) || "",
+    (e.at || "").slice(0, 19),
+  ].join("|");
 }
 
 type RemoteTop = {
@@ -394,13 +418,23 @@ export async function fetchSharedHighscores(): Promise<{
       diffs.flatMap((d) =>
         kinds.map(async (k) => {
           const remote = await fetchBoard(d, k);
-          const localByName = new Map(
-            prev[d][k].map((e) => [e.name.trim().toLowerCase(), e]),
+          const localByKey = new Map(
+            prev[d][k].map((e) => [entryMatchKey(e), e]),
           );
-          // Keep frozen club meta from local cache when remote tag is thin
-          tables[d][k] = remote.map((e) =>
-            mergeClubMeta(e, localByName.get(e.name.trim().toLowerCase())),
-          );
+          // Soft name fallback when remote lacks matchup/at precision
+          const localByName = new Map<string, HighscoreEntry[]>();
+          for (const e of prev[d][k]) {
+            const nk = e.name.trim().toLowerCase();
+            const arr = localByName.get(nk) ?? [];
+            arr.push(e);
+            localByName.set(nk, arr);
+          }
+          tables[d][k] = remote.map((e) => {
+            const hit =
+              localByKey.get(entryMatchKey(e)) ||
+              localByName.get(e.name.trim().toLowerCase())?.[0];
+            return mergeClubMeta(e, hit);
+          });
         }),
       ),
     );
@@ -456,7 +490,7 @@ async function submitRemote(
   const key = BOARD_KEYS[difficulty][kind];
   const score = toRemoteScore(kind, entry.value);
   const player = encodePlayer(entry, kind);
-  const playerId = playerIdFor(difficulty, kind, entry.name);
+  const playerId = playerIdFor(difficulty, kind, entry.name, entry);
   const url =
     `${REMOTE_BASE}/api/add?key=${encodeURIComponent(key)}` +
     `&player_id=${encodeURIComponent(playerId)}` +
@@ -468,6 +502,58 @@ async function submitRemote(
   return !!data.success && !data.error;
 }
 
+type PersonalStore = Record<string, HighscoreTables>;
+
+function loadPersonalStore(): PersonalStore {
+  try {
+    const raw = localStorage.getItem(PERSONAL_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as PersonalStore;
+  } catch {
+    return {};
+  }
+}
+
+function savePersonalStore(store: PersonalStore): void {
+  try {
+    localStorage.setItem(PERSONAL_KEY, JSON.stringify(store));
+  } catch {
+    /* quota */
+  }
+}
+
+/** Top-10 for one player name (local personal history). */
+export function loadPersonalHighscores(playerName: string): HighscoreTables {
+  const key = playerName.trim().toLowerCase();
+  const store = loadPersonalStore();
+  const raw = store[key];
+  if (!raw) return emptyTables();
+  const base = emptyTables();
+  for (const d of ["easy", "normal", "hard"] as AiDifficulty[]) {
+    for (const k of ["ergebnis", "blocksturm"] as ScoreBoardKind[]) {
+      const list = raw?.[d]?.[k];
+      base[d][k] = Array.isArray(list)
+        ? list.slice(0, TOP_N).map((e) => freezeEntryClubs(e))
+        : [];
+    }
+  }
+  return base;
+}
+
+function insertPersonal(entry: HighscoreEntry, kind: ScoreBoardKind): void {
+  const frozen = freezeEntryClubs(entry);
+  const nameKey = frozen.name.trim().toLowerCase() || "spieler";
+  const store = loadPersonalStore();
+  const tables = store[nameKey] ?? emptyTables();
+  const list = [...tables[frozen.difficulty][kind], frozen];
+  list.sort((a, b) =>
+    kind === "ergebnis" ? b.value - a.value : a.value - b.value,
+  );
+  tables[frozen.difficulty][kind] = list.slice(0, TOP_N);
+  store[nameKey] = tables;
+  savePersonalStore(store);
+}
+
 function insertLocal(
   difficulty: AiDifficulty,
   kind: ScoreBoardKind,
@@ -476,21 +562,18 @@ function insertLocal(
   const frozen = freezeEntryClubs(entry);
   const tables = loadHighscores();
   const list = [...tables[difficulty][kind]];
-  // Replace same-name entry if present
-  const without = list.filter(
-    (e) => e.name.trim().toLowerCase() !== frozen.name.trim().toLowerCase(),
-  );
+  // Keep multiple results per name — only drop exact duplicate submissions
+  const without = list.filter((e) => entryMatchKey(e) !== entryMatchKey(frozen));
   without.push(frozen);
   without.sort((a, b) =>
     kind === "ergebnis" ? b.value - a.value : a.value - b.value,
   );
   const rank =
-    without.findIndex(
-      (e) => e.name === frozen.name && e.value === frozen.value,
-    ) + 1;
+    without.findIndex((e) => entryMatchKey(e) === entryMatchKey(frozen)) + 1;
   tables[difficulty][kind] = without.slice(0, TOP_N);
   const placed = rank > 0 && rank <= TOP_N;
   if (placed) saveLocal(tables);
+  insertPersonal(frozen, kind);
   return { placed, rank: placed ? rank : -1, tables };
 }
 
@@ -515,27 +598,31 @@ export async function tryInsertHighscoreShared(
   } catch {
     shared = false;
   }
-  // Always keep a local copy so the UI works offline
+  // Always keep a local + personal copy so the UI works offline
   insertLocal(difficulty, kind, full);
   try {
     const list = await fetchBoard(difficulty, kind);
     const tables = loadHighscores();
-    const merged = list.map((e) =>
-      e.name.trim().toLowerCase() === full.name.trim().toLowerCase()
-        ? mergeClubMeta(e, full)
-        : mergeClubMeta(
-            e,
-            tables[difficulty][kind].find(
-              (x) => x.name.trim().toLowerCase() === e.name.trim().toLowerCase(),
-            ),
-          ),
-    );
+    const fullKey = entryMatchKey(full);
+    const merged = list.map((e) => {
+      if (entryMatchKey(e) === fullKey) return mergeClubMeta(e, full);
+      const sameName =
+        e.name.trim().toLowerCase() === full.name.trim().toLowerCase() &&
+        Math.round(e.value * 10) === Math.round(full.value * 10);
+      if (sameName) return mergeClubMeta(e, full);
+      return mergeClubMeta(
+        e,
+        tables[difficulty][kind].find((x) => entryMatchKey(x) === entryMatchKey(e)),
+      );
+    });
     tables[difficulty][kind] = merged;
     saveLocal(tables);
     const rank =
       merged.findIndex(
         (e) =>
-          e.name.trim().toLowerCase() === full.name.trim().toLowerCase(),
+          entryMatchKey(e) === fullKey ||
+          (e.name.trim().toLowerCase() === full.name.trim().toLowerCase() &&
+            Math.round(e.value * 10) === Math.round(full.value * 10)),
       ) + 1;
     const placed = rank > 0 && rank <= TOP_N;
     return { placed, rank: placed ? rank : -1, tables, shared };
