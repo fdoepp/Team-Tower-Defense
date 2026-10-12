@@ -2426,7 +2426,7 @@ export class Match {
     this.gold += (1.0 + nrm * 0.2) * dt;
     const aiN = this.countInBlock(this.aiTeam, GAST_BLOCK, "normalos");
     const d = this.cfg.settings.difficulty;
-    const aiGoldMul = d === "hard" ? 1.4 : d === "easy" ? 0.95 : 1.25;
+    const aiGoldMul = d === "hard" ? 1.42 : d === "easy" ? 1.1 : 1.36;
     this.aiGold += (1.15 + aiN * 0.24) * aiGoldMul * dt;
 
     // Steward upkeep €/s per person
@@ -5508,6 +5508,12 @@ export class Match {
     ).length;
     let want = this.diffProf.gangWant + phase.gangBonus + pers.earlyWant;
     if (trailing) want += 1;
+    // Frühe Massen-Wellen dämpfen (Mittel/Schwer) → weniger Early-Invade
+    if (this.cfg.settings.difficulty === "hard" && this.minute < 10) {
+      want = Math.min(want, 1);
+    } else if (this.cfg.settings.difficulty === "normal" && this.minute < 8) {
+      want = Math.min(want, 1);
+    }
     want = Math.max(1, want);
     const hoolChance =
       (trailing ? 0.62 : 0.45) * act * pers.hoolBias;
