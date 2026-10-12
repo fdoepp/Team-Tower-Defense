@@ -53,11 +53,28 @@ const BOARD_KEYS: Record<AiDifficulty, Record<ScoreBoardKind, string>> = {
   },
 };
 
-const ALL_KINDS: ScoreBoardKind[] = ["ergebnis", "blocksturm", "bier"];
+/** Display / fetch order: Bier → Blocksturm → Ergebnis */
+export const ALL_KINDS: ScoreBoardKind[] = ["bier", "blocksturm", "ergebnis"];
+
+export const SCORE_BOARD_TITLE: Record<ScoreBoardKind, string> = {
+  bier: "Meiste Biere",
+  blocksturm: "Schnellster Blocksturm",
+  ergebnis: "Höchstes Ergebnis",
+};
 
 /** Blocksturm: niedriger besser; Ergebnis + Bier: höher besser. */
 function higherIsBetter(kind: ScoreBoardKind): boolean {
   return kind !== "blocksturm";
+}
+
+/** Stable ranking for a board (always re-apply after fetch/cache). */
+export function sortBoardEntries(
+  kind: ScoreBoardKind,
+  list: HighscoreEntry[],
+): HighscoreEntry[] {
+  return [...list].sort((a, b) =>
+    higherIsBetter(kind) ? b.value - a.value : a.value - b.value,
+  );
 }
 
 /**
@@ -94,7 +111,10 @@ export function loadHighscores(): HighscoreTables {
       for (const k of ALL_KINDS) {
         const list = parsed?.[d]?.[k];
         base[d][k] = Array.isArray(list)
-          ? list.slice(0, TOP_N).map((e) => freezeEntryClubs(e))
+          ? sortBoardEntries(
+              k,
+              list.map((e) => freezeEntryClubs(e)),
+            ).slice(0, TOP_N)
           : [];
       }
     }
@@ -523,9 +543,17 @@ async function fetchBoard(
   if (!res.ok) throw new Error(`highscore fetch ${res.status}`);
   const data = (await res.json()) as RemoteTop;
   const rows = Array.isArray(data.scores) ? data.scores : [];
-  return rows.slice(0, TOP_N).map((s) =>
-    decodePlayer(String(s.player ?? ""), kind, difficulty, Number(s.score) || 0),
-  );
+  return sortBoardEntries(
+    kind,
+    rows.map((s) =>
+      decodePlayer(
+        String(s.player ?? ""),
+        kind,
+        difficulty,
+        Number(s.score) || 0,
+      ),
+    ),
+  ).slice(0, TOP_N);
 }
 
 /**
@@ -660,7 +688,10 @@ export function loadPersonalHighscores(playerName: string): HighscoreTables {
     for (const k of ALL_KINDS) {
       const list = raw?.[d]?.[k];
       base[d][k] = Array.isArray(list)
-        ? list.slice(0, TOP_N).map((e) => freezeEntryClubs(e))
+        ? sortBoardEntries(
+            k,
+            list.map((e) => freezeEntryClubs(e)),
+          ).slice(0, TOP_N)
         : [];
     }
   }
@@ -672,10 +703,10 @@ function insertPersonal(entry: HighscoreEntry, kind: ScoreBoardKind): void {
   const nameKey = frozen.name.trim().toLowerCase() || "spieler";
   const store = loadPersonalStore();
   const tables = store[nameKey] ?? emptyTables();
-  const list = [...tables[frozen.difficulty][kind], frozen];
-  list.sort((a, b) =>
-    higherIsBetter(kind) ? b.value - a.value : a.value - b.value,
-  );
+  const list = sortBoardEntries(kind, [
+    ...tables[frozen.difficulty][kind],
+    frozen,
+  ]);
   tables[frozen.difficulty][kind] = list.slice(0, TOP_N);
   store[nameKey] = tables;
   savePersonalStore(store);
@@ -692,12 +723,10 @@ function insertLocal(
   // Keep multiple results per name — only drop exact duplicate submissions
   const without = list.filter((e) => entryMatchKey(e) !== entryMatchKey(frozen));
   without.push(frozen);
-  without.sort((a, b) =>
-    higherIsBetter(kind) ? b.value - a.value : a.value - b.value,
-  );
+  const ranked = sortBoardEntries(kind, without);
   const rank =
-    without.findIndex((e) => entryMatchKey(e) === entryMatchKey(frozen)) + 1;
-  tables[difficulty][kind] = without.slice(0, TOP_N);
+    ranked.findIndex((e) => entryMatchKey(e) === entryMatchKey(frozen)) + 1;
+  tables[difficulty][kind] = ranked.slice(0, TOP_N);
   const placed = rank > 0 && rank <= TOP_N;
   if (placed) saveLocal(tables);
   insertPersonal(frozen, kind);
@@ -742,10 +771,11 @@ export async function tryInsertHighscoreShared(
         tables[difficulty][kind].find((x) => entryMatchKey(x) === entryMatchKey(e)),
       );
     });
-    tables[difficulty][kind] = merged;
+    const ranked = sortBoardEntries(kind, merged);
+    tables[difficulty][kind] = ranked;
     saveLocal(tables);
     const rank =
-      merged.findIndex(
+      ranked.findIndex(
         (e) =>
           entryMatchKey(e) === fullKey ||
           (e.name.trim().toLowerCase() === full.name.trim().toLowerCase() &&

@@ -145,10 +145,13 @@ import {
   freezeEntryClubs,
   hsMetaLabel,
   hsResultLabel,
+  ALL_KINDS,
+  SCORE_BOARD_TITLE,
   loadHighscores,
   loadPersonalHighscores,
   matchupLabel,
   resolveEntryClubId,
+  sortBoardEntries,
   tryInsertHighscoreShared,
   wouldEnterTop10Shared,
   type HighscoreEntry,
@@ -2006,8 +2009,12 @@ function renderHighscores(): void {
       ? loadPersonalHighscores(myName || "Spieler")
       : loadHighscores();
   const paint = (tables: typeof cached, shared: boolean | null) => {
-    const listHtml = (kind: ScoreBoardKind, title: string) => {
-      const rows = tables[d][kind].map((e) => freezeEntryClubs(e));
+    const listHtml = (kind: ScoreBoardKind) => {
+      const title = SCORE_BOARD_TITLE[kind];
+      const rows = sortBoardEntries(
+        kind,
+        tables[d][kind].map((e) => freezeEntryClubs(e)),
+      );
       if (!rows.length) {
         return scope === "persoenlich"
           ? `<p class="tiny">${title}: noch keine persönlichen Einträge${myName ? ` für „${escapeHtml(myName)}“` : ""}</p>`
@@ -2044,9 +2051,7 @@ function renderHighscores(): void {
         </select>
       </label>
       <div class="card stack hs-card">
-        ${listHtml("ergebnis", "Höchstes Ergebnis")}
-        ${listHtml("blocksturm", "Schnellster Blocksturm")}
-        ${listHtml("bier", "Meiste Biere")}
+        ${ALL_KINDS.map((k) => listHtml(k)).join("")}
       </div>
       <button class="btn secondary" id="hs-back">Menü</button>
     `);
