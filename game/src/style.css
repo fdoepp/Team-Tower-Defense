@@ -837,17 +837,41 @@ button {
 
 .hs-side-own {
   justify-self: start;
-  border: 2px solid var(--hs-kit, #64748b);
+  padding: 7px 12px 7px 7px;
+  border: 3px solid var(--hs-kit, #64748b);
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--hs-kit, #64748b) 35%, transparent),
-    0 0 18px color-mix(in srgb, var(--hs-kit, #64748b) 28%, transparent);
-  background: color-mix(in srgb, var(--hs-kit, #64748b) 18%, rgba(8, 14, 26, 0.85));
+    0 0 0 2px color-mix(in srgb, var(--hs-kit, #64748b) 55%, #fff),
+    0 0 22px color-mix(in srgb, var(--hs-kit, #64748b) 55%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--hs-kit, #64748b) 40%, transparent);
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--hs-kit, #64748b) 72%, #0b1220) 0%,
+    color-mix(in srgb, var(--hs-kit, #64748b) 42%, #0b1220) 100%
+  );
+}
+
+.hs-side-own .hs-code {
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.hs-side-own .hs-logo,
+.hs-side-own .hs-logo-fallback {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+  background: color-mix(in srgb, var(--hs-kit-sec, #0f172a) 35%, #fff);
 }
 
 .hs-side-opp {
   justify-self: end;
   flex-direction: row-reverse;
-  border-color: color-mix(in srgb, var(--hs-kit, #64748b) 55%, rgba(248, 250, 252, 0.2));
+  opacity: 0.72;
+  border: 1px solid rgba(248, 250, 252, 0.14);
+  background: rgba(15, 23, 42, 0.4);
+  box-shadow: none;
+}
+
+.hs-side-opp .hs-code {
+  color: rgba(203, 213, 225, 0.9);
 }
 
 .hs-side .hs-logo,
@@ -887,8 +911,9 @@ button {
   min-width: 4.2rem;
   padding: 6px 10px;
   border-radius: 10px;
-  background: rgba(248, 250, 252, 0.08);
-  border: 1px solid rgba(248, 250, 252, 0.12);
+  background: rgba(248, 250, 252, 0.1);
+  border: 1px solid rgba(248, 250, 252, 0.18);
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.25);
 }
 
 .hs-score span {
