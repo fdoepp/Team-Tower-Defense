@@ -295,14 +295,20 @@ function toHex([r, g, b]: [number, number, number]): string {
 
 /**
  * Night-safe wash for stadium backdrop / glows.
- * White kits must not bleach the floodlight photo — pull toward cool grey + secondary.
+ * Always follows that side's kit: colored primary → darkened primary;
+ * white primary → darkened secondary (only then — never a blanket team color).
  */
 export function atmosphereWashHex(primary: string, secondary: string): string {
   const [pr, pg, pb] = parseHex(primary);
   const [sr, sg, sb] = parseHex(secondary);
   const luma = hexLuma(primary);
   if (luma > 200) {
-    // DE weiß: helles Weiß-Silber — Pyro/Beams im Foto sollen weiß lesbar sein
+    const secLuma = (sr * 299 + sg * 587 + sb * 114) / 1000;
+    if (secLuma < 200) {
+      // White kit (e.g. clash away in weiß) → use secondary for night flares
+      const [h, s, l] = rgbToHsl(sr, sg, sb);
+      return toHex(hslToRgb(h, Math.min(1, s * 0.95), Math.min(0.48, Math.max(0.22, l * 0.75))));
+    }
     const bright: [number, number, number] = [228, 232, 240];
     return toHex(mixRgb(bright, [sr, sg, sb], 0.12));
   }
@@ -310,9 +316,9 @@ export function atmosphereWashHex(primary: string, secondary: string): string {
     // Schwarz-Kits → tiefes Nachtgrau, kein Loch
     return toHex(mixRgb([30, 41, 59], [pr, pg, pb], 0.45));
   }
-  // etwas abdunkeln für Flutlichtnacht
+  // Colored primary (e.g. Leverkusen rot) → that hue, slightly darkened for night
   const [h, s, l] = rgbToHsl(pr, pg, pb);
-  return toHex(hslToRgb(h, Math.min(1, s * 0.9), Math.min(0.52, l * 0.85)));
+  return toHex(hslToRgb(h, Math.min(1, s * 0.95), Math.min(0.5, l * 0.82)));
 }
 
 export function atmosphereAccentHex(primary: string, secondary: string): string {
@@ -339,8 +345,14 @@ function recolorAtmosphereCrowd(
   const accent = parseHex(accentHex);
   const grey = parseHex(greyHex);
   const washLuma = (wash[0]! * 299 + wash[1]! * 587 + wash[2]! * 114) / 1000;
-  // White kits need stronger pull so baked blue pyro/beams become white
-  const pull = washLuma > 180 ? 0.82 : 0.48;
+  const [washH] = rgbToHsl(wash[0]!, wash[1]!, wash[2]!);
+  // Baked stadium: left≈blue (~215°), right≈red (~8°). Far hue → near-full replace
+  // (weak pull on blue→red leaves purple/lilac leftovers).
+  const baseHue = base === "blue" ? 215 : 8;
+  let hueDist = Math.abs(washH - baseHue);
+  if (hueDist > 180) hueDist = 360 - hueDist;
+  let pull =
+    washLuma > 180 ? 0.86 : hueDist > 55 ? 0.9 : hueDist > 28 ? 0.78 : 0.55;
   const px = data.data;
   for (let i = 0; i < px.length; i += 4) {
     const a = px[i + 3]!;
