@@ -122,10 +122,12 @@ import {
   ergebnisValue,
   fetchSharedHighscores,
   loadHighscores,
+  loadPersonalHighscores,
   matchupLabel,
   tryInsertHighscoreShared,
   wouldEnterTop10Shared,
   type HighscoreEntry,
+  type HighscoreScope,
   type ScoreBoardKind,
 } from "./game/highscores";
 import {
@@ -532,6 +534,7 @@ const state = {
   /** place = Bau-Karten · upgrade = nur Upgrade-Card für geklicktes Gebäude */
   buildRailMode: "place" as "place" | "upgrade",
   highscoreDiff: "normal" as SoloSettings["difficulty"],
+  highscoreScope: "gesamt" as HighscoreScope,
   /** Menu: derby preset vs free club pick */
   pickMode: "derby" as PickMode,
   menuCountry: "Deutschland",
@@ -717,6 +720,7 @@ function renderMenu(): void {
           ? `<p class="tiny fs-hint">iPhone: Teilen → <b>Zum Home-Bildschirm</b> — dann ohne Tabs/Adressleiste.</p>`
           : `<p class="tiny fs-hint">Tipp: Vollbild für volle Spielfläche (ohne Browser-Leisten).</p>`
       }
+      <p class="tiny fs-hint">Ton: einmal irgendwo tippen (oder „Ton: an“) — Browser blocken Audio sonst bis zur ersten Geste.</p>
       <div class="card stack team-pick">
         <div class="pick-mode-row" role="group" aria-label="Auswahlmodus">
           <button type="button" class="pick-mode ${state.pickMode === "derby" ? "on" : ""}" data-pick="derby">Derby</button>
@@ -924,11 +928,20 @@ function hsDetailLine(e: HighscoreEntry): string {
 
 function renderHighscores(): void {
   const d = state.highscoreDiff;
-  const cached = loadHighscores();
+  const scope = state.highscoreScope;
+  const myName = localStorage.getItem("matchday-player-name") || "";
+  const cached =
+    scope === "persoenlich"
+      ? loadPersonalHighscores(myName || "Spieler")
+      : loadHighscores();
   const paint = (tables: typeof cached, shared: boolean | null) => {
     const listHtml = (kind: ScoreBoardKind, title: string) => {
       const rows = tables[d][kind];
-      if (!rows.length) return `<p class="tiny">${title}: noch leer</p>`;
+      if (!rows.length) {
+        return scope === "persoenlich"
+          ? `<p class="tiny">${title}: noch keine persönlichen Einträge${myName ? ` für „${escapeHtml(myName)}“` : ""}</p>`
+          : `<p class="tiny">${title}: noch leer</p>`;
+      }
       return `<h3>${title}</h3><ol class="hs-list">${rows
         .map((e) => {
           const badge = hsMatchupBadge(e);
@@ -937,15 +950,21 @@ function renderHighscores(): void {
         .join("")}</ol>`;
     };
     const status =
-      shared === null
-        ? `<p class="tiny hs-sync">Globale Liste wird geladen…</p>`
-        : shared
-          ? `<p class="tiny hs-sync">Geteilte Top-10 aller Spieler</p>`
-          : `<p class="tiny hs-sync">Offline — lokale Liste (Sync fehlgeschlagen)</p>`;
+      scope === "persoenlich"
+        ? `<p class="tiny hs-sync">Persönliche Top-10${myName ? ` — ${escapeHtml(myName)}` : ""} (mehrere Ergebnisse möglich)</p>`
+        : shared === null
+          ? `<p class="tiny hs-sync">Globale Liste wird geladen…</p>`
+          : shared
+            ? `<p class="tiny hs-sync">Gesamt Top-10 — mehrere Einträge pro Name möglich</p>`
+            : `<p class="tiny hs-sync">Offline — lokale Gesamt-Liste</p>`;
     app.innerHTML = `
     <div class="screen menu">
       <h1 class="brand">Highscores</h1>
       ${status}
+      <div class="pick-mode-row hs-scope-row" role="group" aria-label="Highscore-Ansicht">
+        <button type="button" class="pick-mode ${scope === "gesamt" ? "on" : ""}" data-hs-scope="gesamt">Gesamt Top-10</button>
+        <button type="button" class="pick-mode ${scope === "persoenlich" ? "on" : ""}" data-hs-scope="persoenlich">Persönliche Top-10</button>
+      </div>
       <label class="field">Schwierigkeit
         <select id="hs-diff">
           <option value="easy" ${d === "easy" ? "selected" : ""}>Einfach</option>
@@ -959,6 +978,12 @@ function renderHighscores(): void {
       </div>
       <button class="btn secondary" id="hs-back">Zurück</button>
     </div>`;
+    app.querySelectorAll<HTMLButtonElement>("[data-hs-scope]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.highscoreScope = btn.dataset.hsScope as HighscoreScope;
+        renderHighscores();
+      });
+    });
     app.querySelector("#hs-diff")!.addEventListener("change", (ev) => {
       state.highscoreDiff = (ev.target as HTMLSelectElement)
         .value as SoloSettings["difficulty"];
@@ -966,11 +991,14 @@ function renderHighscores(): void {
     });
     app.querySelector("#hs-back")!.addEventListener("click", () => go("menu"));
   };
-  paint(cached, null);
-  void fetchSharedHighscores().then(({ tables, shared }) => {
-    if (state.screen !== "highscores") return;
-    paint(tables, shared);
-  });
+  paint(cached, scope === "persoenlich" ? false : null);
+  if (scope === "gesamt") {
+    void fetchSharedHighscores().then(({ tables, shared }) => {
+      if (state.screen !== "highscores" || state.highscoreScope !== "gesamt")
+        return;
+      paint(tables, shared);
+    });
+  }
 }
 
 function escapeHtml(s: string): string {
