@@ -2277,13 +2277,13 @@ function renderMatchScreen(): void {
           <p class="upgrade-title">${buildingKindLabel(kind)} · Lv${lv}${lv < UPGRADE_MAX ? ` → Lv${next}` : " (Max)"}</p>
           <div class="upgrade-preview">
             <div class="up-stage">
-              <img src="${curIcon.startsWith("/") ? curIcon : `/${curIcon}`}" alt="">
+              <img class="up-stand-ico" id="build-up-prev-cur" src="${curIcon}" alt="">
               <span class="up-lv">Lv${lv}</span>
               ${yieldChipHtml(kind, buildingYieldPerSec(kind, lv))}
             </div>
             <span class="up-arrow" aria-hidden="true">→</span>
             <div class="up-stage">
-              <img src="${nextIcon.startsWith("/") ? nextIcon : `/${nextIcon}`}" alt="">
+              <img class="up-stand-ico" id="build-up-prev-next" src="${nextIcon}" alt="">
               <span class="up-lv">${lv < UPGRADE_MAX ? `Lv${next}` : "Max"}</span>
               ${
                 lv < UPGRADE_MAX
@@ -2307,6 +2307,19 @@ function renderMatchScreen(): void {
             extraClass: ok ? "ready" : "cd",
           })}
         </div>`;
+      // Relative paths + live kit tint (same as Bau-Karten)
+      setLiveTintImg(
+        upRows.querySelector<HTMLImageElement>("#build-up-prev-cur"),
+        curIcon,
+      );
+      setLiveTintImg(
+        upRows.querySelector<HTMLImageElement>("#build-up-prev-next"),
+        nextIcon,
+      );
+      setLiveTintImg(
+        upRows.querySelector<HTMLImageElement>("#build-up-ico-focus"),
+        nextIcon,
+      );
       const focusBtn = upRows.querySelector<HTMLButtonElement>("[data-build-up-focus]");
       if (focusBtn) {
         focusBtn.disabled = !ok;
