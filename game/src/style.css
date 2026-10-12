@@ -725,7 +725,7 @@ button {
 }
 
 .tutorial-screen .menu-mood-body {
-  width: min(480px, 100%);
+  width: min(560px, 100%);
   gap: 16px;
 }
 
@@ -4389,6 +4389,296 @@ html.is-fs .fs-gate {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+/* Tutorial — real icons / cards */
+.tut-ico,
+.tut-inline,
+.tut-cur-ico,
+.tut-mini-btn,
+.tut-mile-ico,
+.tut-rail-ico,
+.tut-btn-ico,
+.tut-unit-ico,
+.tut-build-ico,
+.tut-fight-unit,
+.tut-storm-ico,
+.tut-win-ico,
+.tut-trib,
+.tut-slot {
+  display: inline-block;
+  vertical-align: middle;
+  object-fit: contain;
+  image-rendering: auto;
+}
+.tut-inline {
+  width: 28px;
+  height: 28px;
+  margin-right: 4px;
+}
+.tut-mini-btn {
+  width: 22px;
+  height: 22px;
+}
+.tut-mile-ico {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.tut-cur {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+.tut-cur-ico {
+  width: 18px;
+  height: 18px;
+}
+.tut-rail-demo {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+}
+.tut-rail-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 72px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(248, 250, 252, 0.12);
+  color: rgba(226, 232, 240, 0.9);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.tut-rail-btn.on {
+  border-color: rgba(96, 165, 250, 0.75);
+  background: rgba(37, 99, 235, 0.28);
+  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.25);
+}
+.tut-rail-ico {
+  width: 36px;
+  height: 36px;
+}
+.tut-win-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+@media (min-width: 520px) {
+  .tut-win-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.tut-win-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+}
+.tut-win-card.storm {
+  border-color: rgba(251, 113, 133, 0.45);
+}
+.tut-win-card header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #fff;
+  font-size: 0.92rem;
+}
+.tut-win-ico {
+  width: 32px;
+  height: 32px;
+}
+.tut-board-wide,
+.tut-board-stack {
+  flex-direction: column;
+  gap: 12px;
+}
+.tut-board-wide {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.tut-board-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+.tut-trib {
+  width: 72px;
+  height: 56px;
+  object-fit: contain;
+}
+.tut-trib.sm {
+  width: 56px;
+  height: 44px;
+}
+.tut-trib.mid {
+  width: 64px;
+  height: 50px;
+  opacity: 0.92;
+}
+.tut-pitch-thumb {
+  width: 88px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(248, 250, 252, 0.14);
+}
+.tut-slot-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+.tut-slot {
+  width: 40px;
+  height: 40px;
+}
+.tut-slot-cap {
+  margin-left: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(186, 198, 214, 0.95);
+}
+.tut-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(6, 12, 24, 0.45);
+  border: 1px solid rgba(248, 250, 252, 0.1);
+}
+.tut-flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #e2e8f0;
+}
+.tut-flow-step img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+.tut-btn-ico {
+  width: 44px;
+  height: 44px;
+}
+.tut-card-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 4px 0 10px;
+}
+@media (min-width: 520px) {
+  .tut-card-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tut-card-grid.tut-units {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.tut-unit-card,
+.tut-build-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(248, 250, 252, 0.12);
+  text-align: left;
+}
+.tut-unit-ico,
+.tut-build-ico {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+}
+.tut-unit-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.tut-unit-meta b {
+  color: #fff;
+  font-size: 0.92rem;
+}
+.tut-unit-cost,
+.tut-unit-stats,
+.tut-unit-role {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: rgba(203, 213, 225, 0.95);
+}
+.tut-unit-role {
+  color: rgba(147, 197, 253, 0.95);
+}
+.tut-fan-up-flow {
+  gap: 12px;
+}
+.tut-pair {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: rgba(226, 232, 240, 0.9);
+}
+.tut-pair img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+.tut-fight-unit {
+  width: 34px;
+  height: 34px;
+}
+.tut-storm-ico {
+  width: 48px;
+  height: 48px;
+}
+.tut-storm-units {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+.tut-miles li {
+  gap: 8px;
+}
+.tut-body .tut-points li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 4px;
+}
+.tut-miles li {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
 /* —— Badges —— */
