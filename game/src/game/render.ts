@@ -48,6 +48,7 @@ import {
   type SlotControl,
 } from "./assets";
 import { clubPrimary, clubSecondary, clubShort } from "./clubs";
+import { drawSideClubLogo } from "./clubLogos";
 import { getDualKitTintedCanvas, sideKitHex, sideKitRgba } from "./liveTint";
 import {
   boothFacadeQuad,
@@ -496,54 +497,13 @@ function drawScoreboard(
     };
   };
 
-  // Live club discs on blank chrome (KSC/VfB shields removed from asset)
+  // Inspired club marks on blank chrome (not official trademarks)
   const paintCrest = (side: "ksc" | "vfb", key: "logoHeim" | "logoGast") => {
     const r = slot(key);
     const cx = r.x + r.w / 2;
     const cy = r.y + r.h / 2;
     const rad = Math.min(r.w, r.h) * 0.46;
-    const prim = clubPrimary(side);
-    const sec = clubSecondary(side);
-    const dark =
-      prim === "#000000" ||
-      prim.toLowerCase() === "#000" ||
-      prim === "#241F20" ||
-      prim === "#010E80" ||
-      prim === "#132257" ||
-      prim === "#004812" ||
-      prim === "#003DA5" ||
-      prim === "#004170";
-    ctx.beginPath();
-    ctx.arc(cx, cy, rad, 0, Math.PI * 2);
-    ctx.fillStyle = prim;
-    ctx.fill();
-    ctx.strokeStyle =
-      sec === "#FFFFFF" || sec.toLowerCase() === "#fff"
-        ? "rgba(248,250,252,0.9)"
-        : sec;
-    ctx.lineWidth = Math.max(2, rad * 0.12);
-    ctx.stroke();
-    const secDark =
-      sec === "#000000" ||
-      sec.toLowerCase() === "#000" ||
-      sec === "#8B4513";
-    ctx.fillStyle =
-      dark ||
-      secDark ||
-      sec === "#FFFFFF" ||
-      sec.toLowerCase() === "#fff"
-        ? "#f8fafc"
-        : sec;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const short = clubShort(side);
-    let px = Math.max(10, Math.floor(rad * 0.78));
-    ctx.font = `900 ${px}px Outfit, Manrope, sans-serif`;
-    while (px > 7 && ctx.measureText(short).width > rad * 1.55) {
-      px -= 1;
-      ctx.font = `900 ${px}px Outfit, Manrope, sans-serif`;
-    }
-    ctx.fillText(short, cx, cy + 0.5);
+    drawSideClubLogo(ctx, side, cx, cy, rad);
   };
   paintCrest("ksc", "logoHeim");
   paintCrest("vfb", "logoGast");

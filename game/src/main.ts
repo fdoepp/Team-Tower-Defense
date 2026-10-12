@@ -73,6 +73,7 @@ import {
   applyLiveTintToDomImages,
   getLiveTintedCanvas,
 } from "./game/liveTint";
+import { clubLogoDataUrl } from "./game/clubLogos";
 import { getRawIcon } from "./game/assets";
 
 /** Set team icon src once, then live-tint to current club kit. */
@@ -606,7 +607,12 @@ function countryOptionsHtml(selected: string): string {
 
 function kitSwatchHtml(clubId: ClubId): string {
   const c = getClub(clubId);
-  return `<span class="kit-swatch" title="${escapeHtml(c.name)}" style="--kit-a:${c.primary};--kit-b:${c.secondary}"><i></i><b>${escapeHtml(c.short)}</b></span>`;
+  // Inspired mark (not an official crest)
+  const logo = clubLogoDataUrl(clubId, 72);
+  const mark = logo
+    ? `<img class="kit-logo" src="${logo}" alt="">`
+    : `<i></i>`;
+  return `<span class="kit-swatch" title="${escapeHtml(c.name)}" style="--kit-a:${c.primary};--kit-b:${c.secondary}">${mark}<b>${escapeHtml(c.short)}</b></span>`;
 }
 
 applyCssIconUrls();
