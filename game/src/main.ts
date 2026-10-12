@@ -1439,7 +1439,7 @@ const TUTORIAL_STEPS: TutStep[] = [
       <li><b>Bier</b> produziert Bier (für Hools).</li>
       <li><b>Fanshop</b> produziert Fanartikel (für Ultras).</li>
       <li><b>Ordner</b> gibt Sicherheit & Posten.</li>
-      <li>Nur Plots hinter deiner Frontlinie — Upgrade steigert die Produktion.</li>
+      <li>Nur Plots hinter deiner Frontlinie.</li>
     </ul>`,
     diagram: `
       <div class="tut-diagram tut-build" aria-hidden="true">
@@ -1448,6 +1448,29 @@ const TUTORIAL_STEPS: TutStep[] = [
         <div class="tut-chip">Bauplatz</div>
         <div class="tut-arrow" aria-hidden="true"></div>
         <div class="tut-stands"><span>Bier</span><span>Shop</span><span>Ordner</span></div>
+      </div>`,
+  },
+  {
+    id: "buildUpgrade",
+    title: "Gebäude verbessern",
+    lead: "Stand tippen → Upgrade mit Gold (bis Lv5).",
+    body: `<ul class="tut-points">
+      <li>Tippe einen <b>eigenen Stand</b> an — die Gebäude-Rail zeigt Upgrade.</li>
+      <li>Jedes Level kostet mehr Gold und steigert die <b>Produktion</b>.</li>
+      <li>Maximal <b>Lv5</b> — höhere Stufen schalten auch stärkere Personen frei.</li>
+      <li>Beispiel: Bierstand Lv3 → Hools können auf Lv3.</li>
+    </ul>`,
+    diagram: `
+      <div class="tut-diagram tut-upgrade" aria-hidden="true">
+        <div class="tut-chip">Stand</div>
+        <div class="tut-arrow" aria-hidden="true"></div>
+        <div class="tut-lvl-row">
+          <span class="tut-lvl">Lv1</span>
+          <span class="tut-lvl">Lv2</span>
+          <span class="tut-lvl on">Lv3</span>
+          <span class="tut-lvl">…</span>
+          <span class="tut-lvl">Lv5</span>
+        </div>
       </div>`,
   },
   {
@@ -1465,6 +1488,27 @@ const TUTORIAL_STEPS: TutStep[] = [
         <div class="tut-fan f">Fan</div>
         <div class="tut-fan u">Ultra</div>
         <div class="tut-fan h">Hool</div>
+      </div>`,
+  },
+  {
+    id: "fanUpgrade",
+    title: "Personen verbessern",
+    lead: "Personen-Rail → Upgrade — braucht passendes Gebäude-Level.",
+    body: `<ul class="tut-points">
+      <li>Neben Kaufen: <b>Upgrade</b> hebt die Tech-Stufe (Lv1–Lv5).</li>
+      <li>Kostet Gold; neue Einheiten starten auf dieser Stufe.</li>
+      <li>Gebäude muss mithalten: z. B. Ultra Lv4 nur mit <b>Fanshop Lv4+</b>.</li>
+      <li>Höheres Level = mehr Kampfkraft und bessere Ausbeute.</li>
+    </ul>`,
+    diagram: `
+      <div class="tut-diagram tut-upgrade tut-fan-up" aria-hidden="true">
+        <div class="tut-stands"><span>Bier</span><span>Shop</span><span>Ordner</span></div>
+        <div class="tut-arrow" aria-hidden="true"></div>
+        <div class="tut-fans">
+          <div class="tut-fan h">Hool</div>
+          <div class="tut-fan u">Ultra</div>
+          <div class="tut-fan f">Fan</div>
+        </div>
       </div>`,
   },
   {
@@ -1516,14 +1560,14 @@ const TUTORIAL_STEPS: TutStep[] = [
   {
     id: "path",
     title: "Dein erster Weg",
-    lead: "Vier Meilensteine — dann kickst du selbst.",
+    lead: "Meilensteine — dann kickst du selbst.",
     body: `<ul class="tut-points tut-miles">
       <li><span class="tut-n">1</span> Gebäude bauen</li>
       <li><span class="tut-n">2</span> Person holen</li>
       <li><span class="tut-n">3</span> In den Gang senden</li>
       <li><span class="tut-n">4</span> Tor oder Sturm-Moment</li>
     </ul>
-    <p class="tut-foot">Geführtes Solo auf <b>Einfach</b> zeigt Toasts zu jedem Schritt. Danach Badges nach Schwierigkeit: Bronze → Silber → Gold.</p>`,
+    <p class="tut-foot">Tipp: Stände und Personen mit Gold <b>upgraden</b> (Gebäude-Level begrenzt Personen-Level). Geführtes Solo auf <b>Einfach</b> zeigt Toasts. Badges: Bronze → Silber → Gold.</p>`,
     diagram: "",
   },
 ];
