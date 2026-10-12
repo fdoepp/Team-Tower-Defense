@@ -185,6 +185,16 @@ import {
   type Challenge,
   type ChallengeGoal,
 } from "./game/challenge";
+import {
+  createLiveHost,
+  joinLiveGuest,
+  loadLiveHistory,
+  loadLiveStats,
+  recordLiveResult,
+  settingsFromLive,
+  type LiveKpis,
+  type LiveSession,
+} from "./game/liveChallenge";
 
 void preloadIcons();
 bindAudioGestures();
@@ -564,7 +574,10 @@ type Screen =
   | "challengeHub"
   | "challengeCreate"
   | "challengeLobby"
-  | "challengeResult";
+  | "challengeResult"
+  | "liveHub"
+  | "liveLobby"
+  | "liveResult";
 
 /** Top-level: clubs vs national teams */
 type TeamScope = "clubs" | "nations";
@@ -605,7 +618,72 @@ const state = {
   challengeRole: null as "a" | "b" | null,
   /** Draft goal on create screen */
   challengeGoal: "ergebnis" as ChallengeGoal,
+  /** Live Challenge (PeerJS) session */
+  live: null as LiveSession | null,
+  liveMyKpi: null as LiveKpis | null,
+  liveOutcome: null as "win" | "loss" | "draw" | null,
+  liveWaitingOpponent: false,
 };
+
+function menuAtmosphereHtml(): string {
+  return `<div class="menu-atmosphere" aria-hidden="true">
+    <span class="menu-beam menu-beam-l"></span>
+    <span class="menu-beam menu-beam-r"></span>
+    <span class="menu-ember"></span>
+  </div>`;
+}
+
+/** Wrap submenu content in Matchday mood shell */
+function moodMenu(body: string, extraClass = ""): string {
+  return `<div class="screen menu menu-mood menu-derby ${extraClass}">
+    ${menuAtmosphereHtml()}
+    <div class="menu-mood-body">${body}</div>
+  </div>`;
+}
+
+function playerNameStored(): string {
+  return (localStorage.getItem("matchday-player-name") || "").trim().slice(0, 20);
+}
+
+function askLiveName(fallback = "Spieler"): string {
+  const cur = playerNameStored() || fallback;
+  const name = window.prompt("Dein Name für Live Challenge:", cur);
+  if (!name) return cur;
+  const cleaned = name.trim().slice(0, 20) || cur;
+  localStorage.setItem("matchday-player-name", cleaned);
+  return cleaned;
+}
+
+function destroyLiveSession(): void {
+  state.live?.destroy();
+  state.live = null;
+  state.liveMyKpi = null;
+  state.liveOutcome = null;
+  state.liveWaitingOpponent = false;
+}
+
+function kpisFromMatch(m: Match, name: string): LiveKpis {
+  const r = m.result;
+  const playerIsKsc = m.playerTeam === "ksc";
+  const scoreFor = playerIsKsc ? m.scoreKsc : m.scoreVfb;
+  const scoreAgainst = playerIsKsc ? m.scoreVfb : m.scoreKsc;
+  let winner: LiveKpis["winner"] = null;
+  if (r) {
+    winner = r.winner === m.playerTeam ? "player" : "ai";
+  }
+  return {
+    name,
+    scoreFor,
+    scoreAgainst,
+    minute: Math.floor(m.minute),
+    beers: m.beersDrunkPlayer,
+    gold: Math.floor(m.gold),
+    done: !!r,
+    winner,
+    reason: r?.reason,
+    detail: r?.detail,
+  };
+}
 
 function syncMenuBrandingPreview(): void {
   let player: ClubId;
@@ -759,6 +837,15 @@ function go(screen: Screen): void {
   render();
 }
 
+function enhanceMenuMood(): void {
+  const screen = app.querySelector<HTMLElement>(".screen.menu");
+  if (!screen || screen.classList.contains("menu-home")) return;
+  screen.classList.add("menu-mood", "menu-derby");
+  if (!screen.querySelector(".menu-atmosphere")) {
+    screen.insertAdjacentHTML("afterbegin", menuAtmosphereHtml());
+  }
+}
+
 function render(): void {
   cancelAnimationFrame(state.raf);
   if (state.screen === "menu") renderMenu();
@@ -771,7 +858,11 @@ function render(): void {
   else if (state.screen === "challengeCreate") renderChallengeCreate();
   else if (state.screen === "challengeLobby") renderChallengeLobby();
   else if (state.screen === "challengeResult") renderChallengeResult();
+  else if (state.screen === "liveHub") renderLiveHub();
+  else if (state.screen === "liveLobby") renderLiveLobby();
+  else if (state.screen === "liveResult") renderLiveResult();
   else renderResult();
+  if (state.screen !== "match") enhanceMenuMood();
 }
 
 /** Apply frozen challenge clubs/diff into solo settings (player always heim/ksc). */
@@ -1125,6 +1216,7 @@ function renderMenu(): void {
         <div class="menu-group">
           <p class="menu-group-label">Spielen</p>
           <button class="btn ksc menu-cta" id="solo">Solo vs KI</button>
+          <button class="btn secondary" id="live">Live Challenge</button>
           <button class="btn secondary" id="challenge">Challenge</button>
         </div>
         <button class="btn secondary" id="highscores">Highscores</button>
@@ -1171,6 +1263,12 @@ function renderMenu(): void {
     state.challengeRole = null;
     go("challengeHub");
   });
+  app.querySelector("#live")!.addEventListener("click", () => {
+    unlockAudio();
+    sfx("ui");
+    destroyLiveSession();
+    go("liveHub");
+  });
   app.querySelector("#solo")!.addEventListener("click", () => {
     unlockAudio();
     sfx("ui");
@@ -1205,11 +1303,10 @@ function renderSoloMatchup(): void {
     derbyHint += ` · ${brand.gast.short} in Auswärtsfarbe`;
   }
 
-  app.innerHTML = `
-    <div class="screen menu menu-derby">
+  app.innerHTML = moodMenu(`
       <div>
         <p class="sub">Solo vs KI</p>
-        <h1 class="brand" style="font-size:1.55rem">Matchup</h1>
+        <h1 class="brand">Matchup</h1>
         <p class="sub match-line">${escapeHtml(matchLine)}</p>
         <p class="tiny derby-hint">${escapeHtml(derbyHint)}</p>
         <div class="kit-preview" aria-hidden="true">
@@ -1223,7 +1320,7 @@ function renderSoloMatchup(): void {
         <button class="btn secondary grow" id="solo-back" type="button">Menü</button>
         <button class="btn ksc grow" id="solo-next" type="button">Weiter</button>
       </div>
-    </div>`;
+    `);
 
   bindMatchupPickHandlers(() => renderSoloMatchup());
   app.querySelector("#solo-back")!.addEventListener("click", () => {
@@ -1326,10 +1423,9 @@ function renderTutorial(stepIndex = 0): void {
   const i = Math.max(0, Math.min(TUTORIAL_STEPS.length - 1, stepIndex));
   const step = TUTORIAL_STEPS[i]!;
   const last = i >= TUTORIAL_STEPS.length - 1;
-  app.innerHTML = `
-    <div class="screen menu tutorial-screen tut-guided">
+  app.innerHTML = moodMenu(`
       <p class="sub">Schritt ${i + 1} / ${TUTORIAL_STEPS.length}</p>
-      <h1 class="brand" style="font-size:1.55rem">${escapeHtml(step.title)}</h1>
+      <h1 class="brand">${escapeHtml(step.title)}</h1>
       <p class="sub">${step.lead}</p>
       <div class="card stack tutorial-card">
         ${step.diagram}
@@ -1342,7 +1438,7 @@ function renderTutorial(stepIndex = 0): void {
         <button class="btn secondary grow" id="tut-back" type="button">${i === 0 ? "Menü" : "Zurück"}</button>
         <button class="btn ksc grow" id="tut-next" type="button">${last ? "Fertig" : "Weiter"}</button>
       </div>
-    </div>`;
+    `, "tutorial-screen tut-guided");
   app.querySelector("#tut-back")!.addEventListener("click", () => {
     sfx("ui");
     if (i === 0) go("menu");
@@ -1427,8 +1523,7 @@ function renderHighscores(): void {
           : shared
             ? `<p class="tiny hs-sync">Gesamt Top-10 — mehrere Einträge pro Name möglich</p>`
             : `<p class="tiny hs-sync">Offline — lokale Gesamt-Liste</p>`;
-    app.innerHTML = `
-    <div class="screen menu">
+    app.innerHTML = moodMenu(`
       <h1 class="brand">Highscores</h1>
       ${status}
       <div class="pick-mode-row hs-scope-row" role="group" aria-label="Highscore-Ansicht">
@@ -1448,7 +1543,7 @@ function renderHighscores(): void {
         ${listHtml("bier", "Meiste Biere")}
       </div>
       <button class="btn secondary" id="hs-back">Zurück</button>
-    </div>`;
+    `);
     app.querySelectorAll<HTMLButtonElement>("[data-hs-scope]").forEach((btn) => {
       btn.addEventListener("click", () => {
         state.highscoreScope = btn.dataset.hsScope as HighscoreScope;
@@ -1564,10 +1659,9 @@ function renderChallengeHub(): void {
         .join("")}</ul>`
     : `<p class="tiny">Noch keine Challenges — Link generieren und teilen.</p>`;
 
-  app.innerHTML = `
-    <div class="screen menu">
+  app.innerHTML = moodMenu(`
       <p class="sub">1 Versuch · Einladungslink · Sieger vergleichen</p>
-      <h1 class="brand" style="font-size:1.55rem">Challenge</h1>
+      <h1 class="brand">Challenge</h1>
       <div class="chal-stats card stack">
         <p class="sub" style="margin:0">Deine Bilanz</p>
         <p class="chal-stats-line"><b>${stats.wins}</b> Siege · <b>${stats.losses}</b> Niederlagen · <b>${stats.draws}</b> Unentschieden</p>
@@ -1586,7 +1680,7 @@ function renderChallengeHub(): void {
         ${histHtml}
       </div>
       <button class="btn secondary" id="chal-hub-back" type="button">Menü</button>
-    </div>`;
+    `);
 
   app.querySelector("#chal-hub-back")!.addEventListener("click", () => {
     sfx("ui");
@@ -1872,9 +1966,359 @@ function finishChallengeAttempt(): void {
   go("challengeResult");
 }
 
+function renderLiveHub(): void {
+  const stats = loadLiveStats();
+  const hist = loadLiveHistory();
+  const histHtml = hist.length
+    ? `<ul class="chal-history">${hist
+        .slice(0, 8)
+        .map((e) => {
+          const cls =
+            e.outcome === "win" ? "win" : e.outcome === "loss" ? "loss" : "draw";
+          const badge =
+            e.outcome === "win"
+              ? "Sieg"
+              : e.outcome === "loss"
+                ? "Niederlage"
+                : "Remis";
+          return `<li class="chal-history-item">
+            <div class="chal-history-top">
+              <b>vs ${escapeHtml(e.opponent)}</b>
+              <span class="chal-badge ${cls}">${badge}</span>
+            </div>
+            <p class="tiny">${escapeHtml(e.myScore)} · Gegner ${escapeHtml(e.oppScore)} · ${formatMinute(e.minute)}</p>
+          </li>`;
+        })
+        .join("")}</ul>`
+    : `<p class="tiny">Noch keine Live-Spiele auf diesem Gerät.</p>`;
+
+  app.innerHTML = moodMenu(`
+    <p class="sub">Gleichzeitig · du Heim links · Gegner rechts (KPI)</p>
+    <h1 class="brand">Live Challenge</h1>
+    <div class="chal-stats card stack">
+      <p class="sub" style="margin:0">Persönliche Live-Stats</p>
+      <p class="chal-stats-line"><b>${stats.wins}</b> Siege · <b>${stats.losses}</b> Niederlagen · <b>${stats.draws}</b> Remis</p>
+      <p class="tiny">${stats.played} Spiele · Tore ${stats.goalsFor}:${stats.goalsAgainst} · Biere ${stats.beers}</p>
+    </div>
+    <div class="card stack">
+      <button class="btn ksc" id="live-host" type="button">Raum erstellen</button>
+      <p class="tiny" style="margin:0">Oder Raumcode eingeben:</p>
+      <div class="row" style="gap:8px">
+        <input id="live-code" class="chal-input" type="text" maxlength="8" placeholder="z. B. AB12CD" autocomplete="off" style="text-transform:uppercase" />
+        <button class="btn secondary" id="live-join" type="button">Beitreten</button>
+      </div>
+    </div>
+    <div class="card stack">
+      <p class="sub" style="margin:0">Letzte Live-Spiele</p>
+      ${histHtml}
+    </div>
+    <button class="btn secondary" id="live-back" type="button">Menü</button>
+  `);
+
+  app.querySelector("#live-back")!.addEventListener("click", () => {
+    sfx("ui");
+    destroyLiveSession();
+    go("menu");
+  });
+  app.querySelector("#live-host")!.addEventListener("click", () => {
+    void (async () => {
+      unlockAudio();
+      sfx("ui");
+      const name = askLiveName("Host");
+      try {
+        app.querySelector("#live-host")!.textContent = "Verbinde…";
+        const session = await createLiveHost(name);
+        state.live = session;
+        syncMenuBrandingPreview();
+        const clubs = menuClubsFromState();
+        session.setConfig({
+          playerClub: clubs.playerClub,
+          aiClub: clubs.aiClub,
+          difficulty: readMenuDifficulty(),
+          hostName: name,
+        });
+        bindLiveSession(session);
+        go("liveLobby");
+      } catch (err) {
+        window.alert(
+          err instanceof Error ? err.message : "Live-Raum fehlgeschlagen",
+        );
+        renderLiveHub();
+      }
+    })();
+  });
+  app.querySelector("#live-join")!.addEventListener("click", () => {
+    void (async () => {
+      unlockAudio();
+      sfx("ui");
+      const code = (
+        app.querySelector("#live-code") as HTMLInputElement
+      ).value
+        .trim()
+        .toUpperCase();
+      if (code.length < 4) {
+        window.alert("Bitte Raumcode eingeben.");
+        return;
+      }
+      const name = askLiveName("Gast");
+      try {
+        app.querySelector("#live-join")!.textContent = "…";
+        const session = await joinLiveGuest(code, name);
+        state.live = session;
+        bindLiveSession(session);
+        go("liveLobby");
+      } catch (err) {
+        window.alert(
+          err instanceof Error ? err.message : "Beitritt fehlgeschlagen",
+        );
+        renderLiveHub();
+      }
+    })();
+  });
+}
+
+function bindLiveSession(session: LiveSession): void {
+  session.onUpdate(() => {
+    if (state.screen === "liveLobby") renderLiveLobby();
+    if (state.screen === "match") syncLiveKpiPanel();
+    if (state.screen === "liveResult" && state.liveWaitingOpponent) {
+      maybeFinishLiveResult();
+    }
+  });
+  session.onStart((cfg, at) => {
+    state.settings = settingsFromLive(cfg, session.role);
+    setClubSoundIdentity(state.settings.playerClub, state.settings.aiClub);
+    syncMenuBrandingPreview();
+    state.setup = defaultSetup();
+    const delay = Math.max(0, at - Date.now());
+    window.setTimeout(() => {
+      if (!state.live) return;
+      go("setup");
+    }, delay);
+  });
+}
+
+function renderLiveLobby(): void {
+  const live = state.live;
+  if (!live) {
+    go("liveHub");
+    return;
+  }
+  syncMenuBrandingPreview();
+  const brand = currentBranding();
+  const cfg = live.config;
+  const matchLine = cfg
+    ? `${clubCode(cfg.playerClub) || cfg.playerClub} vs ${clubCode(cfg.aiClub) || cfg.aiClub}`
+    : `${brand.heim.short} vs ${brand.gast.short}`;
+  const bothReady = live.localReady && live.remoteReady && live.connected;
+
+  app.innerHTML = moodMenu(`
+    <p class="sub">Live · ${escapeHtml(live.status)}</p>
+    <h1 class="brand">Lobby</h1>
+    <p class="live-code">${escapeHtml(live.code)}</p>
+    <p class="tiny" style="text-align:center">Raumcode teilen — Gegner tritt bei</p>
+    <p class="sub match-line" style="text-align:center">${escapeHtml(matchLine)}</p>
+    <div class="kit-preview" aria-hidden="true">
+      ${kitSwatchHtml((cfg?.playerClub || brand.heim.id) as ClubId)}
+      <span class="kit-vs">vs</span>
+      ${kitSwatchHtml((cfg?.aiClub || brand.gast.id) as ClubId)}
+    </div>
+    ${
+      live.role === "host"
+        ? `<div class="card stack">
+        <p class="tiny">Matchup (Host wählt)</p>
+        ${matchupPickHtml({ showDiff: true, showBehavior: false })}
+      </div>`
+        : `<div class="card stack"><p class="tiny">Host legt Matchup fest. Du spielst Heim links mit deinem Club — Gegner-Club rechts.</p></div>`
+    }
+    <div class="card stack">
+      <div class="live-ready-row">
+        <span><span class="live-dot ${live.localReady ? "on" : ""}"></span> Du (${escapeHtml(live.localName)})</span>
+        <button class="btn secondary" id="live-ready" type="button">${live.localReady ? "Nicht bereit" : "Bereit"}</button>
+      </div>
+      <div class="live-ready-row">
+        <span><span class="live-dot ${live.remoteReady ? "on" : ""}"></span> Gegner (${escapeHtml(live.remoteName || "…")})</span>
+        <span class="tiny">${live.connected ? "online" : "offline"}</span>
+      </div>
+    </div>
+    ${
+      live.role === "host"
+        ? `<button class="btn ksc" id="live-start" type="button" ${bothReady ? "" : "disabled"}>Anpfiff (beide bereit)</button>`
+        : `<p class="tiny" style="text-align:center">Warte auf Host-Anpfiff…</p>`
+    }
+    <button class="btn secondary" id="live-lobby-back" type="button">Abbrechen</button>
+  `);
+
+  if (live.role === "host") {
+    bindMatchupPickHandlers(() => {
+      const clubs = menuClubsFromState();
+      live.setConfig({
+        playerClub: clubs.playerClub,
+        aiClub: clubs.aiClub,
+        difficulty: readMenuDifficulty(),
+        hostName: live.localName,
+        guestName: live.remoteName || undefined,
+      });
+      renderLiveLobby();
+    });
+  }
+  app.querySelector("#live-ready")!.addEventListener("click", () => {
+    sfx("ui");
+    live.sendReady(!live.localReady);
+    renderLiveLobby();
+  });
+  app.querySelector("#live-lobby-back")!.addEventListener("click", () => {
+    sfx("ui");
+    destroyLiveSession();
+    go("liveHub");
+  });
+  const startBtn = app.querySelector("#live-start");
+  if (startBtn) {
+    startBtn.addEventListener("click", () => {
+      if (!bothReady) return;
+      sfx("ui");
+      const clubs = menuClubsFromState();
+      live.setConfig({
+        playerClub: clubs.playerClub,
+        aiClub: clubs.aiClub,
+        difficulty: readMenuDifficulty(),
+        hostName: live.localName,
+        guestName: live.remoteName || undefined,
+      });
+      live.sendStart();
+    });
+  }
+}
+
+function syncLiveKpiPanel(): void {
+  const panel = app.querySelector("#live-kpi-panel");
+  const live = state.live;
+  if (!panel || !live) return;
+  const k = live.remoteKpi;
+  if (!k) {
+    panel.innerHTML = `<b>Gegner</b><span>${escapeHtml(live.remoteName || "…")}</span><span class="tiny">warte auf KPIs…</span>`;
+    return;
+  }
+  panel.innerHTML = `<b>Gegner · rechts</b>
+    <span>${escapeHtml(k.name)}</span>
+    <span><strong>${k.scoreFor}:${k.scoreAgainst}</strong> · ${formatMinute(k.minute)}</span>
+    <span>Biere ${k.beers} · Gold ${k.gold}</span>
+    <span class="tiny">${k.done ? k.detail || "fertig" : "läuft…"}</span>`;
+}
+
+function maybeFinishLiveResult(): void {
+  const live = state.live;
+  if (!live || !state.liveMyKpi) return;
+  const them = live.remoteKpi;
+  if (!them?.done) return;
+  if (state.liveOutcome) return;
+  const { outcome } = recordLiveResult({
+    opponent: them.name || live.remoteName || "Gegner",
+    me: state.liveMyKpi,
+    them,
+  });
+  state.liveOutcome = outcome;
+  state.liveWaitingOpponent = false;
+  renderLiveResult();
+}
+
+function renderLiveResult(): void {
+  const live = state.live;
+  const me = state.liveMyKpi;
+  if (!live || !me) {
+    go("liveHub");
+    return;
+  }
+  const them = live.remoteKpi;
+  if (!them?.done) {
+    state.liveWaitingOpponent = true;
+    app.innerHTML = moodMenu(`
+      <p class="sub">Live Challenge</p>
+      <h1 class="brand">Warte auf Gegner…</h1>
+      <div class="live-compare">
+        <div class="live-slot">
+          <p class="tiny">Du</p>
+          <p><b>${escapeHtml(me.name)}</b></p>
+          <p>${me.scoreFor}:${me.scoreAgainst}</p>
+          <p class="tiny">${formatMinute(me.minute)} · Biere ${me.beers}</p>
+          <p class="tiny">${escapeHtml(me.detail || "")}</p>
+        </div>
+        <div class="live-slot">
+          <p class="tiny">Gegner</p>
+          <p><b>${escapeHtml(them?.name || live.remoteName || "…")}</b></p>
+          <p>${them ? `${them.scoreFor}:${them.scoreAgainst}` : "—"}</p>
+          <p class="tiny">${them ? `${formatMinute(them.minute)} · läuft…` : "verbindet…"}</p>
+        </div>
+      </div>
+      <button class="btn secondary" id="live-wait-leave" type="button">Abbrechen</button>
+    `);
+    app.querySelector("#live-wait-leave")!.addEventListener("click", () => {
+      destroyLiveSession();
+      go("menu");
+    });
+    return;
+  }
+
+  if (!state.liveOutcome) {
+    const { outcome } = recordLiveResult({
+      opponent: them.name || live.remoteName || "Gegner",
+      me,
+      them,
+    });
+    state.liveOutcome = outcome;
+  }
+  const outcome = state.liveOutcome;
+  const stats = loadLiveStats();
+  const verdict =
+    outcome === "win"
+      ? "Sieg!"
+      : outcome === "loss"
+        ? "Niederlage"
+        : "Unentschieden";
+  app.innerHTML = moodMenu(`
+    <p class="sub">Live Challenge · Zusammenfassung</p>
+    <h1 class="brand">${verdict}</h1>
+    <p class="live-verdict">${escapeHtml(verdict)}</p>
+    <div class="live-compare">
+      <div class="live-slot ${outcome === "win" ? "win" : outcome === "loss" ? "loss" : ""}">
+        <p class="tiny">Du · Heim</p>
+        <p><b>${escapeHtml(me.name)}</b></p>
+        <p>${me.scoreFor}:${me.scoreAgainst}</p>
+        <p class="tiny">${formatMinute(me.minute)} · Biere ${me.beers} · Gold ${me.gold}</p>
+        <p class="tiny">${escapeHtml(me.detail || me.reason || "")}</p>
+      </div>
+      <div class="live-slot ${outcome === "loss" ? "win" : outcome === "win" ? "loss" : ""}">
+        <p class="tiny">Gegner · rechts</p>
+        <p><b>${escapeHtml(them.name)}</b></p>
+        <p>${them.scoreFor}:${them.scoreAgainst}</p>
+        <p class="tiny">${formatMinute(them.minute)} · Biere ${them.beers} · Gold ${them.gold}</p>
+        <p class="tiny">${escapeHtml(them.detail || them.reason || "")}</p>
+      </div>
+    </div>
+    <div class="chal-stats card stack">
+      <p class="sub" style="margin:0">Persönliche Stats</p>
+      <p class="chal-stats-line"><b>${stats.wins}</b> W · <b>${stats.losses}</b> L · <b>${stats.draws}</b> D · ${stats.played} Spiele</p>
+      <p class="tiny">Tore gesamt ${stats.goalsFor}:${stats.goalsAgainst} · Biere ${stats.beers}</p>
+    </div>
+    <div class="row">
+      <button class="btn secondary grow" id="live-res-menu" type="button">Menü</button>
+      <button class="btn ksc grow" id="live-res-again" type="button">Live-Hub</button>
+    </div>
+  `);
+  app.querySelector("#live-res-menu")!.addEventListener("click", () => {
+    destroyLiveSession();
+    go("menu");
+  });
+  app.querySelector("#live-res-again")!.addEventListener("click", () => {
+    destroyLiveSession();
+    go("liveHub");
+  });
+}
+
 function renderSetup(): void {
   const mix = state.setup.mix;
   const chal = state.challenge;
+  const live = state.live;
   const row = (key: keyof FanMix, label: string) => `
     <div class="row" style="justify-content:space-between">
       <span>${label}</span>
@@ -1888,9 +2332,11 @@ function renderSetup(): void {
     <div class="screen menu">
       <div>
         <p class="sub">${
-          chal
-            ? `Challenge · ${escapeHtml(challengeSetupLine(chal))} · 1 Versuch`
-            : "8 Fans für den Heimblock (Startaufstellung)"
+          live
+            ? `Live Challenge · du Heim links · Gegner-Club rechts`
+            : chal
+              ? `Challenge · ${escapeHtml(challengeSetupLine(chal))} · 1 Versuch`
+              : "8 Fans für den Heimblock (Startaufstellung)"
         }</p>
         <h1 class="brand" style="font-size:1.6rem">Aufstellung</h1>
       </div>
@@ -1906,6 +2352,10 @@ function renderSetup(): void {
       </div>
     </div>`;
   app.querySelector("#back")!.addEventListener("click", () => {
+    if (state.live) {
+      go("liveLobby");
+      return;
+    }
     if (state.challenge && state.challengeRole) {
       // Don't burn the attempt until the match ends
       go("challengeLobby");
@@ -1960,6 +2410,11 @@ function renderMatchScreen(): void {
   app.innerHTML = `
     <div class="rotate-hint">Bitte Handy quer drehen ↻</div>
     <div class="match-shell matchday">
+      ${
+        state.live
+          ? `<aside class="live-kpi-panel" id="live-kpi-panel" aria-live="polite"><b>Gegner · rechts</b><span>…</span></aside>`
+          : ""
+      }
       <div class="rail-slot" id="rail-slot" hidden>
         <aside class="side-rail right-rail person-rail" id="person-rail" aria-label="Personen" hidden>
           <header class="rail-banner">Personen</header>
@@ -2973,6 +3428,11 @@ function renderMatchScreen(): void {
         }
       }
       if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
+      if (state.live && Math.floor(now / 1000) !== Math.floor((now - dt * 1000) / 1000)) {
+        const kpi = kpisFromMatch(m, state.live.localName);
+        state.live.sendKpi(kpi);
+        syncLiveKpiPanel();
+      }
       if (m.result) {
         // Let storm/goal highlight finish briefly before result screen
         if (m.highlight && m.highlight.t > 0.4) {
@@ -2980,6 +3440,13 @@ function renderMatchScreen(): void {
           return;
         }
         unFs();
+        if (state.live) {
+          const kpi = kpisFromMatch(m, state.live.localName);
+          state.liveMyKpi = kpi;
+          state.live.sendKpi(kpi);
+          setTimeout(() => go("liveResult"), 800);
+          return;
+        }
         setTimeout(() => go("result"), 800);
         return;
       }
@@ -2992,6 +3459,11 @@ function renderMatchScreen(): void {
 }
 
 function renderResult(): void {
+  // Live Challenge: summary + personal stats
+  if (state.live) {
+    go("liveResult");
+    return;
+  }
   // Challenge: record 1 attempt and show head-to-head (no rematch)
   if (state.challenge && state.challengeRole) {
     finishChallengeAttempt();
