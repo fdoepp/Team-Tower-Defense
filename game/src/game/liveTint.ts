@@ -116,25 +116,28 @@ export function recolorImageData(
     const r = px[i]!;
     const g = px[i + 1]!;
     const b = px[i + 2]!;
-    const m = teamMask(r, g, b, base);
+    let m = teamMask(r, g, b, base);
+    const [, srcS, l] = rgbToHsl(r, g, b);
+    // White kits: also recolor pale glyph pixels (jackhammer on blue signs)
+    if (whiteKit && l > 0.72 && srcS < 0.4 && a > 10) {
+      m = Math.max(m, 0.88);
+    }
     if (m < 0.08) continue;
-    const [, , l] = rgbToHsl(r, g, b);
     let nr: number;
     let ng: number;
     let nb: number;
     if (whiteKit) {
-      const [, srcS] = rgbToHsl(r, g, b);
-      // Bright saturated blues = pyro/flare swirls in ultra sprites — keep as
-      // warm FX (secondary / amber), not white "scarf rings" over heads.
-      if (srcS > 0.32 && l > 0.42) {
-        if (sec && ss > 0.15) {
-          [nr, ng, nb] = hslToRgb(sh, Math.min(1, ss * 0.95), 0.48 + l * 0.28);
+      if (l > 0.72 && srcS < 0.4) {
+        // Pale icon/trim on blue asset → secondary (black) for contrast on white
+        if (sec) {
+          [nr, ng, nb] = sec;
         } else {
-          [nr, ng, nb] = hslToRgb(28, 0.88, 0.52 + l * 0.22);
+          [nr, ng, nb] = [18, 18, 22];
         }
       } else {
-        const nl = Math.min(0.97, 0.62 + l * 0.36);
-        [nr, ng, nb] = hslToRgb(th, 0.04, nl);
+        // Blue body / pyro → white primary (readable Schilder & white pyro)
+        const nl = Math.min(0.97, 0.7 + l * 0.3);
+        [nr, ng, nb] = hslToRgb(th, 0.03, nl);
       }
     } else if (blackKit) {
       const nl = Math.max(0.04, l * 0.28);
@@ -297,11 +300,11 @@ function toHex([r, g, b]: [number, number, number]): string {
 export function atmosphereWashHex(primary: string, secondary: string): string {
   const [pr, pg, pb] = parseHex(primary);
   const [sr, sg, sb] = parseHex(secondary);
-  const [gr, gg, gb] = parseHex(ATMOS_GREY);
   const luma = hexLuma(primary);
   if (luma > 200) {
-    // DE weiß → silber/slate + Sekundär-Stich, kein Vollweiß
-    return toHex(mixRgb([gr, gg, gb], [sr, sg, sb], 0.28));
+    // DE weiß: helles Weiß-Silber — Pyro/Beams im Foto sollen weiß lesbar sein
+    const bright: [number, number, number] = [228, 232, 240];
+    return toHex(mixRgb(bright, [sr, sg, sb], 0.12));
   }
   if (luma < 40) {
     // Schwarz-Kits → tiefes Nachtgrau, kein Loch
@@ -335,6 +338,9 @@ function recolorAtmosphereCrowd(
   const wash = parseHex(washHex);
   const accent = parseHex(accentHex);
   const grey = parseHex(greyHex);
+  const washLuma = (wash[0]! * 299 + wash[1]! * 587 + wash[2]! * 114) / 1000;
+  // White kits need stronger pull so baked blue pyro/beams become white
+  const pull = washLuma > 180 ? 0.82 : 0.48;
   const px = data.data;
   for (let i = 0; i < px.length; i += 4) {
     const a = px[i + 3]!;
@@ -358,8 +364,7 @@ function recolorAtmosphereCrowd(
       const t = Math.min(1, (l - 0.62) / 0.3);
       [tr, tg, tb] = mixRgb(wash, accent, 0.25 + t * 0.55);
     }
-    // Keep most of the photo — kit only seasons the crowd
-    const strength = m * 0.48;
+    const strength = m * pull;
     px[i] = Math.round(r * (1 - strength) + tr * strength);
     px[i + 1] = Math.round(g * (1 - strength) + tg * strength);
     px[i + 2] = Math.round(b * (1 - strength) + tb * strength);

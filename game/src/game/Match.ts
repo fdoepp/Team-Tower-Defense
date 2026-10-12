@@ -103,6 +103,7 @@ import {
 } from "./types";
 import {
   applyClubCssVars,
+  cheerPalette,
   clubFxColor,
   getClub,
   setSideBranding,
@@ -2210,12 +2211,13 @@ export class Match {
           (prevCheer > 2.8 && f.cheerT <= 2.8)
         ) {
           if (f.kind === "normalos") {
-            // Light kits: skip white confetti orbs (read as head-halos)
-            if (club !== "#f8fafc" && club.toLowerCase() !== "#ffffff") {
-              this.burstFanConfetti(f, club);
-            } else {
-              this.burstFanConfetti(f, "#fde68a");
-            }
+            // Schal ersetzt durch Konfetti in Vereins-/Flaggenfarben
+            const [cA, cB] =
+              f.team === "ksc" || f.team === "vfb"
+                ? cheerPalette(f.team)
+                : [club, "#fde68a"];
+            this.burstFanConfetti(f, cA);
+            this.burstFanConfetti(f, cB);
           } else if (f.kind === "ultras") {
             f.throwT = Math.max(f.throwT, 2.4);
             this.burstUltraSmoke(f, club);
@@ -2224,7 +2226,7 @@ export class Match {
             else this.burstFireworkRocket(f, club);
           }
         }
-        // Sparse in-block sparkle only (no full-pitch confetti rain)
+        // Sparse in-block sparkle / notes (no full-pitch confetti rain)
         if (Math.random() < 0.22 * step * 6) {
           const isPyro = f.kind === "ultras";
           const isHool = f.kind === "hooligans";
@@ -2232,9 +2234,16 @@ export class Match {
             f.team === "ksc" || f.team === "vfb"
               ? clubFxColor(f.team)
               : "#9ca3af";
-          // No floating ♪/♫ above heads — they read as scarf/Kringel arcs.
+          const [cA, cB] =
+            f.team === "ksc" || f.team === "vfb"
+              ? cheerPalette(f.team)
+              : [color, "#fde68a"];
+          // Normalos: Konfetti statt Schal + Noten; Ultras: Smoke; Hools: Sparks
+          if (f.kind === "normalos" && Math.random() < 0.45) {
+            this.burstFanConfetti(f, Math.random() < 0.5 ? cA : cB);
+          }
           this.moodFx.push({
-            kind: isPyro ? "smoke" : "spark",
+            kind: isPyro ? "smoke" : isHool ? "spark" : "note",
             x: f.x + (Math.random() - 0.5) * 0.03,
             y: f.y - 0.03,
             vx: (Math.random() - 0.5) * 0.04,
@@ -2242,11 +2251,11 @@ export class Match {
             color: isPyro
               ? color
               : Math.random() < 0.5
-                ? color
-                : "#fde68a",
+                ? cA
+                : cB,
             t: 0,
             life: isPyro ? 1.1 : 0.85,
-            size: isPyro ? 0.022 : isHool ? 0.009 : 0.008,
+            size: isPyro ? 0.022 : isHool ? 0.009 : 0.012,
           });
         }
       }

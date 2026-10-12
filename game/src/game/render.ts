@@ -1988,7 +1988,10 @@ function drawMoodParticles(
     const px = p.x * w;
     const py = p.y * h;
     if (p.kind === "note") {
-      // Intentionally blank — overhead music glyphs looked like scarf rings.
+      ctx.fillStyle = p.color;
+      ctx.font = `700 ${Math.max(10, p.size * h * 1.8)}px Outfit, Manrope, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(p.size > 0.014 ? "♫" : "♪", px, py);
     } else if (p.kind === "smoke") {
       const rad = Math.max(4, p.size * h);
       const g = ctx.createRadialGradient(px, py, 0, px, py, rad);

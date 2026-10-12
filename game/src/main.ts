@@ -71,13 +71,14 @@ import {
   DEFAULT_PLAYER_CLUB,
   DEFAULT_PLAYER_NATION,
   derbiesByCountry,
+  allNationals,
   findDerby,
   findNationalFixture,
   getClub,
   isNational,
-  nationalFixturesByRegion,
-  nationalsByRegion,
+  NATIONAL_FIXTURES,
   setSideBranding,
+  type Club,
   type ClubId,
 } from "./game/clubs";
 import {
@@ -564,7 +565,10 @@ type Screen =
   | "challengeLobby"
   | "challengeResult";
 
-type PickMode = "derby" | "free" | "national";
+/** Top-level: clubs vs national teams */
+type TeamScope = "clubs" | "nations";
+/** Sub-mode within scope */
+type PickMode = "derby" | "free" | "fixture";
 
 const state = {
   screen: "menu" as Screen,
@@ -581,7 +585,8 @@ const state = {
   buildRailMode: "place" as "place" | "upgrade",
   highscoreDiff: "normal" as SoloSettings["difficulty"],
   highscoreScope: "gesamt" as HighscoreScope,
-  /** Matchup pick (Solo-/Challenge-Screen, nicht Hauptmenü) */
+  /** Matchup: first Vereine/National, then Derby/Frei or Klassiker/Frei */
+  teamScope: "clubs" as TeamScope,
   pickMode: "derby" as PickMode,
   menuCountry: "Deutschland",
   menuDerbyId: DEFAULT_DERBY_ID,
@@ -604,7 +609,7 @@ const state = {
 function syncMenuBrandingPreview(): void {
   let player: ClubId;
   let ai: ClubId;
-  if (state.pickMode === "derby") {
+  if (state.teamScope === "clubs" && state.pickMode === "derby") {
     const d = findDerby(state.menuDerbyId);
     if (d) {
       player = state.menuPlayAsA ? d.a : d.b;
@@ -613,7 +618,18 @@ function syncMenuBrandingPreview(): void {
       player = state.menuPlayerClub;
       ai = state.menuAiClub;
     }
-  } else if (state.pickMode === "national") {
+  } else if (state.teamScope === "nations" && state.pickMode === "fixture") {
+    const fix = findNationalFixture(state.menuNationalFixtureId);
+    if (fix) {
+      player = state.menuPlayAsA ? fix.a : fix.b;
+      ai = state.menuPlayAsA ? fix.b : fix.a;
+    } else {
+      player = isNational(state.menuPlayerClub)
+        ? state.menuPlayerClub
+        : DEFAULT_PLAYER_NATION;
+      ai = isNational(state.menuAiClub) ? state.menuAiClub : DEFAULT_AI_NATION;
+    }
+  } else if (state.teamScope === "nations") {
     player = isNational(state.menuPlayerClub)
       ? state.menuPlayerClub
       : DEFAULT_PLAYER_NATION;
@@ -653,41 +669,24 @@ function clubOptionsGroupedHtml(selected: ClubId, selectId: string): string {
 }
 
 function nationOptionsGroupedHtml(selected: ClubId, selectId: string): string {
-  const groups = nationalsByRegion();
-  return `<select id="${selectId}">${groups
-    .map(
-      (g) =>
-        `<optgroup label="${escapeHtml(g.region)}">${g.nations
-          .map(
-            (c) =>
-              `<option value="${c.id}" ${c.id === selected ? "selected" : ""}>${escapeHtml(c.short)} — ${escapeHtml(c.name)}</option>`,
-          )
-          .join("")}</optgroup>`,
-    )
-    .join("")}</select>`;
+  const top = allNationals().filter((c) => (c.fifaRank ?? 999) <= 25);
+  const extras = allNationals().filter((c) => (c.fifaRank ?? 999) > 25);
+  const opt = (c: Club) => {
+    const rank = c.fifaRank != null ? `#${c.fifaRank} · ` : "";
+    return `<option value="${c.id}" ${c.id === selected ? "selected" : ""}>${rank}${escapeHtml(c.short)} — ${escapeHtml(c.name)}</option>`;
+  };
+  return `<select id="${selectId}">
+    <optgroup label="FIFA Top 25">${top.map(opt).join("")}</optgroup>
+    ${extras.length ? `<optgroup label="Weitere">${extras.map(opt).join("")}</optgroup>` : ""}
+  </select>`;
 }
 
-function nationRegionOptionsHtml(selected: string): string {
-  const regions = nationalFixturesByRegion().map((g) => g.region);
-  return `<select id="nation-region">${regions
-    .map(
-      (r) =>
-        `<option value="${escapeHtml(r)}" ${r === selected ? "selected" : ""}>${escapeHtml(r)}</option>`,
-    )
-    .join("")}</select>`;
-}
-
-function nationalFixtureOptionsHtml(region: string, selected: string): string {
-  const groups = nationalFixturesByRegion();
-  const inRegion = groups.find((g) => g.region === region)?.fixtures ?? [];
-  const list = inRegion.length ? inRegion : groups.flatMap((g) => g.fixtures);
-  return `<select id="nation-fixture">${list
-    .map((f) => {
-      const a = getClub(f.a);
-      const b = getClub(f.b);
-      return `<option value="${f.id}" ${f.id === selected ? "selected" : ""}>${escapeHtml(f.name)} (${escapeHtml(a.short)}–${escapeHtml(b.short)})</option>`;
-    })
-    .join("")}</select>`;
+function nationalFixtureOptionsHtml(selected: string): string {
+  return `<select id="nation-fixture">${NATIONAL_FIXTURES.map((f) => {
+    const a = getClub(f.a);
+    const b = getClub(f.b);
+    return `<option value="${f.id}" ${f.id === selected ? "selected" : ""}>${escapeHtml(f.name)} (${escapeHtml(a.short)}–${escapeHtml(b.short)})</option>`;
+  }).join("")}</select>`;
 }
 
 function derbyOptionsGroupedHtml(
@@ -811,14 +810,15 @@ function menuClubsFromState(): { playerClub: string; aiClub: string } {
   };
 }
 
-/** Shared Derby/Frei/Nation + optional Diff/Verhalten controls (Solo & Challenge). */
+/** Shared Vereine/National → Unterwahl + optional Diff/Verhalten (Solo & Challenge). */
 function matchupPickHtml(opts: {
   showDiff?: boolean;
   showBehavior?: boolean;
 }): string {
   const derby = findDerby(state.menuDerbyId);
+  const fix = findNationalFixture(state.menuNationalFixtureId);
   let pickControls = "";
-  if (state.pickMode === "derby") {
+  if (state.teamScope === "clubs" && state.pickMode === "derby") {
     pickControls = `
         <label class="field">Land
           ${countryOptionsHtml(state.menuCountry)}
@@ -832,14 +832,19 @@ function matchupPickHtml(opts: {
             <option value="b" ${!state.menuPlayAsA ? "selected" : ""}>${derby ? escapeHtml(getClub(derby.b).name) : "Gast"}</option>
           </select>
         </label>`;
-  } else if (state.pickMode === "national") {
+  } else if (state.teamScope === "nations" && state.pickMode === "fixture") {
     pickControls = `
-        <label class="field">Klassiker
-          ${nationRegionOptionsHtml(state.menuNationRegion)}
+        <label class="field">Länderspiel-Derby
+          ${nationalFixtureOptionsHtml(state.menuNationalFixtureId)}
         </label>
-        <label class="field">Länderspiel
-          ${nationalFixtureOptionsHtml(state.menuNationRegion, state.menuNationalFixtureId)}
-        </label>
+        <label class="field">Deine Seite
+          <select id="side">
+            <option value="a" ${state.menuPlayAsA ? "selected" : ""}>${fix ? escapeHtml(getClub(fix.a).name) : "Heim"}</option>
+            <option value="b" ${!state.menuPlayAsA ? "selected" : ""}>${fix ? escapeHtml(getClub(fix.b).name) : "Gast"}</option>
+          </select>
+        </label>`;
+  } else if (state.teamScope === "nations") {
+    pickControls = `
         <label class="field">Dein Land
           ${nationOptionsGroupedHtml(
             isNational(state.menuPlayerClub)
@@ -857,12 +862,30 @@ function matchupPickHtml(opts: {
   } else {
     pickControls = `
         <label class="field">Dein Verein
-          ${clubOptionsGroupedHtml(state.menuPlayerClub, "player-club")}
+          ${clubOptionsGroupedHtml(
+            isNational(state.menuPlayerClub)
+              ? DEFAULT_PLAYER_CLUB
+              : state.menuPlayerClub,
+            "player-club",
+          )}
         </label>
         <label class="field">Gegner (KI)
-          ${clubOptionsGroupedHtml(state.menuAiClub, "ai-club")}
+          ${clubOptionsGroupedHtml(
+            isNational(state.menuAiClub) ? DEFAULT_AI_CLUB : state.menuAiClub,
+            "ai-club",
+          )}
         </label>`;
   }
+  const subRow =
+    state.teamScope === "clubs"
+      ? `<div class="pick-mode-row" role="group" aria-label="Vereinsmodus">
+          <button type="button" class="pick-mode ${state.pickMode === "derby" ? "on" : ""}" data-pick="derby">Derby</button>
+          <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
+        </div>`
+      : `<div class="pick-mode-row" role="group" aria-label="Nationalmodus">
+          <button type="button" class="pick-mode ${state.pickMode === "fixture" ? "on" : ""}" data-pick="fixture">Klassiker</button>
+          <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
+        </div>`;
   const diff = opts.showDiff
     ? `<label class="field">KI
           <select id="diff">
@@ -894,11 +917,11 @@ function matchupPickHtml(opts: {
     : "";
   return `
       <div class="card stack team-pick">
-        <div class="pick-mode-row" role="group" aria-label="Auswahlmodus">
-          <button type="button" class="pick-mode ${state.pickMode === "derby" ? "on" : ""}" data-pick="derby">Derby</button>
-          <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
-          <button type="button" class="pick-mode ${state.pickMode === "national" ? "on" : ""}" data-pick="national">Nation</button>
+        <div class="pick-mode-row" role="group" aria-label="Mannschaftsart">
+          <button type="button" class="pick-mode ${state.teamScope === "clubs" ? "on" : ""}" data-scope="clubs">Vereine</button>
+          <button type="button" class="pick-mode ${state.teamScope === "nations" ? "on" : ""}" data-scope="nations">Nationalmannschaften</button>
         </div>
+        ${subRow}
         ${pickControls}
         ${diff}
         ${behavior}
@@ -906,22 +929,58 @@ function matchupPickHtml(opts: {
 }
 
 function bindMatchupPickHandlers(rerender: () => void): void {
+  app.querySelectorAll<HTMLButtonElement>("[data-scope]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      sfx("ui");
+      const next = btn.dataset.scope as TeamScope;
+      state.teamScope = next;
+      if (next === "nations") {
+        state.pickMode = "fixture";
+        const fix = findNationalFixture(state.menuNationalFixtureId);
+        if (fix) {
+          state.menuPlayerClub = fix.a;
+          state.menuAiClub = fix.b;
+        } else {
+          state.menuPlayerClub = DEFAULT_PLAYER_NATION;
+          state.menuAiClub = DEFAULT_AI_NATION;
+        }
+        state.menuPlayAsA = true;
+      } else {
+        state.pickMode = "derby";
+        if (isNational(state.menuPlayerClub)) {
+          state.menuPlayerClub = DEFAULT_PLAYER_CLUB;
+        }
+        if (isNational(state.menuAiClub)) {
+          state.menuAiClub = DEFAULT_AI_CLUB;
+        }
+        state.menuPlayAsA = true;
+      }
+      rerender();
+    });
+  });
   app.querySelectorAll<HTMLButtonElement>("[data-pick]").forEach((btn) => {
     btn.addEventListener("click", () => {
       sfx("ui");
       const next = btn.dataset.pick as PickMode;
       state.pickMode = next;
-      if (next === "national") {
-        if (!isNational(state.menuPlayerClub)) {
-          state.menuPlayerClub = DEFAULT_PLAYER_NATION;
-        }
-        if (!isNational(state.menuAiClub) || state.menuAiClub === state.menuPlayerClub) {
-          state.menuAiClub = DEFAULT_AI_NATION;
-        }
-        const fix = findNationalFixture(state.menuNationalFixtureId);
-        if (fix) {
-          state.menuPlayerClub = fix.a;
-          state.menuAiClub = fix.b;
+      if (state.teamScope === "nations") {
+        if (next === "fixture") {
+          const fix = findNationalFixture(state.menuNationalFixtureId);
+          if (fix) {
+            state.menuPlayerClub = fix.a;
+            state.menuAiClub = fix.b;
+          }
+          state.menuPlayAsA = true;
+        } else {
+          if (!isNational(state.menuPlayerClub)) {
+            state.menuPlayerClub = DEFAULT_PLAYER_NATION;
+          }
+          if (
+            !isNational(state.menuAiClub) ||
+            state.menuAiClub === state.menuPlayerClub
+          ) {
+            state.menuAiClub = DEFAULT_AI_NATION;
+          }
         }
       } else if (next === "derby" || next === "free") {
         if (isNational(state.menuPlayerClub)) {
@@ -955,23 +1014,6 @@ function bindMatchupPickHandlers(rerender: () => void): void {
       rerender();
     });
   }
-  const nationRegionEl = app.querySelector(
-    "#nation-region",
-  ) as HTMLSelectElement | null;
-  if (nationRegionEl) {
-    nationRegionEl.addEventListener("change", () => {
-      state.menuNationRegion = nationRegionEl.value;
-      const first = nationalFixturesByRegion().find(
-        (g) => g.region === state.menuNationRegion,
-      )?.fixtures[0];
-      if (first) {
-        state.menuNationalFixtureId = first.id;
-        state.menuPlayerClub = first.a;
-        state.menuAiClub = first.b;
-      }
-      rerender();
-    });
-  }
   const nationFixEl = app.querySelector(
     "#nation-fixture",
   ) as HTMLSelectElement | null;
@@ -982,6 +1024,7 @@ function bindMatchupPickHandlers(rerender: () => void): void {
       if (fix) {
         state.menuPlayerClub = fix.a;
         state.menuAiClub = fix.b;
+        state.menuPlayAsA = true;
       }
       rerender();
     });
@@ -1001,8 +1044,8 @@ function bindMatchupPickHandlers(rerender: () => void): void {
       state.menuPlayerClub = playerClubEl.value;
       if (state.menuAiClub === state.menuPlayerClub) {
         const pool =
-          state.pickMode === "national"
-            ? nationalsByRegion().flatMap((g) => g.nations)
+          state.teamScope === "nations"
+            ? allNationals()
             : clubsByCountry().flatMap((g) => g.clubs);
         const alt = pool.find((c) => c.id !== state.menuPlayerClub);
         if (alt) state.menuAiClub = alt.id;
@@ -1040,9 +1083,9 @@ function applySoloSettingsFromMenu(): void {
     playerClub,
     aiClub,
     derbyId:
-      state.pickMode === "derby"
+      state.teamScope === "clubs" && state.pickMode === "derby"
         ? state.menuDerbyId
-        : state.pickMode === "national"
+        : state.teamScope === "nations" && state.pickMode === "fixture"
           ? state.menuNationalFixtureId
           : undefined,
     difficulty: readMenuDifficulty(),
@@ -1128,15 +1171,17 @@ function renderSoloMatchup(): void {
   const nationFix = findNationalFixture(state.menuNationalFixtureId);
   const matchLine = `${brand.heim.short} vs ${brand.gast.short}`;
   let derbyHint =
-    state.pickMode === "derby" && derby
+    state.teamScope === "clubs" && state.pickMode === "derby" && derby
       ? derby.rank != null
         ? `Derby #${derby.rank} · ${derby.name}`
         : derby.name
-      : state.pickMode === "national"
+      : state.teamScope === "nations" && state.pickMode === "fixture"
         ? nationFix
           ? `Länderspiel · ${nationFix.name}`
           : "Nationalmannschaften"
-        : "Freie Vereinswahl";
+        : state.teamScope === "nations"
+          ? "Freie Nationalwahl (FIFA Top 25+)"
+          : "Freie Vereinswahl";
   if (awayKitClashActive()) {
     derbyHint += ` · ${brand.gast.short} in Auswärtsfarbe`;
   }

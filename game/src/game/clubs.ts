@@ -34,6 +34,8 @@ export type Club = {
   flag?: FlagSpec;
   /** Continent / region bucket for national pick UI. */
   region?: string;
+  /** FIFA men's ranking (approx.) — nationals only; lower = stronger. */
+  fifaRank?: number;
 };
 
 export type Derby = {
@@ -76,6 +78,7 @@ function nation(
   primary: string,
   secondary: string,
   flag: FlagSpec,
+  fifaRank?: number,
 ): Club {
   return {
     id,
@@ -88,6 +91,7 @@ function nation(
     kind: "national",
     flag,
     region,
+    fifaRank,
   };
 }
 
@@ -336,223 +340,38 @@ export const CLUBS: Record<ClubId, Club> = {
   portland: club("portland", "PTI", "Portland Timbers", "USA", "MLS", "#004812", "#FFFFFF"),
   seattle: club("seattle", "SEA", "Seattle Sounders", "USA", "MLS", "#5D9732", "#005595"),
 
-  // --- Nationalmannschaften (primary/secondary = classic home kit) ---
-  ger: nation(
-    "ger",
-    "GER",
-    "Deutschland",
-    "Europa",
-    "#FFFFFF",
-    "#000000",
-    { style: "h", colors: ["#000000", "#DD0000", "#FFCE00"] },
-  ),
-  ned: nation(
-    "ned",
-    "NED",
-    "Niederlande",
-    "Europa",
-    "#FF6600",
-    "#FFFFFF",
-    { style: "h", colors: ["#AE1C28", "#FFFFFF", "#21468B"] },
-  ),
-  fra: nation(
-    "fra",
-    "FRA",
-    "Frankreich",
-    "Europa",
-    "#002395",
-    "#FFFFFF",
-    { style: "v", colors: ["#002395", "#FFFFFF", "#ED2939"] },
-  ),
-  eng: nation(
-    "eng",
-    "ENG",
-    "England",
-    "Europa",
-    "#FFFFFF",
-    "#00205B",
-    { style: "cross", field: "#FFFFFF", cross: "#C8102E" },
-  ),
-  esp: nation(
-    "esp",
-    "ESP",
-    "Spanien",
-    "Europa",
-    "#C60B1E",
-    "#FABD00",
-    { style: "h", colors: ["#AA151B", "#F1BF00", "#AA151B"] },
-  ),
-  ita: nation(
-    "ita",
-    "ITA",
-    "Italien",
-    "Europa",
-    "#0066B3",
-    "#FFFFFF",
-    { style: "v", colors: ["#009246", "#FFFFFF", "#CE2B37"] },
-  ),
-  por: nation(
-    "por",
-    "POR",
-    "Portugal",
-    "Europa",
-    "#FF0000",
-    "#006600",
-    { style: "v", colors: ["#006600", "#FF0000"] },
-  ),
-  bel: nation(
-    "bel",
-    "BEL",
-    "Belgien",
-    "Europa",
-    "#EF3340",
-    "#FAE100",
-    { style: "v", colors: ["#000000", "#FAE042", "#ED2939"] },
-  ),
-  cro: nation(
-    "cro",
-    "CRO",
-    "Kroatien",
-    "Europa",
-    "#FF0000",
-    "#FFFFFF",
-    { style: "h", colors: ["#FF0000", "#FFFFFF", "#171796"] },
-  ),
-  sui: nation(
-    "sui",
-    "SUI",
-    "Schweiz",
-    "Europa",
-    "#FF0000",
-    "#FFFFFF",
-    { style: "cross", field: "#FF0000", cross: "#FFFFFF" },
-  ),
-  aut: nation(
-    "aut",
-    "AUT",
-    "Österreich",
-    "Europa",
-    "#ED2939",
-    "#FFFFFF",
-    { style: "h", colors: ["#ED2939", "#FFFFFF", "#ED2939"] },
-  ),
-  den: nation(
-    "den",
-    "DEN",
-    "Dänemark",
-    "Europa",
-    "#C8102E",
-    "#FFFFFF",
-    { style: "nordic", field: "#C8102E", cross: "#FFFFFF" },
-  ),
-  swe: nation(
-    "swe",
-    "SWE",
-    "Schweden",
-    "Europa",
-    "#FFCD00",
-    "#006AA7",
-    { style: "nordic", field: "#006AA7", cross: "#FECC00" },
-  ),
-  nor: nation(
-    "nor",
-    "NOR",
-    "Norwegen",
-    "Europa",
-    "#BA0C2F",
-    "#00205B",
-    { style: "nordic", field: "#BA0C2F", cross: "#FFFFFF" },
-  ),
-  pol: nation(
-    "pol",
-    "POL",
-    "Polen",
-    "Europa",
-    "#FFFFFF",
-    "#DC143C",
-    { style: "h", colors: ["#FFFFFF", "#DC143C"] },
-  ),
-  tur: nation(
-    "tur",
-    "TUR",
-    "Türkei",
-    "Europa",
-    "#E30A17",
-    "#FFFFFF",
-    { style: "circle", field: "#E30A17", disc: "#FFFFFF" },
-  ),
-  sco: nation(
-    "sco",
-    "SCO",
-    "Schottland",
-    "Europa",
-    "#0065BD",
-    "#FFFFFF",
-    { style: "saltire", field: "#005EB8", saltire: "#FFFFFF" },
-  ),
-  bra: nation(
-    "bra",
-    "BRA",
-    "Brasilien",
-    "Südamerika",
-    "#FEE72F",
-    "#009C3B",
-    { style: "h", colors: ["#009C3B", "#FFDF00", "#002776"] },
-  ),
-  arg: nation(
-    "arg",
-    "ARG",
-    "Argentinien",
-    "Südamerika",
-    "#74ACDF",
-    "#FFFFFF",
-    { style: "h", colors: ["#74ACDF", "#FFFFFF", "#74ACDF"] },
-  ),
-  uru: nation(
-    "uru",
-    "URU",
-    "Uruguay",
-    "Südamerika",
-    "#5BA3D9",
-    "#000000",
-    { style: "h", colors: ["#FFFFFF", "#0038A8"] },
-  ),
-  usa: nation(
-    "usa",
-    "USA",
-    "USA",
-    "Nordamerika",
-    "#FFFFFF",
-    "#002868",
-    { style: "h", colors: ["#B22234", "#FFFFFF", "#3C3B6E"] },
-  ),
-  mex: nation(
-    "mex",
-    "MEX",
-    "Mexiko",
-    "Nordamerika",
-    "#006847",
-    "#FFFFFF",
-    { style: "v", colors: ["#006847", "#FFFFFF", "#CE1126"] },
-  ),
-  jap: nation(
-    "jap",
-    "JPN",
-    "Japan",
-    "Asien",
-    "#000080",
-    "#FFFFFF",
-    { style: "circle", field: "#FFFFFF", disc: "#BC002D" },
-  ),
-  kor: nation(
-    "kor",
-    "KOR",
-    "Südkorea",
-    "Asien",
-    "#C60C30",
-    "#003478",
-    { style: "h", colors: ["#FFFFFF", "#C60C30", "#003478"] },
-  ),
+  // --- Nationalmannschaften (FIFA Top-25 + extras; kit = home jersey) ---
+  arg: nation("arg", "ARG", "Argentinien", "Südamerika", "#74ACDF", "#FFFFFF", { style: "h", colors: ["#74ACDF", "#FFFFFF", "#74ACDF"] }, 1),
+  fra: nation("fra", "FRA", "Frankreich", "Europa", "#002395", "#FFFFFF", { style: "v", colors: ["#002395", "#FFFFFF", "#ED2939"] }, 2),
+  esp: nation("esp", "ESP", "Spanien", "Europa", "#C60B1E", "#FABD00", { style: "h", colors: ["#AA151B", "#F1BF00", "#AA151B"] }, 3),
+  eng: nation("eng", "ENG", "England", "Europa", "#FFFFFF", "#00205B", { style: "cross", field: "#FFFFFF", cross: "#C8102E" }, 4),
+  bra: nation("bra", "BRA", "Brasilien", "Südamerika", "#FEE72F", "#009C3B", { style: "h", colors: ["#009C3B", "#FFDF00", "#002776"] }, 5),
+  por: nation("por", "POR", "Portugal", "Europa", "#FF0000", "#006600", { style: "v", colors: ["#006600", "#FF0000"] }, 6),
+  ned: nation("ned", "NED", "Niederlande", "Europa", "#FF6600", "#FFFFFF", { style: "h", colors: ["#AE1C28", "#FFFFFF", "#21468B"] }, 7),
+  bel: nation("bel", "BEL", "Belgien", "Europa", "#EF3340", "#FAE100", { style: "v", colors: ["#000000", "#FAE042", "#ED2939"] }, 8),
+  ita: nation("ita", "ITA", "Italien", "Europa", "#0066B3", "#FFFFFF", { style: "v", colors: ["#009246", "#FFFFFF", "#CE2B37"] }, 9),
+  ger: nation("ger", "GER", "Deutschland", "Europa", "#FFFFFF", "#000000", { style: "h", colors: ["#000000", "#DD0000", "#FFCE00"] }, 10),
+  cro: nation("cro", "CRO", "Kroatien", "Europa", "#FF0000", "#FFFFFF", { style: "h", colors: ["#FF0000", "#FFFFFF", "#171796"] }, 11),
+  mar: nation("mar", "MAR", "Marokko", "Afrika", "#C1272D", "#006233", { style: "h", colors: ["#C1272D", "#006233"] }, 12),
+  col: nation("col", "COL", "Kolumbien", "Südamerika", "#FCD116", "#003893", { style: "h", colors: ["#FCD116", "#003893", "#CE1126"] }, 13),
+  uru: nation("uru", "URU", "Uruguay", "Südamerika", "#5BA3D9", "#000000", { style: "h", colors: ["#FFFFFF", "#0038A8"] }, 14),
+  usa: nation("usa", "USA", "USA", "Nordamerika", "#FFFFFF", "#002868", { style: "h", colors: ["#B22234", "#FFFFFF", "#3C3B6E"] }, 15),
+  mex: nation("mex", "MEX", "Mexiko", "Nordamerika", "#006847", "#FFFFFF", { style: "v", colors: ["#006847", "#FFFFFF", "#CE1126"] }, 16),
+  sui: nation("sui", "SUI", "Schweiz", "Europa", "#FF0000", "#FFFFFF", { style: "cross", field: "#FF0000", cross: "#FFFFFF" }, 17),
+  jap: nation("jap", "JPN", "Japan", "Asien", "#000080", "#FFFFFF", { style: "circle", field: "#FFFFFF", disc: "#BC002D" }, 18),
+  sen: nation("sen", "SEN", "Senegal", "Afrika", "#00853F", "#FDEF42", { style: "v", colors: ["#00853F", "#FDEF42", "#E31B23"] }, 19),
+  irn: nation("irn", "IRN", "Iran", "Asien", "#FFFFFF", "#239F40", { style: "h", colors: ["#239F40", "#FFFFFF", "#DA0000"] }, 20),
+  den: nation("den", "DEN", "Dänemark", "Europa", "#C8102E", "#FFFFFF", { style: "nordic", field: "#C8102E", cross: "#FFFFFF" }, 21),
+  kor: nation("kor", "KOR", "Südkorea", "Asien", "#C60C30", "#003478", { style: "h", colors: ["#FFFFFF", "#C60C30", "#003478"] }, 22),
+  aut: nation("aut", "AUT", "Österreich", "Europa", "#ED2939", "#FFFFFF", { style: "h", colors: ["#ED2939", "#FFFFFF", "#ED2939"] }, 23),
+  aus: nation("aus", "AUS", "Australien", "Asien", "#00008B", "#FFCD00", { style: "h", colors: ["#00008B", "#FFCD00"] }, 24),
+  ukr: nation("ukr", "UKR", "Ukraine", "Europa", "#0057B7", "#FFD700", { style: "h", colors: ["#0057B7", "#FFD700"] }, 25),
+  // Extras beyond Top-25 (free pick)
+  swe: nation("swe", "SWE", "Schweden", "Europa", "#FFCD00", "#006AA7", { style: "nordic", field: "#006AA7", cross: "#FECC00" }),
+  nor: nation("nor", "NOR", "Norwegen", "Europa", "#BA0C2F", "#00205B", { style: "nordic", field: "#BA0C2F", cross: "#FFFFFF" }),
+  pol: nation("pol", "POL", "Polen", "Europa", "#FFFFFF", "#DC143C", { style: "h", colors: ["#FFFFFF", "#DC143C"] }),
+  tur: nation("tur", "TUR", "Türkei", "Europa", "#E30A17", "#FFFFFF", { style: "circle", field: "#E30A17", disc: "#FFFFFF" }),
+  sco: nation("sco", "SCO", "Schottland", "Europa", "#0065BD", "#FFFFFF", { style: "saltire", field: "#005EB8", saltire: "#FFFFFF" }),
 };
 
 /** FFT 50 (rank) + extras (rank null). Pair order is display-only. */
@@ -612,26 +431,18 @@ export const DERBIES: Derby[] = [
   { id: "badenwuerttemberg", name: "Baden-Württemberg", rank: null, a: "ksc", b: "vfb", country: "Deutschland", league: "Bundesliga" },
 ];
 
-/** Famous Länderspiele / rivalries for Nation pick mode. */
+/** ~10 famous Länderspiel-Derbys for Nation → Klassiker. */
 export const NATIONAL_FIXTURES: NationalFixture[] = [
   { id: "de-nl", name: "Klassiker DE–NL", a: "ger", b: "ned", region: "Europa" },
-  { id: "eng-ger", name: "England–Deutschland", a: "eng", b: "ger", region: "Europa" },
-  { id: "fra-ita", name: "Frankreich–Italien", a: "fra", b: "ita", region: "Europa" },
-  { id: "esp-por", name: "Iberisches Duell", a: "esp", b: "por", region: "Europa" },
-  { id: "bel-ned", name: "Low Countries", a: "bel", b: "ned", region: "Europa" },
-  { id: "ita-ger", name: "Italien–Deutschland", a: "ita", b: "ger", region: "Europa" },
-  { id: "cro-aut", name: "Nachbarschaft", a: "cro", b: "aut", region: "Europa" },
-  { id: "sui-aut", name: "Alpen-Duell", a: "sui", b: "aut", region: "Europa" },
-  { id: "den-swe", name: "Skandinavien", a: "den", b: "swe", region: "Europa" },
-  { id: "sco-eng", name: "Auld Enemy", a: "sco", b: "eng", region: "Europa" },
-  { id: "tur-ger", name: "Türkei–Deutschland", a: "tur", b: "ger", region: "Europa" },
-  { id: "pol-ger", name: "Polen–Deutschland", a: "pol", b: "ger", region: "Europa" },
   { id: "bra-arg", name: "Superclásico das Américas", a: "bra", b: "arg", region: "Südamerika" },
-  { id: "arg-uru", name: "Rioplatense", a: "arg", b: "uru", region: "Südamerika" },
+  { id: "eng-ger", name: "England–Deutschland", a: "eng", b: "ger", region: "Europa" },
+  { id: "arg-fra", name: "WM-Finale-Feeling", a: "arg", b: "fra", region: "Welt" },
+  { id: "esp-por", name: "Iberisches Duell", a: "esp", b: "por", region: "Europa" },
   { id: "usa-mex", name: "CONCACAF Rivalry", a: "usa", b: "mex", region: "Nordamerika" },
-  { id: "jap-kor", name: "Ostasien", a: "jap", b: "kor", region: "Asien" },
-  { id: "bra-ger", name: "Brasilien–Deutschland", a: "bra", b: "ger", region: "Welt" },
-  { id: "arg-fra", name: "Argentinien–Frankreich", a: "arg", b: "fra", region: "Welt" },
+  { id: "sco-eng", name: "Auld Enemy", a: "sco", b: "eng", region: "Europa" },
+  { id: "jap-kor", name: "Ostasien-Derby", a: "jap", b: "kor", region: "Asien" },
+  { id: "ita-fra", name: "Frankreich–Italien", a: "fra", b: "ita", region: "Europa" },
+  { id: "mar-sen", name: "Afrika-Klassiker", a: "mar", b: "sen", region: "Afrika" },
 ];
 
 export const DEFAULT_NATIONAL_FIXTURE_ID = "de-nl";
@@ -673,11 +484,12 @@ export function allClubs(): Club[] {
 export function allNationals(): Club[] {
   return Object.values(CLUBS)
     .filter((c) => c.kind === "national")
-    .sort((a, b) =>
-      (a.region ?? "") === (b.region ?? "")
-        ? a.name.localeCompare(b.name, "de")
-        : (a.region ?? "").localeCompare(b.region ?? "", "de"),
-    );
+    .sort((a, b) => {
+      const ra = a.fifaRank ?? 999;
+      const rb = b.fifaRank ?? 999;
+      if (ra !== rb) return ra - rb;
+      return a.name.localeCompare(b.name, "de");
+    });
 }
 
 export function clubsByCountry(): { country: string; clubs: Club[] }[] {
@@ -709,7 +521,34 @@ export function nationalsByRegion(): { region: string; nations: Club[] }[] {
       const sb = ib < 0 ? 99 : ib;
       return sa === sb ? a[0].localeCompare(b[0], "de") : sa - sb;
     })
-    .map(([region, nations]) => ({ region, nations }));
+    .map(([region, nations]) => ({
+      region,
+      nations: nations.sort(
+        (a, b) => (a.fifaRank ?? 999) - (b.fifaRank ?? 999),
+      ),
+    }));
+}
+
+/** Colors from a national flag for cheer confetti. */
+export function flagCheerColors(flag: FlagSpec): string[] {
+  if (flag.style === "h" || flag.style === "v") return [...flag.colors];
+  if (flag.style === "cross" || flag.style === "nordic") {
+    return [flag.field, flag.cross];
+  }
+  if (flag.style === "circle") return [flag.field, flag.disc];
+  if (flag.style === "saltire") return [flag.field, flag.saltire];
+  return [];
+}
+
+/** Confetti palette: flag colors for nations, kit prim/sec for clubs. */
+export function cheerPalette(side: "ksc" | "vfb"): [string, string] {
+  const flag = clubFlag(side);
+  if (flag) {
+    const cols = flagCheerColors(flag).filter(Boolean);
+    if (cols.length >= 2) return [cols[0]!, cols[1]!];
+    if (cols.length === 1) return [cols[0]!, clubSecondary(side)];
+  }
+  return [clubPrimary(side), clubSecondary(side)];
 }
 
 export function nationalFixturesByRegion(): {
@@ -913,14 +752,11 @@ export function clubSecondary(side: "ksc" | "vfb"): string {
 }
 
 /**
- * Accent for pyro / confetti / smoke.
- * Light home kits (DE weiß, ENG weiß) use secondary (schwarz/navy) like KSC uses white.
+ * Accent for pyro / smoke / signs: always the match primary
+ * (white kits → white pyro & Schilder, not leftover blue).
  */
 export function clubFxColor(side: "ksc" | "vfb"): string {
-  const p = clubPrimary(side);
-  const s = clubSecondary(side);
-  if (hexLuma(p) > 200) return s;
-  return p;
+  return clubPrimary(side);
 }
 
 export function awayKitClashActive(): boolean {

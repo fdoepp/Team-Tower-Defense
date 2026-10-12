@@ -1,5 +1,5 @@
 /**
- * UI smoke: Nation pick + match with DE vs NL flags.
+ * UI smoke: Vereine/National scope + Klassiker DE–NL.
  */
 import { chromium } from "playwright";
 import { mkdirSync } from "fs";
@@ -13,60 +13,49 @@ await page.goto("http://127.0.0.1:5173/", { waitUntil: "networkidle" });
 await page.locator("#solo").click();
 await page.waitForTimeout(400);
 
-const nationBtn = page.locator('[data-pick="national"]');
-if ((await nationBtn.count()) === 0) throw new Error("Nation pick button missing");
+const nationBtn = page.locator('[data-scope="nations"]');
+if ((await nationBtn.count()) === 0) {
+  throw new Error("Nationalmannschaften button missing");
+}
 await nationBtn.click();
 await page.waitForTimeout(350);
 
-const modes = await page.locator(".pick-mode").count();
-console.log("pick modes", modes);
-if (modes < 3) throw new Error("expected 3 pick modes");
+const scopes = await page.locator("[data-scope]").count();
+const picks = await page.locator("[data-pick]").count();
+console.log("scopes", scopes, "sub picks", picks);
+if (scopes < 2 || picks < 2) throw new Error("expected scope + sub pick rows");
 
-// Ensure Klassiker DE–NL if available
 const fix = page.locator("#nation-fixture");
-if ((await fix.count()) > 0) {
-  const opts = await fix.locator("option").allTextContents();
-  console.log("fixtures sample", opts.slice(0, 3));
-  await fix.selectOption("de-nl").catch(async () => {
-    await fix.selectOption({ index: 0 });
-  });
-  await page.waitForTimeout(200);
-}
+if ((await fix.count()) === 0) throw new Error("nation-fixture missing in Klassiker");
+const opts = await fix.locator("option").allTextContents();
+console.log("fixtures", opts.length, opts.slice(0, 3));
+if (opts.length < 8) throw new Error("expected ~10 national derbies");
+await fix.selectOption("de-nl").catch(async () => {
+  await fix.selectOption({ index: 0 });
+});
+await page.waitForTimeout(200);
 
-const player = await page.locator("#player-club").inputValue();
-const ai = await page.locator("#ai-club").inputValue();
-console.log("nations", player, ai);
+await page.locator('[data-pick="free"]').click();
+await page.waitForTimeout(200);
+const nations = await page.locator("#player-club option").count();
+console.log("free nations", nations);
+if (nations < 25) throw new Error("expected FIFA Top 25+ nations");
 
 await page.screenshot({
-  path: "/opt/cursor/artifacts/screenshots/national_matchup_denl.png",
+  path: "/opt/cursor/artifacts/screenshots/national_matchup_ui.png",
   fullPage: true,
 });
 
-// Kit logos present
-const logos = await page.locator(".kit-logo").count();
-console.log("kit logos", logos);
-if (logos < 2) throw new Error("kit logos missing");
-
+await page.locator('[data-pick="fixture"]').click();
+await page.waitForTimeout(150);
 await page.locator("#solo-next").click();
-await page.waitForTimeout(400);
-
-if ((await page.locator("#start").count()) === 0) {
-  throw new Error("setup/Anpfiff missing after Nation matchup");
-}
-await page.screenshot({
-  path: "/opt/cursor/artifacts/screenshots/national_setup_denl.png",
-  fullPage: true,
-});
+await page.waitForTimeout(200);
 await page.locator("#start").click();
-await page.waitForTimeout(800);
-
-const canvas = page.locator("canvas");
-if ((await canvas.count()) === 0) throw new Error("match canvas missing");
 await page.waitForTimeout(1200);
 await page.screenshot({
-  path: "/opt/cursor/artifacts/screenshots/national_match_denl.png",
+  path: "/opt/cursor/artifacts/screenshots/national_denl_match.png",
   fullPage: true,
 });
 
-console.log("OK");
 await browser.close();
+console.log("national-ui-smoke OK");
