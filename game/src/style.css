@@ -124,11 +124,6 @@ button {
   margin-top: min(4vh, 28px);
 }
 
-.screen.menu.menu-home .fs-hint {
-  margin-top: 4px;
-  margin-bottom: 0;
-}
-
 .screen.menu.menu-home::before,
 .screen.menu.menu-mood::before {
   content: "";
@@ -564,6 +559,8 @@ button {
   color: rgba(148, 163, 184, 0.85);
   max-width: 420px;
   text-align: center;
+  margin-top: 4px;
+  margin-bottom: 0;
 }
 
 .screen.menu.menu-home .fs-hint b {
