@@ -158,6 +158,7 @@ import {
 import {
   audioDebugState,
   bindAudioGestures,
+  isAudioUnlocked,
   isMuted,
   setAmbienceFromMatch,
   setClubSoundIdentity,
@@ -243,6 +244,41 @@ bindAudioGestures();
 
 function muteButtonLabel(): string {
   return isMuted() ? "Ton: aus" : "Ton: an";
+}
+
+function audioUnlockHintHtml(): string {
+  if (isMuted()) {
+    return `<p class="tiny fs-hint audio-hint">Ton ist aus — unter Einstellungen wieder einschalten.</p>`;
+  }
+  if (isAudioUnlocked()) {
+    return `<p class="tiny fs-hint audio-hint on">Ton an · Stadion-Ambiente läuft</p>`;
+  }
+  return `<button type="button" class="btn ksc audio-unlock-btn" id="audio-unlock">Ton einschalten</button>
+    <p class="tiny fs-hint audio-hint">Browser brauchen einen Tip — dann hörst du Kurve, Pfiff und Hits.</p>`;
+}
+
+function bindAudioUnlockUi(): void {
+  const btn = app.querySelector("#audio-unlock");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    unlockAudio();
+    startAmbience("menu");
+    // Re-render hint state without full menu rebuild
+    const wrap = btn.closest(".menu-mood-body") ?? btn.parentElement;
+    const host = document.createElement("div");
+    host.innerHTML = audioUnlockHintHtml();
+    const oldBtn = app.querySelector("#audio-unlock");
+    const oldHint = app.querySelector(".audio-hint");
+    if (oldBtn && host.firstElementChild) {
+      oldBtn.replaceWith(host.firstElementChild);
+    }
+    if (oldHint) {
+      const nextHint = host.querySelector(".audio-hint");
+      if (nextHint) oldHint.replaceWith(nextHint);
+      else oldHint.remove();
+    }
+    void wrap;
+  });
 }
 
 function buildingYieldCurrency(kind: BuildingKind): string {
@@ -1343,18 +1379,31 @@ function renderMenu(): void {
           ? `<p class="tiny fs-hint">iPhone: Teilen → <b>Zum Home-Bildschirm</b> — dann ohne Tabs/Adressleiste.</p>`
           : `<p class="tiny fs-hint">Tipp: Vollbild für volle Spielfläche (ohne Browser-Leisten).</p>`
       }
-      <p class="tiny fs-hint">Ton: einmal tippen — Browser starten Audio erst nach der ersten Geste.</p>
+      ${audioUnlockHintHtml()}
     </div>`;
+  bindAudioUnlockUi();
   app.querySelector("#fs-menu")!.addEventListener("click", () => {
     unlockAudio();
+    startAmbience("menu");
     void goFullscreen();
   });
   app.querySelector("#mute-audio")!.addEventListener("click", () => {
     unlockAudio();
     toggleMuted();
-    if (!isMuted()) sfx("ui");
+    if (!isMuted()) {
+      startAmbience("menu");
+      sfx("ui");
+    }
     (app.querySelector("#mute-audio") as HTMLButtonElement).textContent =
       muteButtonLabel();
+    // Refresh hint under menu
+    const oldHint = app.querySelector(".audio-unlock-btn, .audio-hint");
+    if (oldHint) {
+      const host = document.createElement("div");
+      host.innerHTML = audioUnlockHintHtml();
+      oldHint.replaceWith(...Array.from(host.childNodes));
+      bindAudioUnlockUi();
+    }
   });
   app.querySelector("#highscores")!.addEventListener("click", () => {
     sfx("ui");
@@ -1397,6 +1446,17 @@ function renderMenu(): void {
     state.challenge = null;
     state.challengeRole = null;
     go("soloMatchup");
+  });
+  // Any menu click primes audio + soft bed (autoplay policy)
+  app.querySelectorAll("button").forEach((b) => {
+    b.addEventListener(
+      "pointerdown",
+      () => {
+        unlockAudio();
+        if (!isMuted()) startAmbience("menu");
+      },
+      { once: false, capture: true },
+    );
   });
 }
 
