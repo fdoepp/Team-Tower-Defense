@@ -1,7 +1,6 @@
 /**
- * Challenge-Modus: 1v1 asynchron über Share-Link.
- * Herausforderer setzt Ziel + Diff + Matchup, spielt einmal;
- * Gegner öffnet den Link und spielt dasselbe Setup einmal.
+ * Challenge-Modus: 1v1 asynchron über Einladungslink.
+ * Erstellen → Link generieren → beide spielen 1× → Historie + Bilanz.
  */
 import { getClub } from "./clubs";
 import {
@@ -33,10 +32,25 @@ export type Challenge = {
   behavior: AiBehavior;
   playerClub: string;
   aiClub: string;
-  /** Host / Ersteller */
+  /** Optional: Name des Erstellers (für Historie) */
+  hostName?: string;
+  /** Host / Spieler 1 */
   a?: ChallengeAttempt;
-  /** Annehmender */
+  /** Annehmender / Spieler 2 */
   b?: ChallengeAttempt;
+};
+
+export type ChallengeHistoryEntry = Challenge & {
+  /** Rolle dieses Geräts, falls gespielt */
+  myRole?: "a" | "b";
+  savedAt: string;
+};
+
+export type ChallengeStats = {
+  wins: number;
+  losses: number;
+  draws: number;
+  played: number;
 };
 
 export const CHALLENGE_GOAL_LABEL: Record<ChallengeGoal, string> = {
@@ -52,6 +66,9 @@ export const CHALLENGE_GOAL_BLURB: Record<ChallengeGoal, string> = {
 };
 
 const PLAYED_KEY = "matchday-challenge-played-v1";
+const HISTORY_KEY = "matchday-challenge-history-v1";
+const STATS_COUNTED_KEY = "matchday-challenge-stats-counted-v1";
+const HISTORY_MAX = 40;
 
 function uid(): string {
   return (
@@ -66,6 +83,7 @@ export function createChallenge(cfg: {
   behavior: AiBehavior;
   playerClub: string;
   aiClub: string;
+  hostName?: string;
 }): Challenge {
   return {
     v: 1,
@@ -75,6 +93,7 @@ export function createChallenge(cfg: {
     behavior: cfg.behavior,
     playerClub: cfg.playerClub,
     aiClub: cfg.aiClub,
+    hostName: cfg.hostName?.trim().slice(0, 20) || undefined,
   };
 }
 
@@ -181,6 +200,13 @@ export function hasPlayedChallengeRole(
   return (loadPlayed()[id] || []).includes(role);
 }
 
+export function myChallengeRole(id: string): "a" | "b" | null {
+  const roles = loadPlayed()[id] || [];
+  if (roles.includes("a")) return "a";
+  if (roles.includes("b")) return "b";
+  return null;
+}
+
 export function markPlayedChallengeRole(id: string, role: "a" | "b"): void {
   const store = loadPlayed();
   const list = new Set(store[id] || []);
@@ -274,6 +300,7 @@ export function challengeVerdictLabel(
   winner: "a" | "b" | "draw" | "pending",
 ): string {
   if (winner === "pending") {
+    if (!c.a && !c.b) return "Einladungslink teilen — beide spielen 1×";
     if (c.a && !c.b) return `Warte auf Gegner — Link teilen`;
     if (!c.a) return "Noch niemand hat gespielt";
     return "Ausstehend";
@@ -282,4 +309,125 @@ export function challengeVerdictLabel(
   const w = winner === "a" ? c.a : c.b;
   const l = winner === "a" ? c.b : c.a;
   return `${w?.name || "Spieler"} gewinnt gegen ${l?.name || "Gegner"}!`;
+}
+
+/* ─── Historie & Bilanz (localStorage) ─── */
+
+function loadHistoryRaw(): ChallengeHistoryEntry[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const list = JSON.parse(raw) as ChallengeHistoryEntry[];
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistoryRaw(list: ChallengeHistoryEntry[]): void {
+  try {
+    localStorage.setItem(
+      HISTORY_KEY,
+      JSON.stringify(list.slice(0, HISTORY_MAX)),
+    );
+  } catch {
+    /* quota */
+  }
+}
+
+/** Merge challenge into local history (newest first). */
+export function upsertChallengeHistory(c: Challenge): ChallengeHistoryEntry {
+  const list = loadHistoryRaw();
+  const myRole = myChallengeRole(c.id) || undefined;
+  const entry: ChallengeHistoryEntry = {
+    ...c,
+    myRole,
+    savedAt: new Date().toISOString(),
+  };
+  const without = list.filter((e) => e.id !== c.id);
+  without.unshift(entry);
+  saveHistoryRaw(without);
+  maybeCountStats(entry);
+  return entry;
+}
+
+export function loadChallengeHistory(): ChallengeHistoryEntry[] {
+  return loadHistoryRaw();
+}
+
+export function getChallengeFromHistory(id: string): ChallengeHistoryEntry | null {
+  return loadHistoryRaw().find((e) => e.id === id) || null;
+}
+
+function loadCountedIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(STATS_COUNTED_KEY);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw) as string[];
+    return new Set(Array.isArray(arr) ? arr : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveCountedIds(ids: Set<string>): void {
+  try {
+    localStorage.setItem(STATS_COUNTED_KEY, JSON.stringify([...ids]));
+  } catch {
+    /* quota */
+  }
+}
+
+/** Count W/L once per challenge when finished and we know our role. */
+function maybeCountStats(entry: ChallengeHistoryEntry): void {
+  const winner = compareChallengeAttempts(entry.goal, entry.a, entry.b);
+  if (winner === "pending") return;
+  const role = entry.myRole || myChallengeRole(entry.id);
+  if (!role) return;
+  const counted = loadCountedIds();
+  if (counted.has(entry.id)) return;
+  counted.add(entry.id);
+  saveCountedIds(counted);
+  // Stats are derived from counted history — no separate counter store
+}
+
+/** Bilanz dieses Geräts (nur Challenges, bei denen wir mitgespielt haben). */
+export function challengeStats(): ChallengeStats {
+  const stats: ChallengeStats = { wins: 0, losses: 0, draws: 0, played: 0 };
+  for (const e of loadHistoryRaw()) {
+    const role = e.myRole || myChallengeRole(e.id);
+    if (!role) continue;
+    const winner = compareChallengeAttempts(e.goal, e.a, e.b);
+    if (winner === "pending") continue;
+    stats.played++;
+    if (winner === "draw") stats.draws++;
+    else if (winner === role) stats.wins++;
+    else stats.losses++;
+  }
+  return stats;
+}
+
+export function challengeOutcomeForMe(
+  c: Challenge,
+  myRole?: "a" | "b" | null,
+): "win" | "loss" | "draw" | "pending" | "open" {
+  const role = myRole || myChallengeRole(c.id);
+  const winner = compareChallengeAttempts(c.goal, c.a, c.b);
+  if (winner === "pending") {
+    if (!c.a && !c.b) return "open";
+    return "pending";
+  }
+  if (!role) return winner === "draw" ? "draw" : "pending";
+  if (winner === "draw") return "draw";
+  return winner === role ? "win" : "loss";
+}
+
+export function challengeOutcomeLabel(
+  outcome: ReturnType<typeof challengeOutcomeForMe>,
+): string {
+  if (outcome === "win") return "Gewonnen";
+  if (outcome === "loss") return "Verloren";
+  if (outcome === "draw") return "Unentschieden";
+  if (outcome === "open") return "Offen";
+  return "Läuft";
 }
