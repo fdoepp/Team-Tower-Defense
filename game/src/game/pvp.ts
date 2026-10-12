@@ -1,6 +1,7 @@
 /**
  * Live PvP: host-authoritative commands + compact snapshots.
- * Host simulates one Match; guest sends inputs and applies snaps.
+ * Host simulates one Match (Heim left); guest sends inputs and applies snaps
+ * mirrored so each client sees their own team on the left.
  */
 import type {
   BuildingKind,
@@ -98,6 +99,101 @@ export type PvpSnap = {
   slots: PvpSlotSnap[];
   toast?: string;
 };
+
+/** Host Heim(0) ↔ Guest local Heim(0); neutral stays. */
+export function mirrorPvpBlockId(blockId: number): number {
+  if (blockId === 0) return 2;
+  if (blockId === 2) return 0;
+  return blockId;
+}
+
+function mirrorPvpTeam<T extends TeamId | "neutral" | null | undefined>(
+  team: T,
+): T {
+  if (team === "ksc") return "vfb" as T;
+  if (team === "vfb") return "ksc" as T;
+  return team;
+}
+
+function mirrorStandKey(key: string | null): string | null {
+  if (!key) return key;
+  const m = /^(\d+):(\d+)$/.exec(key);
+  if (!m) return key;
+  return `${mirrorPvpBlockId(Number(m[1]))}:${m[2]}`;
+}
+
+/**
+ * Host snap → guest-local view: guest economy/units on left (ksc),
+ * host on right (vfb), geometry flipped.
+ */
+export function mirrorPvpSnapForGuest(snap: PvpSnap): PvpSnap {
+  const result = snap.result
+    ? {
+        ...snap.result,
+        winner: mirrorPvpTeam(snap.result.winner),
+        score: [snap.result.score[1], snap.result.score[0]] as [number, number],
+      }
+    : snap.result;
+  return {
+    ...snap,
+    scoreKsc: snap.scoreVfb,
+    scoreVfb: snap.scoreKsc,
+    momentum: -snap.momentum,
+    moodHeim: snap.moodGaeste,
+    moodGaeste: snap.moodHeim,
+    gold: snap.aiGold,
+    currency: {
+      beer: snap.aiBeer,
+      merch: snap.aiMerch,
+      security: snap.aiSecurity,
+    },
+    aiGold: snap.gold,
+    aiBeer: snap.currency.beer,
+    aiMerch: snap.currency.merch,
+    aiSecurity: snap.currency.security,
+    unitTech: { ...snap.aiTech },
+    aiTech: { ...snap.unitTech },
+    linePlayer: 1 - snap.lineAi,
+    lineAi: 1 - snap.linePlayer,
+    beersDrunkPlayer: snap.beersDrunkAi,
+    beersDrunkAi: snap.beersDrunkPlayer,
+    lastGoalTeam: mirrorPvpTeam(snap.lastGoalTeam),
+    result,
+    fans: snap.fans.map(
+      (f): PvpFanSnap => ({
+        ...f,
+        team: mirrorPvpTeam(f.team),
+        blockId: mirrorPvpBlockId(f.blockId),
+        homeBlockId: mirrorPvpBlockId(f.homeBlockId),
+        gangX: 1 - f.gangX,
+        x: 1 - f.x,
+        standKey: mirrorStandKey(f.standKey),
+        homeStandKey: mirrorStandKey(f.homeStandKey),
+      }),
+    ),
+    slots: snap.slots.map(
+      (s): PvpSlotSnap => ({
+        ...s,
+        blockId: mirrorPvpBlockId(s.blockId),
+        owner: mirrorPvpTeam(s.owner),
+      }),
+    ),
+  };
+}
+
+/** Guest-local command → host board coordinates (guest still team vfb on host). */
+export function mirrorPvpCmdToHost(cmd: PvpCmd): PvpCmd {
+  switch (cmd.op) {
+    case "build":
+    case "upgradeBuild":
+    case "hire":
+      return { ...cmd, blockId: mirrorPvpBlockId(cmd.blockId) };
+    case "selectSlot":
+      return { ...cmd, blockId: mirrorPvpBlockId(cmd.blockId) };
+    default:
+      return cmd;
+  }
+}
 
 export function exportPvpSnap(m: Match, tick: number): PvpSnap {
   return {
