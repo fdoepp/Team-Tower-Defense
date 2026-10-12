@@ -1121,14 +1121,20 @@ function renderMenu(): void {
         </div>
       </header>
       <div class="menu-actions stack">
-        <button class="btn ksc menu-cta" id="solo">Solo vs KI</button>
-        <button class="btn secondary" id="challenge">Challenge</button>
         <button class="btn secondary" id="tutorial">Tutorial</button>
-        <button class="btn secondary" id="highscores">Highscores</button>
-        <div class="menu-util-row">
-          <button class="btn secondary util" id="mute-audio">${muteButtonLabel()}</button>
-          <button class="btn secondary util" id="fs-menu">Vollbild</button>
+        <div class="menu-group">
+          <p class="menu-group-label">Spielen</p>
+          <button class="btn ksc menu-cta" id="solo">Solo vs KI</button>
+          <button class="btn secondary" id="challenge">Challenge</button>
         </div>
+        <button class="btn secondary" id="highscores">Highscores</button>
+        <details class="menu-settings">
+          <summary class="btn secondary menu-settings-summary">Einstellungen</summary>
+          <div class="menu-util-row">
+            <button class="btn secondary util" id="mute-audio">${muteButtonLabel()}</button>
+            <button class="btn secondary util" id="fs-menu">Vollbild</button>
+          </div>
+        </details>
       </div>
       ${
         iosHint
