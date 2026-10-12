@@ -1,10 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img">
-  <rect width="512" height="512" rx="96" fill="#0a1410"/>
-  <rect x="48" y="40" width="416" height="88" rx="16" fill="#2d8a48"/>
-  <rect x="40" y="148" width="100" height="150" rx="12" fill="#2563eb"/>
-  <rect x="156" y="148" width="100" height="150" rx="12" fill="#6b7280"/>
-  <rect x="272" y="148" width="100" height="150" rx="12" fill="#6b7280"/>
-  <rect x="388" y="148" width="84" height="150" rx="12" fill="#dc2626"/>
-  <rect x="40" y="310" width="432" height="72" rx="8" fill="#1e242c"/>
-  <text x="256" y="450" text-anchor="middle" fill="#f3f0e7" font-family="Arial Black, sans-serif" font-size="72" font-weight="700">LL</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Derby Time">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a1630"/>
+      <stop offset="50%" stop-color="#0b1018"/>
+      <stop offset="100%" stop-color="#1a0a0c"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#sky)"/>
+  <rect x="48" y="150" width="130" height="170" rx="14" fill="#2563eb"/>
+  <rect x="191" y="160" width="130" height="160" rx="14" fill="#374151"/>
+  <rect x="334" y="150" width="130" height="170" rx="14" fill="#ea580c"/>
+  <ellipse cx="113" cy="150" rx="48" ry="70" fill="#3b82f6" opacity="0.85"/>
+  <ellipse cx="399" cy="150" rx="48" ry="70" fill="#f97316" opacity="0.85"/>
+  <text x="256" y="430" text-anchor="middle" fill="#f8fafc"
+        font-family="Arial Black, Helvetica, sans-serif" font-size="96" font-weight="700">DT</text>
 </svg>

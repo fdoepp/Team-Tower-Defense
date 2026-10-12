@@ -1104,26 +1104,44 @@ function askChallengeName(defaultName = "Spieler"): string | null {
 function renderMenu(): void {
   const iosHint = isIos() && !isStandalone();
   app.innerHTML = `
-    <div class="screen menu menu-derby">
-      <div>
-        <p class="sub">Stadion · Blöcke · Gang · Stimmung</p>
-        <h1 class="brand">LaneLink</h1>
-        <p class="sub match-line">Matchday · Querformat</p>
+    <div class="screen menu menu-home menu-derby">
+      <div class="menu-atmosphere" aria-hidden="true">
+        <span class="menu-beam menu-beam-l"></span>
+        <span class="menu-beam menu-beam-r"></span>
+        <span class="menu-ember"></span>
       </div>
-      <div class="card stack">
-        <button class="btn ksc" id="solo">Solo vs KI</button>
-        <button class="btn secondary" id="challenge">Challenge</button>
+      <header class="menu-hero">
+        <p class="menu-eyebrow">Matchday TD</p>
+        <h1 class="brand">Derby Time</h1>
+        <p class="sub match-line">Blöcke · Gang · Stimmung</p>
+        <div class="menu-sides" aria-hidden="true">
+          <span class="menu-side menu-side-heim">Heim</span>
+          <span class="menu-side-vs">vs</span>
+          <span class="menu-side menu-side-gast">Gast</span>
+        </div>
+      </header>
+      <div class="menu-actions stack">
         <button class="btn secondary" id="tutorial">Tutorial</button>
+        <div class="menu-group">
+          <p class="menu-group-label">Spielen</p>
+          <button class="btn ksc menu-cta" id="solo">Solo vs KI</button>
+          <button class="btn secondary" id="challenge">Challenge</button>
+        </div>
         <button class="btn secondary" id="highscores">Highscores</button>
-        <button class="btn secondary" id="mute-audio">${muteButtonLabel()}</button>
-        <button class="btn secondary" id="fs-menu">Vollbild</button>
+        <details class="menu-settings">
+          <summary class="btn secondary menu-settings-summary">Einstellungen</summary>
+          <div class="menu-util-row">
+            <button class="btn secondary util" id="mute-audio">${muteButtonLabel()}</button>
+            <button class="btn secondary util" id="fs-menu">Vollbild</button>
+          </div>
+        </details>
       </div>
       ${
         iosHint
           ? `<p class="tiny fs-hint">iPhone: Teilen → <b>Zum Home-Bildschirm</b> — dann ohne Tabs/Adressleiste.</p>`
           : `<p class="tiny fs-hint">Tipp: Vollbild für volle Spielfläche (ohne Browser-Leisten).</p>`
       }
-      <p class="tiny fs-hint">Ton: einmal irgendwo tippen (oder „Ton: an“) — Browser blocken Audio sonst bis zur ersten Geste.</p>
+      <p class="tiny fs-hint">Ton: einmal tippen — Browser starten Audio erst nach der ersten Geste.</p>
     </div>`;
   app.querySelector("#fs-menu")!.addEventListener("click", () => {
     unlockAudio();
@@ -2089,7 +2107,7 @@ function renderMatchScreen(): void {
             <button class="btn ksc" type="button" id="fs-enter">Vollbild starten</button>
             ${
               iosHint
-                ? `<p class="tiny">iPhone: Teilen-Symbol → <b>Zum Home-Bildschirm</b>, dann LaneLink von dort öffnen.</p>`
+                ? `<p class="tiny">iPhone: Teilen-Symbol → <b>Zum Home-Bildschirm</b>, dann Derby Time von dort öffnen.</p>`
                 : `<p class="tiny">Danach Handy quer halten.</p>`
             }
           </div>

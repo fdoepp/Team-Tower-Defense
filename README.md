@@ -1,6 +1,6 @@
 # Team-Tower-Defense
 
-LaneLink — Stadion-Tower-Defense.
+Derby Time — Stadion-Tower-Defense.
 
 ## Icon-Kanons (verbindlich)
 
