@@ -538,6 +538,7 @@ const app = document.querySelector<HTMLDivElement>("#app")!;
 
 type Screen =
   | "menu"
+  | "soloMatchup"
   | "tutorial"
   | "setup"
   | "match"
@@ -564,7 +565,7 @@ const state = {
   buildRailMode: "place" as "place" | "upgrade",
   highscoreDiff: "normal" as SoloSettings["difficulty"],
   highscoreScope: "gesamt" as HighscoreScope,
-  /** Menu: derby preset vs free club pick */
+  /** Matchup pick (Solo-/Challenge-Screen, nicht Hauptmenü) */
   pickMode: "derby" as PickMode,
   menuCountry: "Deutschland",
   menuDerbyId: DEFAULT_DERBY_ID,
@@ -572,6 +573,8 @@ const state = {
   menuPlayAsA: true,
   menuPlayerClub: DEFAULT_PLAYER_CLUB as ClubId,
   menuAiClub: DEFAULT_AI_CLUB as ClubId,
+  menuDifficulty: "normal" as SoloSettings["difficulty"],
+  menuBehavior: "balanced" as AiBehavior,
   /** Active challenge (create / accept / compare) */
   challenge: null as Challenge | null,
   /** Which slot this device fills for the active challenge */
@@ -688,6 +691,7 @@ function go(screen: Screen): void {
 function render(): void {
   cancelAnimationFrame(state.raf);
   if (state.screen === "menu") renderMenu();
+  else if (state.screen === "soloMatchup") renderSoloMatchup();
   else if (state.screen === "tutorial") renderTutorial();
   else if (state.screen === "setup") renderSetup();
   else if (state.screen === "match") renderMatchScreen();
@@ -712,17 +716,19 @@ function applyChallengeSettings(c: Challenge): void {
 }
 
 function readMenuDifficulty(): SoloSettings["difficulty"] {
-  return (
-    (app.querySelector("#diff") as HTMLSelectElement | null)?.value ||
-    "normal"
-  ) as SoloSettings["difficulty"];
+  const el = app.querySelector("#diff") as HTMLSelectElement | null;
+  if (el?.value) {
+    state.menuDifficulty = el.value as SoloSettings["difficulty"];
+  }
+  return state.menuDifficulty;
 }
 
 function readMenuBehavior(): AiBehavior {
-  return (
-    (app.querySelector("#ai-behavior") as HTMLSelectElement | null)?.value ||
-    "balanced"
-  ) as AiBehavior;
+  const el = app.querySelector("#ai-behavior") as HTMLSelectElement | null;
+  if (el?.value) {
+    state.menuBehavior = el.value as AiBehavior;
+  }
+  return state.menuBehavior;
 }
 
 function menuClubsFromState(): { playerClub: string; aiClub: string } {
@@ -733,25 +739,12 @@ function menuClubsFromState(): { playerClub: string; aiClub: string } {
   };
 }
 
-function askChallengeName(defaultName = "Spieler"): string | null {
-  const raw = window.prompt("Dein Name für die Challenge:", defaultName);
-  if (raw == null) return null;
-  return raw.trim().slice(0, 20) || defaultName;
-}
-
-function renderMenu(): void {
-  const iosHint = isIos() && !isStandalone();
-  syncMenuBrandingPreview();
-  const brand = currentBranding();
+/** Shared Derby/Frei + optional Diff/Verhalten controls (Solo & Challenge). */
+function matchupPickHtml(opts: {
+  showDiff?: boolean;
+  showBehavior?: boolean;
+}): string {
   const derby = findDerby(state.menuDerbyId);
-  const matchLine = `${brand.heim.short} vs ${brand.gast.short}`;
-  const derbyHint =
-    state.pickMode === "derby" && derby
-      ? derby.rank != null
-        ? `Derby #${derby.rank} · ${derby.name}`
-        : derby.name
-      : "Freie Vereinswahl";
-
   const pickControls =
     state.pickMode === "derby"
       ? `
@@ -774,19 +767,148 @@ function renderMenu(): void {
         <label class="field">Gegner (KI)
           ${clubOptionsGroupedHtml(state.menuAiClub, "ai-club")}
         </label>`;
+  const diff = opts.showDiff
+    ? `<label class="field">KI
+          <select id="diff">
+            <option value="easy" ${state.menuDifficulty === "easy" ? "selected" : ""}>Einfach</option>
+            <option value="normal" ${state.menuDifficulty === "normal" ? "selected" : ""}>Mittel</option>
+            <option value="hard" ${state.menuDifficulty === "hard" ? "selected" : ""}>Schwer</option>
+          </select>
+        </label>`
+    : "";
+  const behavior = opts.showBehavior
+    ? `<label class="field">Rivalen-Charakter
+          <select id="ai-behavior">
+            ${(
+              [
+                "balanced",
+                "patient",
+                "aggro",
+                "beer",
+                "earlywin",
+              ] as AiBehavior[]
+            )
+              .map(
+                (b) =>
+                  `<option value="${b}" ${state.menuBehavior === b ? "selected" : ""}>${AI_BEHAVIOR_LABEL[b]} — ${AI_BEHAVIOR_BLURB[b]}</option>`,
+              )
+              .join("")}
+          </select>
+        </label>`
+    : "";
+  return `
+      <div class="card stack team-pick">
+        <div class="pick-mode-row" role="group" aria-label="Auswahlmodus">
+          <button type="button" class="pick-mode ${state.pickMode === "derby" ? "on" : ""}" data-pick="derby">Derby</button>
+          <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
+        </div>
+        ${pickControls}
+        ${diff}
+        ${behavior}
+      </div>`;
+}
 
+function bindMatchupPickHandlers(rerender: () => void): void {
+  app.querySelectorAll<HTMLButtonElement>("[data-pick]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      sfx("ui");
+      state.pickMode = btn.dataset.pick as PickMode;
+      rerender();
+    });
+  });
+  const countryEl = app.querySelector("#country") as HTMLSelectElement | null;
+  if (countryEl) {
+    countryEl.addEventListener("change", () => {
+      state.menuCountry = countryEl.value;
+      const first = derbiesByCountry().find((g) => g.country === state.menuCountry)
+        ?.derbies[0];
+      if (first) {
+        state.menuDerbyId = first.id;
+        state.menuPlayAsA = true;
+      }
+      rerender();
+    });
+  }
+  const derbyEl = app.querySelector("#derby") as HTMLSelectElement | null;
+  if (derbyEl) {
+    derbyEl.addEventListener("change", () => {
+      state.menuDerbyId = derbyEl.value;
+      state.menuPlayAsA = true;
+      rerender();
+    });
+  }
+  const sideEl = app.querySelector("#side") as HTMLSelectElement | null;
+  if (sideEl) {
+    sideEl.addEventListener("change", () => {
+      state.menuPlayAsA = sideEl.value === "a";
+      rerender();
+    });
+  }
+  const playerClubEl = app.querySelector(
+    "#player-club",
+  ) as HTMLSelectElement | null;
+  if (playerClubEl) {
+    playerClubEl.addEventListener("change", () => {
+      state.menuPlayerClub = playerClubEl.value;
+      if (state.menuAiClub === state.menuPlayerClub) {
+        const alt = clubsByCountry()
+          .flatMap((g) => g.clubs)
+          .find((c) => c.id !== state.menuPlayerClub);
+        if (alt) state.menuAiClub = alt.id;
+      }
+      rerender();
+    });
+  }
+  const aiClubEl = app.querySelector("#ai-club") as HTMLSelectElement | null;
+  if (aiClubEl) {
+    aiClubEl.addEventListener("change", () => {
+      state.menuAiClub = aiClubEl.value;
+      rerender();
+    });
+  }
+  const diffEl = app.querySelector("#diff") as HTMLSelectElement | null;
+  if (diffEl) {
+    diffEl.addEventListener("change", () => {
+      state.menuDifficulty = diffEl.value as SoloSettings["difficulty"];
+    });
+  }
+  const behEl = app.querySelector("#ai-behavior") as HTMLSelectElement | null;
+  if (behEl) {
+    behEl.addEventListener("change", () => {
+      state.menuBehavior = behEl.value as AiBehavior;
+    });
+  }
+}
+
+function applySoloSettingsFromMenu(): void {
+  syncMenuBrandingPreview();
+  const playerClub = state.menuPlayerClub;
+  const aiClub = state.menuAiClub;
+  state.settings = {
+    playerTeam: "ksc",
+    playerClub,
+    aiClub,
+    derbyId: state.pickMode === "derby" ? state.menuDerbyId : undefined,
+    difficulty: readMenuDifficulty(),
+    behavior: readMenuBehavior(),
+  };
+  setClubSoundIdentity(playerClub, aiClub);
+}
+
+function askChallengeName(defaultName = "Spieler"): string | null {
+  const raw = window.prompt("Dein Name für die Challenge:", defaultName);
+  if (raw == null) return null;
+  return raw.trim().slice(0, 20) || defaultName;
+}
+
+function renderMenu(): void {
+  const iosHint = isIos() && !isStandalone();
   app.innerHTML = `
     <div class="screen menu menu-derby">
       <div>
         <p class="sub">Stadion · Blöcke · Gang · Stimmung</p>
         <h1 class="brand">LaneLink</h1>
-        <p class="sub match-line">${escapeHtml(matchLine)} — Querformat</p>
-        <p class="tiny derby-hint">${escapeHtml(derbyHint)}</p>
-        <div class="kit-preview" aria-hidden="true">
-          ${kitSwatchHtml(brand.heim.id)}
-          <span class="kit-vs">vs</span>
-          ${kitSwatchHtml(brand.gast.id)}
-        </div>
+        <p class="sub match-line">Matchday · Querformat</p>
       </div>
       <div class="card stack">
         <button class="btn ksc" id="solo">Solo vs KI</button>
@@ -802,38 +924,6 @@ function renderMenu(): void {
           : `<p class="tiny fs-hint">Tipp: Vollbild für volle Spielfläche (ohne Browser-Leisten).</p>`
       }
       <p class="tiny fs-hint">Ton: einmal irgendwo tippen (oder „Ton: an“) — Browser blocken Audio sonst bis zur ersten Geste.</p>
-      <div class="card stack team-pick">
-        <div class="pick-mode-row" role="group" aria-label="Auswahlmodus">
-          <button type="button" class="pick-mode ${state.pickMode === "derby" ? "on" : ""}" data-pick="derby">Derby</button>
-          <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
-        </div>
-        ${pickControls}
-        <label class="field">KI
-          <select id="diff">
-            <option value="easy" selected>Einfach</option>
-            <option value="normal">Mittel</option>
-            <option value="hard">Schwer</option>
-          </select>
-        </label>
-        <label class="field">Rivalen-Charakter
-          <select id="ai-behavior">
-            ${(
-              [
-                "balanced",
-                "patient",
-                "aggro",
-                "beer",
-                "earlywin",
-              ] as AiBehavior[]
-            )
-              .map(
-                (b) =>
-                  `<option value="${b}" ${b === "balanced" ? "selected" : ""}>${AI_BEHAVIOR_LABEL[b]} — ${AI_BEHAVIOR_BLURB[b]}</option>`,
-              )
-              .join("")}
-          </select>
-        </label>
-      </div>
     </div>`;
   app.querySelector("#fs-menu")!.addEventListener("click", () => {
     unlockAudio();
@@ -842,14 +932,13 @@ function renderMenu(): void {
   app.querySelector("#mute-audio")!.addEventListener("click", () => {
     unlockAudio();
     toggleMuted();
-    // Click tone only when turning sound back on
     if (!isMuted()) sfx("ui");
     (app.querySelector("#mute-audio") as HTMLButtonElement).textContent =
       muteButtonLabel();
   });
   app.querySelector("#highscores")!.addEventListener("click", () => {
     sfx("ui");
-    state.highscoreDiff = readMenuDifficulty();
+    state.highscoreDiff = state.menuDifficulty;
     go("highscores");
   });
   app.querySelector("#tutorial")!.addEventListener("click", () => {
@@ -864,83 +953,59 @@ function renderMenu(): void {
     state.challengeRole = null;
     go("challengeCreate");
   });
-  app.querySelectorAll<HTMLButtonElement>("[data-pick]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      sfx("ui");
-      state.pickMode = btn.dataset.pick as PickMode;
-      renderMenu();
-    });
-  });
-  const countryEl = app.querySelector("#country") as HTMLSelectElement | null;
-  if (countryEl) {
-    countryEl.addEventListener("change", () => {
-      state.menuCountry = countryEl.value;
-      const first = derbiesByCountry().find((g) => g.country === state.menuCountry)
-        ?.derbies[0];
-      if (first) {
-        state.menuDerbyId = first.id;
-        state.menuPlayAsA = true;
-      }
-      renderMenu();
-    });
-  }
-  const derbyEl = app.querySelector("#derby") as HTMLSelectElement | null;
-  if (derbyEl) {
-    derbyEl.addEventListener("change", () => {
-      state.menuDerbyId = derbyEl.value;
-      state.menuPlayAsA = true;
-      renderMenu();
-    });
-  }
-  const sideEl = app.querySelector("#side") as HTMLSelectElement | null;
-  if (sideEl) {
-    sideEl.addEventListener("change", () => {
-      state.menuPlayAsA = sideEl.value === "a";
-      renderMenu();
-    });
-  }
-  const playerClubEl = app.querySelector(
-    "#player-club",
-  ) as HTMLSelectElement | null;
-  if (playerClubEl) {
-    playerClubEl.addEventListener("change", () => {
-      state.menuPlayerClub = playerClubEl.value;
-      if (state.menuAiClub === state.menuPlayerClub) {
-        const alt = clubsByCountry()
-          .flatMap((g) => g.clubs)
-          .find((c) => c.id !== state.menuPlayerClub);
-        if (alt) state.menuAiClub = alt.id;
-      }
-      renderMenu();
-    });
-  }
-  const aiClubEl = app.querySelector("#ai-club") as HTMLSelectElement | null;
-  if (aiClubEl) {
-    aiClubEl.addEventListener("change", () => {
-      state.menuAiClub = aiClubEl.value;
-      renderMenu();
-    });
-  }
   app.querySelector("#solo")!.addEventListener("click", () => {
     unlockAudio();
     sfx("ui");
     startAmbience("menu");
     void goFullscreen();
-    syncMenuBrandingPreview();
-    const playerClub = state.menuPlayerClub;
-    const aiClub = state.menuAiClub;
-    // Side slots: player always on heim (ksc) for consistent controls/HUD
     state.challenge = null;
     state.challengeRole = null;
-    state.settings = {
-      playerTeam: "ksc",
-      playerClub,
-      aiClub,
-      derbyId: state.pickMode === "derby" ? state.menuDerbyId : undefined,
-      difficulty: readMenuDifficulty(),
-      behavior: readMenuBehavior(),
-    };
-    setClubSoundIdentity(playerClub, aiClub);
+    go("soloMatchup");
+  });
+}
+
+/** After Solo: choose matchup, difficulty, AI character → Aufstellung */
+function renderSoloMatchup(): void {
+  syncMenuBrandingPreview();
+  const brand = currentBranding();
+  const derby = findDerby(state.menuDerbyId);
+  const matchLine = `${brand.heim.short} vs ${brand.gast.short}`;
+  const derbyHint =
+    state.pickMode === "derby" && derby
+      ? derby.rank != null
+        ? `Derby #${derby.rank} · ${derby.name}`
+        : derby.name
+      : "Freie Vereinswahl";
+
+  app.innerHTML = `
+    <div class="screen menu menu-derby">
+      <div>
+        <p class="sub">Solo vs KI</p>
+        <h1 class="brand" style="font-size:1.55rem">Matchup</h1>
+        <p class="sub match-line">${escapeHtml(matchLine)}</p>
+        <p class="tiny derby-hint">${escapeHtml(derbyHint)}</p>
+        <div class="kit-preview" aria-hidden="true">
+          ${kitSwatchHtml(brand.heim.id)}
+          <span class="kit-vs">vs</span>
+          ${kitSwatchHtml(brand.gast.id)}
+        </div>
+      </div>
+      ${matchupPickHtml({ showDiff: true, showBehavior: true })}
+      <div class="row setup-actions">
+        <button class="btn secondary grow" id="solo-back" type="button">Menü</button>
+        <button class="btn ksc grow" id="solo-next" type="button">Weiter</button>
+      </div>
+    </div>`;
+
+  bindMatchupPickHandlers(() => renderSoloMatchup());
+  app.querySelector("#solo-back")!.addEventListener("click", () => {
+    sfx("ui");
+    go("menu");
+  });
+  app.querySelector("#solo-next")!.addEventListener("click", () => {
+    unlockAudio();
+    sfx("ui");
+    applySoloSettingsFromMenu();
     state.setup = defaultSetup();
     go("setup");
   });
@@ -1235,15 +1300,8 @@ function renderChallengeCreate(): void {
         <p class="tiny">Ziel</p>
         <div class="pick-mode-row chal-goals" role="group" aria-label="Challenge-Ziel">${goals}</div>
         <p class="tiny">${escapeHtml(CHALLENGE_GOAL_BLURB[goal])}</p>
-        <label class="field">Schwierigkeit
-          <select id="chal-diff">
-            <option value="easy">Einfach</option>
-            <option value="normal" selected>Mittel</option>
-            <option value="hard">Schwer</option>
-          </select>
-        </label>
-        <p class="tiny">Matchup kommt aus dem Hauptmenü (Derby/Frei). Vorher Vereine wählen, dann Challenge.</p>
       </div>
+      ${matchupPickHtml({ showDiff: true, showBehavior: false })}
       <div class="row setup-actions">
         <button class="btn secondary grow" id="chal-back" type="button">Menü</button>
         <button class="btn ksc grow" id="chal-start" type="button">Herausfordern</button>
@@ -1262,6 +1320,7 @@ function renderChallengeCreate(): void {
       renderChallengeCreate();
     });
   });
+  bindMatchupPickHandlers(() => renderChallengeCreate());
   app.querySelector("#chal-back")!.addEventListener("click", () => {
     sfx("ui");
     go("menu");
@@ -1274,9 +1333,7 @@ function renderChallengeCreate(): void {
       askChallengeName(localStorage.getItem("matchday-player-name") || "Spieler");
     if (!name) return;
     localStorage.setItem("matchday-player-name", name);
-    const diff = (
-      (app.querySelector("#chal-diff") as HTMLSelectElement).value || "normal"
-    ) as SoloSettings["difficulty"];
+    const diff = readMenuDifficulty();
     const c = createChallenge({
       goal: state.challengeGoal,
       difficulty: diff,
@@ -1524,7 +1581,7 @@ function renderSetup(): void {
       go("challengeLobby");
       return;
     }
-    go("menu");
+    go("soloMatchup");
   });
   // Start requires an active click; do not gate match entry on fullscreen
   // (FS is optional after kickoff — otherwise playtests look like Anpfiff "failed").
