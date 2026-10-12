@@ -1,4 +1,4 @@
-import { clubShort } from "./clubs";
+import { getClub } from "./clubs";
 import type { AiDifficulty, TeamId } from "./types";
 
 export type ScoreBoardKind = "ergebnis" | "blocksturm";
@@ -10,8 +10,12 @@ export type HighscoreEntry = {
   detail: string;
   at: string;
   difficulty: AiDifficulty;
-  /** Team the player won with */
+  /** Side slot the player won with (legacy / ScoreDrop encode) */
   team?: TeamId;
+  /** Club id the player used (stable label, not live branding) */
+  playerClub?: string;
+  /** Club id of the AI opponent */
+  opponentClub?: string;
 };
 
 export type HighscoreTables = Record<
@@ -104,17 +108,65 @@ function sanitizeName(name: string): string {
     .trim();
 }
 
+/** Stable club short code from stored club id or `short:CODE` placeholder. */
+export function clubCode(clubId?: string): string {
+  if (!clubId) return "";
+  if (clubId.startsWith("short:")) return clubId.slice(6);
+  try {
+    return getClub(clubId).short;
+  } catch {
+    return "";
+  }
+}
+
+/** Display short for a highscore side — prefers stored club id / short:CODE. */
+export function entryClubShort(
+  clubId: string | undefined,
+  fallbackTeam?: TeamId,
+): string {
+  const code = clubCode(clubId);
+  if (code) return code;
+  return teamShort(fallbackTeam);
+}
+
+/** e.g. "B04 vs LIV" — empty if unknown */
+export function matchupLabel(entry: HighscoreEntry): string {
+  const a = entryClubShort(entry.playerClub, entry.team);
+  const b = entryClubShort(entry.opponentClub);
+  if (a !== "—" && b !== "—") return `${a} vs ${b}`;
+  if (a !== "—") return a;
+  return "";
+}
+
+/** Compact matchup for ScoreDrop detail: B04vLIV */
+function matchupTag(entry: HighscoreEntry): string {
+  const a = entryClubShort(entry.playerClub, entry.team);
+  const b = entryClubShort(entry.opponentClub);
+  if (a !== "—" && b !== "—") return `${a}v${b}`;
+  return a === "—" ? "" : a;
+}
+
 function shortDetail(entry: HighscoreEntry, kind: ScoreBoardKind): string {
+  let base: string;
   if (kind === "blocksturm") {
     const m = entry.detail.match(/(\d+)(?:[.,](\d+))?/);
-    if (m) return m[2] ? `m${m[1]}-${m[2]}` : `m${m[1]}`;
-    const whole = Math.floor(entry.value);
-    const frac = Math.round((entry.value - whole) * 10);
-    return frac > 0 ? `m${whole}-${frac}` : `m${whole}`;
+    if (m) base = m[2] ? `m${m[1]}-${m[2]}` : `m${m[1]}`;
+    else {
+      const whole = Math.floor(entry.value);
+      const frac = Math.round((entry.value - whole) * 10);
+      base = frac > 0 ? `m${whole}-${frac}` : `m${whole}`;
+    }
+  } else {
+    const score = entry.detail.match(/(\d+):(\d+)/);
+    base = score
+      ? `${score[1]}-${score[2]}`
+      : String(Math.max(0, Math.round(entry.value)));
   }
-  const score = entry.detail.match(/(\d+):(\d+)/);
-  if (score) return `${score[1]}-${score[2]}`;
-  return String(Math.max(0, Math.round(entry.value)));
+  const tag = matchupTag(entry);
+  if (!tag) return base;
+  // Keep ScoreDrop payload compact (name still needs room in 30 chars)
+  const withTag = `${base}_${tag}`;
+  return withTag.length <= 16 ? withTag : base;
 }
 
 function encodePlayer(entry: HighscoreEntry, kind: ScoreBoardKind): string {
@@ -129,6 +181,23 @@ function encodePlayer(entry: HighscoreEntry, kind: ScoreBoardKind): string {
   return encoded.slice(0, PLAYER_MAX);
 }
 
+/** Parse optional `_B04vLIV` suffix from remote short detail. */
+function splitDetailTag(short: string): {
+  core: string;
+  playerClub?: string;
+  opponentClub?: string;
+  playerShort?: string;
+  opponentShort?: string;
+} {
+  const m = short.match(/^(.*)_([A-Za-z0-9]{2,5})v([A-Za-z0-9]{2,5})$/);
+  if (!m) return { core: short };
+  return {
+    core: m[1]!,
+    playerShort: m[2],
+    opponentShort: m[3],
+  };
+}
+
 function decodePlayer(
   player: string,
   kind: ScoreBoardKind,
@@ -141,21 +210,29 @@ function decodePlayer(
     const team: TeamId | undefined =
       teamRaw === "k" ? "ksc" : teamRaw === "v" ? "vfb" : undefined;
     const name = m[2]!.replace(/_/g, " ").slice(0, 20) || "Spieler";
-    const short = m[3]!;
+    const { core, playerShort, opponentShort } = splitDetailTag(m[3]!);
     const value = fromRemoteScore(kind, remoteScore);
+    const vs =
+      playerShort && opponentShort
+        ? `${playerShort} vs ${opponentShort}`
+        : playerShort || "";
     let detail: string;
     if (kind === "blocksturm") {
-      const mm = short.match(/^m(\d+)(?:-(\d+))?$/i);
+      const mm = core.match(/^m(\d+)(?:-(\d+))?$/i);
       const label = mm
         ? mm[2]
           ? `${mm[1]},${mm[2]}′`
           : `${mm[1]}′`
         : `${value}′`;
-      detail = `Blocksturm in ${label} (${difficultyLabel(difficulty)})`;
+      detail = vs
+        ? `Blocksturm in ${label} · ${vs} (${difficultyLabel(difficulty)})`
+        : `Blocksturm in ${label} (${difficultyLabel(difficulty)})`;
     } else {
-      const sc = short.match(/^(\d+)-(\d+)$/);
-      const label = sc ? `${sc[1]}:${sc[2]}` : short;
-      detail = `${label} · ${teamShort(team)} (${difficultyLabel(difficulty)})`;
+      const sc = core.match(/^(\d+)-(\d+)$/);
+      const label = sc ? `${sc[1]}:${sc[2]}` : core;
+      detail = vs
+        ? `${label} · ${vs} (${difficultyLabel(difficulty)})`
+        : `${label} · ${teamShort(team)} (${difficultyLabel(difficulty)})`;
     }
     return {
       name,
@@ -164,6 +241,9 @@ function decodePlayer(
       value,
       difficulty,
       at: new Date(0).toISOString(),
+      // Shorts only from remote tag — ids unknown after round-trip
+      playerClub: playerShort ? `short:${playerShort}` : undefined,
+      opponentClub: opponentShort ? `short:${opponentShort}` : undefined,
     };
   }
   return {
@@ -376,6 +456,7 @@ export function difficultyLabel(d: AiDifficulty): string {
 }
 
 export function teamShort(t?: TeamId): string {
-  if (t === "ksc" || t === "vfb") return clubShort(t);
+  if (t === "ksc") return "KSC";
+  if (t === "vfb") return "VfB";
   return "—";
 }

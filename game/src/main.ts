@@ -119,7 +119,7 @@ import {
   ergebnisValue,
   fetchSharedHighscores,
   loadHighscores,
-  teamShort,
+  matchupLabel,
   tryInsertHighscoreShared,
   wouldEnterTop10Shared,
   type HighscoreEntry,
@@ -853,22 +853,39 @@ function renderTutorial(): void {
   });
 }
 
+function hsMatchupBadge(e: HighscoreEntry): string {
+  const label = matchupLabel(e);
+  if (!label) return "";
+  const cls =
+    e.team === "ksc" || e.team === "vfb" ? `hs-team ${e.team}` : "hs-team";
+  return `<span class="${cls}">${escapeHtml(label)}</span>`;
+}
+
+/** Detail without matchup (badge shows Gegner separately). */
+function hsDetailLine(e: HighscoreEntry): string {
+  let d = e.detail;
+  const vs = matchupLabel(e);
+  if (vs) {
+    d = d
+      .replace(` · ${vs}`, "")
+      .replace(`${vs} · `, "")
+      .replace(` · ${vs} `, " ");
+  }
+  return escapeHtml(d);
+}
+
 function renderHighscores(): void {
   const d = state.highscoreDiff;
   const cached = loadHighscores();
   const paint = (tables: typeof cached, shared: boolean | null) => {
-    const listHtml = (
-      kind: ScoreBoardKind,
-      title: string,
-      fmt: (e: HighscoreEntry) => string,
-    ) => {
+    const listHtml = (kind: ScoreBoardKind, title: string) => {
       const rows = tables[d][kind];
       if (!rows.length) return `<p class="tiny">${title}: noch leer</p>`;
       return `<h3>${title}</h3><ol class="hs-list">${rows
-        .map(
-          (e) =>
-            `<li><b>${escapeHtml(e.name)}</b> <span class="hs-team ${e.team === "ksc" || e.team === "vfb" ? e.team : ""}">${teamShort(e.team)}</span> — ${fmt(e)}</li>`,
-        )
+        .map((e) => {
+          const badge = hsMatchupBadge(e);
+          return `<li><b>${escapeHtml(e.name)}</b>${badge ? ` ${badge}` : ""} — ${hsDetailLine(e)}</li>`;
+        })
         .join("")}</ol>`;
     };
     const status =
@@ -889,8 +906,8 @@ function renderHighscores(): void {
         </select>
       </label>
       <div class="card stack">
-        ${listHtml("ergebnis", "Höchstes Ergebnis", (e) => e.detail)}
-        ${listHtml("blocksturm", "Schnellster Blocksturm", (e) => e.detail)}
+        ${listHtml("ergebnis", "Höchstes Ergebnis")}
+        ${listHtml("blocksturm", "Schnellster Blocksturm")}
       </div>
       <button class="btn secondary" id="hs-back">Zurück</button>
     </div>`;
@@ -2011,6 +2028,18 @@ function renderResult(): void {
         const name = askPlayerName(lastName);
         if (name) {
           localStorage.setItem("matchday-player-name", name);
+          const playerClub = state.settings.playerClub;
+          const opponentClub = state.settings.aiClub;
+          const vs = matchupLabel({
+            name,
+            value,
+            detail: "",
+            at: "",
+            difficulty: r.difficulty,
+            team: state.settings.playerTeam,
+            playerClub,
+            opponentClub,
+          });
           const { placed, rank, shared } = await tryInsertHighscoreShared(
             r.difficulty,
             "blocksturm",
@@ -2018,7 +2047,9 @@ function renderResult(): void {
               name,
               value,
               team: state.settings.playerTeam,
-              detail: `Blocksturm in ${formatMinute(r.minute)} · ${teamLabel(state.settings.playerTeam)} (${difficultyLabel(r.difficulty)})`,
+              playerClub,
+              opponentClub,
+              detail: `Blocksturm in ${formatMinute(r.minute)}${vs ? ` · ${vs}` : ""} (${difficultyLabel(r.difficulty)})`,
             },
           );
           if (placed) {
@@ -2037,6 +2068,18 @@ function renderResult(): void {
           : askPlayerName(lastName);
       if (name) {
         localStorage.setItem("matchday-player-name", name);
+        const playerClub = state.settings.playerClub;
+        const opponentClub = state.settings.aiClub;
+        const vs = matchupLabel({
+          name,
+          value: erg,
+          detail: "",
+          at: "",
+          difficulty: r.difficulty,
+          team: state.settings.playerTeam,
+          playerClub,
+          opponentClub,
+        });
         const { placed, rank, shared } = await tryInsertHighscoreShared(
           r.difficulty,
           "ergebnis",
@@ -2044,7 +2087,9 @@ function renderResult(): void {
             name,
             value: erg,
             team: state.settings.playerTeam,
-            detail: `${playerGoals}:${aiGoals} · ${teamLabel(state.settings.playerTeam)} · ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
+            playerClub,
+            opponentClub,
+            detail: `${playerGoals}:${aiGoals}${vs ? ` · ${vs}` : ""} · ${formatMinute(r.minute)} (${difficultyLabel(r.difficulty)})`,
           },
         );
         if (placed) {
