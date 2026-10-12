@@ -272,6 +272,65 @@ export function entryClubPrimary(
   }
 }
 
+/** Secondary kit color for a stored club — not live branding. */
+export function entryClubSecondary(
+  clubId?: string,
+  frozenShort?: string,
+): string | undefined {
+  const id = resolveEntryClubId(clubId, frozenShort);
+  if (!id) return undefined;
+  try {
+    return getClub(id).secondary;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Compact result chip for highscore rows (score / minute / beers). */
+export function hsResultLabel(
+  entry: HighscoreEntry,
+  kind: ScoreBoardKind,
+): string {
+  if (kind === "blocksturm") {
+    const m = entry.detail.match(/(\d+)(?:[.,](\d+))?/);
+    if (m) return m[2] ? `${m[1]},${m[2]}′` : `${m[1]}′`;
+    const whole = Math.floor(entry.value);
+    const frac = Math.round((entry.value - whole) * 10);
+    return frac > 0 ? `${whole},${frac}′` : `${whole}′`;
+  }
+  if (kind === "bier") {
+    const n = entry.detail.match(/(\d+)\s*Bier/i);
+    const beers = n ? n[1]! : String(Math.max(0, Math.round(entry.value)));
+    return `${beers} Bier`;
+  }
+  const score = entry.detail.match(/(\d+)\s*[:：]\s*(\d+)/);
+  if (score) return `${score[1]}:${score[2]}`;
+  return String(Math.max(0, Math.round(entry.value)));
+}
+
+/** Leftover meta under the matchup (time / difficulty), without score or vs-tag. */
+export function hsMetaLabel(
+  entry: HighscoreEntry,
+  kind: ScoreBoardKind,
+): string {
+  let d = entry.detail;
+  const vs = matchupLabel(entry);
+  if (vs) {
+    d = d
+      .replace(` · ${vs}`, "")
+      .replace(`${vs} · `, "")
+      .replace(` · ${vs} `, " ");
+  }
+  if (kind === "ergebnis") {
+    d = d.replace(/^\d+\s*[:：]\s*\d+\s*·?\s*/, "");
+  } else if (kind === "blocksturm") {
+    d = d.replace(/^Blocksturm in\s+[^·(]+·?\s*/i, "");
+  } else if (kind === "bier") {
+    d = d.replace(/^\d+\s*Bier\s*·?\s*/i, "");
+  }
+  return d.replace(/^\s*·\s*/, "").trim();
+}
+
 /** Prefer richer local club metadata when remote sync would drop it. */
 function mergeClubMeta(
   remote: HighscoreEntry,

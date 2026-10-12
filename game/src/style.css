@@ -274,12 +274,13 @@ button {
   color: #f8fafc;
 }
 
-.screen.menu.menu-mood .hs-list {
-  color: rgba(203, 213, 225, 0.95);
+.screen.menu.menu-mood .hs-card {
+  gap: 0;
+  padding: 14px 12px;
 }
 
-.screen.menu.menu-mood .hs-list b {
-  color: #f8fafc;
+.screen.menu.menu-mood .hs-board-title {
+  color: rgba(148, 163, 184, 0.95);
 }
 
 .screen.menu.menu-mood .chal-slot {
@@ -745,15 +746,164 @@ button {
 }
 
 .hs-list {
-  margin: 0 0 12px;
-  padding-left: 1.2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   text-align: left;
-  color: var(--muted);
-  font-size: 0.92rem;
 }
 
 .hs-list b {
   color: var(--ink);
+}
+
+.hs-board + .hs-board {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(248, 250, 252, 0.1);
+}
+
+.hs-board-title {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.hs-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 12px 10px;
+  border-radius: 14px;
+  background: rgba(8, 14, 26, 0.55);
+  border: 1px solid rgba(248, 250, 252, 0.1);
+}
+
+.hs-row-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hs-rank {
+  flex: 0 0 auto;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-family: var(--display-match);
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: #f8fafc;
+  background: rgba(248, 250, 252, 0.1);
+}
+
+.hs-name {
+  font-weight: 800;
+  color: #f8fafc;
+  font-size: 0.98rem;
+  letter-spacing: -0.01em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hs-matchup {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+}
+
+.hs-side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 6px 10px 6px 6px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(248, 250, 252, 0.12);
+}
+
+.hs-side-own {
+  justify-self: start;
+  border: 2px solid var(--hs-kit, #64748b);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--hs-kit, #64748b) 35%, transparent),
+    0 0 18px color-mix(in srgb, var(--hs-kit, #64748b) 28%, transparent);
+  background: color-mix(in srgb, var(--hs-kit, #64748b) 18%, rgba(8, 14, 26, 0.85));
+}
+
+.hs-side-opp {
+  justify-self: end;
+  flex-direction: row-reverse;
+  border-color: color-mix(in srgb, var(--hs-kit, #64748b) 55%, rgba(248, 250, 252, 0.2));
+}
+
+.hs-side .hs-logo,
+.hs-logo-fallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: block;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.12);
+  object-fit: cover;
+}
+
+.hs-logo-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.75rem;
+  color: #f8fafc;
+}
+
+.hs-code {
+  font-family: var(--display-match);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hs-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.2rem;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.08);
+  border: 1px solid rgba(248, 250, 252, 0.12);
+}
+
+.hs-score span {
+  font-family: var(--display-match);
+  font-size: clamp(1.35rem, 4vw, 1.7rem);
+  letter-spacing: 0.04em;
+  color: #fff;
+  line-height: 1;
+}
+
+.hs-meta {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(148, 163, 184, 0.95);
 }
 
 .hs-note {
@@ -979,9 +1129,6 @@ button {
   overflow: auto;
 }
 
-.hs-list li:has(.hs-team) .hs-team {
-  vertical-align: middle;
-}
 
 .setup-actions {
   width: 100%;
@@ -3896,30 +4043,13 @@ html.is-fs .fs-gate {
   display: none;
 }
 
-/* Highscore winner badge — frozen match logo, not live menu club */
+/* Legacy chip (kept for any leftover markup) */
 .hs-team.hs-winner {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 2px 8px 2px 4px;
   vertical-align: middle;
-}
-.hs-team .hs-logo {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: block;
-  background: rgba(255, 255, 255, 0.15);
-  flex: 0 0 auto;
-}
-.hs-team .hs-logo-b {
-  opacity: 0.95;
-}
-.hs-team .hs-vs-label {
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
 }
 
 /* Guided tutorial — dark mood, high contrast */

@@ -132,9 +132,13 @@ import {
   clubCode,
   difficultyLabel,
   entryClubPrimary,
+  entryClubSecondary,
+  entryClubShort,
   ergebnisValue,
   fetchSharedHighscores,
   freezeEntryClubs,
+  hsMetaLabel,
+  hsResultLabel,
   loadHighscores,
   loadPersonalHighscores,
   matchupLabel,
@@ -1634,44 +1638,73 @@ function renderTutorial(stepIndex = 0): void {
 }
 
 /**
- * Winner badge from the *stored* match — both logos (player + opponent)
- * like club highscores; works for nationals too (flags).
- * Never uses current menu club / live --ksc/--vfb branding.
+ * Highscore matchup row: own club bordered in primary, result centered,
+ * opponent opposite — frozen entry branding only (never live menu kits).
  */
-function hsMatchupBadge(e: HighscoreEntry): string {
+function hsMatchupRow(
+  e: HighscoreEntry,
+  kind: ScoreBoardKind,
+  rank: number,
+): string {
   const frozen = freezeEntryClubs(e);
-  const label = matchupLabel(frozen);
-  const winnerId = resolveEntryClubId(frozen.playerClub, frozen.playerShort);
+  const ownId = resolveEntryClubId(frozen.playerClub, frozen.playerShort);
   const oppId = resolveEntryClubId(frozen.opponentClub, frozen.opponentShort);
-  const prim =
+  const ownShort = entryClubShort(
+    frozen.playerClub,
+    frozen.team,
+    frozen.playerShort,
+  );
+  const oppShort = entryClubShort(
+    frozen.opponentClub,
+    undefined,
+    frozen.opponentShort,
+  );
+  const ownPrim =
     entryClubPrimary(frozen.playerClub, frozen.playerShort) || "#64748b";
-  const logoImg = (id: string | undefined, cls: string) => {
+  const ownSec =
+    entryClubSecondary(frozen.playerClub, frozen.playerShort) || "#0f172a";
+  const oppPrim =
+    entryClubPrimary(frozen.opponentClub, frozen.opponentShort) || "#64748b";
+  const result = hsResultLabel(frozen, kind);
+  const meta = hsMetaLabel(frozen, kind);
+
+  const logoImg = (id: string | undefined) => {
     if (!id) return "";
     try {
-      const logo = clubLogoDataUrl(id, 64);
-      return logo ? `<img class="hs-logo ${cls}" src="${logo}" alt="">` : "";
+      const logo = clubLogoDataUrl(id, 72);
+      return logo ? `<img class="hs-logo" src="${logo}" alt="">` : "";
     } catch {
       return "";
     }
   };
-  const markA = logoImg(winnerId, "hs-logo-a");
-  const markB = logoImg(oppId, "hs-logo-b");
-  if (!label && !markA && !markB) return "";
-  const text = label || frozen.playerShort || "Sieg";
-  return `<span class="hs-team hs-winner" style="background:${prim}">${markA}<span class="hs-vs-label">${escapeHtml(text)}</span>${markB}</span>`;
-}
 
-/** Detail without matchup (badge shows Gegner separately). */
-function hsDetailLine(e: HighscoreEntry): string {
-  let d = e.detail;
-  const vs = matchupLabel(e);
-  if (vs) {
-    d = d
-      .replace(` · ${vs}`, "")
-      .replace(`${vs} · `, "")
-      .replace(` · ${vs} `, " ");
-  }
-  return escapeHtml(d);
+  const side = (
+    role: "own" | "opp",
+    id: string | undefined,
+    short: string,
+    prim: string,
+    sec: string,
+  ) => {
+    const code = short && short !== "—" ? short : "—";
+    const mark = logoImg(id);
+    return `<div class="hs-side hs-side-${role}" style="--hs-kit:${prim};--hs-kit-sec:${sec}">
+      ${mark || `<span class="hs-logo hs-logo-fallback" aria-hidden="true">${escapeHtml(code.slice(0, 1))}</span>`}
+      <span class="hs-code">${escapeHtml(code)}</span>
+    </div>`;
+  };
+
+  return `<li class="hs-row">
+    <div class="hs-row-top">
+      <span class="hs-rank">${rank}</span>
+      <span class="hs-name">${escapeHtml(frozen.name)}</span>
+    </div>
+    <div class="hs-matchup" aria-label="${escapeHtml(matchupLabel(frozen) || "Partie")} ${escapeHtml(result)}">
+      ${side("own", ownId, ownShort, ownPrim, ownSec)}
+      <div class="hs-score"><span>${escapeHtml(result)}</span></div>
+      ${side("opp", oppId, oppShort, oppPrim, "#0f172a")}
+    </div>
+    ${meta ? `<p class="hs-meta">${escapeHtml(meta)}</p>` : ""}
+  </li>`;
 }
 
 function renderHighscores(): void {
@@ -1690,12 +1723,10 @@ function renderHighscores(): void {
           ? `<p class="tiny">${title}: noch keine persönlichen Einträge${myName ? ` für „${escapeHtml(myName)}“` : ""}</p>`
           : `<p class="tiny">${title}: noch leer</p>`;
       }
-      return `<h3>${title}</h3><ol class="hs-list">${rows
-        .map((e) => {
-          const badge = hsMatchupBadge(e);
-          return `<li><b>${escapeHtml(e.name)}</b>${badge ? ` ${badge}` : ""} — ${hsDetailLine(e)}</li>`;
-        })
-        .join("")}</ol>`;
+      return `<section class="hs-board">
+        <h3 class="hs-board-title">${title}</h3>
+        <ol class="hs-list">${rows.map((e, i) => hsMatchupRow(e, kind, i + 1)).join("")}</ol>
+      </section>`;
     };
     const statusLead =
       scope === "persoenlich"
