@@ -105,7 +105,7 @@ button {
   background:
     linear-gradient(105deg, rgba(15, 55, 130, 0.55) 0%, transparent 42%, transparent 58%, rgba(140, 28, 32, 0.5) 100%),
     linear-gradient(180deg, rgba(4, 8, 18, 0.55) 0%, rgba(7, 16, 24, 0.72) 55%, rgba(10, 14, 20, 0.88) 100%),
-    url("/assets/stadium-floodlight-derby-bg.jpg") center / cover no-repeat,
+    url("/assets/stadium-floodlight-derby-neutral-bg.jpg") center / cover no-repeat,
     var(--menu-night);
 }
 

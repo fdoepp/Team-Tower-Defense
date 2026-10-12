@@ -227,7 +227,7 @@ function kitLuma(side: "ksc" | "vfb"): number {
   return (r * 299 + g * 587 + b * 114) / 1000;
 }
 
-/** Cover-draw stadium-floodlight-derby-bg when available (Rahmenlogik). */
+/** Cover-draw neutral stadium plate + kit wash when available (Rahmenlogik). */
 function drawStadiumBackdrop(
   ctx: CanvasRenderingContext2D,
   w: number,
@@ -235,7 +235,7 @@ function drawStadiumBackdrop(
 ): boolean {
   const raw = getRawIcon(SCENE_ASSETS.stadiumFloodlightDerby);
   if (!raw?.complete || !raw.naturalWidth) return false;
-  // Live dual tint: baked blue crowd → heim kit, red → gast kit
+  // Live dual tint: grey crowd → heim / gast kit washes (no blue/red overpaint)
   const tinted = getDualKitTintedCanvas(
     raw,
     SCENE_ASSETS.stadiumFloodlightDerby,

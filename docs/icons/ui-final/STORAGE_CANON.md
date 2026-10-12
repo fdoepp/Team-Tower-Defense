@@ -109,7 +109,7 @@ Verbindliche %-Tokens für Rails, HUD, Tribünen, Gang:
 | Scoreboard | `hud.scoreboard.max_w_of_pitch` · `h_of_screen` | 59,8% Pitch · 17,25% Bild (×1,15 vs. Baseline) |
 | Wallet | `hud.wallet.icon_h_of_screen` · `chip_h_of_screen` | ×1,15 vs. Baseline |
 | Tribünen | `scene.tribune_y0`–`y1` · `tribune_gap_of_pitch` | 30–50% · 0,5% Pitch |
-| Hintergrund | `background` | `stadium-floodlight-derby-bg.jpg` |
+| Hintergrund | `background` | `stadium-floodlight-derby-neutral-bg.jpg` |
 
 Scoreboard-Live-Slots bleiben in `scoreboard-slots.json`.
 

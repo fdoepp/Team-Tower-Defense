@@ -331,61 +331,76 @@ export function atmosphereAccentHex(primary: string, secondary: string): string 
 }
 
 /**
- * Crowd wash for floodlight BG: primary + secondary + grey, weak blend
- * so the night stadium photo stays dominant.
+ * Colorize a neutral (dark/grey) stadium plate by side.
+ * Left → heim wash, right → gast wash. Preserves source lightness;
+ * skips floodlight whites and deep voids — no blue/red overpaint needed.
  */
-function recolorAtmosphereCrowd(
+function colorizeNeutralAtmosphere(
   data: ImageData,
-  base: BasePalette,
-  washHex: string,
-  accentHex: string,
-  greyHex: string = ATMOS_GREY,
+  width: number,
+  height: number,
+  heimWashHex: string,
+  heimAccentHex: string,
+  gastWashHex: string,
+  gastAccentHex: string,
 ): void {
-  const wash = parseHex(washHex);
-  const accent = parseHex(accentHex);
-  const grey = parseHex(greyHex);
-  const washLuma = (wash[0]! * 299 + wash[1]! * 587 + wash[2]! * 114) / 1000;
-  const [washH] = rgbToHsl(wash[0]!, wash[1]!, wash[2]!);
-  // Baked stadium: left≈blue (~215°), right≈red (~8°). Far hue → near-full replace
-  // (weak pull on blue→red leaves purple/lilac leftovers).
-  const baseHue = base === "blue" ? 215 : 8;
-  let hueDist = Math.abs(washH - baseHue);
-  if (hueDist > 180) hueDist = 360 - hueDist;
-  let pull =
-    washLuma > 180 ? 0.86 : hueDist > 55 ? 0.9 : hueDist > 28 ? 0.78 : 0.55;
+  const heimWash = parseHex(heimWashHex);
+  const gastWash = parseHex(gastWashHex);
+  const heimAccent = parseHex(heimAccentHex);
+  const gastAccent = parseHex(gastAccentHex);
+  const softL = 0.36;
+  const softR = 0.64;
   const px = data.data;
-  for (let i = 0; i < px.length; i += 4) {
-    const a = px[i + 3]!;
-    if (a < 10) continue;
-    const r = px[i]!;
-    const g = px[i + 1]!;
-    const b = px[i + 2]!;
-    const m = teamMask(r, g, b, base);
-    if (m < 0.1) continue;
-    const [, , l] = rgbToHsl(r, g, b);
-    let tr: number;
-    let tg: number;
-    let tb: number;
-    if (l < 0.32) {
-      const t = l / 0.32;
-      [tr, tg, tb] = mixRgb(grey, wash, t * 0.85);
-    } else if (l < 0.62) {
-      const t = (l - 0.32) / 0.3;
-      [tr, tg, tb] = mixRgb(wash, mixRgb(wash, accent, 0.35), t);
-    } else {
-      const t = Math.min(1, (l - 0.62) / 0.3);
-      [tr, tg, tb] = mixRgb(wash, accent, 0.25 + t * 0.55);
+  for (let y = 0; y < height; y++) {
+    const yn = y / height;
+    const floorScale = yn > 0.7 ? 0.18 : yn > 0.62 ? 0.45 : 1;
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      const a = px[i + 3]!;
+      if (a < 10) continue;
+      const r = px[i]!;
+      const g = px[i + 1]!;
+      const b = px[i + 2]!;
+      const [, srcS, l] = rgbToHsl(r, g, b);
+      // Keep floodlight cores / board whites and pure black
+      if (l > 0.78 || l < 0.04) continue;
+      // Mid greys (crowd, smoke, flags) take the wash; chroma leftovers stay weak
+      let crowd = 0;
+      if (l < 0.16) crowd = ((l - 0.04) / 0.12) * 0.5;
+      else if (l < 0.52) crowd = 0.5 + ((l - 0.16) / 0.36) * 0.45;
+      else crowd = 0.95 - ((l - 0.52) / 0.26) * 0.55;
+      crowd = Math.max(0, Math.min(1, crowd)) * floorScale;
+      const greyW = srcS < 0.2 ? 1 : Math.max(0, 1 - (srcS - 0.2) / 0.4);
+      const strength = crowd * greyW * 0.78;
+      if (strength < 0.04) continue;
+
+      const xn = x / width;
+      const side =
+        xn <= softL ? 0 : xn >= softR ? 1 : (xn - softL) / (softR - softL);
+      const wash = mixRgb(heimWash, gastWash, side);
+      const accent = mixRgb(heimAccent, gastAccent, side);
+      let target: [number, number, number];
+      if (l < 0.34) {
+        target = mixRgb(wash, accent, 0.08);
+      } else if (l < 0.58) {
+        const t = (l - 0.34) / 0.24;
+        target = mixRgb(wash, mixRgb(wash, accent, 0.35), t);
+      } else {
+        const t = Math.min(1, (l - 0.58) / 0.2);
+        target = mixRgb(wash, accent, 0.3 + t * 0.5);
+      }
+      const [th, ts] = rgbToHsl(target[0]!, target[1]!, target[2]!);
+      const [nr, ng, nb] = hslToRgb(th, Math.min(1, ts * 0.92), l);
+      px[i] = Math.round(r * (1 - strength) + nr * strength);
+      px[i + 1] = Math.round(g * (1 - strength) + ng * strength);
+      px[i + 2] = Math.round(b * (1 - strength) + nb * strength);
     }
-    const strength = m * pull;
-    px[i] = Math.round(r * (1 - strength) + tr * strength);
-    px[i + 1] = Math.round(g * (1 - strength) + tg * strength);
-    px[i + 2] = Math.round(b * (1 - strength) + tb * strength);
   }
 }
 
 /**
- * Dual-side tint for stadium backdrop (baked blue crowd ↔ heim, red ↔ gast).
- * Feeds on both kit colors per side + grey; never blows out white kits.
+ * Dual-side tint for the neutral stadium plate (grey crowd → heim / gast wash).
+ * Source art is stadium-floodlight-derby-neutral-bg.jpg — no baked blue/red.
  */
 export function getDualKitTintedCanvas(
   img: HTMLImageElement,
@@ -399,7 +414,7 @@ export function getDualKitTintedCanvas(
   const gastWash = atmosphereWashHex(gast, gastSec);
   const heimAccent = atmosphereAccentHex(heim, heimSec);
   const gastAccent = atmosphereAccentHex(gast, gastSec);
-  const key = `${brandEpoch}|dualAtm|${src}|${heimWash}|${heimAccent}|${gastWash}|${gastAccent}`;
+  const key = `${brandEpoch}|neutralAtm|${src}|${heimWash}|${heimAccent}|${gastWash}|${gastAccent}`;
   const hit = tintCache.get(key);
   if (hit) return hit;
 
@@ -414,8 +429,15 @@ export function getDualKitTintedCanvas(
   if (!ctx) return null;
   ctx.drawImage(img, 0, 0);
   const imageData = ctx.getImageData(0, 0, w, h);
-  recolorAtmosphereCrowd(imageData, "blue", heimWash, heimAccent, ATMOS_GREY);
-  recolorAtmosphereCrowd(imageData, "red", gastWash, gastAccent, ATMOS_GREY);
+  colorizeNeutralAtmosphere(
+    imageData,
+    w,
+    h,
+    heimWash,
+    heimAccent,
+    gastWash,
+    gastAccent,
+  );
   ctx.putImageData(imageData, 0, 0);
   return cachePut(key, canvas);
 }
