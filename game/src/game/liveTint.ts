@@ -123,9 +123,19 @@ export function recolorImageData(
     let ng: number;
     let nb: number;
     if (whiteKit) {
-      // DE/ENG white home: lift blue/red tribune pixels to bright white kit
-      const nl = Math.min(0.97, 0.62 + l * 0.36);
-      [nr, ng, nb] = hslToRgb(th, 0.04, nl);
+      const [, srcS] = rgbToHsl(r, g, b);
+      // Bright saturated blues = pyro/flare swirls in ultra sprites — keep as
+      // warm FX (secondary / amber), not white "scarf rings" over heads.
+      if (srcS > 0.32 && l > 0.42) {
+        if (sec && ss > 0.15) {
+          [nr, ng, nb] = hslToRgb(sh, Math.min(1, ss * 0.95), 0.48 + l * 0.28);
+        } else {
+          [nr, ng, nb] = hslToRgb(28, 0.88, 0.52 + l * 0.22);
+        }
+      } else {
+        const nl = Math.min(0.97, 0.62 + l * 0.36);
+        [nr, ng, nb] = hslToRgb(th, 0.04, nl);
+      }
     } else if (blackKit) {
       const nl = Math.max(0.04, l * 0.28);
       [nr, ng, nb] = hslToRgb(th, 0.05, nl);

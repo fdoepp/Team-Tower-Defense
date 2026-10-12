@@ -247,28 +247,15 @@ function drawStadiumBackdrop(
   const dw = iw * s;
   const dh = ih * s;
   ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
-  // White kits must not bleach the night bowl — soft floodlight grade
+  // White kits must not bleach the night bowl — darken only (no radial halos)
   if (kitLuma("ksc") > 200 || kitLuma("vfb") > 200) {
     const night = ctx.createLinearGradient(0, 0, 0, h * 0.62);
-    night.addColorStop(0, "rgba(4,8,18,0.45)");
-    night.addColorStop(0.4, "rgba(6,10,20,0.22)");
-    night.addColorStop(0.75, "rgba(8,12,22,0.08)");
+    night.addColorStop(0, "rgba(4,8,18,0.42)");
+    night.addColorStop(0.4, "rgba(6,10,20,0.2)");
+    night.addColorStop(0.75, "rgba(8,12,22,0.07)");
     night.addColorStop(1, "rgba(8,12,22,0)");
     ctx.fillStyle = night;
     ctx.fillRect(0, 0, w, h * 0.62);
-    // Keep a touch of both kit washes + grey so the bowl still reads 5-color
-    const hx = w * 0.22;
-    const gx = w * 0.78;
-    const left = ctx.createRadialGradient(hx, h * 0.2, 4, hx, h * 0.22, w * 0.28);
-    left.addColorStop(0, sideAtmosphereRgba("ksc", 0.14));
-    left.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = left;
-    ctx.fillRect(0, 0, w * 0.55, h * 0.5);
-    const right = ctx.createRadialGradient(gx, h * 0.2, 4, gx, h * 0.22, w * 0.28);
-    right.addColorStop(0, sideAtmosphereRgba("vfb", 0.16));
-    right.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = right;
-    ctx.fillRect(w * 0.45, 0, w * 0.55, h * 0.5);
   }
   return true;
 }
@@ -435,12 +422,14 @@ function drawBlocks(
     const crowd = blue + red;
     const lean = crowd > 0 ? (blue - red) / crowd : 0;
     const pressure = Math.min(1, crowd / 8) * Math.abs(lean);
+    // Keep block glow subtle — strong radials read as head-halos on white kits
+    const glowA = 0.07 + pressure * 0.1;
     const glow =
       owner === "ksc" || (owner === "neutral" && lean > 0.15)
-        ? sideAtmosphereRgba("ksc", 0.16 + pressure * 0.22)
+        ? sideAtmosphereRgba("ksc", glowA)
         : owner === "vfb" || (owner === "neutral" && lean < -0.15)
-          ? sideAtmosphereRgba("vfb", 0.16 + pressure * 0.22)
-          : "rgba(148,163,184,0.14)";
+          ? sideAtmosphereRgba("vfb", glowA)
+          : "rgba(148,163,184,0.08)";
 
     const g = ctx.createRadialGradient(cx, top + bh * 0.45, 8, cx, top + bh * 0.5, bw * 0.72);
     g.addColorStop(0, glow);
