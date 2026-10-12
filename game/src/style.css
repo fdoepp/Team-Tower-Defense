@@ -75,16 +75,18 @@ button {
   justify-content: center;
 }
 
-/* —— Home menu: floodlight matchday atmosphere —— */
-.screen.menu.menu-home {
+/* —— Matchday atmosphere (home + all submenus) —— */
+.screen.menu.menu-home,
+.screen.menu.menu-mood {
   position: relative;
   max-width: none;
   width: 100%;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: clamp(20px, 4vw, 40px) 20px;
-  gap: 18px;
+  padding: clamp(16px, 3vw, 32px) 16px 24px;
+  gap: 14px;
   overflow: hidden;
+  overflow-y: auto;
   color: var(--menu-ink);
   background:
     linear-gradient(105deg, rgba(15, 55, 130, 0.55) 0%, transparent 42%, transparent 58%, rgba(140, 28, 32, 0.5) 100%),
@@ -93,7 +95,15 @@ button {
     var(--menu-night);
 }
 
-.screen.menu.menu-home::before {
+.screen.menu.menu-home {
+  justify-content: center;
+  padding: clamp(20px, 4vw, 40px) 20px;
+  gap: 18px;
+  overflow-y: hidden;
+}
+
+.screen.menu.menu-home::before,
+.screen.menu.menu-mood::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -102,6 +112,80 @@ button {
     radial-gradient(ellipse 45% 55% at 18% 30%, rgba(56, 120, 255, 0.22), transparent 70%),
     radial-gradient(ellipse 45% 55% at 82% 35%, rgba(239, 68, 68, 0.2), transparent 70%);
   animation: menu-side-pulse 7s ease-in-out infinite alternate;
+}
+
+.menu-mood-body {
+  position: relative;
+  z-index: 1;
+  width: min(520px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 auto;
+  animation: menu-actions-in 0.55s ease-out both;
+}
+
+.screen.menu.menu-mood > *:not(.menu-atmosphere):not(.menu-mood-body) {
+  position: relative;
+  z-index: 1;
+  width: min(520px, 100%);
+}
+
+.screen.menu.menu-mood .brand,
+.screen.menu.menu-mood h1.brand {
+  font-family: var(--display-match);
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: #f8fafc;
+  text-shadow: 0 2px 0 rgba(15, 23, 42, 0.35), 0 10px 32px rgba(0, 0, 0, 0.45);
+  margin: 0;
+}
+
+.screen.menu.menu-mood .sub,
+.screen.menu.menu-mood .tiny,
+.screen.menu.menu-mood label,
+.screen.menu.menu-mood .field {
+  color: rgba(203, 213, 225, 0.92);
+}
+
+.screen.menu.menu-mood .card {
+  background: rgba(15, 23, 42, 0.48);
+  border: 1px solid rgba(248, 250, 252, 0.12);
+  backdrop-filter: blur(10px);
+  box-shadow: none;
+  color: var(--menu-ink);
+}
+
+.screen.menu.menu-mood .btn.secondary {
+  background: rgba(15, 23, 42, 0.45);
+  color: #f1f5f9;
+  border: 1px solid rgba(248, 250, 252, 0.14);
+}
+
+.screen.menu.menu-mood .btn.secondary:hover {
+  background: rgba(30, 41, 59, 0.65);
+}
+
+.screen.menu.menu-mood .chal-input,
+.screen.menu.menu-mood input,
+.screen.menu.menu-mood select,
+.screen.menu.menu-mood textarea {
+  background: rgba(15, 23, 42, 0.55);
+  color: #f8fafc;
+  border: 1px solid rgba(248, 250, 252, 0.16);
+}
+
+.screen.menu.menu-mood .pick-mode {
+  background: rgba(15, 23, 42, 0.4);
+  color: #e2e8f0;
+  border: 1px solid rgba(248, 250, 252, 0.12);
+}
+
+.screen.menu.menu-mood .pick-mode.on {
+  background: color-mix(in srgb, var(--ksc-ui, var(--ksc)) 75%, #0f172a);
+  border-color: transparent;
+  color: #fff;
 }
 
 .menu-atmosphere {
@@ -352,12 +436,99 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
   .screen.menu.menu-home::before,
+  .screen.menu.menu-mood::before,
   .menu-beam,
   .menu-ember,
   .menu-hero,
-  .menu-actions {
+  .menu-actions,
+  .menu-mood-body {
     animation: none !important;
   }
+}
+
+/* —— Live Challenge —— */
+.live-code {
+  font-family: var(--display-match);
+  font-size: 2.4rem;
+  letter-spacing: 0.28em;
+  text-align: center;
+  color: #f8fafc;
+  margin: 4px 0;
+}
+
+.live-ready-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #64748b;
+  display: inline-block;
+}
+
+.live-dot.on {
+  background: #22c55e;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.55);
+}
+
+.live-kpi-panel {
+  position: absolute;
+  right: 8px;
+  top: 56px;
+  z-index: 6;
+  width: min(148px, 34vw);
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(10, 14, 22, 0.72);
+  border: 1px solid rgba(248, 250, 252, 0.14);
+  color: #f1f5f9;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.live-kpi-panel b {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fca5a5;
+  margin-bottom: 4px;
+}
+
+.live-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.live-slot {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(248, 250, 252, 0.12);
+}
+
+.live-slot.win {
+  border-color: rgba(34, 197, 94, 0.55);
+}
+
+.live-slot.loss {
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+.live-verdict {
+  text-align: center;
+  font-family: var(--display-match);
+  font-size: 2rem;
+  letter-spacing: 0.08em;
+  margin: 8px 0 0;
 }
 
 .tutorial-screen {
