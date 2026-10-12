@@ -199,6 +199,7 @@ import {
   type LiveKpis,
   type LiveSession,
 } from "./game/liveChallenge";
+import { applyPvpCmd, applyPvpSnap, exportPvpSnap, type PvpCmd } from "./game/pvp";
 import {
   BADGE_DEFS,
   badgeCount,
@@ -484,11 +485,20 @@ function personMetaLabel(
   return `(Lvl.${m.unitTechLevel(kind)}, x${count})`;
 }
 
+function controlTeamOf(m: Match): TeamId {
+  return m.pvp ? m.localTeam : m.playerTeam;
+}
+
+function controlGoldOf(m: Match): number {
+  return m.pvp && m.localTeam === "vfb" ? m.aiGold : m.gold;
+}
+
 function ownedBuildingSlots(m: Match, kind: BuildingKind) {
+  const team = controlTeamOf(m);
   return m.slots.filter(
     (s) =>
       s.building === kind &&
-      s.owner === m.playerTeam &&
+      s.owner === team &&
       !s.greyNeutral,
   );
 }
@@ -652,6 +662,10 @@ const state = {
   liveMyKpi: null as LiveKpis | null,
   liveOutcome: null as "win" | "loss" | "draw" | null,
   liveWaitingOpponent: false,
+  livePvpHostMix: null as FanMix | null,
+  livePvpGuestMix: null as FanMix | null,
+  livePvpTick: 0,
+  livePvpLastAck: 0,
   /** Guided first solo after tutorial */
   guidedOnboarding: false,
   /** Badges unlocked this result screen */
@@ -698,7 +712,7 @@ function playerNameStored(): string {
 
 function askLiveName(fallback = "Spieler"): string {
   const cur = playerNameStored() || fallback;
-  const name = window.prompt("Dein Name für Live Challenge:", cur);
+  const name = window.prompt("Dein Name für Live-PvP:", cur);
   if (!name) return cur;
   const cleaned = name.trim().slice(0, 20) || cur;
   localStorage.setItem("matchday-player-name", cleaned);
@@ -711,29 +725,48 @@ function destroyLiveSession(): void {
   state.liveMyKpi = null;
   state.liveOutcome = null;
   state.liveWaitingOpponent = false;
+  state.livePvpHostMix = null;
+  state.livePvpGuestMix = null;
+  state.livePvpTick = 0;
+  state.livePvpLastAck = 0;
 }
 
 function kpisFromMatch(m: Match, name: string): LiveKpis {
   const r = m.result;
-  const playerIsKsc = m.playerTeam === "ksc";
-  const scoreFor = playerIsKsc ? m.scoreKsc : m.scoreVfb;
-  const scoreAgainst = playerIsKsc ? m.scoreVfb : m.scoreKsc;
+  const me = m.pvp ? m.localTeam : m.playerTeam;
+  const scoreFor = me === "ksc" ? m.scoreKsc : m.scoreVfb;
+  const scoreAgainst = me === "ksc" ? m.scoreVfb : m.scoreKsc;
   let winner: LiveKpis["winner"] = null;
   if (r) {
-    winner = r.winner === m.playerTeam ? "player" : "ai";
+    winner = r.winner === me ? "player" : "ai";
   }
+  const gold = controlGoldOf(m);
+  const beers =
+    m.pvp && m.localTeam === "vfb" ? m.beersDrunkAi : m.beersDrunkPlayer;
   return {
     name,
     scoreFor,
     scoreAgainst,
     minute: Math.floor(m.minute),
-    beers: m.beersDrunkPlayer,
-    gold: Math.floor(m.gold),
+    beers,
+    gold: Math.floor(gold),
     done: !!r,
     winner,
     reason: r?.reason,
     detail: r?.detail,
   };
+}
+
+/** Live PvP: guest sends cmd; host applies locally (own team via try*). */
+function livePvpAction(cmd: PvpCmd, localApply: () => boolean): boolean {
+  const live = state.live;
+  const m = state.match;
+  if (!live || !m?.pvp) return localApply();
+  if (live.role === "guest") {
+    live.sendInput(cmd);
+    return true;
+  }
+  return localApply();
 }
 
 function syncMenuBrandingPreview(): void {
@@ -1274,7 +1307,7 @@ function renderMenu(): void {
         </div>
         <div class="menu-group">
           <p class="menu-group-label">Multiplayer</p>
-          <button class="btn secondary" id="live">Live Challenge</button>
+          <button class="btn secondary" id="live">Live-PvP</button>
           <button class="btn secondary" id="challenge">Challenge</button>
         </div>
         <div class="menu-group">
@@ -2383,8 +2416,8 @@ function renderLiveHub(): void {
   app.innerHTML = moodMenu(`
     ${moodHead({
       eyebrow: "Multiplayer",
-      title: "Live Challenge",
-      lead: "Gleichzeitig · du Heim links · Gegner rechts (KPI)",
+      title: "Live-PvP",
+      lead: "Ein Spielfeld · Host steuert Heim · Gast steuert die Gäste",
     })}
     <div class="chal-stats card stack">
       <p class="card-label">Persönliche Live-Stats</p>
@@ -2476,17 +2509,54 @@ function bindLiveSession(session: LiveSession): void {
       maybeFinishLiveResult();
     }
   });
-  session.onStart((cfg, at) => {
+  session.onStart((cfg, at, mixes) => {
     state.settings = settingsFromLive(cfg, session.role);
     setClubSoundIdentity(state.settings.playerClub, state.settings.aiClub);
     syncMenuBrandingPreview();
-    state.setup = defaultSetup();
+    state.livePvpHostMix = mixes.host;
+    state.livePvpGuestMix = mixes.guest;
+    state.setup = { mix: { ...mixes.host } };
     const delay = Math.max(0, at - Date.now());
     window.setTimeout(() => {
       if (!state.live) return;
-      go("setup");
+      startLivePvpMatch();
     }, delay);
   });
+  session.onInput((cmd) => {
+    const m = state.match;
+    if (!m?.pvp || !m.pvpAuthority || state.screen !== "match") return;
+    applyPvpCmd(m, "vfb", cmd);
+  });
+  session.onSnap((snap) => {
+    const m = state.match;
+    if (!m?.pvp || m.pvpAuthority || state.screen !== "match") return;
+    applyPvpSnap(m, snap);
+  });
+}
+
+/** Kick off shared-board Live PvP (skips solo setup — both use exchanged mixes). */
+function startLivePvpMatch(): void {
+  const live = state.live;
+  if (!live) return;
+  unlockAudio();
+  sfx("whistle");
+  startAmbience("match");
+  const hostMix = state.livePvpHostMix ?? defaultSetup().mix;
+  const guestMix = state.livePvpGuestMix ?? defaultSetup().mix;
+  state.match = new Match({
+    settings: state.settings,
+    playerSetup: { mix: { ...hostMix } },
+    aiSetup: { mix: { ...guestMix } },
+    pvp: true,
+    localTeam: live.role === "guest" ? "vfb" : "ksc",
+    pvpAuthority: live.role === "host",
+  });
+  state.resultBadges = [];
+  state.livePvpTick = 0;
+  state.livePvpLastAck = 0;
+  (window as unknown as { __match?: Match }).__match = state.match;
+  go("match");
+  void goFullscreen();
 }
 
 function renderLiveLobby(): void {
@@ -2509,7 +2579,7 @@ function renderLiveLobby(): void {
       title: "Lobby",
       lead: escapeHtml(matchLine),
       extra: `<p class="live-code">${escapeHtml(live.code)}</p>
-        <p class="tiny mood-center">Raumcode teilen — Gegner tritt bei</p>
+        <p class="tiny mood-center">Live-PvP · ein Spielfeld · Host Heim · Gast rechts</p>
         <div class="kit-preview" aria-hidden="true">
           ${kitSwatchHtml((cfg?.playerClub || brand.heim.id) as ClubId)}
           <span class="kit-vs">vs</span>
@@ -2519,10 +2589,11 @@ function renderLiveLobby(): void {
     ${
       live.role === "host"
         ? `<div class="card stack">
-        <p class="card-label">Matchup (Host wählt)</p>
+        <p class="card-label">Matchup (Host = Heim links)</p>
         ${matchupPickHtml({ showDiff: true, showBehavior: false })}
+        <p class="tiny">Gegner steuert die Gäste-Seite. Keine KI — echtes Duell.</p>
       </div>`
-        : `<div class="card stack"><p class="tiny">Host legt Matchup fest. Du spielst Heim links mit deinem Club — Gegner-Club rechts.</p></div>`
+        : `<div class="card stack"><p class="tiny">Du bist <b>Gast (rechts)</b>. Host legt das Matchup fest — gleiches Spielfeld, live gegeneinander.</p></div>`
     }
     <div class="card stack">
       <div class="live-ready-row">
@@ -2577,8 +2648,11 @@ function renderLiveLobby(): void {
         difficulty: readMenuDifficulty(),
         hostName: live.localName,
         guestName: live.remoteName || undefined,
+        pvp: true,
       });
-      live.sendStart();
+      const mix = defaultSetup().mix;
+      const guestMix = live.remoteMix ?? mix;
+      live.sendStart(mix, guestMix);
     });
   }
 }
@@ -2586,7 +2660,16 @@ function renderLiveLobby(): void {
 function syncLiveKpiPanel(): void {
   const panel = app.querySelector("#live-kpi-panel");
   const live = state.live;
+  const m = state.match;
   if (!panel || !live) return;
+  if (m?.pvp) {
+    const side = live.role === "host" ? "Du · Heim" : "Du · Gast";
+    panel.innerHTML = `<b>Live-PvP</b>
+      <span>${escapeHtml(side)}</span>
+      <span>${escapeHtml(live.localName)} vs ${escapeHtml(live.remoteName || "…")}</span>
+      <span class="tiny">${live.connected ? "verbunden" : "offline"} · ${live.role === "host" ? "Host simuliert" : "Empfange Sync"}</span>`;
+    return;
+  }
   const k = live.remoteKpi;
   if (!k) {
     panel.innerHTML = `<b>Gegner</b><span>${escapeHtml(live.remoteName || "…")}</span><span class="tiny">warte auf KPIs…</span>`;
@@ -2627,20 +2710,20 @@ function renderLiveResult(): void {
     state.liveWaitingOpponent = true;
     app.innerHTML = moodMenu(`
       ${moodHead({
-        eyebrow: "Live Challenge",
+        eyebrow: "Live-PvP",
         title: "Warte auf Gegner…",
-        lead: "Dein Match ist fertig — KPI-Vergleich folgt",
+        lead: "Abgleich der Ergebnis-Meldung",
       })}
       <div class="live-compare">
         <div class="live-slot">
-          <p class="tiny">Du</p>
+          <p class="tiny">Du · ${live.role === "host" ? "Heim" : "Gast"}</p>
           <p class="card-strong">${escapeHtml(me.name)}</p>
           <p>${me.scoreFor}:${me.scoreAgainst}</p>
           <p class="tiny">${formatMinute(me.minute)} · Biere ${me.beers}</p>
           <p class="tiny">${escapeHtml(me.detail || "")}</p>
         </div>
         <div class="live-slot">
-          <p class="tiny">Gegner</p>
+          <p class="tiny">Gegner · ${live.role === "host" ? "Gast" : "Heim"}</p>
           <p class="card-strong">${escapeHtml(them?.name || live.remoteName || "…")}</p>
           <p>${them ? `${them.scoreFor}:${them.scoreAgainst}` : "—"}</p>
           <p class="tiny">${them ? `${formatMinute(them.minute)} · läuft…` : "verbindet…"}</p>
@@ -2673,19 +2756,19 @@ function renderLiveResult(): void {
         : "Unentschieden";
   app.innerHTML = moodMenu(`
     ${moodHead({
-      eyebrow: "Live Challenge · Zusammenfassung",
+      eyebrow: "Live-PvP · Ergebnis",
       title: verdict,
     })}
     <div class="live-compare">
       <div class="live-slot ${outcome === "win" ? "win" : outcome === "loss" ? "loss" : ""}">
-        <p class="tiny">Du · Heim</p>
+        <p class="tiny">Du · ${live.role === "host" ? "Heim" : "Gast"}</p>
         <p class="card-strong">${escapeHtml(me.name)}</p>
         <p>${me.scoreFor}:${me.scoreAgainst}</p>
         <p class="tiny">${formatMinute(me.minute)} · Biere ${me.beers} · Gold ${me.gold}</p>
         <p class="tiny">${escapeHtml(me.detail || me.reason || "")}</p>
       </div>
       <div class="live-slot ${outcome === "loss" ? "win" : outcome === "win" ? "loss" : ""}">
-        <p class="tiny">Gegner · rechts</p>
+        <p class="tiny">Gegner · ${live.role === "host" ? "Gast" : "Heim"}</p>
         <p class="card-strong">${escapeHtml(them.name)}</p>
         <p>${them.scoreFor}:${them.scoreAgainst}</p>
         <p class="tiny">${formatMinute(them.minute)} · Biere ${them.beers} · Gold ${them.gold}</p>
@@ -2727,7 +2810,7 @@ function renderSetup(): void {
       </div>
     </div>`;
   const setupLead = live
-    ? "Live Challenge · du Heim links · Gegner-Club rechts"
+    ? "Live-PvP · Aufstellung (gleicher Start beider Seiten)"
     : state.tournament?.active
       ? `Turnier · ${escapeHtml(tournamentProgressLabel(state.tournament))}`
       : state.guidedOnboarding
@@ -2822,7 +2905,7 @@ function renderMatchScreen(): void {
   m.setSpeed(1);
   const needFs = needsFullscreenGate();
   const iosHint = isIos() && !isStandalone();
-  const tc = teamColor(m.playerTeam);
+  const tc = teamColor(controlTeamOf(m));
   state.pendingBuild = null;
   state.buildTarget = null;
   app.innerHTML = `
@@ -2830,7 +2913,7 @@ function renderMatchScreen(): void {
     <div class="match-shell matchday">
       ${
         state.live
-          ? `<aside class="live-kpi-panel" id="live-kpi-panel" aria-live="polite"><b>Gegner · rechts</b><span>…</span></aside>`
+          ? `<aside class="live-kpi-panel" id="live-kpi-panel" aria-live="polite"><b>Live-PvP</b><span>…</span></aside>`
           : ""
       }
       <div class="match-flash hidden" id="match-flash" aria-live="assertive"></div>
@@ -3234,7 +3317,7 @@ function renderMatchScreen(): void {
           : 0;
       const curIcon = standIconPath(kind, tc, lv);
       const nextIcon = standIconPath(kind, tc, next);
-      const ok = upCost != null && m.gold >= upCost;
+      const ok = upCost != null && controlGoldOf(m) >= upCost;
       upRows.innerHTML = `
         <div class="upgrade-panel" data-build-upgrade-panel="${kind}">
           <p class="upgrade-title">${buildingKindLabel(kind)} · Lv${lv}${lv < UPGRADE_MAX ? ` → Lv${next}` : " (Max)"}</p>
@@ -3289,9 +3372,18 @@ function renderMatchScreen(): void {
         focusBtn.classList.toggle("ready", ok);
         focusBtn.classList.toggle("cd", !ok);
         focusBtn.onclick = () => {
-          m.buildMenu = state.buildTarget;
-          m.selectedSlot = state.buildTarget;
-          m.tryUpgrade();
+          if (!state.buildTarget) return;
+          const target = state.buildTarget;
+          m.buildMenu = target;
+          m.selectedSlot = target;
+          livePvpAction(
+            {
+              op: "upgradeBuild",
+              blockId: target.blockId,
+              index: target.index,
+            },
+            () => m.tryUpgrade(),
+          );
           // Stay on this building if still upgradable
           if (state.buildTarget) {
             const s = m.slots.find(
@@ -3371,7 +3463,7 @@ function renderMatchScreen(): void {
         const canBau =
           !!state.buildTarget &&
           state.buildRailMode === "place" &&
-          m.gold >= BUILD_COST[kind] &&
+          controlGoldOf(m) >= BUILD_COST[kind] &&
           (() => {
             const t = state.buildTarget!;
             const s = m.slots.find(
@@ -3401,7 +3493,7 @@ function renderMatchScreen(): void {
         `[data-build-up="${kind}"]`,
       );
       if (upBtn) {
-        const ok = slot != null && upCost != null && m.gold >= upCost;
+        const ok = slot != null && upCost != null && controlGoldOf(m) >= upCost;
         upBtn.disabled = !ok;
         upBtn.classList.toggle("ready", ok);
         upBtn.classList.toggle("cd", !ok);
@@ -3487,13 +3579,17 @@ function renderMatchScreen(): void {
     m.selectedSeat = null;
     buildMenu.classList.add("hidden");
     const slot = m.slots.find((s) => s.blockId === blockId && s.index === index);
+    const controlTeam = controlTeamOf(m);
     const owned =
       !!slot?.building &&
-      slot.owner === m.playerTeam &&
+      slot.owner === controlTeam &&
       !slot.greyNeutral;
     if (owned) {
       state.pendingBuild = null;
       openBuildRail("upgrade", { blockId, index });
+      if (m.pvp && state.live?.role === "guest") {
+        livePvpAction({ op: "selectSlot", blockId, index }, () => true);
+      }
       return;
     }
     if (slot && (!slot.building || slot.greyNeutral || slot.owner === "neutral")) {
@@ -3508,7 +3604,11 @@ function renderMatchScreen(): void {
         const kind = state.pendingBuild;
         m.buildMenu = { blockId, index };
         m.selectedSlot = m.buildMenu;
-        if (m.tryBuild(kind)) {
+        const ok = livePvpAction(
+          { op: "build", blockId, index, kind },
+          () => m.tryBuild(kind),
+        );
+        if (ok) {
           state.pendingBuild = null;
           state.buildTarget = null;
           m.buildMenu = null;
@@ -3555,26 +3655,41 @@ function renderMatchScreen(): void {
   attackRail.querySelectorAll<HTMLButtonElement>("[data-attack-kind]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const kind = btn.dataset.attackKind as "ultras" | "hooligans";
-      const count = btn.dataset.attackCount === "all" ? "all" : 1;
-      if (kind === "ultras") m.tryPyroFight(count);
-      else m.tryHooliganOrder(count);
+      const count = (btn.dataset.attackCount === "all" ? "all" : 1) as 1 | "all";
+      if (kind === "ultras") {
+        livePvpAction({ op: "sendPyro", count }, () => m.tryPyroFight(count));
+      } else {
+        livePvpAction({ op: "sendHool", count }, () => m.tryHooliganOrder(count));
+      }
       syncOverlay();
     });
   });
   app.querySelector("#btn-hire-ordner")?.addEventListener("click", () => {
-    m.tryHireStewardQuick();
+    const sel = m.buildMenu ?? m.selectedSlot;
+    if (sel) {
+      livePvpAction(
+        { op: "hire", blockId: sel.blockId, index: sel.index },
+        () => m.tryHireStewardQuick(),
+      );
+    } else {
+      livePvpAction(
+        { op: "hire", blockId: 0, index: 0 },
+        () => m.tryHireStewardQuick(),
+      );
+    }
     syncOverlay();
   });
   app.querySelectorAll<HTMLButtonElement>("[data-quick-buy]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      m.tryBuyFanQuick(btn.dataset.quickBuy as FanKind);
+      const kind = btn.dataset.quickBuy as FanKind;
+      livePvpAction({ op: "buy", kind }, () => m.tryBuyFanQuick(kind));
       syncOverlay();
     });
   });
   app.querySelectorAll<HTMLButtonElement>("[data-unit-up]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const kind = btn.dataset.unitUp as FanKind | "ordner";
-      m.tryUpgradeUnit(kind);
+      livePvpAction({ op: "upgradeUnit", kind }, () => m.tryUpgradeUnit(kind));
       syncOverlay();
     });
   });
@@ -3590,7 +3705,15 @@ function renderMatchScreen(): void {
       }
       m.buildMenu = state.buildTarget;
       m.selectedSlot = state.buildTarget;
-      const ok = m.tryBuild(kind);
+      const ok = livePvpAction(
+        {
+          op: "build",
+          blockId: state.buildTarget.blockId,
+          index: state.buildTarget.index,
+          kind,
+        },
+        () => m.tryBuild(kind),
+      );
       if (ok) {
         state.pendingBuild = null;
         state.buildTarget = null;
@@ -3616,18 +3739,37 @@ function renderMatchScreen(): void {
       }
       m.buildMenu = { blockId: slot.blockId, index: slot.index };
       m.selectedSlot = m.buildMenu;
-      m.tryUpgrade();
+      livePvpAction(
+        { op: "upgradeBuild", blockId: slot.blockId, index: slot.index },
+        () => m.tryUpgrade(),
+      );
       syncBuildingRailUi();
       syncOverlay();
     });
   });
   btnHire.addEventListener("click", () => {
-    m.tryHireSteward();
+    const sel = m.buildMenu ?? m.selectedSlot;
+    if (sel) {
+      livePvpAction(
+        { op: "hire", blockId: sel.blockId, index: sel.index },
+        () => m.tryHireSteward(),
+      );
+    } else {
+      m.tryHireSteward();
+    }
     if (m.buildMenu) showBuildMenu(m.buildMenu.blockId, m.buildMenu.index);
     syncOverlay();
   });
   btnUpgrade.addEventListener("click", () => {
-    m.tryUpgrade();
+    const sel = m.buildMenu ?? m.selectedSlot;
+    if (sel) {
+      livePvpAction(
+        { op: "upgradeBuild", blockId: sel.blockId, index: sel.index },
+        () => m.tryUpgrade(),
+      );
+    } else {
+      m.tryUpgrade();
+    }
     hideMenus();
     syncOverlay();
   });
@@ -3668,6 +3810,12 @@ function renderMatchScreen(): void {
     state.last = now;
     try {
       m.update(dt);
+      if (m.pvp && m.pvpAuthority && state.live) {
+        state.livePvpTick += 1;
+        if (state.livePvpTick % 6 === 0) {
+          state.live.sendSnap(exportPvpSnap(m, state.livePvpTick), state.livePvpLastAck);
+        }
+      }
       drawMatch(ctx, m);
       const chAmb = m.goalChance();
       setAmbienceFromMatch({
@@ -3675,16 +3823,35 @@ function renderMatchScreen(): void {
         storming: !!m.stormBanner,
         momentumAbs: Math.abs(chAmb.momentum),
       });
-      const gold = app.querySelector("#gold");
-      if (gold) gold.textContent = String(Math.floor(m.gold));
+      const control = controlTeamOf(m);
+      const goldEl = app.querySelector("#gold");
+      if (goldEl) goldEl.textContent = String(Math.floor(controlGoldOf(m)));
       const beer = app.querySelector("#cur-beer");
       const merch = app.querySelector("#cur-merch");
       const sec = app.querySelector("#cur-sec");
-      if (beer) beer.textContent = String(m.currencyPct("beer"));
-      if (merch) merch.textContent = String(m.currencyPct("merch"));
-      if (sec) sec.textContent = String(m.currencyPct("security"));
-      const own = m.countTeamFans(m.playerTeam);
-      const foe = m.countTeamFans(m.aiTeam);
+      if (beer) {
+        beer.textContent = String(
+          control === "vfb" && m.pvp
+            ? Math.floor(m.aiBeer)
+            : m.currencyPct("beer"),
+        );
+      }
+      if (merch) {
+        merch.textContent = String(
+          control === "vfb" && m.pvp
+            ? Math.floor(m.aiMerch)
+            : m.currencyPct("merch"),
+        );
+      }
+      if (sec) {
+        sec.textContent = String(
+          control === "vfb" && m.pvp
+            ? Math.floor(m.aiSecurity)
+            : m.currencyPct("security"),
+        );
+      }
+      const own = m.countTeamFans(control);
+      const foe = m.countTeamFans(control === "ksc" ? "vfb" : "ksc");
       const setFb = (id: string, n: number) => {
         const el = app.querySelector(id);
         if (el) el.textContent = String(n);
@@ -3780,10 +3947,10 @@ function renderMatchScreen(): void {
         const canHire = m.slots.some(
           (s) =>
             s.building === "ordner" &&
-            s.owner === m.playerTeam &&
+            s.owner === control &&
             !s.greyNeutral &&
             m.stewardCountAt(s) < 2 &&
-            m.gold >= STEWARD_HIRE_GOLD,
+            controlGoldOf(m) >= STEWARD_HIRE_GOLD,
         );
         hireBtn.disabled = !canHire;
         hireBtn.classList.toggle("ready", canHire);
@@ -3870,13 +4037,13 @@ function renderMatchScreen(): void {
       }
       const toast = app.querySelector("#toast");
       if (toast) toast.classList.remove("show");
-      // Halbzeit boost picker
-      halfPanel.classList.toggle("hidden", !m.halfTimePending);
+      // Halbzeit boost picker (PvP: auto +30€ both — no dual UI)
+      halfPanel.classList.toggle("hidden", !m.halfTimePending || m.pvp);
       // Choreo status chip
-      if (m.choreo && m.choreo.team === m.playerTeam) {
+      if (m.choreo && m.choreo.team === control) {
         choreoChip.textContent = CHOREO_LABEL[m.choreo.tier];
         choreoChip.classList.remove("hidden");
-      } else {
+      } else if (!m.pvp) {
         const ready = m.playerChoreoTier();
         if (ready) {
           choreoChip.textContent = `${CHOREO_LABEL[ready]} bereit`;
@@ -3884,6 +4051,8 @@ function renderMatchScreen(): void {
         } else {
           choreoChip.classList.add("hidden");
         }
+      } else {
+        choreoChip.classList.add("hidden");
       }
       if (Math.floor(now / 250) !== Math.floor((now - dt * 1000) / 250)) syncOverlay();
       if (state.live && Math.floor(now / 1000) !== Math.floor((now - dt * 1000) / 1000)) {
@@ -3924,18 +4093,21 @@ function collectResultBadges(opts?: {
   const m = state.match;
   if (!m?.result) return;
   const r = m.result;
-  const playerIsKsc = m.playerTeam === "ksc";
+  const me = controlTeamOf(m);
+  const playerIsKsc = me === "ksc";
   const scoreFor = playerIsKsc ? r.score[0] : r.score[1];
   const scoreAgainst = playerIsKsc ? r.score[1] : r.score[0];
+  const beers =
+    m.pvp && me === "vfb" ? m.beersDrunkAi : m.beersDrunkPlayer;
   state.resultBadges = evaluateMatchBadges({
     difficulty: r.difficulty,
-    playerTeam: m.playerTeam,
+    playerTeam: me,
     winner: r.winner,
     reason: r.reason,
     scoreFor,
     scoreAgainst,
     minute: r.minute,
-    beers: m.beersDrunkPlayer,
+    beers,
     buildingsOwned: m.countPlayerBuildings(),
     wasBehind: m.wasBehind,
     fromTournamentRound: opts?.fromTournamentRound,

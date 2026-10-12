@@ -1,9 +1,10 @@
 /**
- * Live-Challenge: gleichzeitiges Spiel über PeerJS (WebRTC).
- * Jeder spielt Heim (links); rechts die Farben/KI des Gegners.
- * KPI-Ticks live; am Ende Vergleich + persönliche Stats.
+ * Live-PvP: ein gemeinsames Match über PeerJS (WebRTC).
+ * Host simuliert (Heim/ksc), Guest steuert Gast/vfb per Input;
+ * Snapshots halten den Guest synchron.
  */
-import type { AiDifficulty, SoloSettings } from "./types";
+import type { AiDifficulty, FanMix, SoloSettings } from "./types";
+import type { PvpCmd, PvpSnap } from "./pvp";
 
 export type LiveRole = "host" | "guest";
 
@@ -26,6 +27,8 @@ export type LiveRoomConfig = {
   difficulty: AiDifficulty;
   hostName: string;
   guestName?: string;
+  /** Always true — shared-board PvP */
+  pvp?: boolean;
 };
 
 export type LivePersonalStats = {
@@ -53,10 +56,17 @@ export type LiveHistoryEntry = {
 type WireMsg =
   | { type: "hello"; role: LiveRole; name: string }
   | { type: "config"; config: LiveRoomConfig }
-  | { type: "ready"; name: string; ready: boolean }
-  | { type: "start"; at: number; config: LiveRoomConfig }
+  | { type: "ready"; name: string; ready: boolean; mix?: FanMix }
+  | {
+      type: "start";
+      at: number;
+      config: LiveRoomConfig;
+      hostMix: FanMix;
+      guestMix: FanMix;
+    }
+  | { type: "input"; seq: number; cmd: PvpCmd }
+  | { type: "snap"; snap: PvpSnap; ack: number }
   | { type: "kpi"; kpi: LiveKpis }
-  | { type: "chat"; text: string }
   | { type: "bye"; reason?: string };
 
 const STATS_KEY = "matchday-live-stats-v1";
@@ -125,15 +135,25 @@ export type LiveSession = {
   localReady: boolean;
   remoteReady: boolean;
   remoteKpi: LiveKpis | null;
+  remoteMix: FanMix | null;
+  hostMix: FanMix | null;
+  guestMix: FanMix | null;
+  lastSnap: PvpSnap | null;
   connected: boolean;
   status: string;
   destroy(): void;
-  sendReady(ready: boolean): void;
-  sendStart(): void;
+  sendReady(ready: boolean, mix?: FanMix): void;
+  sendStart(hostMix: FanMix, guestMix: FanMix): void;
+  sendInput(cmd: PvpCmd): void;
+  sendSnap(snap: PvpSnap, ack: number): void;
   sendKpi(kpi: LiveKpis): void;
   setConfig(cfg: LiveRoomConfig): void;
   onUpdate(cb: () => void): void;
-  onStart(cb: (cfg: LiveRoomConfig, at: number) => void): void;
+  onStart(
+    cb: (cfg: LiveRoomConfig, at: number, mixes: { host: FanMix; guest: FanMix }) => void,
+  ): void;
+  onInput(cb: (cmd: PvpCmd, seq: number) => void): void;
+  onSnap(cb: (snap: PvpSnap) => void): void;
 };
 
 export async function createLiveHost(name: string): Promise<LiveSession> {
@@ -164,7 +184,12 @@ type SessionInternal = LiveSession & {
   _peer: PeerLike;
   _conn: DataConn | null;
   _update: Set<() => void>;
-  _start: Set<(cfg: LiveRoomConfig, at: number) => void>;
+  _start: Set<
+    (cfg: LiveRoomConfig, at: number, mixes: { host: FanMix; guest: FanMix }) => void
+  >;
+  _input: Set<(cmd: PvpCmd, seq: number) => void>;
+  _snap: Set<(snap: PvpSnap) => void>;
+  _inputSeq: number;
   _emit(): void;
   _handle(msg: WireMsg): void;
 };
@@ -201,12 +226,19 @@ function wireSession(
     localReady: false,
     remoteReady: false,
     remoteKpi: null,
+    remoteMix: null,
+    hostMix: null,
+    guestMix: null,
+    lastSnap: null,
     connected: false,
     status: role === "host" ? "Warte auf Mitspieler…" : "Verbinde…",
     _peer: peer,
     _conn: null,
     _update: new Set(),
     _start: new Set(),
+    _input: new Set(),
+    _snap: new Set(),
+    _inputSeq: 0,
     _emit() {
       for (const cb of this._update) cb();
     },
@@ -225,17 +257,27 @@ function wireSession(
         } satisfies WireMsg);
         this._emit();
       } else if (msg.type === "config") {
-        this.config = msg.config;
+        this.config = { ...msg.config, pvp: true };
         this.remoteName = msg.config.hostName || this.remoteName;
-        this.status = "Matchup empfangen";
+        this.status = "Matchup empfangen — Live-PvP";
         this._emit();
       } else if (msg.type === "ready") {
         this.remoteReady = msg.ready;
         this.remoteName = msg.name || this.remoteName;
+        if (msg.mix) this.remoteMix = msg.mix;
         this._emit();
       } else if (msg.type === "start") {
-        this.config = msg.config;
-        for (const cb of this._start) cb(msg.config, msg.at);
+        this.config = { ...msg.config, pvp: true };
+        this.hostMix = msg.hostMix;
+        this.guestMix = msg.guestMix;
+        for (const cb of this._start)
+          cb(msg.config, msg.at, { host: msg.hostMix, guest: msg.guestMix });
+      } else if (msg.type === "input") {
+        for (const cb of this._input) cb(msg.cmd, msg.seq);
+      } else if (msg.type === "snap") {
+        this.lastSnap = msg.snap;
+        for (const cb of this._snap) cb(msg.snap);
+        this._emit();
       } else if (msg.type === "kpi") {
         this.remoteKpi = msg.kpi;
         this._emit();
@@ -255,29 +297,47 @@ function wireSession(
       if (!this._peer.destroyed) this._peer.destroy();
       this._update.clear();
       this._start.clear();
+      this._input.clear();
+      this._snap.clear();
     },
-    sendReady(ready: boolean) {
+    sendReady(ready: boolean, mix?: FanMix) {
       this.localReady = ready;
       this._conn?.send({
         type: "ready",
         name: this.localName,
         ready,
+        mix,
       } satisfies WireMsg);
       this._emit();
     },
-    sendStart() {
+    sendStart(hostMix: FanMix, guestMix: FanMix) {
       if (!this.config || this.role !== "host") return;
       const at = Date.now() + 3200;
-      const msg: WireMsg = { type: "start", at, config: this.config };
+      const config = { ...this.config, pvp: true };
+      this.hostMix = hostMix;
+      this.guestMix = guestMix;
+      const msg: WireMsg = { type: "start", at, config, hostMix, guestMix };
       this._conn?.send(msg);
-      for (const cb of this._start) cb(this.config, at);
+      for (const cb of this._start)
+        cb(config, at, { host: hostMix, guest: guestMix });
+    },
+    sendInput(cmd: PvpCmd) {
+      this._inputSeq += 1;
+      this._conn?.send({
+        type: "input",
+        seq: this._inputSeq,
+        cmd,
+      } satisfies WireMsg);
+    },
+    sendSnap(snap: PvpSnap, ack: number) {
+      this._conn?.send({ type: "snap", snap, ack } satisfies WireMsg);
     },
     sendKpi(kpi: LiveKpis) {
       this._conn?.send({ type: "kpi", kpi } satisfies WireMsg);
     },
     setConfig(cfg: LiveRoomConfig) {
-      this.config = cfg;
-      this._conn?.send({ type: "config", config: cfg } satisfies WireMsg);
+      this.config = { ...cfg, pvp: true };
+      this._conn?.send({ type: "config", config: this.config } satisfies WireMsg);
       this._emit();
     },
     onUpdate(cb) {
@@ -285,6 +345,12 @@ function wireSession(
     },
     onStart(cb) {
       this._start.add(cb);
+    },
+    onInput(cb) {
+      this._input.add(cb);
+    },
+    onSnap(cb) {
+      this._snap.add(cb);
     },
   };
 
@@ -313,7 +379,7 @@ function attachConn(session: SessionInternal, conn: DataConn): void {
   session._conn = conn;
   conn.on("open", () => {
     session.connected = true;
-    session.status = "Verbunden";
+    session.status = "Verbunden — Live-PvP";
     conn.send({
       type: "hello",
       role: session.role,
@@ -339,26 +405,17 @@ function attachConn(session: SessionInternal, conn: DataConn): void {
   });
 }
 
+/** Shared board: both see Heim=host club, Gast=guest club. */
 export function settingsFromLive(
   cfg: LiveRoomConfig,
-  role: LiveRole,
+  _role: LiveRole,
 ): SoloSettings {
-  if (role === "host") {
-    return {
-      difficulty: cfg.difficulty,
-      behavior: "balanced",
-      playerTeam: "ksc",
-      playerClub: cfg.playerClub,
-      aiClub: cfg.aiClub,
-    };
-  }
-  // Guest: mirrored — own club left, host club right
   return {
     difficulty: cfg.difficulty,
     behavior: "balanced",
     playerTeam: "ksc",
-    playerClub: cfg.aiClub,
-    aiClub: cfg.playerClub,
+    playerClub: cfg.playerClub,
+    aiClub: cfg.aiClub,
   };
 }
 

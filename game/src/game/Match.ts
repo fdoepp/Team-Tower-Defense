@@ -160,6 +160,12 @@ export type MatchConfig = {
   aiSetup: SetupConfig;
   /** Guided first-match onboarding tips */
   guided?: boolean;
+  /** Live PvP: both sides human-controlled */
+  pvp?: boolean;
+  /** Team this client controls (host ksc / guest vfb). Defaults to settings.playerTeam */
+  localTeam?: TeamId;
+  /** Host runs sim; guest only applies snapshots */
+  pvpAuthority?: boolean;
 };
 
 export type MatchResult = {
@@ -267,6 +273,14 @@ export class Match {
   readonly cfg: MatchConfig;
   readonly playerTeam: TeamId;
   readonly aiTeam: TeamId;
+  /** Live PvP: shared board, both humans */
+  readonly pvp: boolean;
+  /** Team the local UI / remote cmd controls */
+  readonly localTeam: TeamId;
+  /** Host authority (sim); guest is snap viewer */
+  readonly pvpAuthority: boolean;
+  /** Temporary override while applying a PvP command for a side */
+  private cmdTeam: TeamId | null = null;
   fans: FanUnit[] = [];
   slots: BuildSlot[] = [];
   phase: MatchPhase = "regular";
@@ -404,19 +418,35 @@ export class Match {
   /** Cinematic highlight (Tor / Blocksturm) */
   highlight: HighlightState | null = null;
   /**
-   * Biere, die eigene Figuren getrunken haben (eigene + fremde Stände,
+   * Biere, die Heim-/Spieler-Figuren getrunken haben (eigene + fremde Stände,
    * inkl. kostenloses Leer-Trinken unter Banner-Kontrolle).
    */
   beersDrunkPlayer = 0;
+  /** Biere der Gäste-/AI-Seite (PvP KPI + Fairness) */
+  beersDrunkAi = 0;
 
   constructor(cfg: MatchConfig) {
     this.cfg = cfg;
-    this.playerTeam = cfg.settings.playerTeam;
-    this.aiTeam = cfg.settings.playerTeam === "ksc" ? "vfb" : "ksc";
+    this.pvp = !!cfg.pvp;
+    // PvP board is always Heim=ksc / Gast=vfb; localTeam chooses who you control
+    if (this.pvp) {
+      this.playerTeam = "ksc";
+      this.aiTeam = "vfb";
+      this.localTeam = cfg.localTeam === "vfb" ? "vfb" : "ksc";
+      this.pvpAuthority = cfg.pvpAuthority !== false;
+    } else {
+      this.playerTeam = cfg.settings.playerTeam;
+      this.aiTeam = cfg.settings.playerTeam === "ksc" ? "vfb" : "ksc";
+      this.localTeam = cfg.localTeam ?? cfg.settings.playerTeam;
+      this.pvpAuthority = true;
+    }
     // Map club kits onto side slots (player side + AI side)
     const playerClub = cfg.settings.playerClub || "ksc";
     const aiClub = cfg.settings.aiClub || "vfb";
-    if (this.playerTeam === "ksc") {
+    if (this.pvp) {
+      // Shared orientation: cfg.playerClub = Heim, cfg.aiClub = Gast
+      setSideBranding(playerClub, aiClub);
+    } else if (this.playerTeam === "ksc") {
       setSideBranding(playerClub, aiClub);
     } else {
       setSideBranding(aiClub, playerClub);
@@ -435,13 +465,22 @@ export class Match {
       /* non-DOM */
     }
     this.diffProf = difficultyProfile(cfg.settings.difficulty);
-    this.aiGold = START_GOLD + this.diffProf.aiGoldBonus;
-    this.aiMerch = this.diffProf.aiStartMerch;
-    this.aiBeer = this.diffProf.aiStartBeer;
-    this.aiSecurity = START_SECURITY + this.diffProf.aiStartSecurityBonus;
-    {
-      const t = Math.max(1, Math.min(UPGRADE_MAX, this.diffProf.aiUnitTech));
-      this.aiTech = { normalos: t, ultras: t, hooligans: t, ordner: t };
+    if (this.pvp) {
+      // Fair start — both humans, no AI difficulty bonuses
+      this.aiGold = START_GOLD;
+      this.aiMerch = 0;
+      this.aiBeer = 0;
+      this.aiSecurity = START_SECURITY;
+      this.aiTech = { normalos: 1, ultras: 1, hooligans: 1, ordner: 1 };
+    } else {
+      this.aiGold = START_GOLD + this.diffProf.aiGoldBonus;
+      this.aiMerch = this.diffProf.aiStartMerch;
+      this.aiBeer = this.diffProf.aiStartBeer;
+      this.aiSecurity = START_SECURITY + this.diffProf.aiStartSecurityBonus;
+      {
+        const t = Math.max(1, Math.min(UPGRADE_MAX, this.diffProf.aiUnitTech));
+        this.aiTech = { normalos: t, ultras: t, hooligans: t, ordner: t };
+      }
     }
     this.blockOwner = [this.playerTeam, "neutral", this.aiTeam];
 
@@ -522,8 +561,74 @@ export class Match {
     this.linePlayer = this.buildFrontierGx(this.playerTeam);
     this.lineAi = this.buildFrontierGx(this.aiTeam);
 
-    this.toast(`${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)}`);
+    this.toast(
+      this.pvp
+        ? `Live-PvP · Du steuerst ${teamLabel(this.localTeam)}`
+        : `${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)}`,
+    );
     this.speed = 1;
+  }
+
+  /** Team currently receiving UI / PvP commands */
+  actingTeam(): TeamId {
+    return this.cmdTeam ?? this.localTeam;
+  }
+
+  /** Run a player command as a specific side (host applies guest inputs). */
+  runForTeam<T>(team: TeamId, fn: () => T): T {
+    const prev = this.cmdTeam;
+    this.cmdTeam = team;
+    try {
+      return fn();
+    } finally {
+      this.cmdTeam = prev;
+    }
+  }
+
+  private teamIsPlayerSide(team: TeamId): boolean {
+    return team === this.playerTeam;
+  }
+
+  private getTeamGold(team: TeamId): number {
+    return this.teamIsPlayerSide(team) ? this.gold : this.aiGold;
+  }
+
+  private addTeamGold(team: TeamId, delta: number): void {
+    if (this.teamIsPlayerSide(team)) this.gold += delta;
+    else this.aiGold += delta;
+  }
+
+  private getTeamCur(team: TeamId, key: keyof Currencies): number {
+    if (this.teamIsPlayerSide(team)) return this.currency[key];
+    if (key === "beer") return this.aiBeer;
+    if (key === "merch") return this.aiMerch;
+    return this.aiSecurity;
+  }
+
+  private addTeamCur(team: TeamId, key: keyof Currencies, delta: number): void {
+    if (this.teamIsPlayerSide(team)) {
+      this.currency[key] = Math.max(0, this.currency[key] + delta);
+      return;
+    }
+    if (key === "beer") this.aiBeer = Math.max(0, this.aiBeer + delta);
+    else if (key === "merch") this.aiMerch = Math.max(0, this.aiMerch + delta);
+    else this.aiSecurity = Math.max(0, this.aiSecurity + delta);
+  }
+
+  private spendTeam(
+    team: TeamId,
+    key: keyof Currencies,
+    amount: number,
+    at?: { x: number; y: number },
+    label?: string,
+  ): boolean {
+    if (this.getTeamCur(team, key) < amount) return false;
+    this.addTeamCur(team, key, -amount);
+    if (at) {
+      const tag = label ?? key.toUpperCase();
+      this.floatAt(at.x, at.y, `−${Math.round(amount)} ${tag}`, false);
+    }
+    return true;
   }
 
   private makeFan(
@@ -537,7 +642,7 @@ export class Match {
     const p = crowdHomePos(blockId, seat);
     const level =
       team === this.playerTeam
-        ? this.unitTechLevel(kind)
+        ? this.unitTechLevel(kind, this.playerTeam)
         : team === this.aiTeam
           ? this.aiUnitTechLevel(kind)
           : 1;
@@ -605,7 +710,7 @@ export class Match {
     const gx = this.postGangX(stand);
     const level =
       team === this.playerTeam
-        ? this.unitTechLevel("ordner")
+        ? this.unitTechLevel("ordner", this.playerTeam)
         : team === this.aiTeam
           ? this.aiUnitTechLevel("ordner")
           : 1;
@@ -1267,24 +1372,26 @@ export class Match {
   }
 
   canBuy(kind: FanKind): boolean {
+    const team = this.actingTeam();
     const c = BUY_COST[kind];
-    if (kind === "normalos") return this.currency.security >= c.security;
-    if (kind === "ultras") return this.currency.merch >= c.merch;
-    return this.currency.beer >= c.beer;
+    if (kind === "normalos") return this.getTeamCur(team, "security") >= c.security;
+    if (kind === "ultras") return this.getTeamCur(team, "merch") >= c.merch;
+    return this.getTeamCur(team, "beer") >= c.beer;
   }
 
   /** Name the missing currency for buy toasts */
   private missingBuyToast(kind: FanKind): string {
+    const team = this.actingTeam();
     const c = BUY_COST[kind];
     if (kind === "normalos") {
-      const need = Math.ceil(c.security - this.currency.security);
+      const need = Math.ceil(c.security - this.getTeamCur(team, "security"));
       return `Zu wenig Sicherheit (−${Math.max(1, need)})`;
     }
     if (kind === "ultras") {
-      const need = Math.ceil(c.merch - this.currency.merch);
+      const need = Math.ceil(c.merch - this.getTeamCur(team, "merch"));
       return `Zu wenig Fanartikel (−${Math.max(1, need)})`;
     }
-    const need = Math.ceil(c.beer - this.currency.beer);
+    const need = Math.ceil(c.beer - this.getTeamCur(team, "beer"));
     return `Zu wenig Bier (−${Math.max(1, need)})`;
   }
 
@@ -1308,17 +1415,19 @@ export class Match {
     return f.blockId;
   }
 
-  /** Heim always; captured/contested blocks once you have any own fan there */
+  /** Own home always; captured/contested blocks once you have any own fan there */
   canBuyInBlock(blockId: number): boolean {
-    if (blockId === GAST_BLOCK) return false;
-    if (blockId === HEIM_BLOCK) return true;
-    if (this.blockOwner[blockId] === this.playerTeam) return true;
-    // Any living own fan whose home/seat is in this block unlocks buying
+    const team = this.actingTeam();
+    const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+    const enemy = team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
+    if (blockId === enemy) return false;
+    if (blockId === home) return true;
+    if (this.blockOwner[blockId] === team) return true;
     return this.fans.some(
       (f) =>
         f.hp > 0 &&
         !f.isSteward &&
-        f.team === this.playerTeam &&
+        f.team === team &&
         (f.homeBlockId === blockId ||
           (f.state === "block" && f.blockId === blockId && f.seatIndex != null)),
     );
@@ -1379,9 +1488,11 @@ export class Match {
     return n;
   }
 
-  /** Heim → eroberte Neutrals; always a slot (no hard seat cap). */
+  /** Own home → eroberte Neutrals; always a slot (no hard seat cap). */
   buySlotForPlayer(): { blockId: number; seatIndex: number } | null {
-    const order: number[] = [HEIM_BLOCK];
+    const team = this.actingTeam();
+    const home = team === this.playerTeam ? HEIM_BLOCK : GAST_BLOCK;
+    const order: number[] = [home];
     for (let b = 0; b < BLOCK_COUNT; b++) {
       if (b !== HEIM_BLOCK && b !== GAST_BLOCK) order.push(b);
     }
@@ -1673,9 +1784,10 @@ export class Match {
    * im Block oder am Stand (Bier/Fanshop-Warteschlange).
    */
   attackReadyList(kind: "ultras" | "hooligans"): FanUnit[] {
+    const team = this.actingTeam();
     return this.fans.filter(
       (f) =>
-        f.team === this.playerTeam &&
+        f.team === team &&
         f.kind === kind &&
         f.hp > 0 &&
         (f.state === "block" || f.state === "stand"),
@@ -1690,7 +1802,7 @@ export class Match {
     const ready = this.attackReadyCount("hooligans");
     const n = count === "all" ? ready : Math.max(0, Math.floor(count));
     if (n < 1 || ready < n) return false;
-    return this.currency.beer >= HOOLIGAN_ORDER_BEER * n;
+    return this.getTeamCur(this.actingTeam(), "beer") >= HOOLIGAN_ORDER_BEER * n;
   }
 
   /**
@@ -1698,6 +1810,7 @@ export class Match {
    * @param count 1 = eine Figur; "all" = alle bereiten (Kosten × Anzahl)
    */
   tryHooliganOrder(count: number | "all" = 1): boolean {
+    const team = this.actingTeam();
     const list = this.attackReadyList("hooligans");
     const n = count === "all" ? list.length : Math.max(0, Math.floor(count));
     if (n < 1 || list.length < n) {
@@ -1705,8 +1818,8 @@ export class Match {
       return false;
     }
     const cost = HOOLIGAN_ORDER_BEER * n;
-    const door = doorPos(this.homeBlockOf(list[0]));
-    if (!this.spend("beer", cost, door, "BIER")) {
+    const door = doorPos(this.homeBlockOf(list[0]!));
+    if (!this.spendTeam(team, "beer", cost, door, "BIER")) {
       this.toast(`Kampf braucht ${cost} Bier`);
       return false;
     }
@@ -1725,7 +1838,7 @@ export class Match {
     const ready = this.attackReadyCount("ultras");
     const n = count === "all" ? ready : Math.max(0, Math.floor(count));
     if (n < 1 || ready < n) return false;
-    return this.currency.merch >= PYRO_FIGHT_MERCH * n;
+    return this.getTeamCur(this.actingTeam(), "merch") >= PYRO_FIGHT_MERCH * n;
   }
 
   /**
@@ -1733,6 +1846,7 @@ export class Match {
    * @param count 1 = eine Figur; "all" = alle bereiten (Kosten × Anzahl)
    */
   tryPyroFight(count: number | "all" = 1): boolean {
+    const team = this.actingTeam();
     const list = this.attackReadyList("ultras");
     const n = count === "all" ? list.length : Math.max(0, Math.floor(count));
     if (n < 1 || list.length < n) {
@@ -1740,8 +1854,8 @@ export class Match {
       return false;
     }
     const cost = PYRO_FIGHT_MERCH * n;
-    const door = doorPos(this.homeBlockOf(list[0]));
-    if (!this.spend("merch", cost, door, "FANARTIKEL")) {
+    const door = doorPos(this.homeBlockOf(list[0]!));
+    if (!this.spendTeam(team, "merch", cost, door, "FANARTIKEL")) {
       this.toast(`Pyro-Kampf braucht ${cost} Fanartikel`);
       return false;
     }
@@ -1766,9 +1880,9 @@ export class Match {
   }
 
   private leaveSeatToGang(f: FanUnit, offense: boolean): void {
-    if (f.team === this.playerTeam) {
+    if (f.team === this.localTeam || (this.pvpAuthority && this.pvp)) {
       sfx("send");
-      if (offense) this.markGuided("send");
+      if (offense && f.team === this.localTeam) this.markGuided("send");
     }
     // Keep seatIndex reserved while alive on gang
     f._homeSeat = f.seatIndex;
@@ -1830,6 +1944,7 @@ export class Match {
   }
 
   tryBuyFan(kind: FanKind, blockId: number, seatIndex: number): boolean {
+    const team = this.actingTeam();
     if (!this.canBuyInBlock(blockId)) {
       this.toast("Block noch nicht unter Kontrolle");
       return false;
@@ -1844,13 +1959,13 @@ export class Match {
       return false;
     }
     const c = BUY_COST[kind];
-    const fan = this.makeFan(kind, this.playerTeam, blockId, seat);
+    const fan = this.makeFan(kind, team, blockId, seat);
     const p = { x: fan.x, y: fan.y };
-    if (c.beer > 0) this.spend("beer", c.beer, p, "BIER");
-    if (c.merch > 0) this.spend("merch", c.merch, p, "FANARTIKEL");
-    if (c.security > 0) this.spend("security", c.security, p, "SICHERHEIT");
+    if (c.beer > 0) this.spendTeam(team, "beer", c.beer, p, "BIER");
+    if (c.merch > 0) this.spendTeam(team, "merch", c.merch, p, "FANARTIKEL");
+    if (c.security > 0) this.spendTeam(team, "security", c.security, p, "SICHERHEIT");
     if (c.gold > 0) {
-      this.gold -= c.gold;
+      this.addTeamGold(team, -c.gold);
       this.floatAt(p.x, p.y, `−${c.gold}€`, false);
     }
     this.fans.push(fan);
@@ -1862,14 +1977,21 @@ export class Match {
   }
 
   /**
-   * Heim-plots always; further plots only once the player front line
+   * Own-side plots always; further plots only once the front line
    * has reached their X (plotGangX) — never by “leftish block” alone.
    */
   inPlayerTerritory(blockId: number, index = 0): boolean {
-    if (blockId === GAST_BLOCK) return false;
-    if (blockId === HEIM_BLOCK) return true;
+    const team = this.actingTeam();
+    if (team === this.playerTeam) {
+      if (blockId === GAST_BLOCK) return false;
+      if (blockId === HEIM_BLOCK) return true;
+      const gx = plotGangX(blockId, index);
+      return gx <= this.linePlayer + 0.04;
+    }
+    if (blockId === HEIM_BLOCK) return false;
+    if (blockId === GAST_BLOCK) return true;
     const gx = plotGangX(blockId, index);
-    return gx <= this.linePlayer + 0.04;
+    return gx >= this.lineAi - 0.04;
   }
 
   /**
@@ -1884,6 +2006,7 @@ export class Match {
   }
 
   tryBuild(kind: BuildingKind): boolean {
+    const team = this.actingTeam();
     if (!this.selectedSlot && !this.buildMenu) {
       this.toast("Slot wählen");
       return false;
@@ -1893,8 +2016,9 @@ export class Match {
       this.toast("Frontlinie noch nicht hier");
       return false;
     }
-    if (sel.blockId === GAST_BLOCK) {
-      this.toast("Gäste-Slots gesperrt");
+    const enemyHome = team === this.playerTeam ? GAST_BLOCK : HEIM_BLOCK;
+    if (sel.blockId === enemyHome) {
+      this.toast("Gegner-Slots gesperrt");
       return false;
     }
     const s = this.slots.find(
@@ -1905,7 +2029,7 @@ export class Match {
       return false;
     }
     // Ordnerposts must be destroyed in combat — never soft-claimed
-    if (s.building === "ordner" && s.owner !== this.playerTeam) {
+    if (s.building === "ordner" && s.owner !== team) {
       this.toast("Ordnerposten muss bekämpft werden");
       return false;
     }
@@ -1913,11 +2037,11 @@ export class Match {
       s.greyNeutral || s.owner === "neutral"
         ? Math.floor(BUILD_COST[kind] * 0.7)
         : BUILD_COST[kind];
-    if (this.gold < cost) {
+    if (this.getTeamGold(team) < cost) {
       this.toast(`${cost}€ nötig`);
       return false;
     }
-    this.gold -= cost;
+    this.addTeamGold(team, -cost);
     if (!s.building) s.building = kind;
     else if (s.greyNeutral || s.owner === "neutral") {
       /* keep existing type on claim unless empty */
@@ -1926,7 +2050,7 @@ export class Match {
     }
     if (!s.building) s.building = kind;
     s.greyNeutral = false;
-    s.owner = this.playerTeam;
+    s.owner = team;
     if (!s.level) s.level = 1;
     if (s.building === "bier" && s.beer < 20) s.beer = 40;
     if (s.building === "fanshop" && s.merch < 20) s.merch = 40;
@@ -1947,11 +2071,12 @@ export class Match {
 
   upgradeCost(s: BuildSlot): number | null {
     if (!s.building || s.level >= UPGRADE_MAX) return null;
-    if (s.owner !== this.playerTeam || s.greyNeutral) return null;
+    if (s.owner !== this.actingTeam() || s.greyNeutral) return null;
     return UPGRADE_COST[s.level + 1] ?? null;
   }
 
   tryUpgrade(): boolean {
+    const team = this.actingTeam();
     const sel = this.buildMenu ?? this.selectedSlot;
     if (!sel) {
       this.toast("Bude wählen");
@@ -1966,11 +2091,11 @@ export class Match {
       this.toast("Max. Stufe");
       return false;
     }
-    if (this.gold < cost) {
+    if (this.getTeamGold(team) < cost) {
       this.toast(`${cost}€ nötig`);
       return false;
     }
-    this.gold -= cost;
+    this.addTeamGold(team, -cost);
     s.level++;
     if (s.building === "ordner") {
       const prev = s.structHp;
@@ -1983,10 +2108,10 @@ export class Match {
     return true;
   }
 
-  /** Lowest-level living player unit of this kind (or Ordner if kind omitted via steward flag) */
+  /** Lowest-level living unit of this kind for a side */
   lowestLevelUnit(
     kind: FanKind | "ordner",
-    team: TeamId = this.playerTeam,
+    team: TeamId = this.actingTeam(),
   ): FanUnit | null {
     let best: FanUnit | null = null;
     for (const f of this.fans) {
@@ -2002,8 +2127,14 @@ export class Match {
   }
 
   /** Chrome / Sidebar Personen-Stufe (Tech), nicht Min der lebenden Units */
-  unitTechLevel(kind: FanKind | "ordner"): number {
-    return Math.max(1, Math.min(UPGRADE_MAX, this.unitTech[kind] || 1));
+  unitTechLevel(
+    kind: FanKind | "ordner",
+    team: TeamId = this.actingTeam(),
+  ): number {
+    if (team === this.playerTeam) {
+      return Math.max(1, Math.min(UPGRADE_MAX, this.unitTech[kind] || 1));
+    }
+    return Math.max(1, Math.min(UPGRADE_MAX, this.aiTech[kind] || 1));
   }
 
   /** AI Tech-Stufe pro Kind (Kickoff + Upgrades). */
@@ -2035,38 +2166,22 @@ export class Match {
   /** Unit tech next level requires matching building ≥ that level. */
   unitUpgradeBuildingCap(
     kind: FanKind | "ordner",
-    team: TeamId = this.playerTeam,
+    team: TeamId = this.actingTeam(),
   ): number {
     return this.maxOwnedBuildingLevel(buildingForUnitKind(kind), team);
   }
 
-  minUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
-    if (team === this.playerTeam) return this.unitTechLevel(kind);
-    const u = this.lowestLevelUnit(kind, team);
-    return u ? u.level || 1 : 1;
+  minUnitLevel(kind: FanKind | "ordner", team: TeamId = this.actingTeam()): number {
+    return this.unitTechLevel(kind, team);
   }
 
-  maxUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
-    if (team === this.playerTeam) return this.unitTechLevel(kind);
-    let max = 0;
-    for (const f of this.fans) {
-      if (f.hp <= 0 || f.team !== team) continue;
-      if (kind === "ordner") {
-        if (!f.isSteward) continue;
-      } else if (f.isSteward || f.kind !== kind) continue;
-      max = Math.max(max, f.level || 1);
-    }
-    return max;
+  maxUnitLevel(kind: FanKind | "ordner", team: TeamId = this.actingTeam()): number {
+    return this.unitTechLevel(kind, team);
   }
 
-  /** Sidebar label: "Lv3" — player uses Tech-Stufe */
-  unitLevelLabel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): string {
-    if (team === this.playerTeam) return `Lv${this.unitTechLevel(kind)}`;
-    const lo = this.minUnitLevel(kind, team);
-    const hi = this.maxUnitLevel(kind, team);
-    if (hi <= 0) return "Lv1";
-    if (lo === hi) return `Lv${lo}`;
-    return `Lv${lo}–${hi}`;
+  /** Sidebar label: "Lv3" — tech level for that side */
+  unitLevelLabel(kind: FanKind | "ordner", team: TeamId = this.actingTeam()): string {
+    return `Lv${this.unitTechLevel(kind, team)}`;
   }
 
   unitUpgradeCostFor(kind: FanKind | "ordner"): number | null {
@@ -2074,21 +2189,23 @@ export class Match {
   }
 
   canUpgradeUnit(kind: FanKind | "ordner"): boolean {
+    const team = this.actingTeam();
     const cost = this.unitUpgradeCostFor(kind);
-    if (cost == null || this.gold < cost) return false;
-    if (this.lowestLevelUnit(kind, this.playerTeam) == null) return false;
-    const tech = this.unitTechLevel(kind);
+    if (cost == null || this.getTeamGold(team) < cost) return false;
+    if (this.lowestLevelUnit(kind, team) == null) return false;
+    const tech = this.unitTechLevel(kind, team);
     const next = tech + 1;
-    return this.unitUpgradeBuildingCap(kind, this.playerTeam) >= next;
+    return this.unitUpgradeBuildingCap(kind, team) >= next;
   }
 
   tryUpgradeUnit(kind: FanKind | "ordner"): boolean {
-    const living = this.lowestLevelUnit(kind, this.playerTeam);
+    const team = this.actingTeam();
+    const living = this.lowestLevelUnit(kind, team);
     if (!living) {
       this.toast(kind === "ordner" ? "Kein Ordner" : "Keine Einheit");
       return false;
     }
-    const tech = this.unitTechLevel(kind);
+    const tech = this.unitTechLevel(kind, team);
     const cost = unitUpgradeCost(tech);
     if (cost == null) {
       this.toast("Max. Stufe");
@@ -2096,20 +2213,21 @@ export class Match {
     }
     const next = tech + 1;
     const bKind = buildingForUnitKind(kind);
-    const bLv = this.unitUpgradeBuildingCap(kind, this.playerTeam);
+    const bLv = this.unitUpgradeBuildingCap(kind, team);
     if (bLv < next) {
       this.toast(`${BUILD_LABEL[bKind]} erst Lv${next}`);
       return false;
     }
-    if (this.gold < cost) {
+    if (this.getTeamGold(team) < cost) {
       this.toast(`${cost}€ nötig`);
       return false;
     }
-    this.gold -= cost;
-    this.unitTech[kind] = next;
+    this.addTeamGold(team, -cost);
+    if (this.teamIsPlayerSide(team)) this.unitTech[kind] = next;
+    else this.aiTech[kind] = next;
     let raised = 0;
     for (const f of this.fans) {
-      if (f.hp <= 0 || f.team !== this.playerTeam) continue;
+      if (f.hp <= 0 || f.team !== team) continue;
       if (kind === "ordner") {
         if (!f.isSteward) continue;
       } else if (f.isSteward || f.kind !== kind) continue;
@@ -2132,6 +2250,15 @@ export class Match {
 
   update(dt: number): void {
     syncTribuneLayout(this.width, this.height);
+    // Guest PvP: board state comes from host snapshots
+    if (this.pvp && !this.pvpAuthority) {
+      this.tickFloats(dt);
+      this.tickToasts(dt);
+      this.tickConfetti(dt);
+      this.tickMoodFx(dt);
+      if (this.scorePulse > 0) this.scorePulse = Math.max(0, this.scorePulse - dt * 0.28);
+      return;
+    }
     if (this.result) {
       this.tickFloats(dt);
       this.tickToasts(dt);
@@ -2142,13 +2269,22 @@ export class Match {
       return;
     }
     // Halbzeit-Pause: sim frozen until player picks a 2nd-half boost
+    // PvP: auto-grant a fair gold bump to both sides (no dual-UI freeze)
     if (this.halfTimePending) {
-      this.tickFloats(dt);
-      this.tickToasts(dt);
-      this.tickConfetti(dt);
-      this.tickMoodFx(dt);
-      if (this.choreo) this.tickChoreo(dt);
-      return;
+      if (this.pvp) {
+        this.gold += 30;
+        this.aiGold += 30;
+        this.halfTimePending = false;
+        this.halfBoost = "gold";
+        this.toast("Halbzeit — beide +30€", 3);
+      } else {
+        this.tickFloats(dt);
+        this.tickToasts(dt);
+        this.tickConfetti(dt);
+        this.tickMoodFx(dt);
+        if (this.choreo) this.tickChoreo(dt);
+        return;
+      }
     }
     if (this.speed === 0) {
       this.tickFloats(dt);
@@ -2237,7 +2373,7 @@ export class Match {
     this.tickMatch(step);
     this.tickGoalParty(step);
     this.tickChoreo(step);
-    this.tickAi(step);
+    if (!this.pvp) this.tickAi(step);
     this.tickFloats(step);
     this.tickToasts(step);
     this.tickTips(step);
@@ -2425,9 +2561,15 @@ export class Match {
     const nrm = this.countInBlock(this.playerTeam, HEIM_BLOCK, "normalos");
     this.gold += (1.0 + nrm * 0.2) * dt;
     const aiN = this.countInBlock(this.aiTeam, GAST_BLOCK, "normalos");
-    const d = this.cfg.settings.difficulty;
-    const aiGoldMul = d === "hard" ? 1.4 : d === "easy" ? 0.95 : 1.25;
-    this.aiGold += (1.15 + aiN * 0.24) * aiGoldMul * dt;
+    const aiGoldMul = this.pvp
+      ? 1
+      : this.cfg.settings.difficulty === "hard"
+        ? 1.4
+        : this.cfg.settings.difficulty === "easy"
+          ? 0.95
+          : 1.25;
+    const aiBase = this.pvp ? 1.0 + aiN * 0.2 : 1.15 + aiN * 0.24;
+    this.aiGold += aiBase * aiGoldMul * dt;
 
     // Steward upkeep €/s per person
     const stewards = this.fans.filter(
@@ -2524,17 +2666,22 @@ export class Match {
   }
 
   canHireSteward(s: BuildSlot): boolean {
+    const team = this.actingTeam();
     if (s.building !== "ordner" || s.greyNeutral) return false;
-    if (s.owner !== this.playerTeam) return false;
-    return this.stewardCountAt(s) < STEWARD_CAP && this.gold >= STEWARD_HIRE_GOLD;
+    if (s.owner !== team) return false;
+    return (
+      this.stewardCountAt(s) < STEWARD_CAP &&
+      this.getTeamGold(team) >= STEWARD_HIRE_GOLD
+    );
   }
 
   /** Hire at first owned Ordnerposten (sidebar quick action). */
   tryHireStewardQuick(): boolean {
+    const team = this.actingTeam();
     const s = this.slots.find(
       (x) =>
         x.building === "ordner" &&
-        x.owner === this.playerTeam &&
+        x.owner === team &&
         !x.greyNeutral &&
         this.stewardCountAt(x) < STEWARD_CAP,
     );
@@ -2549,6 +2696,7 @@ export class Match {
 
   /** Player: click Ordnerposten → Ordner für Gold anheuern */
   tryHireSteward(): boolean {
+    const team = this.actingTeam();
     const sel = this.buildMenu ?? this.selectedSlot;
     if (!sel) {
       this.toast("Ordnerposten wählen");
@@ -2561,7 +2709,7 @@ export class Match {
       this.toast("Kein Ordnerposten");
       return false;
     }
-    if (s.owner !== this.playerTeam || s.greyNeutral) {
+    if (s.owner !== team || s.greyNeutral) {
       this.toast("Nicht dein Posten");
       return false;
     }
@@ -2569,12 +2717,12 @@ export class Match {
       this.toast(`Max. ${STEWARD_CAP} Ordner`);
       return false;
     }
-    if (this.gold < STEWARD_HIRE_GOLD) {
+    if (this.getTeamGold(team) < STEWARD_HIRE_GOLD) {
       this.toast(`${STEWARD_HIRE_GOLD}€ nötig`);
       return false;
     }
-    this.gold -= STEWARD_HIRE_GOLD;
-    const st = this.makeSteward(this.playerTeam, s);
+    this.addTeamGold(team, -STEWARD_HIRE_GOLD);
+    const st = this.makeSteward(team, s);
     this.fans.push(st);
     this.floatAtSlot(s, `−${STEWARD_HIRE_GOLD}€ Ordner`, true);
     this.toast("Ordner angeheuert");
@@ -3378,8 +3526,9 @@ export class Match {
     if (stand?.building === "bier" && stand.beer >= 1) {
       stand.beer -= 1;
       f.thirst = 5;
-      // Highscore: eigene Figuren zählen jedes getrunkene Bier (auch gratis fremd)
+      // Highscore / PvP-KPI: getrunkene Biere pro Seite
       if (f.team === this.playerTeam) this.beersDrunkPlayer += 1;
+      else if (f.team === this.aiTeam) this.beersDrunkAi += 1;
       if (f.team === "neutral") {
         f.satisfiedUntil = 1e9;
         f.shopUntil = this.realElapsed + 20 + Math.random() * 10;
@@ -5080,8 +5229,9 @@ export class Match {
 
   /** Count player-owned production buildings (for badges) */
   countPlayerBuildings(): number {
+    const team = this.pvp ? this.localTeam : this.playerTeam;
     return this.slots.filter(
-      (s) => s.owner === this.playerTeam && !!s.building && !s.greyNeutral,
+      (s) => s.owner === team && !!s.building && !s.greyNeutral,
     ).length;
   }
 
