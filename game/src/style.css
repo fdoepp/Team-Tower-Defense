@@ -110,13 +110,23 @@ button {
 }
 
 .screen.menu.menu-home {
-  justify-content: center;
-  padding-top: max(clamp(16px, 3.5vh, 28px), env(safe-area-inset-top, 0px));
+  /* Sit content under the notch band; avoid a large empty strip below actions */
+  justify-content: flex-start;
+  padding-top: max(clamp(18px, 4vh, 36px), env(safe-area-inset-top, 0px));
   padding-right: max(20px, env(safe-area-inset-right, 0px));
   padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
   padding-left: max(20px, env(safe-area-inset-left, 0px));
-  gap: 14px;
+  gap: 12px;
   overflow-y: auto;
+}
+
+.screen.menu.menu-home .menu-hero {
+  margin-top: min(4vh, 28px);
+}
+
+.screen.menu.menu-home .fs-hint {
+  margin-top: 4px;
+  margin-bottom: 0;
 }
 
 .screen.menu.menu-home::before,
