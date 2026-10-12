@@ -133,12 +133,14 @@ button {
 .hs-team {
   display: inline-block;
   margin-left: 4px;
-  padding: 1px 6px;
+  padding: 1px 7px;
   border-radius: 6px;
   font-size: 0.78rem;
   font-weight: 700;
   color: #fff;
   background: #64748b;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 .hs-team.ksc { background: var(--ksc, #0051a2); }
 .hs-team.vfb { background: var(--vfb, #e30613); }
