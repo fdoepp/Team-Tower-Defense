@@ -12,15 +12,21 @@ import {
 import { drawMatch, hitSlot } from "./game/render";
 import { syncTribuneLayout } from "./game/layout";
 import {
+  SCENE_ASSETS,
   UI_ICONS,
   applyCssIconUrls,
   preloadIcons,
+  slotEmptyIconPath,
   standIconPath,
   teamColor,
+  tribuneIconPath,
   unitIconPath,
 } from "./game/assets";
 import {
+  BLOCK_STORM_COUNT,
+  BLOCK_STORM_SEC,
   BUILD_COST,
+  BUILD_LABEL,
   BUY_COST,
   FAN_STATS,
   HOOLIGAN_ORDER_BEER,
@@ -1458,163 +1464,340 @@ type TutStep = {
   diagram: string;
 };
 
-const TUTORIAL_STEPS: TutStep[] = [
-  {
-    id: "welcome",
-    title: "Willkommen im Stadion",
-    lead: "Kurz geführt — dann kickst du selbst.",
-    body: `<ul class="tut-points">
-      <li>Du spielst die <b>Heimkurve</b> links.</li>
-      <li>Baue Stände, hole Fans, sende Ultras/Hools in den <b>Gang</b>.</li>
-      <li>Schiebe Momentum bis zum Tor — oder stürme den Gästeblock.</li>
-    </ul>`,
-    diagram: `
-      <div class="tut-diagram tut-stadion" aria-hidden="true">
-        <div class="tut-block heim">Heim</div>
+function tutImg(src: string, cls = "tut-ico"): string {
+  return `<img class="${cls}" src="${src}" alt="" data-tut-tint="1">`;
+}
+
+function tutCur(src: string, label: string): string {
+  return `<span class="tut-cur">${tutImg(src, "tut-cur-ico")}<span>${label}</span></span>`;
+}
+
+function tutRailDemo(active: "build" | "person" | "attack" | null = null): string {
+  const items: { id: "build" | "person" | "attack"; src: string; label: string }[] = [
+    { id: "build", src: UI_ICONS.btnIconBierAmber, label: "Gebäude" },
+    { id: "person", src: UI_ICONS.btnIconUltraBlue, label: "Personen" },
+    { id: "attack", src: UI_ICONS.btnIconAngriffRed, label: "Angriff" },
+  ];
+  return `<div class="tut-rail-demo" aria-hidden="true">
+    ${items
+      .map(
+        (it) => `<div class="tut-rail-btn ${active === it.id ? "on" : ""}">
+        ${tutImg(it.src, "tut-rail-ico")}
+        <span>${it.label}</span>
+      </div>`,
+      )
+      .join("")}
+  </div>`;
+}
+
+function tutUnitCard(
+  kind: FanKind | "ordner",
+  opts: { title: string; cost: string; stats: string; role: string },
+): string {
+  const src = unitIconPath(kind, "blue", 1);
+  return `<article class="tut-unit-card">
+    ${tutImg(src, "tut-unit-ico")}
+    <div class="tut-unit-meta">
+      <b>${opts.title}</b>
+      <p class="tut-unit-cost">${opts.cost}</p>
+      <p class="tut-unit-stats">${opts.stats}</p>
+      <p class="tut-unit-role">${opts.role}</p>
+    </div>
+  </article>`;
+}
+
+function tutBuildCard(
+  kind: BuildingKind,
+  opts: { title: string; cost: string; makes: string; unlocks: string },
+): string {
+  const src = standIconPath(kind, "blue", 1);
+  return `<article class="tut-build-card">
+    ${tutImg(src, "tut-build-ico")}
+    <div class="tut-unit-meta">
+      <b>${opts.title}</b>
+      <p class="tut-unit-cost">${opts.cost}</p>
+      <p class="tut-unit-stats">${opts.makes}</p>
+      <p class="tut-unit-role">${opts.unlocks}</p>
+    </div>
+  </article>`;
+}
+
+function tutorialSteps(): TutStep[] {
+  const cBlue = "blue" as const;
+  const slotSrc = slotEmptyIconPath("blue");
+  const tribHeim = tribuneIconPath(0);
+  const tribMid = tribuneIconPath(1);
+  const tribGast = tribuneIconPath(2);
+  const beerCur = UI_ICONS.currencyBier;
+  const merchCur = UI_ICONS.currencyFanartikel;
+  const secCur = UI_ICONS.currencySicherheit;
+  const goldCur = UI_ICONS.currencyGold;
+  const stormIco = UI_ICONS.iconAngriffBlocksturm;
+  const pyroIco = UI_ICONS.iconAngriffPyro;
+  const fistIco = UI_ICONS.iconAngriffFaust;
+  const upPerson = UI_ICONS.btnIconUpgradePerson;
+  const upBuild = UI_ICONS.btnIconUpgradeBuilding;
+  const buyGreen = UI_ICONS.btnKaufenGreen;
+  const sendGreen = UI_ICONS.btnSendenGreen;
+
+  return [
+    {
+      id: "wins",
+      title: "Zwei Wege zum Sieg",
+      lead: "Entweder mehr Tore — oder den Gästeblock stürmen.",
+      body: `<div class="tut-win-grid">
+        <article class="tut-win-card">
+          <header>${tutImg(UI_ICONS.moodPlus, "tut-win-ico")}<b>1 · Tor-Sieg</b></header>
+          <ul class="tut-points">
+            <li>Fans sitzen in deiner Kurve und pushen <b>Stimmung / Momentum</b>.</li>
+            <li>Der Balken wandert zur Gegnerseite → <b>Tor</b>.</li>
+            <li>Nach 90′ (ggf. Verlängerung/Elfmeter) gewinnt, wer mehr Tore hat.</li>
+          </ul>
+        </article>
+        <article class="tut-win-card storm">
+          <header>${tutImg(stormIco, "tut-win-ico")}<b>2 · Blocksturm</b></header>
+          <ul class="tut-points">
+            <li>Sende Ultras/Hools in den Gang und in den <b>Gästeblock</b>.</li>
+            <li>Mindestens <b>${BLOCK_STORM_COUNT} Angreifer</b> im Block halten.</li>
+            <li>Banner ≈ <b>${BLOCK_STORM_SEC} s</b> halten → sofortiger Sieg (auch vor 90′).</li>
+          </ul>
+        </article>
+      </div>
+      <p class="tut-foot">Du spielst immer die <b>Heimkurve links</b>. Beides baut auf denselben Tools: Gebäude → Personen → Angriff.</p>`,
+      diagram: `<div class="tut-diagram tut-board-wide" aria-hidden="true">
+        ${tutImg(tribHeim, "tut-trib")}
         <div class="tut-gang"><span>Gang</span></div>
-        <div class="tut-block gast">Gast</div>
+        ${tutImg(tribMid, "tut-trib mid")}
+        <div class="tut-gang"><span>→</span></div>
+        ${tutImg(tribGast, "tut-trib")}
       </div>`,
-  },
-  {
-    id: "build",
-    title: "Wie baut man?",
-    lead: "Gebäude-Rail → Bauplatz → Stand wählen.",
-    body: `<ul class="tut-points">
-      <li><b>Bier</b> produziert Bier (für Hools).</li>
-      <li><b>Fanshop</b> produziert Fanartikel (für Ultras).</li>
-      <li><b>Ordner</b> gibt Sicherheit & Posten.</li>
-      <li>Nur Plots hinter deiner Frontlinie.</li>
-    </ul>`,
-    diagram: `
-      <div class="tut-diagram tut-build" aria-hidden="true">
-        <div class="tut-chip">Gebäude</div>
-        <div class="tut-arrow" aria-hidden="true"></div>
-        <div class="tut-chip">Bauplatz</div>
-        <div class="tut-arrow" aria-hidden="true"></div>
-        <div class="tut-stands"><span>Bier</span><span>Shop</span><span>Ordner</span></div>
+    },
+    {
+      id: "board",
+      title: "Gesamtsicht",
+      lead: "Drei Blöcke, Gang dazwischen, Bauplätze vor den Kurven.",
+      body: `<ul class="tut-points">
+        <li>${tutImg(tribHeim, "tut-inline")} <b>Heim (blau)</b> — deine Kurve, Start für Fans & Stände.</li>
+        <li>${tutImg(tribMid, "tut-inline")} <b>Neutral (grau)</b> — Mitte mit Ordnerposten; kämpfen & erobern.</li>
+        <li>${tutImg(tribGast, "tut-inline")} <b>Gäste (rot)</b> — Gegnerblock; Ziel für Blocksturm.</li>
+        <li>${tutImg(slotSrc, "tut-inline")} <b>Bauplatz</b> — freier Plot hinter deiner Frontlinie tippen.</li>
+      </ul>
+      <p class="tut-foot">Unten rechts die drei Menü-Buttons — alle Erklärungen zeigen genau diese Icons.</p>`,
+      diagram: `<div class="tut-diagram tut-board-stack" aria-hidden="true">
+        <div class="tut-board-row">
+          ${tutImg(tribHeim, "tut-trib")}
+          ${tutImg(SCENE_ASSETS.stadiumFloodlightDerby, "tut-pitch-thumb")}
+          ${tutImg(tribGast, "tut-trib")}
+        </div>
+        <div class="tut-slot-row">
+          ${tutImg(slotSrc, "tut-slot")}
+          ${tutImg(slotEmptyIconPath("grey"), "tut-slot")}
+          ${tutImg(slotEmptyIconPath("red"), "tut-slot")}
+          <span class="tut-slot-cap">Bauplätze</span>
+        </div>
+        ${tutRailDemo(null)}
       </div>`,
-  },
-  {
-    id: "buildUpgrade",
-    title: "Gebäude verbessern",
-    lead: "Stand tippen → Upgrade mit Gold (bis Lv5).",
-    body: `<ul class="tut-points">
-      <li>Tippe einen <b>eigenen Stand</b> an — die Gebäude-Rail zeigt Upgrade.</li>
-      <li>Jedes Level kostet mehr Gold und steigert die <b>Produktion</b>.</li>
-      <li>Maximal <b>Lv5</b> — höhere Stufen schalten auch stärkere Personen frei.</li>
-      <li>Beispiel: Bierstand Lv3 → Hools können auf Lv3.</li>
-    </ul>`,
-    diagram: `
-      <div class="tut-diagram tut-upgrade" aria-hidden="true">
-        <div class="tut-chip">Stand</div>
-        <div class="tut-arrow" aria-hidden="true"></div>
+    },
+    {
+      id: "build",
+      title: "Gebäude bauen",
+      lead: "Button Gebäude → Bauplatz tippen → Stand wählen.",
+      body: `${tutRailDemo("build")}
+      <div class="tut-flow" aria-hidden="true">
+        <div class="tut-flow-step">${tutImg(UI_ICONS.btnIconBierAmber)}<span>Gebäude</span></div>
+        <div class="tut-arrow"></div>
+        <div class="tut-flow-step">${tutImg(slotSrc)}<span>Bauplatz</span></div>
+        <div class="tut-arrow"></div>
+        <div class="tut-flow-step">${tutImg(UI_ICONS.btnBauenAmber)}<span>Bauen</span></div>
+      </div>
+      <div class="tut-card-grid">
+        ${tutBuildCard("bier", {
+          title: "Bierstand",
+          cost: `${tutCur(goldCur, `${BUILD_COST.bier}€`)}`,
+          makes: `Produziert ${tutCur(beerCur, "Bier")} — Treibstoff für Hooligans.`,
+          unlocks: `Schaltet Hooligan-Upgrades frei (Gebäude-Lv = Max-Personen-Lv).`,
+        })}
+        ${tutBuildCard("fanshop", {
+          title: "Fanshop",
+          cost: `${tutCur(goldCur, `${BUILD_COST.fanshop}€`)}`,
+          makes: `Produziert ${tutCur(merchCur, "Fanartikel")} — für Ultras / Pyro.`,
+          unlocks: `Schaltet Ultra-Upgrades frei.`,
+        })}
+        ${tutBuildCard("ordner", {
+          title: "Ordnerposten",
+          cost: `${tutCur(goldCur, `${BUILD_COST.ordner}€`)}`,
+          makes: `Produziert ${tutCur(secCur, "Sicherheit")} — Fans kaufen; Ordner heilen.`,
+          unlocks: `Schaltet Fan- & Ordner-Upgrades frei. Posten hat eigene HP.`,
+        })}
+      </div>
+      <p class="tut-foot">Nur Plots <b>hinter deiner Frontlinie</b> (Fahnen-Grenze). Graue Neutrals kannst du später übernehmen.</p>`,
+      diagram: "",
+    },
+    {
+      id: "buildUpgrade",
+      title: "Gebäude verbessern",
+      lead: "Eigenen Stand tippen → Upgrade-Button (Lila).",
+      body: `<div class="tut-flow" aria-hidden="true">
+        ${tutImg(standIconPath("bier", cBlue, 1), "tut-build-ico")}
+        <div class="tut-arrow"></div>
+        ${tutImg(upBuild, "tut-btn-ico")}
+        <div class="tut-arrow"></div>
+        ${tutImg(standIconPath("bier", cBlue, 3), "tut-build-ico")}
         <div class="tut-lvl-row">
-          <span class="tut-lvl">Lv1</span>
-          <span class="tut-lvl">Lv2</span>
-          <span class="tut-lvl on">Lv3</span>
-          <span class="tut-lvl">…</span>
-          <span class="tut-lvl">Lv5</span>
+          <span class="tut-lvl">Lv1</span><span class="tut-lvl">Lv2</span><span class="tut-lvl on">Lv3</span><span class="tut-lvl">…</span><span class="tut-lvl">Lv5</span>
         </div>
-      </div>`,
-  },
-  {
-    id: "fans",
-    title: "Personen holen",
-    lead: "Personen-Rail: Fans, Ultras, Hooligans.",
-    body: `<ul class="tut-points">
-      <li><b>Fans</b> pushen Momentum und brauchen Sicherheit.</li>
-      <li><b>Ultras</b> senden / Pyro (kosten Fanartikel).</li>
-      <li><b>Hooligans</b> Nahkampf (kosten Bier).</li>
-      <li>Mehr Ultras → stärkere <b>Choreo</b> (ab 5 / 10 / 20 / 30).</li>
-    </ul>`,
-    diagram: `
-      <div class="tut-diagram tut-fans" aria-hidden="true">
-        <div class="tut-fan f">Fan</div>
-        <div class="tut-fan u">Ultra</div>
-        <div class="tut-fan h">Hool</div>
-      </div>`,
-  },
-  {
-    id: "fanUpgrade",
-    title: "Personen verbessern",
-    lead: "Personen-Rail → Upgrade — braucht passendes Gebäude-Level.",
-    body: `<ul class="tut-points">
-      <li>Neben Kaufen: <b>Upgrade</b> hebt die Tech-Stufe (Lv1–Lv5).</li>
-      <li>Kostet Gold; neue Einheiten starten auf dieser Stufe.</li>
-      <li>Gebäude muss mithalten: z. B. Ultra Lv4 nur mit <b>Fanshop Lv4+</b>.</li>
-      <li>Höheres Level = mehr Kampfkraft und bessere Ausbeute.</li>
-    </ul>`,
-    diagram: `
-      <div class="tut-diagram tut-upgrade tut-fan-up" aria-hidden="true">
-        <div class="tut-stands"><span>Bier</span><span>Shop</span><span>Ordner</span></div>
-        <div class="tut-arrow" aria-hidden="true"></div>
-        <div class="tut-fans">
-          <div class="tut-fan h">Hool</div>
-          <div class="tut-fan u">Ultra</div>
-          <div class="tut-fan f">Fan</div>
+      </div>
+      <ul class="tut-points">
+        <li>Tippe einen <b>eigenen Stand</b> an — die Gebäude-Rail zeigt Upgrade.</li>
+        <li>Kostet ${tutCur(goldCur, "Gold")}; höhere Lv = mehr Produktion.</li>
+        <li>Max <b>Lv${UPGRADE_MAX}</b>. Personen dürfen nur so hoch wie das passende Gebäude.</li>
+        <li>Beispiel: ${BUILD_LABEL.bier} Lv3 → Hooligans bis Lv3.</li>
+      </ul>`,
+      diagram: "",
+    },
+    {
+      id: "fans",
+      title: "Personen & Stats",
+      lead: "Button Personen — jede Figur zahlt auf etwas anderes ein.",
+      body: `${tutRailDemo("person")}
+      <div class="tut-card-grid tut-units">
+        ${tutUnitCard("normalos", {
+          title: "Fan",
+          cost: `Kauf: ${tutCur(secCur, `${BUY_COST.normalos.security}`)} · Button ${tutImg(buyGreen, "tut-mini-btn")}`,
+          stats: `Kaum Angriff · hohe Stimmung im Block · geht zum Fanshop (nicht Bier).`,
+          role: `Treibt <b>Momentum / Tore</b>. Bleibt meist sitzen — dein Tor-Motor.`,
+        })}
+        ${tutUnitCard("ultras", {
+          title: "Ultra",
+          cost: `Kauf: ${tutCur(merchCur, `${BUY_COST.ultras.merch}`)} · Senden: ${tutCur(merchCur, `${PYRO_FIGHT_MERCH}`)}`,
+          stats: `Mittlere HP · Pyro-Fernkampf · mäßiger Jubel · schnell im Gang.`,
+          role: `Angriff & Blocksturm. Mehr Ultras → stärkere <b>Choreo</b> (5/10/20/30).`,
+        })}
+        ${tutUnitCard("hooligans", {
+          title: "Hooligan",
+          cost: `Kauf: ${tutCur(beerCur, `${BUY_COST.hooligans.beer}`)} · Senden: ${tutCur(beerCur, `${HOOLIGAN_ORDER_BEER}`)}`,
+          stats: `Hohe HP & Nahkampf · trinkt viel Bier · wenig Stimmung im Block.`,
+          role: `Tank / Faust-Kampf im Gang. Stark für Blocksturm-Druck.`,
+        })}
+        ${tutUnitCard("ordner", {
+          title: "Ordner",
+          cost: `Anheuern: ${tutCur(goldCur, `${STEWARD_HIRE_GOLD}€`)} am Posten`,
+          stats: `Kein Kauf über Personen-Rail · heilt Verbündete · stark vs Ultras · patrouilliert.`,
+          role: `Verteidigung um den Posten (Radius wächst mit Lv). Kostet laufend etwas Gold.`,
+        })}
+      </div>
+      <p class="tut-foot">Grob: <b>Fans = Tore</b>, <b>Ultras/Hools = Gang & Sturm</b>, <b>Ordner = halten</b>.</p>`,
+      diagram: "",
+    },
+    {
+      id: "fanUpgrade",
+      title: "Personen verbessern",
+      lead: "Neben Kaufen: Upgrade — Gebäude muss mithalten.",
+      body: `<div class="tut-flow tut-fan-up-flow" aria-hidden="true">
+        <div class="tut-pair">${tutImg(standIconPath("ordner", cBlue, 2))}${tutImg(unitIconPath("normalos", cBlue, 2))}<span>Fan ← Ordner</span></div>
+        <div class="tut-pair">${tutImg(standIconPath("fanshop", cBlue, 2))}${tutImg(unitIconPath("ultras", cBlue, 2))}<span>Ultra ← Shop</span></div>
+        <div class="tut-pair">${tutImg(standIconPath("bier", cBlue, 2))}${tutImg(unitIconPath("hooligans", cBlue, 2))}<span>Hool ← Bier</span></div>
+        ${tutImg(upPerson, "tut-btn-ico")}
+      </div>
+      <ul class="tut-points">
+        <li>Personen-Rail → ${tutImg(upPerson, "tut-mini-btn")} <b>Upgrade</b> (Tech Lv1–Lv${UPGRADE_MAX}).</li>
+        <li>Kostet ${tutCur(goldCur, "Gold")}; alle lebenden + neuen Einheiten dieser Art steigen.</li>
+        <li>Gebäude-Level ist die Decke: Ultra Lv4 nur mit Fanshop Lv4+.</li>
+        <li>Höheres Lv = mehr HP/Kampf (Kämpfer) bzw. mehr Ertrag/Stimmung (Fans).</li>
+      </ul>`,
+      diagram: "",
+    },
+    {
+      id: "fight",
+      title: "Angriff & Gang",
+      lead: "Button Angriff — Ultras (Pyro) oder Hools (Nahkampf) senden.",
+      body: `${tutRailDemo("attack")}
+      <div class="tut-card-grid tut-atk">
+        <article class="tut-unit-card">
+          ${tutImg(pyroIco, "tut-unit-ico")}
+          <div class="tut-unit-meta">
+            <b>Ultra → Pyro</b>
+            <p class="tut-unit-stats">Button ${tutImg(sendGreen, "tut-mini-btn")} · kostet ${tutCur(merchCur, "Fanartikel")}</p>
+            <p class="tut-unit-role">Fernkampf im Gang, dann ggf. in den Block.</p>
+          </div>
+        </article>
+        <article class="tut-unit-card">
+          ${tutImg(fistIco, "tut-unit-ico")}
+          <div class="tut-unit-meta">
+            <b>Hool → Faust</b>
+            <p class="tut-unit-stats">Button ${tutImg(sendGreen, "tut-mini-btn")} · kostet ${tutCur(beerCur, "Bier")}</p>
+            <p class="tut-unit-role">Nahkampf, hält Druck und stürmt den Block.</p>
+          </div>
+        </article>
+      </div>
+      <ul class="tut-points">
+        <li>Figur geht über den <b>Ausgang</b> in den Gang, kämpft um Raum.</li>
+        <li>1× oder <b>alle</b> senden — Kosten skalieren mit der Anzahl.</li>
+        <li>LIVE-Ticker unter dem Momentum-Balken zeigt Kampfhinweise.</li>
+      </ul>`,
+      diagram: `<div class="tut-diagram tut-fight" aria-hidden="true">
+        ${tutImg(tribHeim, "tut-trib sm")}
+        <div class="tut-path">
+          ${tutImg(unitIconPath("ultras", cBlue, 1), "tut-fight-unit")}
+          <span class="tut-dot"></span><span class="tut-dot"></span><span class="tut-dot on"></span>
+          ${tutImg(unitIconPath("hooligans", cBlue, 1), "tut-fight-unit")}
         </div>
+        ${tutImg(tribGast, "tut-trib sm")}
       </div>`,
-  },
-  {
-    id: "fight",
-    title: "Wie kämpft man?",
-    lead: "Angriff-Rail: Ultras oder Hools in den Gang.",
-    body: `<ul class="tut-points">
-      <li>Einheiten gehen über den <b>Ausgang</b> in den Gang.</li>
-      <li>Dort kämpfen sie um Raum und können den Gegnerblock besetzen.</li>
-      <li>Der LIVE-Ticker unter dem Balken zeigt Kampfhinweise.</li>
-    </ul>`,
-    diagram: `
-      <div class="tut-diagram tut-fight" aria-hidden="true">
-        <div class="tut-block heim">Kurve</div>
-        <div class="tut-path"><span class="tut-dot"></span><span class="tut-dot"></span><span class="tut-dot on"></span></div>
-        <div class="tut-block gast">Gegner</div>
-      </div>`,
-  },
-  {
-    id: "goals",
-    title: "Wie entstehen Tore?",
-    lead: "Momentum bis in die Gegnerhälfte → Tor.",
-    body: `<ul class="tut-points">
-      <li>Fans + Stimmung füllen den Momentum-Balken.</li>
-      <li>Volle Füllung = <b>Tor</b>, danach Feier und Glücksbiergang.</li>
-      <li>Bei 45′ wählst du einen <b>Halbzeit-Boost</b>.</li>
-    </ul>`,
-    diagram: `
-      <div class="tut-diagram tut-mom" aria-hidden="true">
+    },
+    {
+      id: "goals",
+      title: "Tore durch Momentum",
+      lead: "Fans in der Kurve schieben den Balken — das ist Siegweg 1.",
+      body: `<ul class="tut-points">
+        <li>${tutImg(unitIconPath("normalos", cBlue, 1), "tut-inline")} Fans im Heimblock wiegen am stärksten für Momentum.</li>
+        <li>Ultras/Hools im Block helfen weniger — im Gang zählen sie für Sturm.</li>
+        <li>Balken voll in die Gegnerhälfte = <b>Tor</b> → Feier, Kurvenjubel.</li>
+        <li>Bei 45′ wählst du einen <b>Halbzeit-Boost</b> (Gold / Stimmung / Vorrat).</li>
+      </ul>
+      <p class="tut-foot">Wer zur Schluss-Pfeife mehr Tore hat, gewinnt — außer der Blocksturm kam früher.</p>`,
+      diagram: `<div class="tut-diagram tut-mom" aria-hidden="true">
         <div class="tut-mom-bar"><i style="width:86%"></i><span class="tut-mom-ball">Tor</span></div>
-        <p class="tut-mom-cap">Kurve schiebt → Torchance steigt</p>
+        <p class="tut-mom-cap">${tutImg(unitIconPath("normalos", cBlue, 1), "tut-inline")} Kurve voll → Torchance steigt</p>
       </div>`,
-  },
-  {
-    id: "storm",
-    title: "Blocksturm",
-    lead: "Angreifer im Gegnerblock halten ≈ 5 s.",
-    body: `<ul class="tut-points">
-      <li>Ultras/Hools besetzen den Gästeblock.</li>
-      <li>Banner halten = alternativer Siegweg.</li>
-      <li>Schnellster Blocksturm landet in den Highscores.</li>
-    </ul>`,
-    diagram: `
-      <div class="tut-diagram tut-storm" aria-hidden="true">
+    },
+    {
+      id: "storm",
+      title: "Blocksturm",
+      lead: `Siegweg 2 — ${BLOCK_STORM_COUNT} Angreifer, ${BLOCK_STORM_SEC} s Banner.`,
+      body: `<ul class="tut-points">
+        <li>${tutImg(stormIco, "tut-inline")} Ultras/Hools besetzen den <b>Gästeblock</b> (nicht nur den Gang).</li>
+        <li>Ab ${BLOCK_STORM_COUNT} Angreifern erscheint „Hier regiert …“.</li>
+        <li>Banner ${BLOCK_STORM_SEC} s halten, ohne unter ${BLOCK_STORM_COUNT} zu fallen → <b>Sofort-Sieg</b>.</li>
+        <li>Frühe Stürme zählen für Highscores / Badges.</li>
+      </ul>`,
+      diagram: `<div class="tut-diagram tut-storm" aria-hidden="true">
+        ${tutImg(stormIco, "tut-storm-ico")}
         <div class="tut-banner">Hier regiert …</div>
-        <div class="tut-timer">5 s</div>
+        <div class="tut-timer">${BLOCK_STORM_SEC} s</div>
+        <div class="tut-storm-units">
+          ${tutImg(unitIconPath("ultras", cBlue, 1), "tut-fight-unit")}
+          ${tutImg(unitIconPath("hooligans", cBlue, 1), "tut-fight-unit")}
+          ${tutImg(unitIconPath("ultras", cBlue, 2), "tut-fight-unit")}
+          ${tutImg(unitIconPath("hooligans", cBlue, 2), "tut-fight-unit")}
+        </div>
       </div>`,
-  },
-  {
-    id: "path",
-    title: "Dein erster Weg",
-    lead: "Meilensteine — dann kickst du selbst.",
-    body: `<ul class="tut-points tut-miles">
-      <li><span class="tut-n">1</span> Gebäude bauen</li>
-      <li><span class="tut-n">2</span> Person holen</li>
-      <li><span class="tut-n">3</span> In den Gang senden</li>
-      <li><span class="tut-n">4</span> Tor oder Sturm-Moment</li>
-    </ul>
-    <p class="tut-foot">Tipp: Stände und Personen mit Gold <b>upgraden</b> (Gebäude-Level begrenzt Personen-Level). Geführtes Solo auf <b>Einfach</b> zeigt Toasts. Badges: Bronze → Silber → Gold.</p>`,
-    diagram: "",
-  },
-];
+    },
+    {
+      id: "path",
+      title: "Dein erster Weg",
+      lead: "Vier Meilensteine — dann kickst du selbst (Einfach).",
+      body: `<ul class="tut-points tut-miles">
+        <li><span class="tut-n">1</span>${tutImg(UI_ICONS.btnIconBierAmber, "tut-mile-ico")} Gebäude bauen (Bier / Shop / Ordner)</li>
+        <li><span class="tut-n">2</span>${tutImg(UI_ICONS.btnIconUltraBlue, "tut-mile-ico")} Person holen (Fan / Ultra / Hool)</li>
+        <li><span class="tut-n">3</span>${tutImg(UI_ICONS.btnIconAngriffRed, "tut-mile-ico")} In den Gang senden</li>
+        <li><span class="tut-n">4</span>${tutImg(stormIco, "tut-mile-ico")} Tor-Moment oder Blocksturm</li>
+      </ul>
+      <p class="tut-foot">Tipp: Stände und Personen mit Gold upgraden. Geführtes Solo auf <b>Einfach</b> zeigt Toasts an den Meilensteinen. Badges: Bronze → Silber → Gold.</p>`,
+      diagram: tutRailDemo(null),
+    },
+  ];
+}
 
 function startGuidedSolo(): void {
   state.guidedOnboarding = true;
@@ -1635,13 +1818,14 @@ function startGuidedSolo(): void {
 }
 
 function renderTutorial(stepIndex = 0): void {
-  const i = Math.max(0, Math.min(TUTORIAL_STEPS.length - 1, stepIndex));
-  const step = TUTORIAL_STEPS[i]!;
-  const last = i >= TUTORIAL_STEPS.length - 1;
+  const steps = tutorialSteps();
+  const i = Math.max(0, Math.min(steps.length - 1, stepIndex));
+  const step = steps[i]!;
+  const last = i >= steps.length - 1;
   app.innerHTML = moodMenu(
     `
       ${moodHead({
-        eyebrow: `Tutorial · Schritt ${i + 1} / ${TUTORIAL_STEPS.length}`,
+        eyebrow: `Tutorial · Schritt ${i + 1} / ${steps.length}`,
         title: escapeHtml(step.title),
         lead: escapeHtml(step.lead),
       })}
@@ -1649,7 +1833,7 @@ function renderTutorial(stepIndex = 0): void {
         ${step.diagram ? step.diagram : ""}
         <div class="tut-body">${step.body}</div>
         <div class="tut-dots" aria-hidden="true">
-          ${TUTORIAL_STEPS.map((_, di) => `<i class="${di === i ? "on" : ""}"></i>`).join("")}
+          ${steps.map((_, di) => `<i class="${di === i ? "on" : ""}"></i>`).join("")}
         </div>
       </div>
       <div class="row mood-actions">
@@ -1660,6 +1844,12 @@ function renderTutorial(stepIndex = 0): void {
     `,
     "tutorial-screen tut-guided",
   );
+  app.querySelectorAll<HTMLImageElement>("img[data-tut-tint]").forEach((img) => {
+    const src = img.getAttribute("src") || "";
+    if (/-(?:blue|red|grey)-|tribune-block-(?:blue|red|grey)/.test(src)) {
+      setLiveTintImg(img, src);
+    }
+  });
   app.querySelector("#tut-back")!.addEventListener("click", () => {
     sfx("ui");
     if (i === 0) go("menu");
