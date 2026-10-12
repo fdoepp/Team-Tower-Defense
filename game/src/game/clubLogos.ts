@@ -1,8 +1,15 @@
 /**
  * Inspired-by club marks (not official trademarks).
  * Distinctive silhouettes + kit colors so matchups read at a glance.
+ * National teams use procedural flag paint (kit colors stay separate for tint).
  */
-import { brandingForSide, getClub, type Club, type ClubId } from "./clubs";
+import {
+  brandingForSide,
+  getClub,
+  type Club,
+  type ClubId,
+  type FlagSpec,
+} from "./clubs";
 
 export type LogoMotif =
   | "roundel"
@@ -677,6 +684,108 @@ function drawMono(
   ctx.fillText(text, cx, cy + 0.5);
 }
 
+/** Paint a flag into a rectangle (top-left x,y). */
+export function drawFlagRect(
+  ctx: CanvasRenderingContext2D,
+  flag: FlagSpec,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+): void {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(x, y, w, h);
+  ctx.clip();
+  if (flag.style === "h") {
+    const n = Math.max(1, flag.colors.length);
+    const sh = h / n;
+    for (let i = 0; i < n; i++) {
+      ctx.fillStyle = flag.colors[i] ?? "#888";
+      ctx.fillRect(x, y + i * sh, w, sh + 0.5);
+    }
+  } else if (flag.style === "v") {
+    const n = Math.max(1, flag.colors.length);
+    const sw = w / n;
+    for (let i = 0; i < n; i++) {
+      ctx.fillStyle = flag.colors[i] ?? "#888";
+      ctx.fillRect(x + i * sw, y, sw + 0.5, h);
+    }
+  } else if (flag.style === "cross") {
+    ctx.fillStyle = flag.field;
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = flag.cross;
+    const tw = Math.max(2, w * 0.18);
+    const th = Math.max(2, h * 0.18);
+    ctx.fillRect(x + (w - tw) / 2, y, tw, h);
+    ctx.fillRect(x, y + (h - th) / 2, w, th);
+  } else if (flag.style === "nordic") {
+    ctx.fillStyle = flag.field;
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = flag.cross;
+    const tw = Math.max(2, w * 0.16);
+    const th = Math.max(2, h * 0.18);
+    const cx = x + w * 0.36;
+    ctx.fillRect(cx - tw / 2, y, tw, h);
+    ctx.fillRect(x, y + (h - th) / 2, w, th);
+  } else if (flag.style === "circle") {
+    ctx.fillStyle = flag.field;
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = flag.disc;
+    const rr = Math.min(w, h) * 0.28;
+    ctx.beginPath();
+    ctx.arc(x + w / 2, y + h / 2, rr, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (flag.style === "saltire") {
+    ctx.fillStyle = flag.field;
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = flag.saltire;
+    ctx.lineWidth = Math.max(2, Math.min(w, h) * 0.16);
+    ctx.lineCap = "butt";
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w, y + h);
+    ctx.moveTo(x + w, y);
+    ctx.lineTo(x, y + h);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** Small handheld / standard flag with pole. */
+export function drawFlagOnPole(
+  ctx: CanvasRenderingContext2D,
+  flag: FlagSpec,
+  footX: number,
+  footY: number,
+  size: number,
+  wave = 0,
+): void {
+  const poleH = size * 0.92;
+  const fw = size * 0.58;
+  const fh = size * 0.38;
+  const topY = footY - poleH;
+  const flutter = Math.sin(wave) * size * 0.02;
+  ctx.save();
+  ctx.fillStyle = "rgba(15,23,42,0.28)";
+  ctx.beginPath();
+  ctx.ellipse(footX, footY + 2, size * 0.18, size * 0.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#334155";
+  ctx.lineWidth = Math.max(2, size * 0.04);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(footX, footY);
+  ctx.lineTo(footX, topY);
+  ctx.stroke();
+  // Slight perspective warp via two quads is overkill — rect + wave offset.
+  drawFlagRect(ctx, flag, footX + 1, topY + flutter, fw, fh);
+  ctx.strokeStyle = "rgba(15,23,42,0.35)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(footX + 1, topY + flutter, fw, fh);
+  ctx.restore();
+}
+
 /**
  * Draw an inspired club mark centered at (cx,cy) with outer radius `r`.
  */
@@ -693,6 +802,32 @@ export function drawClubLogo(
   } catch {
     club = getClub("ksc");
   }
+
+  // Nationals: circular flag badge + short code
+  if (club.kind === "national" && club.flag) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = club.primary;
+    ctx.fill();
+    clipCircle(ctx, cx, cy, r * 0.92, () => {
+      drawFlagRect(ctx, club.flag!, cx - r, cy - r, r * 2, r * 2);
+    });
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = strokeOn(club.secondary);
+    ctx.lineWidth = Math.max(1.5, r * 0.1);
+    ctx.stroke();
+    if (r >= 14) {
+      // Soft plate behind monogram for readability on busy flags
+      ctx.fillStyle = "rgba(15,23,42,0.45)";
+      const bw = r * 1.15;
+      const bh = r * 0.42;
+      ctx.fillRect(cx - bw / 2, cy + r * 0.28, bw, bh);
+      drawMono(ctx, club.short, cx, cy + r * 0.5, r * 0.55, "#f8fafc", 0.78);
+    }
+    return;
+  }
+
   const spec = specFor(club.id);
   const { motif } = spec;
   const prim = spec.swap ? club.secondary : club.primary;

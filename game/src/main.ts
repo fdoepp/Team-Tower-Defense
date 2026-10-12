@@ -62,11 +62,18 @@ import {
   clubsByCountry,
   currentBranding,
   DEFAULT_AI_CLUB,
+  DEFAULT_AI_NATION,
   DEFAULT_DERBY_ID,
+  DEFAULT_NATIONAL_FIXTURE_ID,
   DEFAULT_PLAYER_CLUB,
+  DEFAULT_PLAYER_NATION,
   derbiesByCountry,
   findDerby,
+  findNationalFixture,
   getClub,
+  isNational,
+  nationalFixturesByRegion,
+  nationalsByRegion,
   setSideBranding,
   type ClubId,
 } from "./game/clubs";
@@ -554,7 +561,7 @@ type Screen =
   | "challengeLobby"
   | "challengeResult";
 
-type PickMode = "derby" | "free";
+type PickMode = "derby" | "free" | "national";
 
 const state = {
   screen: "menu" as Screen,
@@ -575,7 +582,9 @@ const state = {
   pickMode: "derby" as PickMode,
   menuCountry: "Deutschland",
   menuDerbyId: DEFAULT_DERBY_ID,
-  /** In derby mode: play as side a (true) or b (false) */
+  menuNationRegion: "Europa",
+  menuNationalFixtureId: DEFAULT_NATIONAL_FIXTURE_ID,
+  /** In derby / national fixture mode: play as side a (true) or b (false) */
   menuPlayAsA: true,
   menuPlayerClub: DEFAULT_PLAYER_CLUB as ClubId,
   menuAiClub: DEFAULT_AI_CLUB as ClubId,
@@ -600,6 +609,14 @@ function syncMenuBrandingPreview(): void {
     } else {
       player = state.menuPlayerClub;
       ai = state.menuAiClub;
+    }
+  } else if (state.pickMode === "national") {
+    player = isNational(state.menuPlayerClub)
+      ? state.menuPlayerClub
+      : DEFAULT_PLAYER_NATION;
+    ai = isNational(state.menuAiClub) ? state.menuAiClub : DEFAULT_AI_NATION;
+    if (ai === player) {
+      ai = player === DEFAULT_AI_NATION ? DEFAULT_PLAYER_NATION : DEFAULT_AI_NATION;
     }
   } else {
     player = state.menuPlayerClub;
@@ -629,6 +646,44 @@ function clubOptionsGroupedHtml(selected: ClubId, selectId: string): string {
           )
           .join("")}</optgroup>`,
     )
+    .join("")}</select>`;
+}
+
+function nationOptionsGroupedHtml(selected: ClubId, selectId: string): string {
+  const groups = nationalsByRegion();
+  return `<select id="${selectId}">${groups
+    .map(
+      (g) =>
+        `<optgroup label="${escapeHtml(g.region)}">${g.nations
+          .map(
+            (c) =>
+              `<option value="${c.id}" ${c.id === selected ? "selected" : ""}>${escapeHtml(c.short)} — ${escapeHtml(c.name)}</option>`,
+          )
+          .join("")}</optgroup>`,
+    )
+    .join("")}</select>`;
+}
+
+function nationRegionOptionsHtml(selected: string): string {
+  const regions = nationalFixturesByRegion().map((g) => g.region);
+  return `<select id="nation-region">${regions
+    .map(
+      (r) =>
+        `<option value="${escapeHtml(r)}" ${r === selected ? "selected" : ""}>${escapeHtml(r)}</option>`,
+    )
+    .join("")}</select>`;
+}
+
+function nationalFixtureOptionsHtml(region: string, selected: string): string {
+  const groups = nationalFixturesByRegion();
+  const inRegion = groups.find((g) => g.region === region)?.fixtures ?? [];
+  const list = inRegion.length ? inRegion : groups.flatMap((g) => g.fixtures);
+  return `<select id="nation-fixture">${list
+    .map((f) => {
+      const a = getClub(f.a);
+      const b = getClub(f.b);
+      return `<option value="${f.id}" ${f.id === selected ? "selected" : ""}>${escapeHtml(f.name)} (${escapeHtml(a.short)}–${escapeHtml(b.short)})</option>`;
+    })
     .join("")}</select>`;
 }
 
@@ -746,15 +801,15 @@ function menuClubsFromState(): { playerClub: string; aiClub: string } {
   };
 }
 
-/** Shared Derby/Frei + optional Diff/Verhalten controls (Solo & Challenge). */
+/** Shared Derby/Frei/Nation + optional Diff/Verhalten controls (Solo & Challenge). */
 function matchupPickHtml(opts: {
   showDiff?: boolean;
   showBehavior?: boolean;
 }): string {
   const derby = findDerby(state.menuDerbyId);
-  const pickControls =
-    state.pickMode === "derby"
-      ? `
+  let pickControls = "";
+  if (state.pickMode === "derby") {
+    pickControls = `
         <label class="field">Land
           ${countryOptionsHtml(state.menuCountry)}
         </label>
@@ -766,14 +821,38 @@ function matchupPickHtml(opts: {
             <option value="a" ${state.menuPlayAsA ? "selected" : ""}>${derby ? escapeHtml(getClub(derby.a).name) : "Heim"}</option>
             <option value="b" ${!state.menuPlayAsA ? "selected" : ""}>${derby ? escapeHtml(getClub(derby.b).name) : "Gast"}</option>
           </select>
-        </label>`
-      : `
+        </label>`;
+  } else if (state.pickMode === "national") {
+    pickControls = `
+        <label class="field">Klassiker
+          ${nationRegionOptionsHtml(state.menuNationRegion)}
+        </label>
+        <label class="field">Länderspiel
+          ${nationalFixtureOptionsHtml(state.menuNationRegion, state.menuNationalFixtureId)}
+        </label>
+        <label class="field">Dein Land
+          ${nationOptionsGroupedHtml(
+            isNational(state.menuPlayerClub)
+              ? state.menuPlayerClub
+              : DEFAULT_PLAYER_NATION,
+            "player-club",
+          )}
+        </label>
+        <label class="field">Gegner (KI)
+          ${nationOptionsGroupedHtml(
+            isNational(state.menuAiClub) ? state.menuAiClub : DEFAULT_AI_NATION,
+            "ai-club",
+          )}
+        </label>`;
+  } else {
+    pickControls = `
         <label class="field">Dein Verein
           ${clubOptionsGroupedHtml(state.menuPlayerClub, "player-club")}
         </label>
         <label class="field">Gegner (KI)
           ${clubOptionsGroupedHtml(state.menuAiClub, "ai-club")}
         </label>`;
+  }
   const diff = opts.showDiff
     ? `<label class="field">KI
           <select id="diff">
@@ -808,6 +887,7 @@ function matchupPickHtml(opts: {
         <div class="pick-mode-row" role="group" aria-label="Auswahlmodus">
           <button type="button" class="pick-mode ${state.pickMode === "derby" ? "on" : ""}" data-pick="derby">Derby</button>
           <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
+          <button type="button" class="pick-mode ${state.pickMode === "national" ? "on" : ""}" data-pick="national">Nation</button>
         </div>
         ${pickControls}
         ${diff}
@@ -819,7 +899,28 @@ function bindMatchupPickHandlers(rerender: () => void): void {
   app.querySelectorAll<HTMLButtonElement>("[data-pick]").forEach((btn) => {
     btn.addEventListener("click", () => {
       sfx("ui");
-      state.pickMode = btn.dataset.pick as PickMode;
+      const next = btn.dataset.pick as PickMode;
+      state.pickMode = next;
+      if (next === "national") {
+        if (!isNational(state.menuPlayerClub)) {
+          state.menuPlayerClub = DEFAULT_PLAYER_NATION;
+        }
+        if (!isNational(state.menuAiClub) || state.menuAiClub === state.menuPlayerClub) {
+          state.menuAiClub = DEFAULT_AI_NATION;
+        }
+        const fix = findNationalFixture(state.menuNationalFixtureId);
+        if (fix) {
+          state.menuPlayerClub = fix.a;
+          state.menuAiClub = fix.b;
+        }
+      } else if (next === "derby" || next === "free") {
+        if (isNational(state.menuPlayerClub)) {
+          state.menuPlayerClub = DEFAULT_PLAYER_CLUB;
+        }
+        if (isNational(state.menuAiClub)) {
+          state.menuAiClub = DEFAULT_AI_CLUB;
+        }
+      }
       rerender();
     });
   });
@@ -844,6 +945,37 @@ function bindMatchupPickHandlers(rerender: () => void): void {
       rerender();
     });
   }
+  const nationRegionEl = app.querySelector(
+    "#nation-region",
+  ) as HTMLSelectElement | null;
+  if (nationRegionEl) {
+    nationRegionEl.addEventListener("change", () => {
+      state.menuNationRegion = nationRegionEl.value;
+      const first = nationalFixturesByRegion().find(
+        (g) => g.region === state.menuNationRegion,
+      )?.fixtures[0];
+      if (first) {
+        state.menuNationalFixtureId = first.id;
+        state.menuPlayerClub = first.a;
+        state.menuAiClub = first.b;
+      }
+      rerender();
+    });
+  }
+  const nationFixEl = app.querySelector(
+    "#nation-fixture",
+  ) as HTMLSelectElement | null;
+  if (nationFixEl) {
+    nationFixEl.addEventListener("change", () => {
+      state.menuNationalFixtureId = nationFixEl.value;
+      const fix = findNationalFixture(state.menuNationalFixtureId);
+      if (fix) {
+        state.menuPlayerClub = fix.a;
+        state.menuAiClub = fix.b;
+      }
+      rerender();
+    });
+  }
   const sideEl = app.querySelector("#side") as HTMLSelectElement | null;
   if (sideEl) {
     sideEl.addEventListener("change", () => {
@@ -858,9 +990,11 @@ function bindMatchupPickHandlers(rerender: () => void): void {
     playerClubEl.addEventListener("change", () => {
       state.menuPlayerClub = playerClubEl.value;
       if (state.menuAiClub === state.menuPlayerClub) {
-        const alt = clubsByCountry()
-          .flatMap((g) => g.clubs)
-          .find((c) => c.id !== state.menuPlayerClub);
+        const pool =
+          state.pickMode === "national"
+            ? nationalsByRegion().flatMap((g) => g.nations)
+            : clubsByCountry().flatMap((g) => g.clubs);
+        const alt = pool.find((c) => c.id !== state.menuPlayerClub);
         if (alt) state.menuAiClub = alt.id;
       }
       rerender();
@@ -895,7 +1029,12 @@ function applySoloSettingsFromMenu(): void {
     playerTeam: "ksc",
     playerClub,
     aiClub,
-    derbyId: state.pickMode === "derby" ? state.menuDerbyId : undefined,
+    derbyId:
+      state.pickMode === "derby"
+        ? state.menuDerbyId
+        : state.pickMode === "national"
+          ? state.menuNationalFixtureId
+          : undefined,
     difficulty: readMenuDifficulty(),
     behavior: readMenuBehavior(),
   };

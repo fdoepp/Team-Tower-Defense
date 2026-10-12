@@ -47,8 +47,14 @@ import {
   unitIconPath,
   type SlotControl,
 } from "./assets";
-import { clubPrimary, clubSecondary, clubShort } from "./clubs";
-import { drawSideClubLogo } from "./clubLogos";
+import {
+  brandingIsNational,
+  clubFlag,
+  clubPrimary,
+  clubSecondary,
+  clubShort,
+} from "./clubs";
+import { drawFlagOnPole, drawSideClubLogo } from "./clubLogos";
 import { getDualKitTintedCanvas, sideKitHex, sideKitRgba } from "./liveTint";
 import {
   boothFacadeQuad,
@@ -849,10 +855,22 @@ function drawFrontStandards(
     { x: left + span * m.lineAi, team: m.aiTeam },
   ];
   for (const pole of poles) {
-    const src = pole.team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
     const baseY = y + gh * 0.88;
     const size = standarteSizePx(w, h);
     const bob = Math.sin(m.realElapsed * 3.5 + (pole.team === "ksc" ? 0 : 1)) * 2;
+    const flag = brandingIsNational(pole.team) ? clubFlag(pole.team) : undefined;
+    if (flag) {
+      drawFlagOnPole(
+        ctx,
+        flag,
+        pole.x,
+        baseY + bob,
+        size * 1.05,
+        m.realElapsed * 3.5 + (pole.team === "ksc" ? 0 : 1.7),
+      );
+      continue;
+    }
+    const src = pole.team === "ksc" ? UI_ICONS.pennantKsc : UI_ICONS.pennantVfb;
     // Full standarte asset (includes pole) — upright billboard, no duplicate stroke pole.
     drawPennantUpright(ctx, src, pole.x, baseY + bob, size);
   }
@@ -1296,7 +1314,7 @@ function personAnimMode(m: Match, f: FanUnit): {
   hop: number;
   strike: number;
   actionProg: number;
-  prop: "beer" | "pyro" | "fist" | "scarf" | "bag" | null;
+  prop: "beer" | "pyro" | "fist" | "scarf" | "bag" | "flag" | null;
   propI: number;
 } {
   const onGang = f.state === "gang" || f.invading;
@@ -1318,6 +1336,8 @@ function personAnimMode(m: Match, f: FanUnit): {
     (f.cheerT > 0 ||
       (f.team === "ksc" ? m.moodHeim : f.team === "vfb" ? m.moodGaeste : 0) >
         0.7);
+  const nationalFan =
+    (f.team === "ksc" || f.team === "vfb") && brandingIsNational(f.team);
 
   let mode: ToyAnimMode = "idle";
   if (throwing) mode = "throw";
@@ -1335,7 +1355,7 @@ function personAnimMode(m: Match, f: FanUnit): {
   const shopProg =
     f.shopT > 0 ? 1 - f.shopT / Math.max(0.01, ANIM_SHOP_SEC) : 0;
 
-  let prop: "beer" | "pyro" | "fist" | "scarf" | "bag" | null = null;
+  let prop: "beer" | "pyro" | "fist" | "scarf" | "bag" | "flag" | null = null;
   let propI = 0;
   if (drinking) {
     prop = "beer";
@@ -1350,10 +1370,17 @@ function personAnimMode(m: Match, f: FanUnit): {
     prop = "bag";
     propI = 0.5 + 0.4 * shopProg;
   } else if (cheering && f.kind === "normalos" && !f.isSteward) {
-    prop = "scarf";
+    // Nationals wave country flags; club fans keep scarves
+    prop =
+      nationalFan && (f.team === "ksc" || f.team === "vfb") && clubFlag(f.team)
+        ? "flag"
+        : "scarf";
     propI = Math.min(1, Math.max(0.55, f.cheerT / 3));
   } else if (cheering && f.kind === "ultras") {
-    prop = "pyro";
+    prop =
+      nationalFan && (f.team === "ksc" || f.team === "vfb") && clubFlag(f.team)
+        ? "flag"
+        : "pyro";
     propI = 0.55 + 0.4 * Math.sin(m.realElapsed * 10);
   } else if (cheering && f.kind === "hooligans") {
     prop = "beer";
@@ -1420,6 +1447,7 @@ function drawMannchen(
     actionProg: anim.actionProg,
   });
   if (drew && anim.prop) {
+    const side = f.team === "ksc" || f.team === "vfb" ? f.team : null;
     drawToyProp(
       ctx,
       anim.prop,
@@ -1430,6 +1458,11 @@ function drawMannchen(
       m.realElapsed + phase,
       anim.propI,
       teamColor(f.team),
+      {
+        accent: side ? clubPrimary(side) : undefined,
+        accentB: side ? clubSecondary(side) : undefined,
+        flag: side ? clubFlag(side) : undefined,
+      },
     );
   }
   if (!drew) {

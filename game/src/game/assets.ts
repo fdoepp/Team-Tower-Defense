@@ -1,6 +1,8 @@
 import type { BuildingKind, FanKind, TeamId } from "./types";
 import { getLiveTintedCanvas } from "./liveTint";
 import { uiFinalIconPath } from "./uiFinal";
+import type { FlagSpec } from "./clubs";
+import { drawFlagRect } from "./clubLogos";
 
 export type TeamColor = "blue" | "red" | "grey";
 
@@ -668,7 +670,16 @@ export function drawToyIcon(
   return true;
 }
 
-export type ToyPropKind = "beer" | "pyro" | "fist" | "scarf" | "bag";
+export type ToyPropKind = "beer" | "pyro" | "fist" | "scarf" | "bag" | "flag";
+
+export type ToyPropOpts = {
+  /** Kit/scarf accent (club primary). */
+  accent?: string;
+  /** Secondary stripe for scarf. */
+  accentB?: string;
+  /** National flag paint when kind === "flag". */
+  flag?: FlagSpec;
+};
 
 export function fistIconPath(color: TeamColor): string {
   if (color === "blue") return UI_ICONS.fxFistBlue;
@@ -693,6 +704,7 @@ export function drawToyProp(
   t: number,
   intensity = 1,
   color: TeamColor = "grey",
+  opts: ToyPropOpts = {},
 ): void {
   const i = Math.max(0, Math.min(1, intensity));
   if (i < 0.05) return;
@@ -766,18 +778,49 @@ export function drawToyProp(
     }
   } else if (kind === "scarf") {
     const sx = facing * size * 0.05;
-    ctx.strokeStyle = "#3b82f6";
-    ctx.lineWidth = Math.max(2, size * 0.05);
+    const a = opts.accent || (color === "red" ? "#ef4444" : color === "blue" ? "#3b82f6" : "#94a3b8");
+    const b = opts.accentB || "#f8fafc";
+    ctx.strokeStyle = a;
+    ctx.lineWidth = Math.max(2.5, size * 0.06);
     ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(sx - size * 0.12, -size * 0.55);
+    ctx.moveTo(sx - size * 0.14, -size * 0.52);
     ctx.quadraticCurveTo(
       sx,
-      -size * (0.75 + 0.05 * Math.sin(t * 8)),
-      sx + size * 0.12,
-      -size * 0.55,
+      -size * (0.78 + 0.05 * Math.sin(t * 8)),
+      sx + size * 0.14,
+      -size * 0.52,
     );
     ctx.stroke();
+    ctx.strokeStyle = b;
+    ctx.lineWidth = Math.max(1.2, size * 0.025);
+    ctx.beginPath();
+    ctx.moveTo(sx - size * 0.1, -size * 0.54);
+    ctx.quadraticCurveTo(
+      sx,
+      -size * (0.72 + 0.04 * Math.sin(t * 8)),
+      sx + size * 0.1,
+      -size * 0.54,
+    );
+    ctx.stroke();
+  } else if (kind === "flag") {
+    const flag = opts.flag;
+    if (flag) {
+      const fx = facing * size * 0.22;
+      const fy = -size * (0.62 + 0.04 * Math.sin(t * 7));
+      const fw = size * 0.42;
+      const fh = size * 0.28;
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = Math.max(1.5, size * 0.035);
+      ctx.beginPath();
+      ctx.moveTo(fx, -size * 0.15);
+      ctx.lineTo(fx, fy);
+      ctx.stroke();
+      drawFlagRect(ctx, flag, fx + 1, fy, fw, fh);
+      ctx.strokeStyle = "rgba(15,23,42,0.4)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(fx + 1, fy, fw, fh);
+    }
   } else if (kind === "bag") {
     const bx = facing * size * 0.4;
     const by = -size * 0.15;
