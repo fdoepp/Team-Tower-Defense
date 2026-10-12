@@ -263,11 +263,11 @@ export const UPGRADE_MAX = 5;
 export const UPGRADE_COST = [0, 0, 40, 75, 120, 180] as const;
 /**
  * Unit upgrade gold to reach level index (Lv2..Lv5).
- * Lv2 cheap to teach the loop; Lv3+ steeper so Fan-spam doesn't snowball.
+ * Lv4–5 teurer: bremst Max-Snowball, damit KI-Tech mithalten kann.
  */
-export const UNIT_UPGRADE_COST = [0, 0, 22, 40, 80, 130] as const;
+export const UNIT_UPGRADE_COST = [0, 0, 24, 48, 95, 155] as const;
 /** +% HP / Atk / Def / Jubel per level above 1 */
-export const UNIT_LEVEL_STAT = 0.14;
+export const UNIT_LEVEL_STAT = 0.12;
 
 export function productionRate(level: number): number {
   return 0.7 + level * 0.5;
@@ -471,7 +471,8 @@ export const MOMENTUM_APPROACH = 0.55;
  * |momentum| to score. Bar HUD stretches so this reads as fully enemy-side.
  * ~starting Heim roster alone vs empty Gast ≈ this edge.
  */
-export const GOAL_MOMENTUM_EDGE = 0.74;
+/** Momentum-Schwelle für Tor (etwas niedriger → Tore auch bei knapper Kurve) */
+export const GOAL_MOMENTUM_EDGE = 0.7;
 /** Seconds after a goal before another can fall (Bierrunde window) */
 export const GOAL_LOCK_SEC = 10;
 /** Mood HUD tracks the same power (display scale 0…3) */

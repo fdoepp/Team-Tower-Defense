@@ -307,8 +307,25 @@ export class Match {
   aiMerch = 0;
   aiBeer = 0;
   aiSecurity = START_SECURITY;
-  /** AI starting unit tech (Schwer can begin at Lv2) */
-  private aiUnitTech = 1;
+  /**
+   * AI Personen-Tech pro Kind (spiegel zum Spieler-`unitTech`).
+   * Kickoff aus `diffProf.aiUnitTech`; steigt über `aiTryUpgradeUnits`.
+   */
+  aiTech: Record<FanKind | "ordner", number> = {
+    normalos: 1,
+    ultras: 1,
+    hooligans: 1,
+    ordner: 1,
+  };
+  /** @deprecated Prefer aiTech — max over kinds, kept for probes/HUD */
+  get aiUnitTech(): number {
+    return Math.max(
+      this.aiTech.normalos,
+      this.aiTech.ultras,
+      this.aiTech.hooligans,
+      this.aiTech.ordner,
+    );
+  }
   private diffProf!: DiffProfile;
   /** Penalty: whose kick is next (alternating) */
   pensNext: TeamId = "ksc";
@@ -402,7 +419,10 @@ export class Match {
     this.aiMerch = this.diffProf.aiStartMerch;
     this.aiBeer = this.diffProf.aiStartBeer;
     this.aiSecurity = START_SECURITY + this.diffProf.aiStartSecurityBonus;
-    this.aiUnitTech = this.diffProf.aiUnitTech;
+    {
+      const t = Math.max(1, Math.min(UPGRADE_MAX, this.diffProf.aiUnitTech));
+      this.aiTech = { normalos: t, ultras: t, hooligans: t, ordner: t };
+    }
     this.blockOwner = [this.playerTeam, "neutral", this.aiTeam];
 
     for (const b of BLOCK_META) {
@@ -499,7 +519,7 @@ export class Match {
       team === this.playerTeam
         ? this.unitTechLevel(kind)
         : team === this.aiTeam
-          ? this.aiUnitTech
+          ? this.aiUnitTechLevel(kind)
           : 1;
     const beerIv = visitInterval(kind, "beer", level);
     const shopIv = visitInterval(kind, "shop", level);
@@ -564,7 +584,11 @@ export class Match {
     const sp = this.stewardPostPos(stand);
     const gx = this.postGangX(stand);
     const level =
-      team === this.playerTeam ? this.unitTechLevel("ordner") : 1;
+      team === this.playerTeam
+        ? this.unitTechLevel("ordner")
+        : team === this.aiTeam
+          ? this.aiUnitTechLevel("ordner")
+          : 1;
     const hp = this.stewardMaxHp(level);
     // Spawn already on gang — tickFans skips stewards, so a "moving" path
     // would never finish and they'd never patrol.
@@ -1951,6 +1975,19 @@ export class Match {
   /** Chrome / Sidebar Personen-Stufe (Tech), nicht Min der lebenden Units */
   unitTechLevel(kind: FanKind | "ordner"): number {
     return Math.max(1, Math.min(UPGRADE_MAX, this.unitTech[kind] || 1));
+  }
+
+  /** AI Tech-Stufe pro Kind (Kickoff + Upgrades). */
+  aiUnitTechLevel(kind: FanKind | "ordner"): number {
+    return Math.max(1, Math.min(UPGRADE_MAX, this.aiTech[kind] || 1));
+  }
+
+  /** Soft-Cap: Einfach max Lv3, Mittel Lv4, Schwer Lv5 */
+  private aiTechSoftCap(): number {
+    const d = this.cfg.settings.difficulty;
+    if (d === "easy") return 3;
+    if (d === "hard") return UPGRADE_MAX;
+    return 4;
   }
 
   minUnitLevel(kind: FanKind | "ordner", team: TeamId = this.playerTeam): number {
@@ -5389,22 +5426,46 @@ export class Match {
     }
   }
 
+  /**
+   * KI-Unit-Upgrade: wie Spieler-Tech — Stufe fürs Kind + alle lebenden
+   * Einheiten dieses Typs (vorher nur 1 Unit → KI blieb Lv1-lastig).
+   */
   private aiTryUpgradeUnits(): void {
     if (this.aiGold < 22) return;
     const trailing = this.aiTrailingCrowd();
-    if (Math.random() > (trailing ? 0.55 : 0.4)) return;
+    const phaseBoost =
+      this.minute >= this.diffProf.lateMinute
+        ? 0.22
+        : this.minute >= this.diffProf.midMinute
+          ? 0.12
+          : 0;
+    const chance = (trailing ? 0.72 : 0.48) + phaseBoost;
+    if (Math.random() > chance) return;
     // When behind on Kurve, prioritize combat upgrades over Fans
     const kinds: (FanKind | "ordner")[] = trailing
       ? ["hooligans", "ultras", "ordner", "normalos"]
-      : ["hooligans", "ultras", "normalos", "ordner"];
+      : ["ultras", "hooligans", "normalos", "ordner"];
+    const softCap = this.aiTechSoftCap();
     for (const kind of kinds) {
-      const u = this.lowestLevelUnit(kind, this.aiTeam);
-      if (!u) continue;
-      const cost = unitUpgradeCost(u.level || 1);
+      const living = this.lowestLevelUnit(kind, this.aiTeam);
+      if (!living) continue;
+      const tech = this.aiUnitTechLevel(kind);
+      if (tech >= softCap || tech >= UPGRADE_MAX) continue;
+      const cost = unitUpgradeCost(tech);
       if (cost == null || this.aiGold < cost) continue;
       this.aiGold -= cost;
-      u.level = (u.level || 1) + 1;
-      this.applyUnitLevelStats(u);
+      const next = tech + 1;
+      this.aiTech[kind] = next;
+      for (const f of this.fans) {
+        if (f.hp <= 0 || f.team !== this.aiTeam) continue;
+        if (kind === "ordner") {
+          if (!f.isSteward) continue;
+        } else if (f.isSteward || f.kind !== kind) continue;
+        if ((f.level || 1) < next) {
+          f.level = next;
+          this.applyUnitLevelStats(f);
+        }
+      }
       return;
     }
   }
