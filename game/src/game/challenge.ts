@@ -215,14 +215,152 @@ export function markPlayedChallengeRole(id: string, role: "a" | "b"): void {
   savePlayed(store);
 }
 
-export function openChallengeRole(c: Challenge): "a" | "b" | "done" | "full" {
+export function openChallengeRole(
+  c: Challenge,
+  opts?: {
+    /** Prefer this empty slot (host app / embed). */
+    prefer?: "a" | "b";
+    /** Host app owns uniqueness — allow both roles on one device. */
+    ignoreDeviceLock?: boolean;
+  },
+): "a" | "b" | "done" | "full" {
   if (c.a && c.b) return "done";
+  const prefer = opts?.prefer;
+  if (prefer === "a" && !c.a) {
+    if (!opts?.ignoreDeviceLock && (loadPlayed()[c.id] || []).includes("b")) {
+      return "full";
+    }
+    return "a";
+  }
+  if (prefer === "b" && !c.b) {
+    if (!opts?.ignoreDeviceLock && (loadPlayed()[c.id] || []).includes("a")) {
+      return "full";
+    }
+    return "b";
+  }
+  if (prefer && ((prefer === "a" && c.a) || (prefer === "b" && c.b))) {
+    return c.a && c.b ? "done" : "full";
+  }
   // Ein Gerät = ein Versuch (nicht beide Rollen lokal füllen)
   const playedHere = (loadPlayed()[c.id] || []).length > 0;
-  if (playedHere) return c.a && c.b ? "done" : "full";
+  if (!opts?.ignoreDeviceLock && playedHere) {
+    return c.a && c.b ? "done" : "full";
+  }
   if (!c.a) return "a";
   if (!c.b) return "b";
   return "done";
+}
+
+/** Structured result for host apps (postMessage / return URL). */
+export type ChallengeEmbedResult = {
+  type: "matchday.challenge.result";
+  v: 1;
+  challengeId: string;
+  goal: ChallengeGoal;
+  difficulty: AiDifficulty;
+  behavior: AiBehavior;
+  playerClub: string;
+  aiClub: string;
+  setupLabel: string;
+  a?: ChallengeAttempt;
+  b?: ChallengeAttempt;
+  winner: "a" | "b" | "draw" | "pending";
+  myRole: "a" | "b" | null;
+  outcome: "win" | "loss" | "draw" | "pending" | "open";
+  /** Updated challenge blob for the host to store / re-invite. */
+  challenge: Challenge;
+  /** Ready-to-open share path (?c=…) relative to game origin. */
+  encoded: string;
+  sharePath: string;
+};
+
+export function challengeEmbedResult(
+  c: Challenge,
+  myRole: "a" | "b" | null = null,
+): ChallengeEmbedResult {
+  const winner = compareChallengeAttempts(c.goal, c.a, c.b);
+  const role = myRole || myChallengeRole(c.id);
+  const encoded = encodeChallenge(c);
+  return {
+    type: "matchday.challenge.result",
+    v: 1,
+    challengeId: c.id,
+    goal: c.goal,
+    difficulty: c.difficulty,
+    behavior: c.behavior,
+    playerClub: c.playerClub,
+    aiClub: c.aiClub,
+    setupLabel: challengeSetupLine(c),
+    a: c.a,
+    b: c.b,
+    winner,
+    myRole: role,
+    outcome: challengeOutcomeForMe(c, role),
+    challenge: c,
+    encoded,
+    sharePath: `?c=${encoded}`,
+  };
+}
+
+/** Build a full embed launch URL for an existing challenge. */
+export function challengeEmbedUrl(
+  c: Challenge,
+  opts: {
+    base?: string;
+    role?: "a" | "b";
+    playerName?: string;
+    autoplay?: boolean;
+  } = {},
+): string {
+  const base =
+    opts.base ||
+    (typeof location !== "undefined"
+      ? `${location.origin}${location.pathname}`
+      : "");
+  const qs = new URLSearchParams();
+  qs.set("c", encodeChallenge(c));
+  qs.set("embed", "1");
+  if (opts.role) qs.set("role", opts.role);
+  if (opts.playerName?.trim()) {
+    qs.set("playerName", opts.playerName.trim().slice(0, 20));
+  }
+  if (opts.autoplay !== false) qs.set("autoplay", "1");
+  return `${base}?${qs.toString()}`;
+}
+
+/** Create-challenge launch without a prebuilt blob (host picks setup in query). */
+export function challengeCreateEmbedUrl(opts: {
+  base?: string;
+  goal: ChallengeGoal;
+  difficulty: AiDifficulty;
+  behavior?: AiBehavior;
+  playerClub: string;
+  aiClub: string;
+  hostName?: string;
+  playerName?: string;
+  role?: "a" | "b";
+  autoplay?: boolean;
+}): string {
+  const base =
+    opts.base ||
+    (typeof location !== "undefined"
+      ? `${location.origin}${location.pathname}`
+      : "");
+  const qs = new URLSearchParams();
+  qs.set("embed", "1");
+  qs.set("mode", "challenge");
+  qs.set("goal", opts.goal);
+  qs.set("difficulty", opts.difficulty);
+  qs.set("behavior", opts.behavior || "balanced");
+  qs.set("playerClub", opts.playerClub);
+  qs.set("aiClub", opts.aiClub);
+  qs.set("role", opts.role || "a");
+  if (opts.hostName?.trim()) qs.set("hostName", opts.hostName.trim().slice(0, 20));
+  if (opts.playerName?.trim()) {
+    qs.set("playerName", opts.playerName.trim().slice(0, 20));
+  }
+  if (opts.autoplay !== false) qs.set("autoplay", "1");
+  return `${base}?${qs.toString()}`;
 }
 
 /** Build attempt metric from a finished match */

@@ -200,6 +200,16 @@ import {
   type ChallengeGoal,
 } from "./game/challenge";
 import {
+  clearEmbedLaunchParams,
+  emitChallengeClose,
+  emitChallengeCreated,
+  emitChallengeResult,
+  emitReady,
+  installEmbedHostListener,
+  materializeEmbedCreate,
+  parseEmbedLaunch,
+} from "./game/embedBridge";
+import {
   createLiveHost,
   joinLiveGuest,
   loadLiveHistory,
@@ -725,6 +735,10 @@ const state = {
   /** Solo tournament run */
   tournament: null as TournamentState | null,
   tournamentDiff: "normal" as TournamentDifficulty,
+  /** Host-app embed (async challenge) */
+  embed: false,
+  embedAutoplay: false,
+  embedPreferredRole: null as "a" | "b" | null,
 };
 
 function menuAtmosphereHtml(): string {
@@ -1326,9 +1340,33 @@ function applySoloSettingsFromMenu(): void {
 }
 
 function askChallengeName(defaultName = "Spieler"): string | null {
+  if (state.embed) {
+    const stored = (localStorage.getItem("matchday-player-name") || "").trim();
+    return (stored || defaultName).slice(0, 20);
+  }
   const raw = window.prompt("Dein Name für die Challenge:", defaultName);
   if (raw == null) return null;
   return raw.trim().slice(0, 20) || defaultName;
+}
+
+function challengeRoleOpts() {
+  return {
+    prefer: state.embedPreferredRole || undefined,
+    ignoreDeviceLock: state.embed,
+  } as const;
+}
+
+function beginChallengePlay(c: Challenge, role: "a" | "b", name: string): void {
+  localStorage.setItem("matchday-player-name", name);
+  state.challenge = c;
+  state.challengeRole = role;
+  applyChallengeSettings(c);
+  state.setup = defaultSetup();
+  go("setup");
+}
+
+function returnToHostApp(): void {
+  emitChallengeClose(state.challenge, state.challengeRole);
 }
 
 function renderMenu(): void {
@@ -2304,12 +2342,12 @@ function renderChallengeCreate(): void {
 function renderChallengeLobby(): void {
   const c = state.challenge;
   if (!c) {
-    go("challengeHub");
+    go(state.embed ? "menu" : "challengeHub");
     return;
   }
   upsertChallengeHistory(c);
   applyChallengeSettings(c);
-  const role = openChallengeRole(c);
+  const role = openChallengeRole(c, challengeRoleOpts());
   const winner = compareChallengeAttempts(c.goal, c.a, c.b);
   const verdict = challengeVerdictLabel(c, winner);
   const canPlay = role === "a" || role === "b";
@@ -2317,9 +2355,15 @@ function renderChallengeLobby(): void {
   const done = role === "done";
   const url = challengeShareUrl(c);
 
+  if (state.embed && done) {
+    emitChallengeResult(c, state.challengeRole || state.embedPreferredRole);
+    go("challengeResult");
+    return;
+  }
+
   app.innerHTML = moodMenu(`
       ${moodHead({
-        eyebrow: "Challenge · Einladungslink",
+        eyebrow: state.embed ? "Challenge · App" : "Challenge · Einladungslink",
         title: escapeHtml(CHALLENGE_GOAL_LABEL[c.goal]),
         lead: escapeHtml(challengeSetupLine(c)),
         extra: `<div class="kit-preview" aria-hidden="true">
@@ -2334,12 +2378,22 @@ function renderChallengeLobby(): void {
       </div>
       <p class="chal-verdict">${escapeHtml(verdict)}</p>
       <p class="tiny">${escapeHtml(CHALLENGE_GOAL_BLURB[c.goal])} · Nur 1 Versuch pro Spieler.</p>
-      <label class="field">Einladungslink
+      ${
+        state.embed
+          ? ""
+          : `<label class="field">Einladungslink
         <input class="chal-input" id="chal-link-view" type="text" readonly value="${escapeHtml(url)}" />
-      </label>
+      </label>`
+      }
       <div class="row mood-actions">
-        <button class="btn secondary grow" id="chal-lobby-back" type="button">Übersicht</button>
-        <button class="btn secondary grow" id="chal-copy" type="button">Link kopieren</button>
+        <button class="btn secondary grow" id="chal-lobby-back" type="button">${
+          state.embed ? "Zurück zur App" : "Übersicht"
+        }</button>
+        ${
+          state.embed
+            ? ""
+            : `<button class="btn secondary grow" id="chal-copy" type="button">Link kopieren</button>`
+        }
       </div>
       ${
         canPlay
@@ -2352,20 +2406,27 @@ function renderChallengeLobby(): void {
 
   app.querySelector("#chal-lobby-back")!.addEventListener("click", () => {
     sfx("ui");
+    if (state.embed) {
+      returnToHostApp();
+      return;
+    }
     state.challenge = null;
     state.challengeRole = null;
     go("challengeHub");
   });
-  app.querySelector("#chal-copy")!.addEventListener("click", () => {
-    sfx("ui");
-    void copyChallengeLink(c);
-  });
+  const copyBtn = app.querySelector("#chal-copy");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      sfx("ui");
+      void copyChallengeLink(c);
+    });
+  }
   const playBtn = app.querySelector("#chal-play");
   if (playBtn) {
     playBtn.addEventListener("click", () => {
       unlockAudio();
       sfx("ui");
-      const open = openChallengeRole(c);
+      const open = openChallengeRole(c, challengeRoleOpts());
       if (open !== "a" && open !== "b") {
         renderChallengeLobby();
         return;
@@ -2376,11 +2437,7 @@ function renderChallengeLobby(): void {
           "Spieler",
       );
       if (!name) return;
-      localStorage.setItem("matchday-player-name", name);
-      state.challengeRole = open;
-      applyChallengeSettings(c);
-      state.setup = defaultSetup();
-      go("setup");
+      beginChallengePlay(c, open, name);
     });
   }
 }
@@ -2390,6 +2447,10 @@ async function copyChallengeLink(
   silentOk = false,
 ): Promise<void> {
   const url = challengeShareUrl(c);
+  if (state.embed) {
+    emitChallengeResult(c, state.challengeRole || state.embedPreferredRole);
+    return;
+  }
   try {
     await navigator.clipboard.writeText(url);
     if (!silentOk) {
@@ -2405,13 +2466,16 @@ async function copyChallengeLink(
 function renderChallengeResult(): void {
   const c = state.challenge;
   if (!c) {
-    go("challengeHub");
+    go(state.embed ? "menu" : "challengeHub");
     return;
   }
   upsertChallengeHistory(c);
   const winner = compareChallengeAttempts(c.goal, c.a, c.b);
   const verdict = challengeVerdictLabel(c, winner);
   const mine = challengeOutcomeForMe(c, state.challengeRole);
+  if (state.embed) {
+    emitChallengeResult(c, state.challengeRole || state.embedPreferredRole);
+  }
   app.innerHTML = moodMenu(`
       ${moodHead({
         eyebrow: "Challenge-Ergebnis",
@@ -2434,25 +2498,42 @@ function renderChallengeResult(): void {
       </div>
       <p class="chal-verdict">${escapeHtml(verdict)}</p>
       <div class="row mood-actions">
-        <button class="btn secondary grow" id="chal-res-hub" type="button">Übersicht</button>
-        <button class="btn ksc grow" id="chal-res-copy" type="button">Link teilen</button>
+        <button class="btn ${state.embed ? "ksc" : "secondary"} grow" id="chal-res-hub" type="button">${
+          state.embed ? "Zurück zur App" : "Übersicht"
+        }</button>
+        ${
+          state.embed
+            ? ""
+            : `<button class="btn ksc grow" id="chal-res-copy" type="button">Link teilen</button>`
+        }
       </div>
       <p class="tiny">${
-        winner === "pending"
-          ? "Gegner öffnet denselben Einladungslink und spielt 1× — danach siehst du den Sieger in der Historie."
-          : "Beide Versuche stecken im Link. In der Challenge-Übersicht bleibt die Partie gespeichert."
+        state.embed
+          ? winner === "pending"
+            ? "Ergebnis an die App gemeldet — Gegner spielt dasselbe Szenario."
+            : "Endstand an die App gemeldet."
+          : winner === "pending"
+            ? "Gegner öffnet denselben Einladungslink und spielt 1× — danach siehst du den Sieger in der Historie."
+            : "Beide Versuche stecken im Link. In der Challenge-Übersicht bleibt die Partie gespeichert."
       }</p>
     `);
   app.querySelector("#chal-res-hub")!.addEventListener("click", () => {
     sfx("ui");
+    if (state.embed) {
+      returnToHostApp();
+      return;
+    }
     state.challenge = null;
     state.challengeRole = null;
     go("challengeHub");
   });
-  app.querySelector("#chal-res-copy")!.addEventListener("click", () => {
-    sfx("ui");
-    void copyChallengeLink(c);
-  });
+  const copyBtn = app.querySelector("#chal-res-copy");
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      sfx("ui");
+      void copyChallengeLink(c);
+    });
+  }
 }
 
 function finishChallengeAttempt(): void {
@@ -4627,15 +4708,70 @@ function renderResult(): void {
   })();
 }
 
-// Deep-link: Challenge ?c=… (Einladungslink)
+// Deep-link / host-app embed: Challenge ?c=… or create-from-query
 {
-  const linked = challengeFromLocation();
+  const launch = parseEmbedLaunch();
+  let linked = launch.challenge || challengeFromLocation();
+  let createdFresh = false;
+
+  if (!linked && launch.create) {
+    linked = materializeEmbedCreate(launch.create);
+    createdFresh = true;
+  }
+
+  if (launch.embed) {
+    state.embed = true;
+    state.embedAutoplay = launch.autoplay;
+    state.embedPreferredRole = launch.role;
+    document.documentElement.classList.add("embed-mode");
+    document.body?.classList.add("embed-mode");
+    installEmbedHostListener({
+      onCloseRequest: () => returnToHostApp(),
+    });
+  }
+
+  if (launch.playerName) {
+    localStorage.setItem("matchday-player-name", launch.playerName);
+  }
+
   if (linked) {
     upsertChallengeHistory(linked);
     state.challenge = linked;
     state.challengeRole = null;
+    applyChallengeSettings(linked);
+    if (createdFresh && state.embed) {
+      emitChallengeCreated(linked);
+    }
+
+    const open = openChallengeRole(linked, {
+      prefer: launch.role || undefined,
+      ignoreDeviceLock: state.embed,
+    });
+
     clearChallengeFromUrl();
-    state.screen = "challengeLobby";
+    clearEmbedLaunchParams();
+
+    if (state.embed && launch.autoplay && (open === "a" || open === "b")) {
+      const playerName =
+        launch.playerName ||
+        localStorage.getItem("matchday-player-name") ||
+        linked.hostName ||
+        "Spieler";
+      localStorage.setItem("matchday-player-name", playerName.slice(0, 20));
+      state.challengeRole = open;
+      state.setup = defaultSetup();
+      state.screen = "setup";
+      emitReady(linked.id, "challenge");
+    } else if (open === "done" || (linked.a && linked.b)) {
+      state.screen = "challengeResult";
+      if (state.embed) emitReady(linked.id, "challenge");
+    } else {
+      state.screen = "challengeLobby";
+      if (state.embed) emitReady(linked.id, "challenge");
+    }
+  } else if (state.embed) {
+    clearEmbedLaunchParams();
+    emitReady(null, launch.mode);
   }
 }
 

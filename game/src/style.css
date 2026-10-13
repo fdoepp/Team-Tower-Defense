@@ -4888,3 +4888,14 @@ html.is-fs .fs-gate {
   background: rgba(15, 23, 42, 0.55);
   border: 1px solid rgba(248, 250, 252, 0.12);
 }
+
+/* Host-app WebView / iframe: async challenge embed */
+html.embed-mode,
+body.embed-mode {
+  overscroll-behavior: none;
+}
+body.embed-mode .menu-home .menu-util,
+body.embed-mode .menu-home #highscores,
+body.embed-mode .menu-home #badges {
+  display: none;
+}
