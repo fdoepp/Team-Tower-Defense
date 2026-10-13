@@ -1,18 +1,34 @@
 /**
- * Host-app bridge for async Challenge embeds (WebView / iframe).
+ * Host-app bridge for Challenge + Live-PvP embeds (WebView / iframe).
  *
- * Launch (URL query):
+ * Async Challenge launch:
  *   ?embed=1&c=<encoded>&role=a|b&playerName=…&autoplay=1
  *   ?embed=1&mode=challenge&goal=…&difficulty=…&playerClub=…&aiClub=…&role=a&autoplay=1
  *
- * Outbound postMessage (to parent / opener):
- *   matchday.ready | matchday.challenge.created | matchday.challenge.result
- *   | matchday.challenge.close | matchday.catalog | matchday.pong
+ * Live PvP launch:
+ *   ?embed=1&mode=live&role=host&scope=clubs|nations|any&random=1&difficulty=normal&playerName=…&autoplay=1
+ *   ?embed=1&mode=live&live=AB12CD&role=guest&playerName=…&autoplay=1
+ *   Optional fixed clubs: playerClub=&aiClub= (skips random)
+ *   Optional host code: live=CODE with role=host
+ *
+ * Outbound postMessage:
+ *   matchday.ready | matchday.pong | matchday.catalog
+ *   matchday.challenge.created | matchday.challenge.result | matchday.challenge.close
+ *   matchday.live.created | matchday.live.result | matchday.live.close | matchday.live.error
  *
  * Inbound postMessage:
- *   matchday.ping | matchday.catalog.request | matchday.challenge.close
+ *   matchday.ping | matchday.catalog.request
+ *   matchday.challenge.close | matchday.live.close
  */
-import { allClubs, allNationals, getClub, type Club } from "./clubs";
+import {
+  allClubs,
+  allNationals,
+  getClub,
+  randomMatchup,
+  type Club,
+  type MatchupScope,
+  type RandomMatchup,
+} from "./clubs";
 import {
   CHALLENGE_GOAL_BLURB,
   CHALLENGE_GOAL_LABEL,
@@ -26,14 +42,17 @@ import {
   type ChallengeEmbedResult,
   type ChallengeGoal,
 } from "./challenge";
+import type { LiveKpis, LiveRole, LiveRoomConfig } from "./liveChallenge";
 import type { AiBehavior, AiDifficulty } from "./types";
 
 export const EMBED_PROTOCOL_V = 1 as const;
 export const EMBED_SOURCE = "matchday-embed" as const;
 
+export type EmbedMode = "challenge" | "live";
+
 export type EmbedLaunch = {
   embed: boolean;
-  mode: "challenge" | null;
+  mode: EmbedMode | null;
   challenge: Challenge | null;
   /** Create-from-query (no ?c= yet). */
   create: {
@@ -44,9 +63,32 @@ export type EmbedLaunch = {
     aiClub: string;
     hostName?: string;
   } | null;
+  /** Challenge role a/b */
   role: "a" | "b" | null;
+  /** Live role host/guest */
+  liveRole: LiveRole | null;
+  liveCode: string | null;
+  liveScope: MatchupScope;
+  liveRandom: boolean;
+  playerClub: string | null;
+  aiClub: string | null;
+  difficulty: AiDifficulty;
   playerName: string | null;
   autoplay: boolean;
+};
+
+export type LiveEmbedResult = {
+  type: "matchday.live.result";
+  v: typeof EMBED_PROTOCOL_V;
+  code: string;
+  role: LiveRole;
+  outcome: "win" | "loss" | "draw";
+  me: LiveKpis;
+  them: LiveKpis;
+  config: LiveRoomConfig | null;
+  playerClub: string | null;
+  aiClub: string | null;
+  difficulty: AiDifficulty | null;
 };
 
 export type EmbedOutbound =
@@ -54,8 +96,10 @@ export type EmbedOutbound =
       type: "matchday.ready";
       v: typeof EMBED_PROTOCOL_V;
       source: typeof EMBED_SOURCE;
-      mode: "challenge" | null;
+      mode: EmbedMode | null;
       challengeId: string | null;
+      liveCode: string | null;
+      liveRole: LiveRole | null;
     }
   | {
       type: "matchday.challenge.created";
@@ -75,6 +119,31 @@ export type EmbedOutbound =
       source: typeof EMBED_SOURCE;
       challengeId: string | null;
       result: ChallengeEmbedResult | null;
+    }
+  | {
+      type: "matchday.live.created";
+      v: typeof EMBED_PROTOCOL_V;
+      source: typeof EMBED_SOURCE;
+      code: string;
+      role: LiveRole;
+      config: LiveRoomConfig;
+      matchup: RandomMatchup | null;
+      joinPath: string;
+      embedUrl: string;
+    }
+  | (LiveEmbedResult & { source: typeof EMBED_SOURCE })
+  | {
+      type: "matchday.live.close";
+      v: typeof EMBED_PROTOCOL_V;
+      source: typeof EMBED_SOURCE;
+      code: string | null;
+      result: LiveEmbedResult | null;
+    }
+  | {
+      type: "matchday.live.error";
+      v: typeof EMBED_PROTOCOL_V;
+      source: typeof EMBED_SOURCE;
+      message: string;
     }
   | {
       type: "matchday.catalog";
@@ -138,9 +207,19 @@ function parseBehavior(raw: string | null): AiBehavior {
   return "balanced";
 }
 
-function parseRole(raw: string | null): "a" | "b" | null {
+function parseChallengeRole(raw: string | null): "a" | "b" | null {
   if (raw === "a" || raw === "b") return raw;
   return null;
+}
+
+function parseLiveRole(raw: string | null): LiveRole | null {
+  if (raw === "host" || raw === "guest") return raw;
+  return null;
+}
+
+function parseScope(raw: string | null): MatchupScope {
+  if (raw === "clubs" || raw === "nations" || raw === "any") return raw;
+  return "any";
 }
 
 export function isEmbedMode(
@@ -157,12 +236,32 @@ export function parseEmbedLaunch(
 ): EmbedLaunch {
   const qs = new URLSearchParams(search);
   const embed = qs.get("embed") === "1" || qs.get("embed") === "true";
-  const role = parseRole(qs.get("role"));
-  const playerName = (qs.get("playerName") || qs.get("name") || "").trim().slice(0, 20) || null;
-  const autoplay =
-    qs.get("autoplay") === "1" ||
-    qs.get("autoplay") === "true" ||
-    (embed && !!role);
+  const playerName =
+    (qs.get("playerName") || qs.get("name") || "").trim().slice(0, 20) || null;
+  const liveCode = (qs.get("live") || qs.get("room") || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 8) || null;
+  const liveRole = parseLiveRole(qs.get("role"));
+  const challengeRole = parseChallengeRole(qs.get("role"));
+  const modeRaw = qs.get("mode");
+  const difficulty = parseDiff(qs.get("difficulty")) || "normal";
+  const playerClubRaw = (qs.get("playerClub") || "").trim() || null;
+  const aiClubRaw = (qs.get("aiClub") || "").trim() || null;
+  let playerClub: string | null = null;
+  let aiClub: string | null = null;
+  if (playerClubRaw && aiClubRaw) {
+    try {
+      getClub(playerClubRaw);
+      getClub(aiClubRaw);
+      playerClub = playerClubRaw;
+      aiClub = aiClubRaw;
+    } catch {
+      playerClub = null;
+      aiClub = null;
+    }
+  }
 
   let challenge: Challenge | null = null;
   const fromQ = qs.get("c");
@@ -172,38 +271,129 @@ export function parseEmbedLaunch(
     if (hm?.[1]) challenge = decodeChallenge(decodeURIComponent(hm[1]));
   }
 
-  let create: EmbedLaunch["create"] = null;
-  const modeRaw = qs.get("mode");
-  const mode = modeRaw === "challenge" || (!challenge && embed && qs.has("goal"))
-    ? "challenge"
-    : challenge
-      ? "challenge"
-      : null;
+  let mode: EmbedMode | null = null;
+  if (modeRaw === "live" || (embed && liveRole && !challenge && !qs.has("goal"))) {
+    mode = "live";
+  } else if (
+    modeRaw === "challenge" ||
+    challenge ||
+    (!!embed && qs.has("goal"))
+  ) {
+    mode = "challenge";
+  }
 
-  if (!challenge && embed) {
+  const autoplay =
+    qs.get("autoplay") === "1" ||
+    qs.get("autoplay") === "true" ||
+    (embed && !!(challengeRole || liveRole));
+
+  let create: EmbedLaunch["create"] = null;
+  if (!challenge && embed && mode === "challenge") {
     const goal = parseGoal(qs.get("goal"));
-    const difficulty = parseDiff(qs.get("difficulty")) || "normal";
-    const playerClub = (qs.get("playerClub") || "").trim();
-    const aiClub = (qs.get("aiClub") || "").trim();
     if (goal && playerClub && aiClub) {
-      try {
-        getClub(playerClub);
-        getClub(aiClub);
-        create = {
-          goal,
-          difficulty,
-          behavior: parseBehavior(qs.get("behavior")),
-          playerClub,
-          aiClub,
-          hostName: (qs.get("hostName") || playerName || undefined)?.slice(0, 20),
-        };
-      } catch {
-        create = null;
-      }
+      create = {
+        goal,
+        difficulty,
+        behavior: parseBehavior(qs.get("behavior")),
+        playerClub,
+        aiClub,
+        hostName: (qs.get("hostName") || playerName || undefined)?.slice(0, 20),
+      };
     }
   }
 
-  return { embed, mode, challenge, create, role, playerName, autoplay };
+  const liveRandom =
+    qs.get("random") === "1" ||
+    qs.get("random") === "true" ||
+    (mode === "live" && !playerClub);
+
+  return {
+    embed,
+    mode,
+    challenge,
+    create,
+    role: mode === "challenge" ? challengeRole : null,
+    liveRole: mode === "live" ? liveRole : null,
+    liveCode,
+    liveScope: parseScope(qs.get("scope")),
+    liveRandom,
+    playerClub,
+    aiClub,
+    difficulty,
+    playerName,
+    autoplay,
+  };
+}
+
+export function resolveLiveMatchup(launch: EmbedLaunch): RandomMatchup {
+  if (launch.playerClub && launch.aiClub) {
+    const a = getClub(launch.playerClub);
+    return {
+      playerClub: launch.playerClub,
+      aiClub: launch.aiClub,
+      scope: a.kind === "national" ? "nations" : "clubs",
+    };
+  }
+  return randomMatchup(launch.liveScope);
+}
+
+export function liveGuestEmbedUrl(
+  code: string,
+  opts: { base?: string; playerName?: string; autoplay?: boolean } = {},
+): string {
+  const base =
+    opts.base ||
+    (typeof location !== "undefined"
+      ? `${location.origin}${location.pathname}`
+      : "");
+  const qs = new URLSearchParams();
+  qs.set("embed", "1");
+  qs.set("mode", "live");
+  qs.set("live", code.toUpperCase());
+  qs.set("role", "guest");
+  if (opts.playerName?.trim()) {
+    qs.set("playerName", opts.playerName.trim().slice(0, 20));
+  }
+  if (opts.autoplay !== false) qs.set("autoplay", "1");
+  return `${base}?${qs.toString()}`;
+}
+
+export function liveHostEmbedUrl(
+  opts: {
+    base?: string;
+    scope?: MatchupScope;
+    random?: boolean;
+    playerClub?: string;
+    aiClub?: string;
+    difficulty?: AiDifficulty;
+    playerName?: string;
+    code?: string;
+    autoplay?: boolean;
+  } = {},
+): string {
+  const base =
+    opts.base ||
+    (typeof location !== "undefined"
+      ? `${location.origin}${location.pathname}`
+      : "");
+  const qs = new URLSearchParams();
+  qs.set("embed", "1");
+  qs.set("mode", "live");
+  qs.set("role", "host");
+  qs.set("scope", opts.scope || "any");
+  if (opts.code) qs.set("live", opts.code.toUpperCase());
+  if (opts.playerClub && opts.aiClub) {
+    qs.set("playerClub", opts.playerClub);
+    qs.set("aiClub", opts.aiClub);
+  } else if (opts.random !== false) {
+    qs.set("random", "1");
+  }
+  if (opts.difficulty) qs.set("difficulty", opts.difficulty);
+  if (opts.playerName?.trim()) {
+    qs.set("playerName", opts.playerName.trim().slice(0, 20));
+  }
+  if (opts.autoplay !== false) qs.set("autoplay", "1");
+  return `${base}?${qs.toString()}`;
 }
 
 export function clearEmbedLaunchParams(): void {
@@ -223,6 +413,10 @@ export function clearEmbedLaunchParams(): void {
       "role",
       "autoplay",
       "c",
+      "live",
+      "room",
+      "scope",
+      "random",
     ];
     let changed = false;
     for (const k of keys) {
@@ -262,7 +456,6 @@ function targetOrigins(): Window[] {
 export function postToHost(msg: EmbedOutbound): void {
   if (typeof window === "undefined") return;
   const targets = targetOrigins();
-  // Also dispatch locally for same-window host shells / tests.
   try {
     window.dispatchEvent(new CustomEvent("matchday-embed", { detail: msg }));
   } catch {
@@ -277,7 +470,10 @@ export function postToHost(msg: EmbedOutbound): void {
   }
 }
 
-export function buildCatalogMessage(): Extract<EmbedOutbound, { type: "matchday.catalog" }> {
+export function buildCatalogMessage(): Extract<
+  EmbedOutbound,
+  { type: "matchday.catalog" }
+> {
   return {
     type: "matchday.catalog",
     v: EMBED_PROTOCOL_V,
@@ -293,13 +489,20 @@ export function buildCatalogMessage(): Extract<EmbedOutbound, { type: "matchday.
   };
 }
 
-export function emitReady(challengeId: string | null, mode: "challenge" | null): void {
+export function emitReady(opts: {
+  mode: EmbedMode | null;
+  challengeId?: string | null;
+  liveCode?: string | null;
+  liveRole?: LiveRole | null;
+}): void {
   postToHost({
     type: "matchday.ready",
     v: EMBED_PROTOCOL_V,
     source: EMBED_SOURCE,
-    mode,
-    challengeId,
+    mode: opts.mode,
+    challengeId: opts.challengeId ?? null,
+    liveCode: opts.liveCode ?? null,
+    liveRole: opts.liveRole ?? null,
   });
 }
 
@@ -341,8 +544,77 @@ export function emitChallengeClose(
   });
 }
 
+export function emitLiveCreated(opts: {
+  code: string;
+  role: LiveRole;
+  config: LiveRoomConfig;
+  matchup: RandomMatchup | null;
+}): void {
+  const joinPath = `?embed=1&mode=live&live=${encodeURIComponent(opts.code)}&role=guest&autoplay=1`;
+  postToHost({
+    type: "matchday.live.created",
+    v: EMBED_PROTOCOL_V,
+    source: EMBED_SOURCE,
+    code: opts.code,
+    role: opts.role,
+    config: opts.config,
+    matchup: opts.matchup,
+    joinPath,
+    embedUrl: liveGuestEmbedUrl(opts.code),
+  });
+}
+
+export function buildLiveEmbedResult(opts: {
+  code: string;
+  role: LiveRole;
+  outcome: "win" | "loss" | "draw";
+  me: LiveKpis;
+  them: LiveKpis;
+  config: LiveRoomConfig | null;
+}): LiveEmbedResult {
+  return {
+    type: "matchday.live.result",
+    v: EMBED_PROTOCOL_V,
+    code: opts.code,
+    role: opts.role,
+    outcome: opts.outcome,
+    me: opts.me,
+    them: opts.them,
+    config: opts.config,
+    playerClub: opts.config?.playerClub ?? null,
+    aiClub: opts.config?.aiClub ?? null,
+    difficulty: opts.config?.difficulty ?? null,
+  };
+}
+
+export function emitLiveResult(result: LiveEmbedResult): LiveEmbedResult {
+  postToHost({ ...result, source: EMBED_SOURCE });
+  return result;
+}
+
+export function emitLiveClose(result: LiveEmbedResult | null, code: string | null): void {
+  postToHost({
+    type: "matchday.live.close",
+    v: EMBED_PROTOCOL_V,
+    source: EMBED_SOURCE,
+    code,
+    result,
+  });
+}
+
+export function emitLiveError(message: string): void {
+  postToHost({
+    type: "matchday.live.error",
+    v: EMBED_PROTOCOL_V,
+    source: EMBED_SOURCE,
+    message,
+  });
+}
+
 /** Materialize create-from-query into a Challenge. */
-export function materializeEmbedCreate(create: NonNullable<EmbedLaunch["create"]>): Challenge {
+export function materializeEmbedCreate(
+  create: NonNullable<EmbedLaunch["create"]>,
+): Challenge {
   return createChallenge({
     goal: create.goal,
     difficulty: create.difficulty,
@@ -373,7 +645,7 @@ export function installEmbedHostListener(handlers: {
       postToHost(buildCatalogMessage());
       return;
     }
-    if (type === "matchday.challenge.close") {
+    if (type === "matchday.challenge.close" || type === "matchday.live.close") {
       handlers.onCloseRequest?.();
     }
   };
@@ -381,4 +653,8 @@ export function installEmbedHostListener(handlers: {
   return () => window.removeEventListener("message", onMessage);
 }
 
-export { challengeCreateEmbedUrl, challengeEmbedUrl };
+export {
+  challengeCreateEmbedUrl,
+  challengeEmbedUrl,
+  randomMatchup,
+};
