@@ -657,6 +657,61 @@ export const DEFAULT_PLAYER_CLUB: ClubId = "ksc";
 export const DEFAULT_AI_CLUB: ClubId = "vfb";
 export const DEFAULT_DERBY_ID = "badenwuerttemberg";
 
+export type MatchupScope = "clubs" | "nations" | "any";
+
+export type RandomMatchup = {
+  playerClub: ClubId;
+  aiClub: ClubId;
+  scope: "clubs" | "nations";
+  /** Optional preset id when drawn from DERBIES / NATIONAL_FIXTURES */
+  presetId?: string;
+};
+
+/** Random club or national matchup for Live-PvP embeds (prefers known rivalries ~40%). */
+export function randomMatchup(scope: MatchupScope = "any"): RandomMatchup {
+  const rollNations =
+    scope === "nations" || (scope === "any" && Math.random() < 0.4);
+  if (rollNations) {
+    if (Math.random() < 0.4 && NATIONAL_FIXTURES.length) {
+      const f =
+        NATIONAL_FIXTURES[(Math.random() * NATIONAL_FIXTURES.length) | 0]!;
+      const flip = Math.random() < 0.5;
+      return {
+        playerClub: flip ? f.b : f.a,
+        aiClub: flip ? f.a : f.b,
+        scope: "nations",
+        presetId: f.id,
+      };
+    }
+    const pool = allNationals();
+    const a = pool[(Math.random() * pool.length) | 0]!;
+    let b = pool[(Math.random() * pool.length) | 0]!;
+    let guard = 0;
+    while (b.id === a.id && guard++ < 20) {
+      b = pool[(Math.random() * pool.length) | 0]!;
+    }
+    return { playerClub: a.id, aiClub: b.id, scope: "nations" };
+  }
+  if (Math.random() < 0.4 && DERBIES.length) {
+    const d = DERBIES[(Math.random() * DERBIES.length) | 0]!;
+    const flip = Math.random() < 0.5;
+    return {
+      playerClub: flip ? d.b : d.a,
+      aiClub: flip ? d.a : d.b,
+      scope: "clubs",
+      presetId: d.id,
+    };
+  }
+  const pool = allClubs();
+  const a = pool[(Math.random() * pool.length) | 0]!;
+  let b = pool[(Math.random() * pool.length) | 0]!;
+  let guard = 0;
+  while (b.id === a.id && guard++ < 20) {
+    b = pool[(Math.random() * pool.length) | 0]!;
+  }
+  return { playerClub: a.id, aiClub: b.id, scope: "clubs" };
+}
+
 /** Live branding for the current match / menu preview (side slots stay ksc|vfb). */
 let brandHeim: Club = CLUBS.ksc!;
 let brandGast: Club = CLUBS.vfb!;

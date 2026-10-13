@@ -200,14 +200,21 @@ import {
   type ChallengeGoal,
 } from "./game/challenge";
 import {
+  buildLiveEmbedResult,
   clearEmbedLaunchParams,
   emitChallengeClose,
   emitChallengeCreated,
   emitChallengeResult,
+  emitLiveClose,
+  emitLiveCreated,
+  emitLiveError,
+  emitLiveResult,
   emitReady,
   installEmbedHostListener,
   materializeEmbedCreate,
   parseEmbedLaunch,
+  resolveLiveMatchup,
+  type LiveEmbedResult,
 } from "./game/embedBridge";
 import {
   createLiveHost,
@@ -217,6 +224,7 @@ import {
   recordLiveResult,
   settingsFromLive,
   type LiveKpis,
+  type LiveRole,
   type LiveSession,
 } from "./game/liveChallenge";
 import {
@@ -735,10 +743,17 @@ const state = {
   /** Solo tournament run */
   tournament: null as TournamentState | null,
   tournamentDiff: "normal" as TournamentDifficulty,
-  /** Host-app embed (async challenge) */
+  /** Host-app embed (async challenge / live) */
   embed: false,
   embedAutoplay: false,
   embedPreferredRole: null as "a" | "b" | null,
+  embedLiveRole: null as LiveRole | null,
+  /** Matchup came from host app / random — hide lobby picker */
+  embedLiveLockedMatchup: false,
+  embedLiveLastResult: null as LiveEmbedResult | null,
+  /** Auto ready/start once for embed lobbies */
+  embedLiveAutoReadySent: false,
+  embedLiveAutoStarted: false,
 };
 
 function menuAtmosphereHtml(): string {
@@ -777,6 +792,12 @@ function playerNameStored(): string {
 }
 
 function askLiveName(fallback = "Spieler"): string {
+  if (state.embed) {
+    const stored = (localStorage.getItem("matchday-player-name") || "").trim();
+    const cleaned = (stored || fallback).slice(0, 20);
+    localStorage.setItem("matchday-player-name", cleaned);
+    return cleaned;
+  }
   const cur = playerNameStored() || fallback;
   const name = window.prompt("Dein Name für Live-PvP:", cur);
   if (!name) return cur;
@@ -795,6 +816,8 @@ function destroyLiveSession(): void {
   state.livePvpGuestMix = null;
   state.livePvpTick = 0;
   state.livePvpLastAck = 0;
+  state.embedLiveAutoReadySent = false;
+  state.embedLiveAutoStarted = false;
 }
 
 function kpisFromMatch(m: Match, name: string): LiveKpis {
@@ -1366,7 +1389,139 @@ function beginChallengePlay(c: Challenge, role: "a" | "b", name: string): void {
 }
 
 function returnToHostApp(): void {
+  if (state.live || state.embedLiveRole) {
+    emitLiveClose(
+      state.embedLiveLastResult,
+      state.live?.code ?? null,
+    );
+    destroyLiveSession();
+    return;
+  }
   emitChallengeClose(state.challenge, state.challengeRole);
+}
+
+function applyLiveMatchupToMenu(playerClub: string, aiClub: string, difficulty: typeof state.menuDifficulty): void {
+  state.menuPlayerClub = playerClub as ClubId;
+  state.menuAiClub = aiClub as ClubId;
+  state.menuDifficulty = difficulty;
+  state.teamScope = getClub(playerClub).kind === "national" ? "nations" : "clubs";
+  state.pickMode = "free";
+  syncMenuBrandingPreview();
+  setClubSoundIdentity(playerClub, aiClub);
+}
+
+async function bootstrapLiveEmbed(launch: ReturnType<typeof parseEmbedLaunch>): Promise<void> {
+  const name =
+    launch.playerName ||
+    localStorage.getItem("matchday-player-name") ||
+    (launch.liveRole === "guest" ? "Gast" : "Host");
+  localStorage.setItem("matchday-player-name", name.slice(0, 20));
+  try {
+    if (launch.liveRole === "guest") {
+      if (!launch.liveCode) {
+        throw new Error("Live-Raumcode fehlt (live=CODE)");
+      }
+      const session = await joinLiveGuest(launch.liveCode, name);
+      state.live = session;
+      bindLiveSession(session);
+      emitReady({
+        mode: "live",
+        liveCode: session.code,
+        liveRole: "guest",
+      });
+      go("liveLobby");
+      return;
+    }
+
+    const matchup = resolveLiveMatchup(launch);
+    applyLiveMatchupToMenu(
+      matchup.playerClub,
+      matchup.aiClub,
+      launch.difficulty,
+    );
+    state.embedLiveLockedMatchup = true;
+    const session = await createLiveHost(name, launch.liveCode || undefined);
+    const config = {
+      playerClub: matchup.playerClub,
+      aiClub: matchup.aiClub,
+      difficulty: launch.difficulty,
+      hostName: name,
+      pvp: true as const,
+    };
+    session.setConfig(config);
+    state.live = session;
+    bindLiveSession(session);
+    emitLiveCreated({
+      code: session.code,
+      role: "host",
+      config,
+      matchup,
+    });
+    emitReady({
+      mode: "live",
+      liveCode: session.code,
+      liveRole: "host",
+    });
+    go("liveLobby");
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Live-Embed fehlgeschlagen";
+    emitLiveError(message);
+    if (state.embed) {
+      app.innerHTML = moodMenu(`
+        ${moodHead({
+          eyebrow: "Live · App",
+          title: "Verbindung fehlgeschlagen",
+          lead: escapeHtml(message),
+        })}
+        <button class="btn ksc" id="live-embed-fail-back" type="button">Zurück zur App</button>
+      `);
+      app.querySelector("#live-embed-fail-back")?.addEventListener("click", () => {
+        returnToHostApp();
+      });
+      return;
+    }
+    window.alert(message);
+    go("menu");
+  }
+}
+
+function maybeEmbedLiveAutoFlow(): void {
+  const live = state.live;
+  if (!state.embed || !live || !state.embedAutoplay) return;
+
+  if (live.connected && !live.localReady && !state.embedLiveAutoReadySent) {
+    state.embedLiveAutoReadySent = true;
+    live.sendReady(true, defaultSetup().mix);
+  }
+
+  if (
+    live.role === "host" &&
+    live.connected &&
+    live.localReady &&
+    live.remoteReady &&
+    !state.embedLiveAutoStarted
+  ) {
+    state.embedLiveAutoStarted = true;
+    const clubs = {
+      playerClub: live.config?.playerClub || state.menuPlayerClub,
+      aiClub: live.config?.aiClub || state.menuAiClub,
+    };
+    live.setConfig({
+      playerClub: clubs.playerClub,
+      aiClub: clubs.aiClub,
+      difficulty: live.config?.difficulty || state.menuDifficulty,
+      hostName: live.localName,
+      guestName: live.remoteName || undefined,
+      pvp: true,
+    });
+    const mix = defaultSetup().mix;
+    const guestMix = live.remoteMix ?? mix;
+    window.setTimeout(() => {
+      if (!state.live || state.screen !== "liveLobby") return;
+      state.live.sendStart(mix, guestMix);
+    }, 600);
+  }
 }
 
 function renderMenu(): void {
@@ -2846,7 +3001,10 @@ function renderLiveHub(): void {
 
 function bindLiveSession(session: LiveSession): void {
   session.onUpdate(() => {
-    if (state.screen === "liveLobby") renderLiveLobby();
+    if (state.screen === "liveLobby") {
+      maybeEmbedLiveAutoFlow();
+      renderLiveLobby();
+    }
     if (state.screen === "match") syncLiveKpiPanel();
     if (state.screen === "liveResult" && state.liveWaitingOpponent) {
       maybeFinishLiveResult();
@@ -2909,9 +3067,10 @@ function startLivePvpMatch(): void {
 function renderLiveLobby(): void {
   const live = state.live;
   if (!live) {
-    go("liveHub");
+    go(state.embed ? "menu" : "liveHub");
     return;
   }
+  maybeEmbedLiveAutoFlow();
   syncMenuBrandingPreview();
   const brand = currentBranding();
   const cfg = live.config;
@@ -2919,11 +3078,13 @@ function renderLiveLobby(): void {
     ? `${clubCode(cfg.playerClub) || cfg.playerClub} vs ${clubCode(cfg.aiClub) || cfg.aiClub}`
     : `${brand.heim.short} vs ${brand.gast.short}`;
   const bothReady = live.localReady && live.remoteReady && live.connected;
+  const showMatchupPicker =
+    live.role === "host" && !(state.embed && state.embedLiveLockedMatchup);
 
   app.innerHTML = moodMenu(`
     ${moodHead({
       eyebrow: `Live · ${escapeHtml(live.status)}`,
-      title: "Lobby",
+      title: state.embed ? "Live · App" : "Lobby",
       lead: escapeHtml(matchLine),
       extra: `<p class="live-code">${escapeHtml(live.code)}</p>
         <p class="tiny mood-center">Live-PvP · ein Spielfeld · jeder sieht die eigene Mannschaft links</p>
@@ -2934,18 +3095,30 @@ function renderLiveLobby(): void {
         </div>`,
     })}
     ${
-      live.role === "host"
+      showMatchupPicker
         ? `<div class="card stack">
         <p class="card-label">Matchup (du links · Gegner rechts — bei dir)</p>
         ${matchupPickHtml({ showDiff: true, showBehavior: false })}
         <p class="tiny">Gegner sieht bei sich ebenfalls die eigene Mannschaft links. Keine KI — echtes Duell.</p>
       </div>`
-        : `<div class="card stack"><p class="tiny">Du bist <b>Gast</b> — deine Mannschaft liegt bei dir <b>links</b>. Host legt das Matchup fest; gleiches Spielfeld, live gegeneinander.</p></div>`
+        : live.role === "host"
+          ? `<div class="card stack"><p class="tiny">${
+              state.embed
+                ? "Matchup von der App gesetzt (zufällig oder vorgegeben). Warte auf den Gegner — Anpfiff startet automatisch."
+                : "Matchup fest."
+            }</p></div>`
+          : `<div class="card stack"><p class="tiny">Du bist <b>Gast</b> — deine Mannschaft liegt bei dir <b>links</b>. Host legt das Matchup fest; gleiches Spielfeld, live gegeneinander.${
+              state.embed ? " Bereit-Status wird automatisch gesetzt." : ""
+            }</p></div>`
     }
     <div class="card stack">
       <div class="live-ready-row">
         <span><span class="live-dot ${live.localReady ? "on" : ""}"></span> Du (${escapeHtml(live.localName)})</span>
-        <button class="btn secondary" id="live-ready" type="button">${live.localReady ? "Nicht bereit" : "Bereit"}</button>
+        ${
+          state.embed && state.embedAutoplay
+            ? `<span class="tiny">${live.localReady ? "bereit" : "…"}</span>`
+            : `<button class="btn secondary" id="live-ready" type="button">${live.localReady ? "Nicht bereit" : "Bereit"}</button>`
+        }
       </div>
       <div class="live-ready-row">
         <span><span class="live-dot ${live.remoteReady ? "on" : ""}"></span> Gegner (${escapeHtml(live.remoteName || "…")})</span>
@@ -2954,13 +3127,17 @@ function renderLiveLobby(): void {
     </div>
     ${
       live.role === "host"
-        ? `<button class="btn ksc" id="live-start" type="button" ${bothReady ? "" : "disabled"}>Anpfiff (beide bereit)</button>`
+        ? state.embed && state.embedAutoplay
+          ? `<p class="tiny mood-center">${bothReady ? "Anpfiff…" : "Warte auf Gegner…"}</p>`
+          : `<button class="btn ksc" id="live-start" type="button" ${bothReady ? "" : "disabled"}>Anpfiff (beide bereit)</button>`
         : `<p class="tiny mood-center">Warte auf Host-Anpfiff…</p>`
     }
-    <button class="btn secondary" id="live-lobby-back" type="button">Abbrechen</button>
+    <button class="btn secondary" id="live-lobby-back" type="button">${
+      state.embed ? "Zurück zur App" : "Abbrechen"
+    }</button>
   `);
 
-  if (live.role === "host") {
+  if (showMatchupPicker) {
     bindMatchupPickHandlers(() => {
       const clubs = menuClubsFromState();
       live.setConfig({
@@ -2973,13 +3150,20 @@ function renderLiveLobby(): void {
       renderLiveLobby();
     });
   }
-  app.querySelector("#live-ready")!.addEventListener("click", () => {
-    sfx("ui");
-    live.sendReady(!live.localReady);
-    renderLiveLobby();
-  });
+  const readyBtn = app.querySelector("#live-ready");
+  if (readyBtn) {
+    readyBtn.addEventListener("click", () => {
+      sfx("ui");
+      live.sendReady(!live.localReady);
+      renderLiveLobby();
+    });
+  }
   app.querySelector("#live-lobby-back")!.addEventListener("click", () => {
     sfx("ui");
+    if (state.embed) {
+      returnToHostApp();
+      return;
+    }
     destroyLiveSession();
     go("liveHub");
   });
@@ -3029,6 +3213,25 @@ function syncLiveKpiPanel(): void {
     <span class="tiny">${k.done ? k.detail || "fertig" : "läuft…"}</span>`;
 }
 
+function publishLiveEmbedResult(
+  live: LiveSession,
+  me: LiveKpis,
+  them: LiveKpis,
+  outcome: "win" | "loss" | "draw",
+): void {
+  if (!state.embed) return;
+  const payload = buildLiveEmbedResult({
+    code: live.code,
+    role: live.role,
+    outcome,
+    me,
+    them,
+    config: live.config,
+  });
+  state.embedLiveLastResult = payload;
+  emitLiveResult(payload);
+}
+
 function maybeFinishLiveResult(): void {
   const live = state.live;
   if (!live || !state.liveMyKpi) return;
@@ -3042,6 +3245,7 @@ function maybeFinishLiveResult(): void {
   });
   state.liveOutcome = outcome;
   state.liveWaitingOpponent = false;
+  publishLiveEmbedResult(live, state.liveMyKpi, them, outcome);
   renderLiveResult();
 }
 
@@ -3049,7 +3253,7 @@ function renderLiveResult(): void {
   const live = state.live;
   const me = state.liveMyKpi;
   if (!live || !me) {
-    go("liveHub");
+    go(state.embed ? "menu" : "liveHub");
     return;
   }
   const them = live.remoteKpi;
@@ -3076,9 +3280,15 @@ function renderLiveResult(): void {
           <p class="tiny">${them ? `${formatMinute(them.minute)} · läuft…` : "verbindet…"}</p>
         </div>
       </div>
-      <button class="btn secondary" id="live-wait-leave" type="button">Abbrechen</button>
+      <button class="btn secondary" id="live-wait-leave" type="button">${
+        state.embed ? "Zurück zur App" : "Abbrechen"
+      }</button>
     `);
     app.querySelector("#live-wait-leave")!.addEventListener("click", () => {
+      if (state.embed) {
+        returnToHostApp();
+        return;
+      }
       destroyLiveSession();
       go("menu");
     });
@@ -3092,6 +3302,9 @@ function renderLiveResult(): void {
       them,
     });
     state.liveOutcome = outcome;
+    publishLiveEmbedResult(live, me, them, outcome);
+  } else if (state.embed && !state.embedLiveLastResult) {
+    publishLiveEmbedResult(live, me, them, state.liveOutcome);
   }
   const outcome = state.liveOutcome;
   const stats = loadLiveStats();
@@ -3129,18 +3342,36 @@ function renderLiveResult(): void {
       <p class="tiny">Tore gesamt ${stats.goalsFor}:${stats.goalsAgainst} · Biere ${stats.beers}</p>
     </div>
     <div class="row mood-actions">
-      <button class="btn secondary grow" id="live-res-menu" type="button">Menü</button>
-      <button class="btn ksc grow" id="live-res-again" type="button">Live-Hub</button>
+      <button class="btn ${state.embed ? "ksc" : "secondary"} grow" id="live-res-menu" type="button">${
+        state.embed ? "Zurück zur App" : "Menü"
+      }</button>
+      ${
+        state.embed
+          ? ""
+          : `<button class="btn ksc grow" id="live-res-again" type="button">Live-Hub</button>`
+      }
     </div>
+    ${
+      state.embed
+        ? `<p class="tiny">Ergebnis an die App gemeldet.</p>`
+        : ""
+    }
   `);
   app.querySelector("#live-res-menu")!.addEventListener("click", () => {
+    if (state.embed) {
+      returnToHostApp();
+      return;
+    }
     destroyLiveSession();
     go("menu");
   });
-  app.querySelector("#live-res-again")!.addEventListener("click", () => {
-    destroyLiveSession();
-    go("liveHub");
-  });
+  const again = app.querySelector("#live-res-again");
+  if (again) {
+    again.addEventListener("click", () => {
+      destroyLiveSession();
+      go("liveHub");
+    });
+  }
 }
 
 function renderSetup(): void {
@@ -4708,7 +4939,7 @@ function renderResult(): void {
   })();
 }
 
-// Deep-link / host-app embed: Challenge ?c=… or create-from-query
+// Deep-link / host-app embed: Challenge ?c=… / Live ?live=…
 {
   const launch = parseEmbedLaunch();
   let linked = launch.challenge || challengeFromLocation();
@@ -4723,6 +4954,7 @@ function renderResult(): void {
     state.embed = true;
     state.embedAutoplay = launch.autoplay;
     state.embedPreferredRole = launch.role;
+    state.embedLiveRole = launch.liveRole;
     document.documentElement.classList.add("embed-mode");
     document.body?.classList.add("embed-mode");
     installEmbedHostListener({
@@ -4734,7 +4966,13 @@ function renderResult(): void {
     localStorage.setItem("matchday-player-name", launch.playerName);
   }
 
-  if (linked) {
+  if (launch.embed && launch.mode === "live" && launch.liveRole) {
+    clearChallengeFromUrl();
+    clearEmbedLaunchParams();
+    state.screen = "liveHub";
+    render();
+    void bootstrapLiveEmbed(launch);
+  } else if (linked) {
     upsertChallengeHistory(linked);
     state.challenge = linked;
     state.challengeRole = null;
@@ -4761,21 +4999,23 @@ function renderResult(): void {
       state.challengeRole = open;
       state.setup = defaultSetup();
       state.screen = "setup";
-      emitReady(linked.id, "challenge");
+      emitReady({ mode: "challenge", challengeId: linked.id });
     } else if (open === "done" || (linked.a && linked.b)) {
       state.screen = "challengeResult";
-      if (state.embed) emitReady(linked.id, "challenge");
+      if (state.embed) emitReady({ mode: "challenge", challengeId: linked.id });
     } else {
       state.screen = "challengeLobby";
-      if (state.embed) emitReady(linked.id, "challenge");
+      if (state.embed) emitReady({ mode: "challenge", challengeId: linked.id });
     }
-  } else if (state.embed) {
-    clearEmbedLaunchParams();
-    emitReady(null, launch.mode);
+    render();
+  } else {
+    if (state.embed) {
+      clearEmbedLaunchParams();
+      emitReady({ mode: launch.mode });
+    }
+    render();
   }
 }
-
-render();
 
 /** Visual QA: `?demoStands=1` auto-starts a paused match with filled Bau-slots. */
 if (new URLSearchParams(location.search).has("demoStands")) {

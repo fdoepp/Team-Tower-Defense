@@ -156,14 +156,27 @@ export type LiveSession = {
   onSnap(cb: (snap: PvpSnap) => void): void;
 };
 
-export async function createLiveHost(name: string): Promise<LiveSession> {
+function normalizeRoomCode(raw?: string): string {
+  const cleaned = (raw || "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 8);
+  return cleaned.length >= 4 ? cleaned : roomId();
+}
+
+/** Host a Live room. Optional `code` lets a host app pre-assign the invite code. */
+export async function createLiveHost(
+  name: string,
+  code?: string,
+): Promise<LiveSession> {
   await loadPeerScript();
   const PeerCtor = window.Peer!;
-  const code = roomId();
-  const peer = new PeerCtor(livePeerId(code), {
+  const room = normalizeRoomCode(code);
+  const peer = new PeerCtor(livePeerId(room), {
     debug: 0,
   });
-  return wireSession(peer, code, "host", name);
+  return wireSession(peer, room, "host", name);
 }
 
 export async function joinLiveGuest(
@@ -196,6 +209,11 @@ type SessionInternal = LiveSession & {
 
 function waitPeerOpen(peer: PeerLike): Promise<void> {
   return new Promise((resolve, reject) => {
+    // PeerJS may already be open (e.g. after wireSession awaited "open").
+    if (peer.id) {
+      resolve();
+      return;
+    }
     const t = window.setTimeout(
       () => reject(new Error("Peer-Timeout — bitte erneut versuchen")),
       15000,
