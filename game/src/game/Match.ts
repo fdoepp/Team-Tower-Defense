@@ -31,6 +31,7 @@ import {
   BLITZ_CLICK_RES,
   BLITZ_COMBAT_BUFF_MUL,
   BLITZ_COMBAT_BUFF_SEC,
+  BLITZ_COMBAT_FAN_CAP,
   BLITZ_EXTRA_HOOLS,
   BLITZ_EXTRA_ULTRAS,
   BLITZ_GOAL_LOCK_SEC,
@@ -593,8 +594,8 @@ export class Match {
 
     if (this.blitz) {
       this.seedBlitzStart();
-      this.toast("Blitz · 60s · Tippe Block · Gebäude · Gegner!", 4.5);
-      this.flash("Blitz! Tippen = Power", "ok", 2.4);
+      this.toast("Blitz · 60s · Tribüne = Stimmung · Stände tippen!", 4.5);
+      this.flash("Blitz! Upgrade · Senden · Tippen", "ok", 2.4);
     } else {
       this.toast(
         this.pvp
@@ -642,16 +643,32 @@ export class Match {
       ordner: lv,
     };
 
-    const plan: Array<{ index: number; kind: BuildingKind }> = [
+    /**
+     * All 6 colored Bau slots pre-filled — upgrade/send only, no build phase.
+     * Heim: Bier Bier Ordner (far) / Fanshop Fanshop Ordner (near) — Ordner face mid.
+     * Gast: mirrored so Ordner face mid (indices 0+3).
+     */
+    const heimPlan: Array<{ index: number; kind: BuildingKind }> = [
+      { index: 0, kind: "bier" },
       { index: 1, kind: "bier" },
-      { index: 2, kind: "fanshop" },
-      { index: 4, kind: "ordner" },
+      { index: 2, kind: "ordner" },
+      { index: 3, kind: "fanshop" },
+      { index: 4, kind: "fanshop" },
+      { index: 5, kind: "ordner" },
+    ];
+    const gastPlan: Array<{ index: number; kind: BuildingKind }> = [
+      { index: 0, kind: "ordner" },
+      { index: 1, kind: "bier" },
+      { index: 2, kind: "bier" },
+      { index: 3, kind: "ordner" },
+      { index: 4, kind: "fanshop" },
+      { index: 5, kind: "fanshop" },
     ];
     for (const side of [
-      { block: HEIM_BLOCK, owner: this.playerTeam },
-      { block: GAST_BLOCK, owner: this.aiTeam },
+      { block: HEIM_BLOCK, owner: this.playerTeam, plan: heimPlan },
+      { block: GAST_BLOCK, owner: this.aiTeam, plan: gastPlan },
     ] as const) {
-      for (const p of plan) {
+      for (const p of side.plan) {
         this.placeBuilding(side.block, p.index, p.kind, true, side.owner);
         const s = this.slots.find(
           (x) => x.blockId === side.block && x.index === p.index,
@@ -687,24 +704,38 @@ export class Match {
         this.makeFan("hooligans", this.aiTeam, GAST_BLOCK, seat++),
       );
     }
-    // One free Ordner at each home post (still unlimited to hire more)
+    // One free Ordner at each home Ordnerpost (2 posts × side)
     for (const side of [
       { block: HEIM_BLOCK, team: this.playerTeam },
       { block: GAST_BLOCK, team: this.aiTeam },
     ] as const) {
-      const post = this.slots.find(
+      const posts = this.slots.filter(
         (x) =>
           x.blockId === side.block &&
           x.building === "ordner" &&
           x.owner === side.team,
       );
-      if (!post) continue;
-      const st = this.makeSteward(side.team, post);
-      this.fans.push(st);
+      for (const post of posts) {
+        this.fans.push(this.makeSteward(side.team, post));
+      }
     }
 
     this.linePlayer = this.buildFrontierGx(this.playerTeam);
     this.lineAi = this.buildFrontierGx(this.aiTeam);
+  }
+
+  /** Living combat fans (no Ordner) — used for Blitz population cap. */
+  countCombatFans(team: TeamId): number {
+    let n = 0;
+    for (const f of this.fans) {
+      if (f.hp <= 0 || f.isSteward || f.team !== team) continue;
+      n++;
+    }
+    return n;
+  }
+
+  blitzFanCapReached(team: TeamId): boolean {
+    return this.blitz && this.countCombatFans(team) >= BLITZ_COMBAT_FAN_CAP;
   }
 
   /**
@@ -1735,6 +1766,7 @@ export class Match {
   }
 
   canQuickBuy(kind: FanKind): boolean {
+    if (this.blitzFanCapReached(this.actingTeam())) return false;
     return this.canBuy(kind) && this.buySlotForPlayer() != null;
   }
 
@@ -2180,6 +2212,10 @@ export class Match {
       this.toast("Block noch nicht unter Kontrolle");
       return false;
     }
+    if (this.blitzFanCapReached(team)) {
+      this.toast(`Max. ${BLITZ_COMBAT_FAN_CAP} Personen — warte auf Ausfälle`);
+      return false;
+    }
     // Blocks are uncapped; if a specific seat is taken, pick the next free index.
     let seat = seatIndex;
     if (this.seatOccupied(blockId, seat)) {
@@ -2316,7 +2352,7 @@ export class Match {
     const s = this.slots.find(
       (x) => x.blockId === sel.blockId && x.index === sel.index,
     );
-    if (!s) return false;
+    if (!s?.building) return false;
     const cost = this.upgradeCost(s);
     if (cost == null) {
       this.toast("Max. Stufe");
@@ -2327,15 +2363,40 @@ export class Match {
       return false;
     }
     this.addTeamGold(team, -cost);
-    s.level++;
-    if (s.building === "ordner") {
-      const prev = s.structHp;
-      this.initOrdnerPostHp(s);
-      if (prev > 0) s.structHp = Math.min(s.structMaxHp, prev + ORDNER_POST_HP_PER_LEVEL * 0.5);
+    const kind = s.building;
+    const nextLv = Math.min(UPGRADE_MAX, (s.level || 1) + 1);
+    // Blitz: one upgrade pays once and levels every owned stand of that kind
+    const targets = this.blitz
+      ? this.slots.filter(
+          (x) =>
+            x.building === kind &&
+            x.owner === team &&
+            !x.greyNeutral &&
+            (kind !== "ordner" || (x.structHp ?? 1) > 0),
+        )
+      : [s];
+    for (const slot of targets) {
+      slot.level = nextLv;
+      if (kind === "ordner") {
+        const prev = slot.structHp;
+        this.initOrdnerPostHp(slot);
+        if (prev > 0) {
+          slot.structHp = Math.min(
+            slot.structMaxHp,
+            prev + ORDNER_POST_HP_PER_LEVEL * 0.5,
+          );
+        }
+      }
+      this.floatAtSlot(slot, `Lv${slot.level}`, true);
     }
     this.buildMenu = null;
-    this.floatAtSlot(s, `Lv${s.level}`, true);
-    this.toast(`Upgrade → Lv${s.level}`);
+    const label =
+      kind === "bier" ? "Bierstände" : kind === "fanshop" ? "Fanshops" : "Ordnerposten";
+    this.toast(
+      this.blitz && targets.length > 1
+        ? `Alle ${label} → Lv${nextLv}`
+        : `Upgrade → Lv${nextLv}`,
+    );
     return true;
   }
 
@@ -6033,8 +6094,21 @@ export class Match {
       const cost = UPGRADE_COST[(up.level || 1) + 1] ?? 999;
       if (this.aiGold < cost) continue;
       this.aiGold -= cost;
-      up.level++;
-      if (up.building === "ordner") this.initOrdnerPostHp(up);
+      const kind = up.building!;
+      const nextLv = Math.min(UPGRADE_MAX, (up.level || 1) + 1);
+      const targets = this.blitz
+        ? this.slots.filter(
+            (x) =>
+              x.building === kind &&
+              x.owner === this.aiTeam &&
+              !x.greyNeutral &&
+              (kind !== "ordner" || (x.structHp ?? 1) > 0),
+          )
+        : [up];
+      for (const slot of targets) {
+        slot.level = nextLv;
+        if (kind === "ordner") this.initOrdnerPostHp(slot);
+      }
       return;
     }
   }
@@ -6047,14 +6121,18 @@ export class Match {
     const trailing = this.aiTrailingCrowd();
     if (Math.random() > (trailing ? 0.7 : 0.55) * act) return;
     const own = this.countTeamFans(this.aiTeam);
-    const target =
+    const combat = own.normalos + own.ultras + own.hooligans;
+    if (this.blitz && combat >= BLITZ_COMBAT_FAN_CAP) return;
+    const target = Math.min(
+      this.blitz ? BLITZ_COMBAT_FAN_CAP : 999,
       this.diffProf.fanTarget +
-      (this.minute >= this.diffProf.lateMinute
-        ? 2
-        : this.minute >= this.diffProf.midMinute
-          ? 1
-          : 0);
-    if (own.normalos + own.ultras + own.hooligans >= target) return;
+        (this.minute >= this.diffProf.lateMinute
+          ? 2
+          : this.minute >= this.diffProf.midMinute
+            ? 1
+            : 0),
+    );
+    if (combat >= target) return;
 
     const seat = this.freeSeat(GAST_BLOCK);
     if (seat == null) return;
