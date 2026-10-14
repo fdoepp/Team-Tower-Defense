@@ -83,6 +83,7 @@ import {
   getClub,
   isNational,
   NATIONAL_FIXTURES,
+  randomBlitzMatchup,
   setSideBranding,
   type Club,
   type ClubId,
@@ -1080,6 +1081,18 @@ function menuClubsFromState(): { playerClub: string; aiClub: string } {
   };
 }
 
+/** Roll two distinct clubs from the Blitz pool into menu branding. */
+function applyBlitzRandomMatchup(): void {
+  const m = randomBlitzMatchup();
+  state.menuPlayerClub = m.playerClub;
+  state.menuAiClub = m.aiClub;
+  state.teamScope = "clubs";
+  state.pickMode = "free";
+  state.menuPlayAsA = true;
+  syncMenuBrandingPreview();
+  setClubSoundIdentity(m.playerClub, m.aiClub);
+}
+
 /** Shared Vereine/National → Unterwahl + optional Diff/Verhalten (Solo & Challenge). */
 function matchupPickHtml(opts: {
   showDiff?: boolean;
@@ -1087,6 +1100,50 @@ function matchupPickHtml(opts: {
 }): string {
   const derby = findDerby(state.menuDerbyId);
   const fix = findNationalFixture(state.menuNationalFixtureId);
+  const diff = opts.showDiff
+    ? `<label class="field">KI
+          <select id="diff">
+            <option value="easy" ${state.menuDifficulty === "easy" ? "selected" : ""}>Einfach</option>
+            <option value="normal" ${state.menuDifficulty === "normal" ? "selected" : ""}>Mittel</option>
+            <option value="hard" ${state.menuDifficulty === "hard" ? "selected" : ""}>Schwer</option>
+          </select>
+        </label>`
+    : "";
+  const behavior = opts.showBehavior
+    ? `<label class="field">Rivalen-Charakter
+          <select id="ai-behavior">
+            ${(
+              [
+                "balanced",
+                "patient",
+                "aggro",
+                "beer",
+                "earlywin",
+              ] as AiBehavior[]
+            )
+              .map(
+                (b) =>
+                  `<option value="${b}" ${state.menuBehavior === b ? "selected" : ""}>${AI_BEHAVIOR_LABEL[b]} — ${AI_BEHAVIOR_BLURB[b]}</option>`,
+              )
+              .join("")}
+          </select>
+        </label>`
+    : "";
+
+  // Blitz: fixed random pool — no club/nation pickers
+  if (state.blitz) {
+    const a = getClub(state.menuPlayerClub);
+    const b = getClub(state.menuAiClub);
+    return `
+      <div class="card stack team-pick">
+        <p class="tiny">Zufallsmatchup aus Mannheim · FCK · KSC · Leverkusen · Efferen · Dresden · Marseille</p>
+        <p class="sub match-line">${escapeHtml(a.short)} vs ${escapeHtml(b.short)}</p>
+        <button type="button" class="btn secondary grow" id="blitz-reroll">Nochmal würfeln</button>
+        ${diff}
+        ${behavior}
+      </div>`;
+  }
+
   let pickControls = "";
   if (state.teamScope === "clubs" && state.pickMode === "derby") {
     pickControls = `
@@ -1156,35 +1213,6 @@ function matchupPickHtml(opts: {
           <button type="button" class="pick-mode ${state.pickMode === "fixture" ? "on" : ""}" data-pick="fixture">Klassiker</button>
           <button type="button" class="pick-mode ${state.pickMode === "free" ? "on" : ""}" data-pick="free">Frei</button>
         </div>`;
-  const diff = opts.showDiff
-    ? `<label class="field">KI
-          <select id="diff">
-            <option value="easy" ${state.menuDifficulty === "easy" ? "selected" : ""}>Einfach</option>
-            <option value="normal" ${state.menuDifficulty === "normal" ? "selected" : ""}>Mittel</option>
-            <option value="hard" ${state.menuDifficulty === "hard" ? "selected" : ""}>Schwer</option>
-          </select>
-        </label>`
-    : "";
-  const behavior = opts.showBehavior
-    ? `<label class="field">Rivalen-Charakter
-          <select id="ai-behavior">
-            ${(
-              [
-                "balanced",
-                "patient",
-                "aggro",
-                "beer",
-                "earlywin",
-              ] as AiBehavior[]
-            )
-              .map(
-                (b) =>
-                  `<option value="${b}" ${state.menuBehavior === b ? "selected" : ""}>${AI_BEHAVIOR_LABEL[b]} — ${AI_BEHAVIOR_BLURB[b]}</option>`,
-              )
-              .join("")}
-          </select>
-        </label>`
-    : "";
   return `
       <div class="card stack team-pick">
         <div class="pick-mode-row" role="group" aria-label="Mannschaftsart">
@@ -1199,6 +1227,14 @@ function matchupPickHtml(opts: {
 }
 
 function bindMatchupPickHandlers(rerender: () => void): void {
+  const reroll = app.querySelector("#blitz-reroll");
+  if (reroll) {
+    reroll.addEventListener("click", () => {
+      sfx("ui");
+      applyBlitzRandomMatchup();
+      rerender();
+    });
+  }
   app.querySelectorAll<HTMLButtonElement>("[data-scope]").forEach((btn) => {
     btn.addEventListener("click", () => {
       sfx("ui");
@@ -1655,6 +1691,7 @@ function renderMenu(): void {
     state.challenge = null;
     state.challengeRole = null;
     state.blitz = true;
+    applyBlitzRandomMatchup();
     go("soloMatchup");
   });
   // Any menu click primes audio + soft bed (autoplay policy)
@@ -1693,6 +1730,12 @@ function renderSoloMatchup(): void {
   if (awayKitClashActive()) {
     derbyHint += ` · ${brand.gast.short} in Auswärtsfarbe`;
   }
+  if (blitz) {
+    derbyHint = `Zufallsmatchup · Start Lvl 3 · Tippen = Power`;
+    if (awayKitClashActive()) {
+      derbyHint += ` · ${brand.gast.short} in Auswärtsfarbe`;
+    }
+  }
 
   app.innerHTML = moodMenu(`
       ${moodHead({
@@ -1703,11 +1746,7 @@ function renderSoloMatchup(): void {
             ? `${matchLine} · Tippen = Stimmung / Ressourcen / Kampf`
             : matchLine,
         ),
-        extra: `<p class="tiny derby-hint">${escapeHtml(
-          blitz
-            ? `${derbyHint} · Start Lvl 3 · Ordner unbegrenzt`
-            : derbyHint,
-        )}</p>
+        extra: `<p class="tiny derby-hint">${escapeHtml(derbyHint)}</p>
         <div class="kit-preview" aria-hidden="true">
           ${kitSwatchHtml(brand.heim.id)}
           <span class="kit-vs">vs</span>
@@ -4866,6 +4905,9 @@ function renderResult(): void {
         return;
       }
       if (state.blitz) {
+        applyBlitzRandomMatchup();
+        applySoloSettingsFromMenu();
+        state.setup = defaultSetup();
         startBlitzMatch();
         return;
       }

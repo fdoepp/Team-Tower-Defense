@@ -667,6 +667,35 @@ export type RandomMatchup = {
   presetId?: string;
 };
 
+/**
+ * Blitz pool — always roll two distinct sides from this list.
+ * Mannheim, Kaiserslautern, KSC, Leverkusen, Efferen, Dresden, Marseille.
+ */
+export const BLITZ_MATCHUP_CLUBS: readonly ClubId[] = [
+  "waldhof",
+  "kaiserslautern",
+  "ksc",
+  "leverkusen",
+  "efferen",
+  "dynamodresden",
+  "marseille",
+] as const;
+
+/** Random Heim/Gast pair for Blitz (never the same club twice). */
+export function randomBlitzMatchup(): RandomMatchup {
+  const pool = BLITZ_MATCHUP_CLUBS;
+  const a = pool[(Math.random() * pool.length) | 0]!;
+  let b = pool[(Math.random() * pool.length) | 0]!;
+  let guard = 0;
+  while (b === a && guard++ < 24) {
+    b = pool[(Math.random() * pool.length) | 0]!;
+  }
+  if (b === a) {
+    b = pool.find((id) => id !== a) ?? pool[0]!;
+  }
+  return { playerClub: a, aiClub: b, scope: "clubs" };
+}
+
 /** Random club or national matchup for Live-PvP embeds (prefers known rivalries ~40%). */
 export function randomMatchup(scope: MatchupScope = "any"): RandomMatchup {
   const rollNations =
