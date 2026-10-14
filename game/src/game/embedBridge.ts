@@ -9,6 +9,7 @@
  *   ?embed=1&mode=live&role=host&scope=clubs|nations|any&random=1&difficulty=normal&playerName=…&autoplay=1
  *   ?embed=1&mode=live&live=AB12CD&role=guest&playerName=…&autoplay=1
  *   Blitz 60s PvP: add &blitz=1 (uses Blitz club pool when random; result = matchday.live.result)
+ *   Blitz Solo/KI: add &blitz=1&vsAi=1 (no PeerJS; starts immediately; same result event)
  *   Optional fixed clubs: playerClub=&aiClub= (skips random)
  *   Optional host code: live=CODE with role=host
  *
@@ -74,6 +75,8 @@ export type EmbedLaunch = {
   liveRandom: boolean;
   /** Live Blitz 60s reaction PvP */
   blitz: boolean;
+  /** Solo Blitz vs AI (no second client / PeerJS) */
+  vsAi: boolean;
   playerClub: string | null;
   aiClub: string | null;
   difficulty: AiDifficulty;
@@ -314,6 +317,13 @@ export function parseEmbedLaunch(
     qs.get("blitz") === "1" ||
     qs.get("blitz") === "true" ||
     qs.get("variant") === "blitz";
+  const vsAi =
+    blitz &&
+    (qs.get("vsAi") === "1" ||
+      qs.get("vsAi") === "true" ||
+      qs.get("vsai") === "1" ||
+      qs.get("opponent") === "ai" ||
+      qs.get("opponent") === "ki");
 
   return {
     embed,
@@ -326,6 +336,7 @@ export function parseEmbedLaunch(
     liveScope: parseScope(qs.get("scope")),
     liveRandom,
     blitz,
+    vsAi,
     playerClub,
     aiClub,
     difficulty,
@@ -386,6 +397,7 @@ export function liveHostEmbedUrl(
     code?: string;
     autoplay?: boolean;
     blitz?: boolean;
+    vsAi?: boolean;
   } = {},
 ): string {
   const base =
@@ -398,8 +410,9 @@ export function liveHostEmbedUrl(
   qs.set("mode", "live");
   qs.set("role", "host");
   if (opts.blitz) qs.set("blitz", "1");
+  if (opts.vsAi) qs.set("vsAi", "1");
   qs.set("scope", opts.blitz ? "clubs" : opts.scope || "any");
-  if (opts.code) qs.set("live", opts.code.toUpperCase());
+  if (opts.code && !opts.vsAi) qs.set("live", opts.code.toUpperCase());
   if (opts.playerClub && opts.aiClub) {
     qs.set("playerClub", opts.playerClub);
     qs.set("aiClub", opts.aiClub);
@@ -437,6 +450,9 @@ export function clearEmbedLaunchParams(): void {
       "random",
       "blitz",
       "variant",
+      "vsAi",
+      "vsai",
+      "opponent",
     ];
     let changed = false;
     for (const k of keys) {

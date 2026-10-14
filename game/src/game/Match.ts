@@ -193,8 +193,8 @@ export type MatchConfig = {
 };
 
 export type MatchResult = {
-  winner: TeamId;
-  reason: "score" | "et" | "pens" | "invade";
+  winner: TeamId | "draw";
+  reason: "score" | "et" | "pens" | "invade" | "draw";
   score: [number, number];
   detail: string;
   minute: number;
@@ -2633,6 +2633,13 @@ export class Match {
         this.minute = (this.realElapsed / BLITZ_REAL_SEC) * 90;
         this.tickBlitzAiClicks(step);
         if (this.realElapsed >= BLITZ_REAL_SEC) {
+          // Blitz: no ET/pens — tied score is a draw for host apps
+          if (this.scoreKsc === this.scoreVfb) {
+            this.finishDraw(
+              `Zeit abgelaufen — Unentschieden ${this.scoreKsc}:${this.scoreVfb}`,
+            );
+            return;
+          }
           this.endByScore();
           return;
         }
@@ -6327,7 +6334,7 @@ export class Match {
   }
 
   private finish(
-    winner: TeamId,
+    winner: TeamId | "draw",
     reason: MatchResult["reason"],
     detail: string,
   ): void {
@@ -6342,8 +6349,13 @@ export class Match {
     };
     this.speed = 0;
     if (reason === "invade") sfx("storm");
-    sfx(winner === this.playerTeam ? "victory" : "defeat");
+    if (winner === "draw") sfx("whistle");
+    else sfx(winner === this.playerTeam ? "victory" : "defeat");
     startAmbience("menu");
     this.toast(detail);
+  }
+
+  private finishDraw(detail: string): void {
+    this.finish("draw", "draw", detail);
   }
 }

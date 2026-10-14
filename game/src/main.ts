@@ -226,6 +226,7 @@ import {
   settingsFromLive,
   type LiveKpis,
   type LiveRole,
+  type LiveRoomConfig,
   type LiveSession,
 } from "./game/liveChallenge";
 import {
@@ -759,6 +760,10 @@ const state = {
   embedLiveAutoStarted: false,
   /** Live embed wants Blitz 60s PvP */
   embedLiveBlitz: false,
+  /** Embed Solo Blitz vs AI (no PeerJS) */
+  embedLiveVsAi: false,
+  /** Config snapshot for Solo/KI Blitz embed result */
+  embedLiveSoloConfig: null as LiveRoomConfig | null,
 };
 
 function menuAtmosphereHtml(): string {
@@ -824,6 +829,8 @@ function destroyLiveSession(): void {
   state.embedLiveAutoReadySent = false;
   state.embedLiveAutoStarted = false;
   state.embedLiveBlitz = false;
+  state.embedLiveVsAi = false;
+  state.embedLiveSoloConfig = null;
   state.blitz = false;
 }
 
@@ -834,7 +841,8 @@ function kpisFromMatch(m: Match, name: string): LiveKpis {
   const scoreAgainst = me === "ksc" ? m.scoreVfb : m.scoreKsc;
   let winner: LiveKpis["winner"] = null;
   if (r) {
-    winner = r.winner === me ? "player" : "ai";
+    if (r.winner === "draw") winner = null;
+    else winner = r.winner === me ? "player" : "ai";
   }
   const gold = controlGoldOf(m);
   const beers =
@@ -1431,6 +1439,14 @@ function beginChallengePlay(c: Challenge, role: "a" | "b", name: string): void {
 }
 
 function returnToHostApp(): void {
+  if (state.embedLiveVsAi || state.embedLiveSoloConfig) {
+    emitLiveClose(state.embedLiveLastResult, null);
+    state.embedLiveVsAi = false;
+    state.embedLiveSoloConfig = null;
+    state.embedLiveBlitz = false;
+    state.blitz = false;
+    return;
+  }
   if (state.live || state.embedLiveRole) {
     emitLiveClose(
       state.embedLiveLastResult,
@@ -1452,7 +1468,108 @@ function applyLiveMatchupToMenu(playerClub: string, aiClub: string, difficulty: 
   setClubSoundIdentity(playerClub, aiClub);
 }
 
+function kpisForAiSide(m: Match, name: string): LiveKpis {
+  const r = m.result;
+  const ai = m.playerTeam === "ksc" ? "vfb" : "ksc";
+  const scoreFor = ai === "ksc" ? m.scoreKsc : m.scoreVfb;
+  const scoreAgainst = ai === "ksc" ? m.scoreVfb : m.scoreKsc;
+  let winner: LiveKpis["winner"] = null;
+  if (r) {
+    if (r.winner === "draw") winner = null;
+    else winner = r.winner === ai ? "player" : "ai";
+  }
+  return {
+    name,
+    scoreFor,
+    scoreAgainst,
+    minute: Math.floor(m.minute),
+    beers: m.beersDrunkAi,
+    gold: Math.floor(m.aiGold),
+    done: !!r,
+    winner,
+    reason: r?.reason,
+    detail: r?.detail,
+  };
+}
+
+function publishBlitzSoloEmbedResult(m: Match): "win" | "loss" | "draw" {
+  const name =
+    localStorage.getItem("matchday-player-name") ||
+    state.embedLiveSoloConfig?.hostName ||
+    "Spieler";
+  const me = kpisFromMatch(m, name);
+  const them = kpisForAiSide(m, "KI");
+  let outcome: "win" | "loss" | "draw" = "draw";
+  if (m.result?.winner === "draw" || me.scoreFor === me.scoreAgainst) {
+    outcome = "draw";
+  } else if (me.scoreFor > me.scoreAgainst || me.winner === "player") {
+    outcome = "win";
+  } else {
+    outcome = "loss";
+  }
+
+  const config = state.embedLiveSoloConfig || {
+    playerClub: state.settings.playerClub,
+    aiClub: state.settings.aiClub,
+    difficulty: state.settings.difficulty,
+    hostName: name,
+    blitz: true,
+    vsAi: true,
+    pvp: false,
+  };
+  const payload = buildLiveEmbedResult({
+    code: "SOLO",
+    role: "host",
+    outcome,
+    me,
+    them,
+    config,
+  });
+  state.embedLiveLastResult = payload;
+  emitLiveResult(payload);
+  return outcome;
+}
+
+function bootstrapBlitzSoloEmbed(
+  launch: ReturnType<typeof parseEmbedLaunch>,
+): void {
+  const name =
+    launch.playerName ||
+    localStorage.getItem("matchday-player-name") ||
+    "Spieler";
+  localStorage.setItem("matchday-player-name", name.slice(0, 20));
+  state.embedLiveBlitz = true;
+  state.embedLiveVsAi = true;
+  state.blitz = true;
+  state.embedLiveRole = "host";
+  const matchup = resolveLiveMatchup(launch);
+  applyLiveMatchupToMenu(matchup.playerClub, matchup.aiClub, launch.difficulty);
+  state.menuDifficulty = launch.difficulty;
+  applySoloSettingsFromMenu();
+  state.setup = defaultSetup();
+  state.embedLiveSoloConfig = {
+    playerClub: matchup.playerClub,
+    aiClub: matchup.aiClub,
+    difficulty: launch.difficulty,
+    hostName: name,
+    blitz: true,
+    vsAi: true,
+    pvp: false,
+  };
+  emitReady({
+    mode: "live",
+    liveCode: null,
+    liveRole: "host",
+  });
+  // No PeerJS / live.created — Coin opens this URL only for KI
+  startBlitzMatch();
+}
+
 async function bootstrapLiveEmbed(launch: ReturnType<typeof parseEmbedLaunch>): Promise<void> {
+  if (launch.blitz && launch.vsAi) {
+    bootstrapBlitzSoloEmbed(launch);
+    return;
+  }
   const name =
     launch.playerName ||
     localStorage.getItem("matchday-player-name") ||
@@ -4850,6 +4967,27 @@ function renderResult(): void {
     go("liveResult");
     return;
   }
+  // Solo/KI Blitz embed: hand off win/loss to host app
+  if (state.embed && state.embedLiveVsAi && state.match?.result) {
+    const outcome = state.embedLiveLastResult
+      ? state.embedLiveLastResult.outcome
+      : publishBlitzSoloEmbedResult(state.match);
+    const m = state.match;
+    const r = m.result!;
+    const youWin = outcome === "win";
+    app.innerHTML = moodMenu(`
+      <p class="sub">${escapeHtml(r.detail)}</p>
+      <h1 class="brand">${
+        outcome === "draw" ? "Unentschieden" : youWin ? "Sieg!" : "Niederlage"
+      }</h1>
+      <p class="sub">${r.score[0]}:${r.score[1]} · Blitz vs KI · ${difficultyLabel(r.difficulty)}</p>
+      <button class="btn ksc" id="embed-solo-back" type="button">Zurück zur App</button>
+    `);
+    app.querySelector("#embed-solo-back")?.addEventListener("click", () => {
+      returnToHostApp();
+    });
+    return;
+  }
   // Challenge: record 1 attempt and show head-to-head (no rematch)
   if (state.challenge && state.challengeRole) {
     finishChallengeAttempt();
@@ -4858,7 +4996,8 @@ function renderResult(): void {
 
   const m = state.match!;
   const r = m.result!;
-  const youWin = r.winner === state.settings.playerTeam;
+  const youWin = r.winner !== "draw" && r.winner === state.settings.playerTeam;
+  const isDraw = r.winner === "draw";
   const playerIsKsc = state.settings.playerTeam === "ksc";
   const playerGoals = playerIsKsc ? r.score[0] : r.score[1];
   const aiGoals = playerIsKsc ? r.score[1] : r.score[0];
@@ -4893,8 +5032,10 @@ function renderResult(): void {
         : "Rematch";
     app.innerHTML = moodMenu(`
       <p class="sub">${r.detail}</p>
-      <h1 class="brand">${youWin ? "Sieg!" : "Niederlage"}</h1>
-      <p class="sub">${teamLabel(r.winner)} · ${r.score[0]}:${r.score[1]} · ${formatMinute(m.minute)} · ${difficultyLabel(r.difficulty)}</p>
+      <h1 class="brand">${isDraw ? "Unentschieden" : youWin ? "Sieg!" : "Niederlage"}</h1>
+      <p class="sub">${
+        isDraw ? "Unentschieden" : teamLabel(r.winner as "ksc" | "vfb")
+      } · ${r.score[0]}:${r.score[1]} · ${formatMinute(m.minute)} · ${difficultyLabel(r.difficulty)}</p>
       ${tourneyNote ? `<p class="sub hs-note">${escapeHtml(tourneyNote)}</p>` : ""}
       ${badgesResultHtml()}
       ${hsNotes.length ? `<p class="sub hs-note">${hsNotes.join(" · ")}</p>` : ""}
