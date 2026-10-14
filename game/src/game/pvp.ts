@@ -115,9 +115,9 @@ export function mirrorPvpBlockId(blockId: number): number {
   return blockId;
 }
 
-function mirrorPvpTeam<T extends TeamId | "neutral" | null | undefined>(
-  team: T,
-): T {
+function mirrorPvpTeam<
+  T extends TeamId | "neutral" | "draw" | null | undefined,
+>(team: T): T {
   if (team === "ksc") return "vfb" as T;
   if (team === "vfb") return "ksc" as T;
   return team;

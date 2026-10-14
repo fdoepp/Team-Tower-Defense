@@ -158,8 +158,8 @@ export function unlockBadge(
 export type MatchBadgeContext = {
   difficulty: AiDifficulty;
   playerTeam: TeamId;
-  winner: TeamId;
-  reason: "score" | "et" | "pens" | "invade";
+  winner: TeamId | "draw";
+  reason: "score" | "et" | "pens" | "invade" | "draw";
   scoreFor: number;
   scoreAgainst: number;
   minute: number;

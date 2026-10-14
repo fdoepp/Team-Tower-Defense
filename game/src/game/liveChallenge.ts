@@ -31,6 +31,8 @@ export type LiveRoomConfig = {
   pvp?: boolean;
   /** 60s Blitz reaction mode (both humans; no AI taps) */
   blitz?: boolean;
+  /** Solo Blitz vs AI — no PeerJS, immediate play */
+  vsAi?: boolean;
 };
 
 export type LivePersonalStats = {
