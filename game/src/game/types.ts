@@ -269,9 +269,9 @@ export const BLITZ_GOAL_MOMENTUM_EDGE = 0.88;
 export const BLITZ_GOAL_LOCK_SEC = 12;
 /**
  * Max living combat fans per team in Blitz (excl. Ordner).
- * New buys only after others die — keeps the 60s field readable/fast.
+ * New buys only after others die. Bench ~1ms/frame at 100/side — safe.
  */
-export const BLITZ_COMBAT_FAN_CAP = 18;
+export const BLITZ_COMBAT_FAN_CAP = 100;
 /** Without own Ordnerposten, Sicherheit cannot exceed this. */
 export const SECURITY_BASE_CAP = 50;
 /** Regen toward SECURITY_BASE_CAP from intact neutral mid Ordnerposten when safe. */
