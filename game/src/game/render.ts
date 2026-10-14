@@ -62,6 +62,7 @@ import {
 } from "./liveTint";
 import {
   boothFacadeQuad,
+  floorBauBand,
   scaleQuad,
   type ScreenQuad,
 } from "./floorGrid";
@@ -2168,36 +2169,70 @@ export type BlitzTapTarget =
   | { kind: "home" }
   | { kind: "enemy" };
 
+function normInTribunePad(
+  rect: { x: number; y: number; w: number; h: number },
+  xn: number,
+  yn: number,
+  padY: number,
+): boolean {
+  return (
+    xn >= rect.x &&
+    xn <= rect.x + rect.w &&
+    yn >= rect.y &&
+    yn <= rect.y + rect.h + padY
+  );
+}
+
 /**
- * Blitz reaction hit-test: oversized building pads first, then Heim/Gast columns.
- * Building pads use ~1.7× normal reach so taps around stalls never feel unfair.
+ * Blitz reaction hit-test with clear bands:
+ * 1) Tribüne (Stimmung / Kampf) — exclusive, never stolen by building pads
+ * 2) Bau-Band — modest building hitboxes only
+ * 3) Gast-Spalte darunter — Kampf-Fallback
  */
 export function hitBlitzTarget(
   m: Match,
   mx: number,
   my: number,
 ): BlitzTapTarget | null {
-  const building = hitSlot(m, mx, my, { padMul: 1.7 });
-  if (building) {
-    const s = m.slots.find(
-      (x) => x.blockId === building.blockId && x.index === building.index,
-    );
-    if (
-      s?.building &&
-      s.owner === m.playerTeam &&
-      !s.greyNeutral &&
-      s.blockId === HEIM_BLOCK
-    ) {
-      return {
-        kind: "building",
-        blockId: s.blockId,
-        index: s.index,
-        building: s.building,
-      };
+  const w = Math.max(1, m.width);
+  const h = Math.max(1, m.height);
+  const xn = mx / w;
+  const yn = my / h;
+  syncTribuneLayout(w, h);
+
+  // Soft pad under tribune into the gap before Bau — keeps Stimmung easy
+  const triPadY = 0.045;
+  const heimTri = tribuneRect(HEIM_BLOCK);
+  const gastTri = tribuneRect(GAST_BLOCK);
+  if (normInTribunePad(heimTri, xn, yn, triPadY)) return { kind: "home" };
+  if (normInTribunePad(gastTri, xn, yn, triPadY)) return { kind: "enemy" };
+
+  const bauTop = floorBauBand(0).yTop - 0.02;
+  if (yn >= bauTop) {
+    // Tight pads so adjacent stalls stay distinct (no 1.7× steal)
+    const building = hitSlot(m, mx, my, { padMul: 1.08 });
+    if (building) {
+      const s = m.slots.find(
+        (x) => x.blockId === building.blockId && x.index === building.index,
+      );
+      if (
+        s?.building &&
+        s.owner === m.playerTeam &&
+        !s.greyNeutral &&
+        s.blockId === HEIM_BLOCK
+      ) {
+        return {
+          kind: "building",
+          blockId: s.blockId,
+          index: s.index,
+          building: s.building,
+        };
+      }
     }
   }
+
+  // Gast column below tribune = Kampf; Heim below without building = miss
   const col = blockColumnAt(m, mx);
-  if (col === HEIM_BLOCK) return { kind: "home" };
   if (col === GAST_BLOCK) return { kind: "enemy" };
   return null;
 }

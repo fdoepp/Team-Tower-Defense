@@ -3554,9 +3554,9 @@ function renderMatchScreen(): void {
           : m.blitz
             ? `<aside class="guided-panel blitz-panel" id="blitz-panel" aria-live="polite">
         <b>Blitz <span id="blitz-clock">60s</span></b>
-        <span>Heim = Stimmung</span>
-        <span>Gebäude = Ressource</span>
-        <span>Gegner = Kampf</span>
+        <span>Tribüne = Stimmung</span>
+        <span>Stände tippen / upgraden</span>
+        <span>Gegner-Tribüne = Kampf</span>
       </aside>`
             : ""
       }
