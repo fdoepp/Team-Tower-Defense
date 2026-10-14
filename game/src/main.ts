@@ -3991,7 +3991,7 @@ function renderMatchScreen(): void {
       const ok = upCost != null && controlGoldOf(m) >= upCost;
       upRows.innerHTML = `
         <div class="upgrade-panel" data-build-upgrade-panel="${kind}">
-          <p class="upgrade-title">${buildingKindLabel(kind)} · Lv${lv}${lv < UPGRADE_MAX ? ` → Lv${next}` : " (Max)"}</p>
+          <p class="upgrade-title">${buildingKindLabel(kind)}${m.blitz ? " (alle)" : ""} · Lv${lv}${lv < UPGRADE_MAX ? ` → Lv${next}` : " (Max)"}</p>
           <div class="upgrade-preview">
             <div class="up-stage">
               <img class="up-stand-ico" id="build-up-prev-cur" src="${curIcon}" alt="">

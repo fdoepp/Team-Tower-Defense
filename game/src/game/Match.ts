@@ -2352,7 +2352,7 @@ export class Match {
     const s = this.slots.find(
       (x) => x.blockId === sel.blockId && x.index === sel.index,
     );
-    if (!s) return false;
+    if (!s?.building) return false;
     const cost = this.upgradeCost(s);
     if (cost == null) {
       this.toast("Max. Stufe");
@@ -2363,15 +2363,40 @@ export class Match {
       return false;
     }
     this.addTeamGold(team, -cost);
-    s.level++;
-    if (s.building === "ordner") {
-      const prev = s.structHp;
-      this.initOrdnerPostHp(s);
-      if (prev > 0) s.structHp = Math.min(s.structMaxHp, prev + ORDNER_POST_HP_PER_LEVEL * 0.5);
+    const kind = s.building;
+    const nextLv = Math.min(UPGRADE_MAX, (s.level || 1) + 1);
+    // Blitz: one upgrade pays once and levels every owned stand of that kind
+    const targets = this.blitz
+      ? this.slots.filter(
+          (x) =>
+            x.building === kind &&
+            x.owner === team &&
+            !x.greyNeutral &&
+            (kind !== "ordner" || (x.structHp ?? 1) > 0),
+        )
+      : [s];
+    for (const slot of targets) {
+      slot.level = nextLv;
+      if (kind === "ordner") {
+        const prev = slot.structHp;
+        this.initOrdnerPostHp(slot);
+        if (prev > 0) {
+          slot.structHp = Math.min(
+            slot.structMaxHp,
+            prev + ORDNER_POST_HP_PER_LEVEL * 0.5,
+          );
+        }
+      }
+      this.floatAtSlot(slot, `Lv${slot.level}`, true);
     }
     this.buildMenu = null;
-    this.floatAtSlot(s, `Lv${s.level}`, true);
-    this.toast(`Upgrade → Lv${s.level}`);
+    const label =
+      kind === "bier" ? "Bierstände" : kind === "fanshop" ? "Fanshops" : "Ordnerposten";
+    this.toast(
+      this.blitz && targets.length > 1
+        ? `Alle ${label} → Lv${nextLv}`
+        : `Upgrade → Lv${nextLv}`,
+    );
     return true;
   }
 
@@ -6069,8 +6094,21 @@ export class Match {
       const cost = UPGRADE_COST[(up.level || 1) + 1] ?? 999;
       if (this.aiGold < cost) continue;
       this.aiGold -= cost;
-      up.level++;
-      if (up.building === "ordner") this.initOrdnerPostHp(up);
+      const kind = up.building!;
+      const nextLv = Math.min(UPGRADE_MAX, (up.level || 1) + 1);
+      const targets = this.blitz
+        ? this.slots.filter(
+            (x) =>
+              x.building === kind &&
+              x.owner === this.aiTeam &&
+              !x.greyNeutral &&
+              (kind !== "ordner" || (x.structHp ?? 1) > 0),
+          )
+        : [up];
+      for (const slot of targets) {
+        slot.level = nextLv;
+        if (kind === "ordner") this.initOrdnerPostHp(slot);
+      }
       return;
     }
   }
