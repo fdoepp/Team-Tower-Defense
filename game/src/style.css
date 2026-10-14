@@ -4899,3 +4899,14 @@ body.embed-mode .menu-home #highscores,
 body.embed-mode .menu-home #badges {
   display: none;
 }
+
+.blitz-panel {
+  border-color: rgba(250, 204, 21, 0.45);
+}
+.blitz-panel b {
+  color: #fde68a;
+}
+.blitz-panel #blitz-clock {
+  font-variant-numeric: tabular-nums;
+  margin-left: 0.25rem;
+}

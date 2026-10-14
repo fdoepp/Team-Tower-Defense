@@ -9,7 +9,7 @@ import {
   needsFullscreenGate,
   onFullscreenChange,
 } from "./game/fullscreen";
-import { drawMatch, hitSlot } from "./game/render";
+import { drawMatch, hitBlitzTarget, hitSlot } from "./game/render";
 import { syncTribuneLayout } from "./game/layout";
 import {
   SCENE_ASSETS,
@@ -738,6 +738,8 @@ const state = {
   livePvpLastAck: 0,
   /** Guided first solo after tutorial */
   guidedOnboarding: false,
+  /** 60s Blitz reaction mode */
+  blitz: false,
   /** Badges unlocked this result screen */
   resultBadges: [] as { id: string; def: BadgeDef; unlock: BadgeUnlock }[],
   /** Solo tournament run */
@@ -1548,6 +1550,7 @@ function renderMenu(): void {
         <div class="menu-group">
           <p class="menu-group-label">Solo</p>
           <button class="btn ksc menu-cta" id="solo">Solo vs KI</button>
+          <button class="btn secondary" id="blitz">Blitz · 60s</button>
           <button class="btn secondary" id="tournament">Solo-Turnier</button>
         </div>
         <div class="menu-group">
@@ -1641,6 +1644,17 @@ function renderMenu(): void {
     void goFullscreen();
     state.challenge = null;
     state.challengeRole = null;
+    state.blitz = false;
+    go("soloMatchup");
+  });
+  app.querySelector("#blitz")!.addEventListener("click", () => {
+    unlockAudio();
+    sfx("ui");
+    startAmbience("menu");
+    void goFullscreen();
+    state.challenge = null;
+    state.challengeRole = null;
+    state.blitz = true;
     go("soloMatchup");
   });
   // Any menu click primes audio + soft bed (autoplay policy)
@@ -1663,6 +1677,7 @@ function renderSoloMatchup(): void {
   const derby = findDerby(state.menuDerbyId);
   const nationFix = findNationalFixture(state.menuNationalFixtureId);
   const matchLine = `${brand.heim.short} vs ${brand.gast.short}`;
+  const blitz = state.blitz;
   let derbyHint =
     state.teamScope === "clubs" && state.pickMode === "derby" && derby
       ? derby.rank != null
@@ -1681,10 +1696,18 @@ function renderSoloMatchup(): void {
 
   app.innerHTML = moodMenu(`
       ${moodHead({
-        eyebrow: "Solo vs KI",
-        title: "Matchup",
-        lead: escapeHtml(matchLine),
-        extra: `<p class="tiny derby-hint">${escapeHtml(derbyHint)}</p>
+        eyebrow: blitz ? "Blitz · 60 Sekunden" : "Solo vs KI",
+        title: blitz ? "Blitz-Matchup" : "Matchup",
+        lead: escapeHtml(
+          blitz
+            ? `${matchLine} · Tippen = Stimmung / Ressourcen / Kampf`
+            : matchLine,
+        ),
+        extra: `<p class="tiny derby-hint">${escapeHtml(
+          blitz
+            ? `${derbyHint} · Start Lvl 3 · Ordner unbegrenzt`
+            : derbyHint,
+        )}</p>
         <div class="kit-preview" aria-hidden="true">
           ${kitSwatchHtml(brand.heim.id)}
           <span class="kit-vs">vs</span>
@@ -1694,13 +1717,16 @@ function renderSoloMatchup(): void {
       ${matchupPickHtml({ showDiff: true, showBehavior: true })}
       <div class="row mood-actions">
         <button class="btn secondary grow" id="solo-back" type="button">Menü</button>
-        <button class="btn ksc grow" id="solo-next" type="button">Weiter</button>
+        <button class="btn ksc grow" id="solo-next" type="button">${
+          blitz ? "Anpfiff" : "Weiter"
+        }</button>
       </div>
     `);
 
   bindMatchupPickHandlers(() => renderSoloMatchup());
   app.querySelector("#solo-back")!.addEventListener("click", () => {
     sfx("ui");
+    state.blitz = false;
     go("menu");
   });
   app.querySelector("#solo-next")!.addEventListener("click", () => {
@@ -1708,8 +1734,29 @@ function renderSoloMatchup(): void {
     sfx("ui");
     applySoloSettingsFromMenu();
     state.setup = defaultSetup();
+    if (state.blitz) {
+      startBlitzMatch();
+      return;
+    }
     go("setup");
   });
+}
+
+function startBlitzMatch(): void {
+  unlockAudio();
+  sfx("whistle");
+  startAmbience("match");
+  const aiProf = difficultyProfile(state.settings.difficulty);
+  state.match = new Match({
+    settings: state.settings,
+    playerSetup: state.setup,
+    aiSetup: { mix: { ...aiProf.aiMix } },
+    blitz: true,
+  });
+  state.resultBadges = [];
+  (window as unknown as { __match?: Match }).__match = state.match;
+  go("match");
+  void goFullscreen();
 }
 
 type TutStep = {
@@ -3504,7 +3551,14 @@ function renderMatchScreen(): void {
         <span data-g="send">→ Gang</span>
         <span data-g="goal">⚽ Moment</span>
       </aside>`
-          : ""
+          : m.blitz
+            ? `<aside class="guided-panel blitz-panel" id="blitz-panel" aria-live="polite">
+        <b>Blitz <span id="blitz-clock">60s</span></b>
+        <span>Heim = Stimmung</span>
+        <span>Gebäude = Ressource</span>
+        <span>Gegner = Kampf</span>
+      </aside>`
+            : ""
       }
       <div class="rail-slot" id="rail-slot" hidden>
         <aside class="side-rail right-rail person-rail" id="person-rail" aria-label="Personen" hidden>
@@ -4204,6 +4258,22 @@ function renderMatchScreen(): void {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
+    if (m.blitz) {
+      const tap = hitBlitzTarget(m, mx, my);
+      if (tap) {
+        const ok = m.tryBlitzTap(
+          tap.kind === "building"
+            ? { kind: "building", blockId: tap.blockId, index: tap.index }
+            : { kind: tap.kind },
+          { x: mx / Math.max(1, m.width), y: my / Math.max(1, m.height) },
+        );
+        if (ok) sfx("ui");
+        return;
+      }
+      hideMenus();
+      return;
+    }
+
     // Kauf nur über Personen-Sidebar — Block-Klick öffnet keinen Sitz-Kauf mehr
     const hit = hitSlot(m, mx, my);
     if (hit) {
@@ -4613,6 +4683,10 @@ function renderMatchScreen(): void {
           if (el) el.classList.toggle("done", m.guidedDone.has(key));
         }
       }
+      const blitzClock = app.querySelector("#blitz-clock");
+      if (blitzClock && m.blitz) {
+        blitzClock.textContent = `${Math.ceil(m.blitzSecondsLeft())}s`;
+      }
       const toast = app.querySelector("#toast");
       if (toast) toast.classList.remove("show");
       // Halbzeit boost picker (PvP: auto +30€ both — no dual UI)
@@ -4773,7 +4847,10 @@ function renderResult(): void {
         <button class="btn ksc grow" id="again">${againLabel}</button>
       </div>
     `);
-    app.querySelector("#menu")!.addEventListener("click", () => go("menu"));
+    app.querySelector("#menu")!.addEventListener("click", () => {
+      state.blitz = false;
+      go("menu");
+    });
     app.querySelector("#hs")!.addEventListener("click", () => {
       state.highscoreDiff = r.difficulty;
       go("highscores");
@@ -4785,6 +4862,10 @@ function renderResult(): void {
       }
       if (tourneyChampion || (state.tournament && !state.tournament.active)) {
         go("tournamentHub");
+        return;
+      }
+      if (state.blitz) {
+        startBlitzMatch();
         return;
       }
       go("setup");
