@@ -24,12 +24,17 @@ import {
   BEER_STEAL_CAPTURE,
   BLITZ_BUILDING_LEVEL,
   BLITZ_CLICK_GAP,
+  BLITZ_CLICK_GOLD_BUILD,
+  BLITZ_CLICK_GOLD_ENEMY,
+  BLITZ_CLICK_GOLD_HOME,
   BLITZ_CLICK_MOOD,
   BLITZ_CLICK_RES,
   BLITZ_COMBAT_BUFF_MUL,
   BLITZ_COMBAT_BUFF_SEC,
   BLITZ_EXTRA_HOOLS,
   BLITZ_EXTRA_ULTRAS,
+  BLITZ_GOAL_LOCK_SEC,
+  BLITZ_GOAL_MOMENTUM_EDGE,
   BLITZ_REAL_SEC,
   BLITZ_START_BEER,
   BLITZ_START_GOLD,
@@ -722,19 +727,20 @@ export class Match {
     const sign = this.playerTeam === "ksc" ? 1 : -1;
 
     if (target.kind === "home") {
-      this.momentum = clamp(
-        this.momentum + BLITZ_CLICK_MOOD * sign,
-        -1,
-        1,
-      );
-      this.moodHeim = Math.min(1.35, this.moodHeim + 0.03);
-      this.floatAt(nx, ny, "+Stimmung", true);
+      const edge = BLITZ_GOAL_MOMENTUM_EDGE;
+      const nearEdge = Math.abs(this.momentum) > edge * 0.72;
+      const moodAmt = BLITZ_CLICK_MOOD * (nearEdge ? 0.3 : 1);
+      this.momentum = clamp(this.momentum + moodAmt * sign, -1, 1);
+      this.moodHeim = Math.min(1.35, this.moodHeim + 0.02);
+      this.addTeamGold(this.playerTeam, BLITZ_CLICK_GOLD_HOME);
+      this.floatAt(nx, ny, `+Stimmung · +${BLITZ_CLICK_GOLD_HOME}€`, true);
       return true;
     }
 
     if (target.kind === "enemy") {
       this.blitzCombatBuffT = BLITZ_COMBAT_BUFF_SEC;
-      this.floatAt(nx, ny, "Kampf!", true);
+      this.addTeamGold(this.playerTeam, BLITZ_CLICK_GOLD_ENEMY);
+      this.floatAt(nx, ny, `Kampf! · +${BLITZ_CLICK_GOLD_ENEMY}€`, true);
       return true;
     }
 
@@ -742,16 +748,28 @@ export class Match {
       (x) => x.blockId === target.blockId && x.index === target.index,
     );
     if (!s?.building || s.owner !== this.playerTeam) return false;
+    this.addTeamGold(this.playerTeam, BLITZ_CLICK_GOLD_BUILD);
     if (s.building === "bier") {
       this.addTeamCur(this.playerTeam, "beer", BLITZ_CLICK_RES);
-      this.floatAtSlot(s, `+${BLITZ_CLICK_RES} Bier`, true);
+      this.floatAtSlot(
+        s,
+        `+${BLITZ_CLICK_RES} Bier · +${BLITZ_CLICK_GOLD_BUILD}€`,
+        true,
+      );
     } else if (s.building === "fanshop") {
       this.addTeamCur(this.playerTeam, "merch", BLITZ_CLICK_RES);
-      this.floatAtSlot(s, `+${BLITZ_CLICK_RES} Shop`, true);
+      this.floatAtSlot(
+        s,
+        `+${BLITZ_CLICK_RES} Shop · +${BLITZ_CLICK_GOLD_BUILD}€`,
+        true,
+      );
     } else {
       this.addTeamCur(this.playerTeam, "security", BLITZ_CLICK_RES);
-      this.addTeamGold(this.playerTeam, Math.ceil(BLITZ_CLICK_RES * 0.6));
-      this.floatAtSlot(s, `+${BLITZ_CLICK_RES} Sich.`, true);
+      this.floatAtSlot(
+        s,
+        `+${BLITZ_CLICK_RES} Sich. · +${BLITZ_CLICK_GOLD_BUILD}€`,
+        true,
+      );
     }
     s.prodFlash = 0.35;
     return true;
@@ -760,21 +778,24 @@ export class Match {
   private tickBlitzAiClicks(dt: number): void {
     if (!this.blitz || this.pvp) return;
     this.blitzAiClickAcc += dt;
-    if (this.blitzAiClickAcc < 0.38) return;
+    // Slower than a human spamming taps — mostly economy, little mood spam
+    if (this.blitzAiClickAcc < 0.55) return;
     this.blitzAiClickAcc = 0;
     const roll = Math.random();
     const sign = this.aiTeam === "ksc" ? 1 : -1;
-    if (roll < 0.4) {
-      this.momentum = clamp(this.momentum + BLITZ_CLICK_MOOD * 0.85 * sign, -1, 1);
-    } else if (roll < 0.7) {
-      const kind = roll < 0.55 ? "beer" : roll < 0.65 ? "merch" : "security";
+    if (roll < 0.22) {
+      const edge = BLITZ_GOAL_MOMENTUM_EDGE;
+      const nearEdge = Math.abs(this.momentum) > edge * 0.72;
+      const moodAmt = BLITZ_CLICK_MOOD * 0.55 * (nearEdge ? 0.25 : 1);
+      this.momentum = clamp(this.momentum + moodAmt * sign, -1, 1);
+    } else if (roll < 0.78) {
+      this.aiGold += BLITZ_CLICK_GOLD_BUILD;
+      const kind = roll < 0.5 ? "beer" : roll < 0.65 ? "merch" : "security";
       if (kind === "beer") this.aiBeer += BLITZ_CLICK_RES;
       else if (kind === "merch") this.aiMerch += BLITZ_CLICK_RES;
       else this.aiSecurity += BLITZ_CLICK_RES;
     } else {
-      // AI combat pressure: brief momentum + small push via mood
-      this.momentum = clamp(this.momentum + BLITZ_CLICK_MOOD * 0.5 * sign, -1, 1);
-      this.moodGaeste = Math.min(1.35, this.moodGaeste + 0.02);
+      this.moodGaeste = Math.min(1.25, this.moodGaeste + 0.015);
     }
   }
 
@@ -1469,8 +1490,9 @@ export class Match {
       });
     }
     const M = this.momentum;
-    // Torchance-Güte: Abstand zum Threshold (GOAL_MOMENTUM_EDGE)
-    const edgeFrac = Math.abs(M) / GOAL_MOMENTUM_EDGE;
+    // Torchance-Güte: Abstand zum Threshold
+    const goalEdge = this.blitz ? BLITZ_GOAL_MOMENTUM_EDGE : GOAL_MOMENTUM_EDGE;
+    const edgeFrac = Math.abs(M) / goalEdge;
     const ourSide = M > 0;
     if (edgeFrac >= 0.92 && this.goalLockT <= 0) {
       cands.push({
@@ -2504,7 +2526,8 @@ export class Match {
       if (this.highlight) this.tickHighlight(dt);
       return;
     }
-    const slow = this.highlight ? HIGHLIGHT_SLOW : 1;
+    // Blitz: never slow the sim for Tor/Sturm replays — feels laggy in 60s
+    const slow = this.highlight && !this.blitz ? HIGHLIGHT_SLOW : 1;
     const step = dt * this.speed * slow;
     this.realElapsed += step;
     if (this.blitzClickCd > 0) {
@@ -5174,9 +5197,10 @@ export class Match {
     let targetMom = clamp(rel, -1, 1);
     // After a goal, scorers are at Bier — damp snap-back while lock lasts
     if (this.goalLockT > 0) {
-      targetMom *= 0.45;
+      targetMom *= this.blitz ? 0.2 : 0.45;
     }
-    const approach = 1 - Math.exp(-MOMENTUM_APPROACH * dt);
+    const approachMul = this.blitz ? 0.65 : 1;
+    const approach = 1 - Math.exp(-MOMENTUM_APPROACH * approachMul * dt);
     this.momentum = clamp(
       this.momentum + (targetMom - this.momentum) * approach,
       -1,
@@ -5184,10 +5208,11 @@ export class Match {
     );
 
     // Tor when the indicator is fully in the enemy area
+    const edge = this.blitz ? BLITZ_GOAL_MOMENTUM_EDGE : GOAL_MOMENTUM_EDGE;
     if (this.goalLockT <= 0) {
-      if (this.momentum >= GOAL_MOMENTUM_EDGE) {
+      if (this.momentum >= edge) {
         this.scoreGoal(this.playerTeam);
-      } else if (this.momentum <= -GOAL_MOMENTUM_EDGE) {
+      } else if (this.momentum <= -edge) {
         this.scoreGoal(this.aiTeam);
       }
     }
@@ -5416,9 +5441,10 @@ export class Match {
    */
   goalChance(): { pTor: number; pHeim: number; pGast: number; momentum: number } {
     const M = this.momentum;
-    const visual = clamp(M / GOAL_MOMENTUM_EDGE, -1, 1);
+    const edge = this.blitz ? BLITZ_GOAL_MOMENTUM_EDGE : GOAL_MOMENTUM_EDGE;
+    const visual = clamp(M / edge, -1, 1);
     const pHeim = clamp(0.5 + 0.5 * visual, 0.02, 0.98);
-    const nearEdge = Math.abs(M) >= GOAL_MOMENTUM_EDGE * 0.92;
+    const nearEdge = Math.abs(M) >= edge * 0.92;
     const pTor = nearEdge
       ? 1
       : clamp(
@@ -5434,23 +5460,23 @@ export class Match {
     else this.scoreVfb++;
     // Reset bar to mid — Glücksbiergang starts only after in-block party ends
     this.momentum = 0;
-    this.goalLockT = GOAL_LOCK_SEC;
+    this.goalLockT = this.blitz ? BLITZ_GOAL_LOCK_SEC : GOAL_LOCK_SEC;
     this.lastGoalTeam = team;
-    this.scorePulse = 2.6; // longer scoreboard flash for Torjubel
+    this.scorePulse = this.blitz ? 1.1 : 2.6;
     this.spawnGoalConfetti(team);
     this.startGoalCelebration(team);
     this.goalPartyTeam = team;
-    this.goalPartyT = 11.5;
+    this.goalPartyT = this.blitz ? 2.2 : 11.5;
     sfx("goal");
     sfx("cheer");
     playClubChant(team === this.playerTeam ? "player" : "ai", 0.9);
     this.startHighlight("goal", team);
     const line = `TOR ${teamLabel(team)}! ${this.scoreKsc}:${this.scoreVfb}`;
-    this.toast(line, 10);
+    this.toast(line, this.blitz ? 2.5 : 10);
     this.uiFlash = {
       text: line,
       tone: team === this.playerTeam ? "goal" : "danger",
-      t: 2.8,
+      t: this.blitz ? 1.1 : 2.8,
     };
     this.markGuided("goal");
   }
@@ -5482,6 +5508,11 @@ export class Match {
   }
 
   private startHighlight(kind: HighlightState["kind"], team: TeamId): void {
+    // Blitz: skip cinematic replay entirely (no slow-mo, no freeze)
+    if (this.blitz) {
+      this.highlight = null;
+      return;
+    }
     const dur = HIGHLIGHT_DUR[kind];
     this.highlight = { kind, team, t: dur, dur };
   }

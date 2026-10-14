@@ -4714,7 +4714,8 @@ function renderMatchScreen(): void {
       }
       if (m.result) {
         // Let storm/goal highlight finish briefly before result screen
-        if (m.highlight && m.highlight.t > 0.4) {
+        // (Blitz has no highlight replay — go straight to result)
+        if (!m.blitz && m.highlight && m.highlight.t > 0.4) {
           state.raf = requestAnimationFrame(loop);
           return;
         }
@@ -4726,7 +4727,7 @@ function renderMatchScreen(): void {
           setTimeout(() => go("liveResult"), 800);
           return;
         }
-        setTimeout(() => go("result"), 800);
+        setTimeout(() => go("result"), m.blitz ? 350 : 800);
         return;
       }
     } catch (err) {

@@ -246,9 +246,13 @@ export const BLITZ_START_SECURITY = 72;
 export const BLITZ_UNIT_LEVEL = 3;
 export const BLITZ_BUILDING_LEVEL = 3;
 /** Momentum nudge per home-block tap (player sign). */
-export const BLITZ_CLICK_MOOD = 0.042;
+export const BLITZ_CLICK_MOOD = 0.022;
 /** Resource burst per building tap. */
 export const BLITZ_CLICK_RES = 5;
+/** Gold from home / building / enemy taps (units upgrade need €). */
+export const BLITZ_CLICK_GOLD_HOME = 3;
+export const BLITZ_CLICK_GOLD_BUILD = 6;
+export const BLITZ_CLICK_GOLD_ENEMY = 2;
 /** Combat buff duration after enemy-zone tap. */
 export const BLITZ_COMBAT_BUFF_SEC = 1.75;
 export const BLITZ_COMBAT_BUFF_MUL = 1.4;
@@ -259,6 +263,10 @@ export const BLITZ_EXTRA_ULTRAS = 2;
 export const BLITZ_EXTRA_HOOLS = 2;
 export const BLITZ_STORM_COUNT = 3;
 export const BLITZ_STORM_SEC = 3.2;
+/** Harder to score than normal — stops ping-pong goals in 60s. */
+export const BLITZ_GOAL_MOMENTUM_EDGE = 0.88;
+/** Post-goal lock (real seconds, no slow-mo in Blitz). */
+export const BLITZ_GOAL_LOCK_SEC = 12;
 /** Without own Ordnerposten, Sicherheit cannot exceed this. */
 export const SECURITY_BASE_CAP = 50;
 /** Regen toward SECURITY_BASE_CAP from intact neutral mid Ordnerposten when safe. */
