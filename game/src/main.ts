@@ -757,6 +757,8 @@ const state = {
   /** Auto ready/start once for embed lobbies */
   embedLiveAutoReadySent: false,
   embedLiveAutoStarted: false,
+  /** Live embed wants Blitz 60s PvP */
+  embedLiveBlitz: false,
 };
 
 function menuAtmosphereHtml(): string {
@@ -821,6 +823,8 @@ function destroyLiveSession(): void {
   state.livePvpLastAck = 0;
   state.embedLiveAutoReadySent = false;
   state.embedLiveAutoStarted = false;
+  state.embedLiveBlitz = false;
+  state.blitz = false;
 }
 
 function kpisFromMatch(m: Match, name: string): LiveKpis {
@@ -1454,6 +1458,7 @@ async function bootstrapLiveEmbed(launch: ReturnType<typeof parseEmbedLaunch>): 
     localStorage.getItem("matchday-player-name") ||
     (launch.liveRole === "guest" ? "Gast" : "Host");
   localStorage.setItem("matchday-player-name", name.slice(0, 20));
+  state.embedLiveBlitz = !!launch.blitz;
   try {
     if (launch.liveRole === "guest") {
       if (!launch.liveCode) {
@@ -1471,6 +1476,7 @@ async function bootstrapLiveEmbed(launch: ReturnType<typeof parseEmbedLaunch>): 
       return;
     }
 
+    state.embedLiveBlitz = !!launch.blitz;
     const matchup = resolveLiveMatchup(launch);
     applyLiveMatchupToMenu(
       matchup.playerClub,
@@ -1485,6 +1491,7 @@ async function bootstrapLiveEmbed(launch: ReturnType<typeof parseEmbedLaunch>): 
       difficulty: launch.difficulty,
       hostName: name,
       pvp: true as const,
+      blitz: !!launch.blitz || undefined,
     };
     session.setConfig(config);
     state.live = session;
@@ -1552,6 +1559,7 @@ function maybeEmbedLiveAutoFlow(): void {
       hostName: live.localName,
       guestName: live.remoteName || undefined,
       pvp: true,
+      blitz: !!(live.config?.blitz || state.embedLiveBlitz) || undefined,
     });
     const mix = defaultSetup().mix;
     const guestMix = live.remoteMix ?? mix;
@@ -3134,6 +3142,8 @@ function startLivePvpMatch(): void {
   // Each client: own mix left (Heim), opponent mix right — guest view is mirrored snaps.
   const ownMix = live.role === "host" ? hostMix : guestMix;
   const oppMix = live.role === "host" ? guestMix : hostMix;
+  const blitz = !!(live.config?.blitz || state.embedLiveBlitz);
+  if (blitz) state.blitz = true;
   state.match = new Match({
     settings: state.settings,
     playerSetup: { mix: { ...ownMix } },
@@ -3141,6 +3151,7 @@ function startLivePvpMatch(): void {
     pvp: true,
     localTeam: "ksc",
     pvpAuthority: live.role === "host",
+    blitz,
   });
   state.resultBadges = [];
   state.livePvpTick = 0;
@@ -4300,11 +4311,17 @@ function renderMatchScreen(): void {
     if (m.blitz) {
       const tap = hitBlitzTarget(m, mx, my);
       if (tap) {
-        const ok = m.tryBlitzTap(
+        const target =
           tap.kind === "building"
-            ? { kind: "building", blockId: tap.blockId, index: tap.index }
-            : { kind: tap.kind },
-          { x: mx / Math.max(1, m.width), y: my / Math.max(1, m.height) },
+            ? { kind: "building" as const, blockId: tap.blockId, index: tap.index }
+            : { kind: tap.kind };
+        const at = {
+          x: mx / Math.max(1, m.width),
+          y: my / Math.max(1, m.height),
+        };
+        const ok = livePvpAction(
+          { op: "blitzTap", target, x: at.x, y: at.y },
+          () => m.tryBlitzTap(target, at),
         );
         if (ok) sfx("ui");
         return;

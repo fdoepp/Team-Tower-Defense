@@ -305,9 +305,11 @@ export class Match {
   readonly localTeam: TeamId;
   /** Host authority (sim); guest is snap viewer */
   readonly pvpAuthority: boolean;
-  /** Player combat buff timer (Ultras/Hools/Ordner) */
-  blitzCombatBuffT = 0;
-  private blitzClickCd = 0;
+  /** Per-side Blitz combat buff timers (host board: ksc=Heim, vfb=Gast) */
+  blitzCombatBuffKsc = 0;
+  blitzCombatBuffVfb = 0;
+  private blitzClickCdKsc = 0;
+  private blitzClickCdVfb = 0;
   private blitzAiClickAcc = 0;
   /** Temporary override while applying a PvP command for a side */
   private cmdTeam: TeamId | null = null;
@@ -751,26 +753,31 @@ export class Match {
     at?: { x: number; y: number },
   ): boolean {
     if (!this.blitz || this.phase === "ended" || this.result) return false;
-    if (this.blitzClickCd > 0) return false;
-    this.blitzClickCd = BLITZ_CLICK_GAP;
+    const team = this.actingTeam();
+    if (this.blitzClickCdFor(team) > 0) return false;
+    this.setBlitzClickCd(team, BLITZ_CLICK_GAP);
     const nx = at?.x ?? 0.5;
     const ny = at?.y ?? 0.55;
-    const sign = this.playerTeam === "ksc" ? 1 : -1;
+    const sign = team === "ksc" ? 1 : -1;
 
     if (target.kind === "home") {
       const edge = BLITZ_GOAL_MOMENTUM_EDGE;
       const nearEdge = Math.abs(this.momentum) > edge * 0.72;
       const moodAmt = BLITZ_CLICK_MOOD * (nearEdge ? 0.3 : 1);
       this.momentum = clamp(this.momentum + moodAmt * sign, -1, 1);
-      this.moodHeim = Math.min(1.35, this.moodHeim + 0.02);
-      this.addTeamGold(this.playerTeam, BLITZ_CLICK_GOLD_HOME);
+      if (team === this.playerTeam) {
+        this.moodHeim = Math.min(1.35, this.moodHeim + 0.02);
+      } else {
+        this.moodGaeste = Math.min(1.35, this.moodGaeste + 0.02);
+      }
+      this.addTeamGold(team, BLITZ_CLICK_GOLD_HOME);
       this.floatAt(nx, ny, `+Stimmung · +${BLITZ_CLICK_GOLD_HOME}€`, true);
       return true;
     }
 
     if (target.kind === "enemy") {
-      this.blitzCombatBuffT = BLITZ_COMBAT_BUFF_SEC;
-      this.addTeamGold(this.playerTeam, BLITZ_CLICK_GOLD_ENEMY);
+      this.setBlitzCombatBuff(team, BLITZ_COMBAT_BUFF_SEC);
+      this.addTeamGold(team, BLITZ_CLICK_GOLD_ENEMY);
       this.floatAt(nx, ny, `Kampf! · +${BLITZ_CLICK_GOLD_ENEMY}€`, true);
       return true;
     }
@@ -778,24 +785,24 @@ export class Match {
     const s = this.slots.find(
       (x) => x.blockId === target.blockId && x.index === target.index,
     );
-    if (!s?.building || s.owner !== this.playerTeam) return false;
-    this.addTeamGold(this.playerTeam, BLITZ_CLICK_GOLD_BUILD);
+    if (!s?.building || s.owner !== team) return false;
+    this.addTeamGold(team, BLITZ_CLICK_GOLD_BUILD);
     if (s.building === "bier") {
-      this.addTeamCur(this.playerTeam, "beer", BLITZ_CLICK_RES);
+      this.addTeamCur(team, "beer", BLITZ_CLICK_RES);
       this.floatAtSlot(
         s,
         `+${BLITZ_CLICK_RES} Bier · +${BLITZ_CLICK_GOLD_BUILD}€`,
         true,
       );
     } else if (s.building === "fanshop") {
-      this.addTeamCur(this.playerTeam, "merch", BLITZ_CLICK_RES);
+      this.addTeamCur(team, "merch", BLITZ_CLICK_RES);
       this.floatAtSlot(
         s,
         `+${BLITZ_CLICK_RES} Shop · +${BLITZ_CLICK_GOLD_BUILD}€`,
         true,
       );
     } else {
-      this.addTeamCur(this.playerTeam, "security", BLITZ_CLICK_RES);
+      this.addTeamCur(team, "security", BLITZ_CLICK_RES);
       this.floatAtSlot(
         s,
         `+${BLITZ_CLICK_RES} Sich. · +${BLITZ_CLICK_GOLD_BUILD}€`,
@@ -804,6 +811,24 @@ export class Match {
     }
     s.prodFlash = 0.35;
     return true;
+  }
+
+  private blitzClickCdFor(team: TeamId): number {
+    return team === "ksc" ? this.blitzClickCdKsc : this.blitzClickCdVfb;
+  }
+
+  private setBlitzClickCd(team: TeamId, t: number): void {
+    if (team === "ksc") this.blitzClickCdKsc = t;
+    else this.blitzClickCdVfb = t;
+  }
+
+  private setBlitzCombatBuff(team: TeamId, t: number): void {
+    if (team === "ksc") this.blitzCombatBuffKsc = t;
+    else this.blitzCombatBuffVfb = t;
+  }
+
+  private blitzCombatBuffFor(team: TeamId): number {
+    return team === "ksc" ? this.blitzCombatBuffKsc : this.blitzCombatBuffVfb;
   }
 
   private tickBlitzAiClicks(dt: number): void {
@@ -2591,11 +2616,17 @@ export class Match {
     const slow = this.highlight && !this.blitz ? HIGHLIGHT_SLOW : 1;
     const step = dt * this.speed * slow;
     this.realElapsed += step;
-    if (this.blitzClickCd > 0) {
-      this.blitzClickCd = Math.max(0, this.blitzClickCd - step);
+    if (this.blitzClickCdKsc > 0) {
+      this.blitzClickCdKsc = Math.max(0, this.blitzClickCdKsc - step);
     }
-    if (this.blitzCombatBuffT > 0) {
-      this.blitzCombatBuffT = Math.max(0, this.blitzCombatBuffT - step);
+    if (this.blitzClickCdVfb > 0) {
+      this.blitzClickCdVfb = Math.max(0, this.blitzClickCdVfb - step);
+    }
+    if (this.blitzCombatBuffKsc > 0) {
+      this.blitzCombatBuffKsc = Math.max(0, this.blitzCombatBuffKsc - step);
+    }
+    if (this.blitzCombatBuffVfb > 0) {
+      this.blitzCombatBuffVfb = Math.max(0, this.blitzCombatBuffVfb - step);
     }
     if (this.phase === "regular") {
       if (this.blitz) {
@@ -4870,8 +4901,8 @@ export class Match {
   }
 
   private blitzCombatMul(f: FanUnit): number {
-    if (!this.blitz || this.blitzCombatBuffT <= 0) return 1;
-    if (f.team !== this.playerTeam) return 1;
+    if (!this.blitz || f.team === "neutral") return 1;
+    if (this.blitzCombatBuffFor(f.team) <= 0) return 1;
     if (f.isSteward || f.kind === "ultras" || f.kind === "hooligans") {
       return BLITZ_COMBAT_BUFF_MUL;
     }
