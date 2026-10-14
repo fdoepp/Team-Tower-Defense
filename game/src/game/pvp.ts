@@ -13,6 +13,11 @@ import type {
 import type { Match } from "./Match";
 import type { HalfBoostId } from "./feelPack";
 
+export type BlitzTapTargetCmd =
+  | { kind: "home" }
+  | { kind: "enemy" }
+  | { kind: "building"; blockId: number; index: number };
+
 export type PvpCmd =
   | { op: "buy"; kind: FanKind }
   | { op: "sendHool"; count: 1 | "all" }
@@ -22,7 +27,8 @@ export type PvpCmd =
   | { op: "upgradeUnit"; kind: FanKind | "ordner" }
   | { op: "hire"; blockId: number; index: number }
   | { op: "selectSlot"; blockId: number; index: number | null }
-  | { op: "halfBoost"; id: HalfBoostId };
+  | { op: "halfBoost"; id: HalfBoostId }
+  | { op: "blitzTap"; target: BlitzTapTargetCmd; x?: number; y?: number };
 
 export type PvpFanSnap = {
   id: number;
@@ -95,6 +101,8 @@ export type PvpSnap = {
   lastGoalTeam: TeamId | null;
   beersDrunkPlayer: number;
   beersDrunkAi: number;
+  blitzCombatBuffKsc?: number;
+  blitzCombatBuffVfb?: number;
   fans: PvpFanSnap[];
   slots: PvpSlotSnap[];
   toast?: string;
@@ -157,6 +165,8 @@ export function mirrorPvpSnapForGuest(snap: PvpSnap): PvpSnap {
     lineAi: 1 - snap.linePlayer,
     beersDrunkPlayer: snap.beersDrunkAi,
     beersDrunkAi: snap.beersDrunkPlayer,
+    blitzCombatBuffKsc: snap.blitzCombatBuffVfb ?? 0,
+    blitzCombatBuffVfb: snap.blitzCombatBuffKsc ?? 0,
     lastGoalTeam: mirrorPvpTeam(snap.lastGoalTeam),
     result,
     fans: snap.fans.map(
@@ -190,6 +200,18 @@ export function mirrorPvpCmdToHost(cmd: PvpCmd): PvpCmd {
       return { ...cmd, blockId: mirrorPvpBlockId(cmd.blockId) };
     case "selectSlot":
       return { ...cmd, blockId: mirrorPvpBlockId(cmd.blockId) };
+    case "blitzTap":
+      if (cmd.target.kind === "building") {
+        return {
+          ...cmd,
+          target: {
+            ...cmd.target,
+            blockId: mirrorPvpBlockId(cmd.target.blockId),
+          },
+        };
+      }
+      // home/enemy are perspective kinds — stay as-is for actingTeam on host
+      return cmd;
     default:
       return cmd;
   }
@@ -222,6 +244,8 @@ export function exportPvpSnap(m: Match, tick: number): PvpSnap {
     lastGoalTeam: m.lastGoalTeam,
     beersDrunkPlayer: m.beersDrunkPlayer,
     beersDrunkAi: m.beersDrunkAi,
+    blitzCombatBuffKsc: m.blitzCombatBuffKsc,
+    blitzCombatBuffVfb: m.blitzCombatBuffVfb,
     toast: m.toasts[0]?.text,
     fans: m.fans.map(
       (f): PvpFanSnap => ({
@@ -301,6 +325,8 @@ export function applyPvpSnap(m: Match, snap: PvpSnap): void {
   m.lastGoalTeam = snap.lastGoalTeam;
   m.beersDrunkPlayer = snap.beersDrunkPlayer;
   m.beersDrunkAi = snap.beersDrunkAi;
+  if (snap.blitzCombatBuffKsc != null) m.blitzCombatBuffKsc = snap.blitzCombatBuffKsc;
+  if (snap.blitzCombatBuffVfb != null) m.blitzCombatBuffVfb = snap.blitzCombatBuffVfb;
 
   const byKey = new Map<string, BuildSlot>();
   for (const s of m.slots) byKey.set(`${s.blockId}:${s.index}`, s);
@@ -435,6 +461,11 @@ export function applyPvpCmd(m: Match, team: TeamId, cmd: PvpCmd): boolean {
       case "halfBoost":
         m.applyHalfBoost(cmd.id);
         return true;
+      case "blitzTap":
+        return m.tryBlitzTap(cmd.target, {
+          x: cmd.x ?? 0.5,
+          y: cmd.y ?? 0.55,
+        });
       default:
         return false;
     }

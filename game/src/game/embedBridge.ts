@@ -8,6 +8,7 @@
  * Live PvP launch:
  *   ?embed=1&mode=live&role=host&scope=clubs|nations|any&random=1&difficulty=normal&playerName=…&autoplay=1
  *   ?embed=1&mode=live&live=AB12CD&role=guest&playerName=…&autoplay=1
+ *   Blitz 60s PvP: add &blitz=1 (uses Blitz club pool when random; result = matchday.live.result)
  *   Optional fixed clubs: playerClub=&aiClub= (skips random)
  *   Optional host code: live=CODE with role=host
  *
@@ -24,6 +25,7 @@ import {
   allClubs,
   allNationals,
   getClub,
+  randomBlitzMatchup,
   randomMatchup,
   type Club,
   type MatchupScope,
@@ -70,6 +72,8 @@ export type EmbedLaunch = {
   liveCode: string | null;
   liveScope: MatchupScope;
   liveRandom: boolean;
+  /** Live Blitz 60s reaction PvP */
+  blitz: boolean;
   playerClub: string | null;
   aiClub: string | null;
   difficulty: AiDifficulty;
@@ -306,6 +310,10 @@ export function parseEmbedLaunch(
     qs.get("random") === "1" ||
     qs.get("random") === "true" ||
     (mode === "live" && !playerClub);
+  const blitz =
+    qs.get("blitz") === "1" ||
+    qs.get("blitz") === "true" ||
+    qs.get("variant") === "blitz";
 
   return {
     embed,
@@ -317,6 +325,7 @@ export function parseEmbedLaunch(
     liveCode,
     liveScope: parseScope(qs.get("scope")),
     liveRandom,
+    blitz,
     playerClub,
     aiClub,
     difficulty,
@@ -334,12 +343,18 @@ export function resolveLiveMatchup(launch: EmbedLaunch): RandomMatchup {
       scope: a.kind === "national" ? "nations" : "clubs",
     };
   }
+  if (launch.blitz) return randomBlitzMatchup();
   return randomMatchup(launch.liveScope);
 }
 
 export function liveGuestEmbedUrl(
   code: string,
-  opts: { base?: string; playerName?: string; autoplay?: boolean } = {},
+  opts: {
+    base?: string;
+    playerName?: string;
+    autoplay?: boolean;
+    blitz?: boolean;
+  } = {},
 ): string {
   const base =
     opts.base ||
@@ -351,6 +366,7 @@ export function liveGuestEmbedUrl(
   qs.set("mode", "live");
   qs.set("live", code.toUpperCase());
   qs.set("role", "guest");
+  if (opts.blitz) qs.set("blitz", "1");
   if (opts.playerName?.trim()) {
     qs.set("playerName", opts.playerName.trim().slice(0, 20));
   }
@@ -369,6 +385,7 @@ export function liveHostEmbedUrl(
     playerName?: string;
     code?: string;
     autoplay?: boolean;
+    blitz?: boolean;
   } = {},
 ): string {
   const base =
@@ -380,7 +397,8 @@ export function liveHostEmbedUrl(
   qs.set("embed", "1");
   qs.set("mode", "live");
   qs.set("role", "host");
-  qs.set("scope", opts.scope || "any");
+  if (opts.blitz) qs.set("blitz", "1");
+  qs.set("scope", opts.blitz ? "clubs" : opts.scope || "any");
   if (opts.code) qs.set("live", opts.code.toUpperCase());
   if (opts.playerClub && opts.aiClub) {
     qs.set("playerClub", opts.playerClub);
@@ -417,6 +435,8 @@ export function clearEmbedLaunchParams(): void {
       "room",
       "scope",
       "random",
+      "blitz",
+      "variant",
     ];
     let changed = false;
     for (const k of keys) {
@@ -550,7 +570,10 @@ export function emitLiveCreated(opts: {
   config: LiveRoomConfig;
   matchup: RandomMatchup | null;
 }): void {
-  const joinPath = `?embed=1&mode=live&live=${encodeURIComponent(opts.code)}&role=guest&autoplay=1`;
+  const blitz = !!opts.config.blitz;
+  const joinPath =
+    `?embed=1&mode=live&live=${encodeURIComponent(opts.code)}&role=guest&autoplay=1` +
+    (blitz ? "&blitz=1" : "");
   postToHost({
     type: "matchday.live.created",
     v: EMBED_PROTOCOL_V,
@@ -560,7 +583,7 @@ export function emitLiveCreated(opts: {
     config: opts.config,
     matchup: opts.matchup,
     joinPath,
-    embedUrl: liveGuestEmbedUrl(opts.code),
+    embedUrl: liveGuestEmbedUrl(opts.code, { blitz }),
   });
 }
 

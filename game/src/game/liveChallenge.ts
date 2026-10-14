@@ -29,6 +29,8 @@ export type LiveRoomConfig = {
   guestName?: string;
   /** Always true — shared-board PvP */
   pvp?: boolean;
+  /** 60s Blitz reaction mode (both humans; no AI taps) */
+  blitz?: boolean;
 };
 
 export type LivePersonalStats = {
