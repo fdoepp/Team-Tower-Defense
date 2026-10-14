@@ -22,6 +22,22 @@ import {
   BANNER_POST_STANDOFF,
   BANNER_RETREAT_SPEED,
   BEER_STEAL_CAPTURE,
+  BLITZ_BUILDING_LEVEL,
+  BLITZ_CLICK_GAP,
+  BLITZ_CLICK_MOOD,
+  BLITZ_CLICK_RES,
+  BLITZ_COMBAT_BUFF_MUL,
+  BLITZ_COMBAT_BUFF_SEC,
+  BLITZ_EXTRA_HOOLS,
+  BLITZ_EXTRA_ULTRAS,
+  BLITZ_REAL_SEC,
+  BLITZ_START_BEER,
+  BLITZ_START_GOLD,
+  BLITZ_START_MERCH,
+  BLITZ_START_SECURITY,
+  BLITZ_STORM_COUNT,
+  BLITZ_STORM_SEC,
+  BLITZ_UNIT_LEVEL,
   ENEMY_ZONE_BUILDING_BREAK_SEC,
   GREY_AI_BUILD_SEC,
   GREY_BOTHER_RADIUS_GX,
@@ -166,6 +182,8 @@ export type MatchConfig = {
   localTeam?: TeamId;
   /** Host runs sim; guest only applies mirrored snapshots */
   pvpAuthority?: boolean;
+  /** 60s reaction Blitz — fat Lvl3 start, tap zones, no half/ET */
+  blitz?: boolean;
 };
 
 export type MatchResult = {
@@ -275,10 +293,16 @@ export class Match {
   readonly aiTeam: TeamId;
   /** Live PvP: shared board, both humans */
   readonly pvp: boolean;
+  /** 60s reaction Blitz mode */
+  readonly blitz: boolean;
   /** Team the local UI / remote cmd controls */
   readonly localTeam: TeamId;
   /** Host authority (sim); guest is snap viewer */
   readonly pvpAuthority: boolean;
+  /** Player combat buff timer (Ultras/Hools/Ordner) */
+  blitzCombatBuffT = 0;
+  private blitzClickCd = 0;
+  private blitzAiClickAcc = 0;
   /** Temporary override while applying a PvP command for a side */
   private cmdTeam: TeamId | null = null;
   fans: FanUnit[] = [];
@@ -428,6 +452,7 @@ export class Match {
   constructor(cfg: MatchConfig) {
     this.cfg = cfg;
     this.pvp = !!cfg.pvp;
+    this.blitz = !!cfg.blitz;
     // PvP: each client treats own side as Heim/ksc (left). Guest applies mirrored snaps.
     if (this.pvp) {
       this.playerTeam = "ksc";
@@ -561,12 +586,196 @@ export class Match {
     this.linePlayer = this.buildFrontierGx(this.playerTeam);
     this.lineAi = this.buildFrontierGx(this.aiTeam);
 
-    this.toast(
-      this.pvp
-        ? `Live-PvP · Du steuerst ${teamLabel(this.localTeam)}`
-        : `${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)}`,
-    );
+    if (this.blitz) {
+      this.seedBlitzStart();
+      this.toast("Blitz · 60s · Tippe Block · Gebäude · Gegner!", 4.5);
+      this.flash("Blitz! Tippen = Power", "ok", 2.4);
+    } else {
+      this.toast(
+        this.pvp
+          ? `Live-PvP · Du steuerst ${teamLabel(this.localTeam)}`
+          : `${teamLabel(this.playerTeam)} vs ${teamLabel(this.aiTeam)}`,
+      );
+    }
     this.speed = 1;
+  }
+
+  private stormNeed(): number {
+    return this.blitz ? BLITZ_STORM_COUNT : BLOCK_STORM_COUNT;
+  }
+
+  private stormHoldSec(): number {
+    return this.blitz ? BLITZ_STORM_SEC : BLOCK_STORM_SEC;
+  }
+
+  blitzSecondsLeft(): number {
+    if (!this.blitz) return 0;
+    return Math.max(0, BLITZ_REAL_SEC - this.realElapsed);
+  }
+
+  /** Fat Lvl3 start — buildings + tech + extras; menus optional. */
+  private seedBlitzStart(): void {
+    const lv = BLITZ_UNIT_LEVEL;
+    this.gold = BLITZ_START_GOLD;
+    this.aiGold = BLITZ_START_GOLD;
+    this.currency.beer = BLITZ_START_BEER;
+    this.currency.merch = BLITZ_START_MERCH;
+    this.currency.security = BLITZ_START_SECURITY;
+    this.aiBeer = BLITZ_START_BEER;
+    this.aiMerch = BLITZ_START_MERCH;
+    this.aiSecurity = BLITZ_START_SECURITY;
+    this.unitTech = {
+      normalos: lv,
+      ultras: lv,
+      hooligans: lv,
+      ordner: lv,
+    };
+    this.aiTech = {
+      normalos: lv,
+      ultras: lv,
+      hooligans: lv,
+      ordner: lv,
+    };
+
+    const plan: Array<{ index: number; kind: BuildingKind }> = [
+      { index: 1, kind: "bier" },
+      { index: 2, kind: "fanshop" },
+      { index: 4, kind: "ordner" },
+    ];
+    for (const side of [
+      { block: HEIM_BLOCK, owner: this.playerTeam },
+      { block: GAST_BLOCK, owner: this.aiTeam },
+    ] as const) {
+      for (const p of plan) {
+        this.placeBuilding(side.block, p.index, p.kind, true, side.owner);
+        const s = this.slots.find(
+          (x) => x.blockId === side.block && x.index === p.index,
+        );
+        if (!s) continue;
+        s.level = BLITZ_BUILDING_LEVEL;
+        s.owner = side.owner;
+        s.greyNeutral = false;
+        if (p.kind === "bier") s.beer = 80;
+        if (p.kind === "fanshop") s.merch = 80;
+        if (p.kind === "ordner") this.initOrdnerPostHp(s);
+      }
+    }
+
+    for (const f of this.fans) {
+      if (f.team !== this.playerTeam && f.team !== this.aiTeam) continue;
+      f.level = lv;
+      this.applyUnitLevelStats(f);
+    }
+
+    let seat = 40;
+    for (let i = 0; i < BLITZ_EXTRA_ULTRAS; i++) {
+      this.fans.push(
+        this.makeFan("ultras", this.playerTeam, HEIM_BLOCK, seat++),
+      );
+      this.fans.push(this.makeFan("ultras", this.aiTeam, GAST_BLOCK, seat++));
+    }
+    for (let i = 0; i < BLITZ_EXTRA_HOOLS; i++) {
+      this.fans.push(
+        this.makeFan("hooligans", this.playerTeam, HEIM_BLOCK, seat++),
+      );
+      this.fans.push(
+        this.makeFan("hooligans", this.aiTeam, GAST_BLOCK, seat++),
+      );
+    }
+    // One free Ordner at each home post (still unlimited to hire more)
+    for (const side of [
+      { block: HEIM_BLOCK, team: this.playerTeam },
+      { block: GAST_BLOCK, team: this.aiTeam },
+    ] as const) {
+      const post = this.slots.find(
+        (x) =>
+          x.blockId === side.block &&
+          x.building === "ordner" &&
+          x.owner === side.team,
+      );
+      if (!post) continue;
+      const st = this.makeSteward(side.team, post);
+      this.fans.push(st);
+    }
+
+    this.linePlayer = this.buildFrontierGx(this.playerTeam);
+    this.lineAi = this.buildFrontierGx(this.aiTeam);
+  }
+
+  /**
+   * Blitz tap: home = mood, building = resource, enemy = combat buff.
+   * Returns false if on cooldown / invalid.
+   */
+  tryBlitzTap(
+    target: { kind: "home" } | { kind: "enemy" } | {
+      kind: "building";
+      blockId: number;
+      index: number;
+    },
+    at?: { x: number; y: number },
+  ): boolean {
+    if (!this.blitz || this.phase === "ended" || this.result) return false;
+    if (this.blitzClickCd > 0) return false;
+    this.blitzClickCd = BLITZ_CLICK_GAP;
+    const nx = at?.x ?? 0.5;
+    const ny = at?.y ?? 0.55;
+    const sign = this.playerTeam === "ksc" ? 1 : -1;
+
+    if (target.kind === "home") {
+      this.momentum = clamp(
+        this.momentum + BLITZ_CLICK_MOOD * sign,
+        -1,
+        1,
+      );
+      this.moodHeim = Math.min(1.35, this.moodHeim + 0.03);
+      this.floatAt(nx, ny, "+Stimmung", true);
+      return true;
+    }
+
+    if (target.kind === "enemy") {
+      this.blitzCombatBuffT = BLITZ_COMBAT_BUFF_SEC;
+      this.floatAt(nx, ny, "Kampf!", true);
+      return true;
+    }
+
+    const s = this.slots.find(
+      (x) => x.blockId === target.blockId && x.index === target.index,
+    );
+    if (!s?.building || s.owner !== this.playerTeam) return false;
+    if (s.building === "bier") {
+      this.addTeamCur(this.playerTeam, "beer", BLITZ_CLICK_RES);
+      this.floatAtSlot(s, `+${BLITZ_CLICK_RES} Bier`, true);
+    } else if (s.building === "fanshop") {
+      this.addTeamCur(this.playerTeam, "merch", BLITZ_CLICK_RES);
+      this.floatAtSlot(s, `+${BLITZ_CLICK_RES} Shop`, true);
+    } else {
+      this.addTeamCur(this.playerTeam, "security", BLITZ_CLICK_RES);
+      this.addTeamGold(this.playerTeam, Math.ceil(BLITZ_CLICK_RES * 0.6));
+      this.floatAtSlot(s, `+${BLITZ_CLICK_RES} Sich.`, true);
+    }
+    s.prodFlash = 0.35;
+    return true;
+  }
+
+  private tickBlitzAiClicks(dt: number): void {
+    if (!this.blitz || this.pvp) return;
+    this.blitzAiClickAcc += dt;
+    if (this.blitzAiClickAcc < 0.38) return;
+    this.blitzAiClickAcc = 0;
+    const roll = Math.random();
+    const sign = this.aiTeam === "ksc" ? 1 : -1;
+    if (roll < 0.4) {
+      this.momentum = clamp(this.momentum + BLITZ_CLICK_MOOD * 0.85 * sign, -1, 1);
+    } else if (roll < 0.7) {
+      const kind = roll < 0.55 ? "beer" : roll < 0.65 ? "merch" : "security";
+      if (kind === "beer") this.aiBeer += BLITZ_CLICK_RES;
+      else if (kind === "merch") this.aiMerch += BLITZ_CLICK_RES;
+      else this.aiSecurity += BLITZ_CLICK_RES;
+    } else {
+      // AI combat pressure: brief momentum + small push via mood
+      this.momentum = clamp(this.momentum + BLITZ_CLICK_MOOD * 0.5 * sign, -1, 1);
+      this.moodGaeste = Math.min(1.35, this.moodGaeste + 0.02);
+    }
   }
 
   /** Team currently receiving UI / PvP commands */
@@ -1203,10 +1412,10 @@ export class Match {
     const pInv = this.countBlockInvaders(this.playerTeam, GAST_BLOCK);
     const aInv = this.countBlockInvaders(this.aiTeam, HEIM_BLOCK);
     if (this.stormBanner?.team === this.playerTeam) {
-      return `Hier regiert der ${teamLabel(this.playerTeam)}! ${Math.ceil(BLOCK_STORM_SEC - this.stormBanner.holdT)}s · ${pInv}/${BLOCK_STORM_COUNT}`;
+      return `Hier regiert der ${teamLabel(this.playerTeam)}! ${Math.ceil(this.stormHoldSec() - this.stormBanner.holdT)}s · ${pInv}/${this.stormNeed()}`;
     }
     if (this.stormBanner?.team === this.aiTeam) {
-      return `Hier regiert der ${teamLabel(this.aiTeam)}! ${Math.ceil(BLOCK_STORM_SEC - this.stormBanner.holdT)}s · ${aInv}/${BLOCK_STORM_COUNT}`;
+      return `Hier regiert der ${teamLabel(this.aiTeam)}! ${Math.ceil(this.stormHoldSec() - this.stormBanner.holdT)}s · ${aInv}/${this.stormNeed()}`;
     }
     if (pInv > 0)
       return `ANGRIFF im Gästeblock · ${pInv} Angreifer — Verteidigung!`;
@@ -2298,24 +2507,39 @@ export class Match {
     const slow = this.highlight ? HIGHLIGHT_SLOW : 1;
     const step = dt * this.speed * slow;
     this.realElapsed += step;
+    if (this.blitzClickCd > 0) {
+      this.blitzClickCd = Math.max(0, this.blitzClickCd - step);
+    }
+    if (this.blitzCombatBuffT > 0) {
+      this.blitzCombatBuffT = Math.max(0, this.blitzCombatBuffT - step);
+    }
     if (this.phase === "regular") {
-      this.minute = (this.realElapsed / REGULAR_REAL_SEC) * 90;
-      if (!this.halfTimeFired && this.minute >= 45) {
-        this.halfTimeFired = true;
-        this.halfTimePending = true;
-        sfx("whistle");
-        this.toast("Halbzeit — wähle deinen Boost für die 2. Hälfte!", 5);
-        this.flash("Halbzeit! Boost wählen →", "halftime", 3.5);
-        return;
-      }
-      if (this.realElapsed >= REGULAR_REAL_SEC) {
-        if (this.scoreKsc === this.scoreVfb) {
-          this.phase = "et";
-          this.etElapsed = 0;
-          this.toast("Verlängerung!");
-        } else {
+      if (this.blitz) {
+        this.minute = (this.realElapsed / BLITZ_REAL_SEC) * 90;
+        this.tickBlitzAiClicks(step);
+        if (this.realElapsed >= BLITZ_REAL_SEC) {
           this.endByScore();
           return;
+        }
+      } else {
+        this.minute = (this.realElapsed / REGULAR_REAL_SEC) * 90;
+        if (!this.halfTimeFired && this.minute >= 45) {
+          this.halfTimeFired = true;
+          this.halfTimePending = true;
+          sfx("whistle");
+          this.toast("Halbzeit — wähle deinen Boost für die 2. Hälfte!", 5);
+          this.flash("Halbzeit! Boost wählen →", "halftime", 3.5);
+          return;
+        }
+        if (this.realElapsed >= REGULAR_REAL_SEC) {
+          if (this.scoreKsc === this.scoreVfb) {
+            this.phase = "et";
+            this.etElapsed = 0;
+            this.toast("Verlängerung!");
+          } else {
+            this.endByScore();
+            return;
+          }
         }
       }
     } else if (this.phase === "et") {
@@ -2669,10 +2893,8 @@ export class Match {
     const team = this.actingTeam();
     if (s.building !== "ordner" || s.greyNeutral) return false;
     if (s.owner !== team) return false;
-    return (
-      this.stewardCountAt(s) < STEWARD_CAP &&
-      this.getTeamGold(team) >= STEWARD_HIRE_GOLD
-    );
+    const underCap = this.blitz || this.stewardCountAt(s) < STEWARD_CAP;
+    return underCap && this.getTeamGold(team) >= STEWARD_HIRE_GOLD;
   }
 
   /** Hire at first owned Ordnerposten (sidebar quick action). */
@@ -2683,7 +2905,7 @@ export class Match {
         x.building === "ordner" &&
         x.owner === team &&
         !x.greyNeutral &&
-        this.stewardCountAt(x) < STEWARD_CAP,
+        (this.blitz || this.stewardCountAt(x) < STEWARD_CAP),
     );
     if (!s) {
       this.toast("Ordnerposten bauen / Platz frei?");
@@ -2713,7 +2935,7 @@ export class Match {
       this.toast("Nicht dein Posten");
       return false;
     }
-    if (this.stewardCountAt(s) >= STEWARD_CAP) {
+    if (!this.blitz && this.stewardCountAt(s) >= STEWARD_CAP) {
       this.toast(`Max. ${STEWARD_CAP} Ordner`);
       return false;
     }
@@ -2725,7 +2947,7 @@ export class Match {
     const st = this.makeSteward(team, s);
     this.fans.push(st);
     this.floatAtSlot(s, `−${STEWARD_HIRE_GOLD}€ Ordner`, true);
-    this.toast("Ordner angeheuert");
+    this.toast(this.blitz ? "Ordner (+unbegrenzt)" : "Ordner angeheuert");
     return true;
   }
 
@@ -4563,14 +4785,23 @@ export class Match {
     return 1 + Math.min(0.18, n * 0.06);
   }
 
+  private blitzCombatMul(f: FanUnit): number {
+    if (!this.blitz || this.blitzCombatBuffT <= 0) return 1;
+    if (f.team !== this.playerTeam) return 1;
+    if (f.isSteward || f.kind === "ultras" || f.kind === "hooligans") {
+      return BLITZ_COMBAT_BUFF_MUL;
+    }
+    return 1;
+  }
+
   private attackOf(f: FanUnit): number {
-    const mul = unitLevelMul(f.level || 1);
+    const mul = unitLevelMul(f.level || 1) * this.blitzCombatMul(f);
     if (f.isSteward) return STEWARD_STATS.attack * mul;
     return FAN_STATS[f.kind].attack * mul;
   }
 
   private defenseOf(f: FanUnit): number {
-    const mul = unitLevelMul(f.level || 1);
+    const mul = unitLevelMul(f.level || 1) * this.blitzCombatMul(f);
     if (f.isSteward) return STEWARD_STATS.defense * mul;
     return FAN_STATS[f.kind].defense * mul;
   }
@@ -5011,14 +5242,15 @@ export class Match {
     const pN = this.countBlockInvaders(this.playerTeam, GAST_BLOCK);
     const aN = this.countBlockInvaders(this.aiTeam, HEIM_BLOCK);
 
+    const need = this.stormNeed();
     // Player occupation of Gästeblock takes priority if both somehow qualify
-    if (pN >= BLOCK_STORM_COUNT) {
+    if (pN >= need) {
       this.advanceStormBanner(this.playerTeam, GAST_BLOCK, dt);
       this.stormAccPlayer = this.stormBanner?.holdT ?? 0;
       this.stormAccAi = 0;
       return;
     }
-    if (aN >= BLOCK_STORM_COUNT) {
+    if (aN >= need) {
       this.advanceStormBanner(this.aiTeam, HEIM_BLOCK, dt);
       this.stormAccAi = this.stormBanner?.holdT ?? 0;
       this.stormAccPlayer = 0;
@@ -5067,10 +5299,10 @@ export class Match {
       this.burstStormSpectacle(team, blockId, false);
     }
 
-    if (this.stormBanner.holdT >= BLOCK_STORM_SEC) {
+    if (this.stormBanner.holdT >= this.stormHoldSec()) {
       // Re-check occupation at win moment
       const still =
-        this.countBlockInvaders(team, blockId) >= BLOCK_STORM_COUNT;
+        this.countBlockInvaders(team, blockId) >= this.stormNeed();
       if (!still) {
         this.stormBanner = null;
         return;

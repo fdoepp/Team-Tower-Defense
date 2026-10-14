@@ -2093,18 +2093,27 @@ export function hitSlot(
   m: Match,
   mx: number,
   my: number,
+  opts?: { padMul?: number; includeAiBuildings?: boolean },
 ): { blockId: number; index: number } | null {
   let best: { blockId: number; index: number; d: number } | null = null;
   /**
    * Generous touch targets — buildings are large visually but plot AABBs are
    * small; expand well past the booth so Baumenü opens easily (units ignore clicks).
    */
+  const padMul = opts?.padMul ?? 1;
   // Large touch targets — signs are small; prefer easy taps over tight cells
-  const minPad = Math.max(68, Math.min(m.width, m.height) * 0.095);
-  const expand = Math.max(44, Math.min(m.width, m.height) * 0.062);
+  const minPad = Math.max(68, Math.min(m.width, m.height) * 0.095) * padMul;
+  const expand = Math.max(44, Math.min(m.width, m.height) * 0.062) * padMul;
   for (const s of m.slots) {
-    // AI home plots are not clickable for the player
-    if (s.blockId === GAST_BLOCK && s.owner === m.aiTeam && s.building) continue;
+    // AI home plots are not clickable for the player (unless Blitz opts in)
+    if (
+      !opts?.includeAiBuildings &&
+      s.blockId === GAST_BLOCK &&
+      s.owner === m.aiTeam &&
+      s.building
+    ) {
+      continue;
+    }
     const r = boothRect(s.blockId, s.index);
     let x0 = r.x * m.width - expand;
     let y0 = r.y * m.height - expand;
@@ -2139,6 +2148,58 @@ export function hitSlot(
     }
   }
   return best ? { blockId: best.blockId, index: best.index } : null;
+}
+
+/** Column under a screen X — Heim / Neutral / Gast. */
+export function blockColumnAt(m: Match, mx: number): number {
+  const x = mx / Math.max(1, m.width);
+  const c0 = blockCenterX(HEIM_BLOCK);
+  const c1 = blockCenterX(NEUTRAL_BLOCK);
+  const c2 = blockCenterX(GAST_BLOCK);
+  const mid01 = (c0 + c1) / 2;
+  const mid12 = (c1 + c2) / 2;
+  if (x < mid01) return HEIM_BLOCK;
+  if (x < mid12) return NEUTRAL_BLOCK;
+  return GAST_BLOCK;
+}
+
+export type BlitzTapTarget =
+  | { kind: "building"; blockId: number; index: number; building: string }
+  | { kind: "home" }
+  | { kind: "enemy" };
+
+/**
+ * Blitz reaction hit-test: oversized building pads first, then Heim/Gast columns.
+ * Building pads use ~1.7× normal reach so taps around stalls never feel unfair.
+ */
+export function hitBlitzTarget(
+  m: Match,
+  mx: number,
+  my: number,
+): BlitzTapTarget | null {
+  const building = hitSlot(m, mx, my, { padMul: 1.7 });
+  if (building) {
+    const s = m.slots.find(
+      (x) => x.blockId === building.blockId && x.index === building.index,
+    );
+    if (
+      s?.building &&
+      s.owner === m.playerTeam &&
+      !s.greyNeutral &&
+      s.blockId === HEIM_BLOCK
+    ) {
+      return {
+        kind: "building",
+        blockId: s.blockId,
+        index: s.index,
+        building: s.building,
+      };
+    }
+  }
+  const col = blockColumnAt(m, mx);
+  if (col === HEIM_BLOCK) return { kind: "home" };
+  if (col === GAST_BLOCK) return { kind: "enemy" };
+  return null;
 }
 
 export function hitSeat(
