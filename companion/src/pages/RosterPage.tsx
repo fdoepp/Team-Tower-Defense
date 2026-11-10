@@ -5,6 +5,7 @@ import type { LegionId } from '../data/types';
 import { displayName } from '../lib/names';
 import { useApp } from '../state/AppContext';
 import { Chip } from '../components/Chip';
+import { TypeIcon } from '../components/TypeIcon';
 import { UnitIcon } from '../components/UnitIcon';
 
 export function RosterPage() {
@@ -85,8 +86,18 @@ export function RosterPage() {
               <div className="fighter-card__body">
                 <h3>{name}</h3>
                 <p className="tiny muted">
-                  T{f.tier} · {f.goldCost}g · {f.attackType}/{f.defenseType}
+                  T{f.tier} · {f.goldCost}g
                 </p>
+                <div className="type-row">
+                  <span className="type-chip-label" title="Attack">
+                    <TypeIcon type={f.attackType} size={16} />
+                    <span>{f.attackType}</span>
+                  </span>
+                  <span className="type-chip-label" title="Defense">
+                    <TypeIcon type={f.defenseType} size={16} />
+                    <span>{f.defenseType}</span>
+                  </span>
+                </div>
                 <p className="tiny">{f.roles.join(' · ')}</p>
               </div>
               <div className="fighter-card__actions">

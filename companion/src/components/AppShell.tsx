@@ -7,10 +7,12 @@ export function AppShell() {
     <div className="app-shell">
       <header className="app-header">
         <div className="app-header__brand">
-          <span className="app-header__mark" aria-hidden />
+          <span className="app-header__mark" aria-hidden>
+            L
+          </span>
           <div>
-            <p className="app-header__title">Legions Begleitapp</p>
-            <p className="app-header__sub">LTD2 Live + Wiki</p>
+            <p className="app-header__title">Legions</p>
+            <p className="app-header__sub">Begleitapp</p>
           </div>
         </div>
         <NameToggle />

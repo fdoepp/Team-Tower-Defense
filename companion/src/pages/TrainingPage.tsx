@@ -1,75 +1,54 @@
-import { useCallback, useMemo, useState } from 'react';
-import { FIGHTERS } from '../data/fighters';
-import { MERCS } from '../data/mercs';
-import type { Role } from '../data/types';
-import { displayName } from '../lib/names';
-import { useApp } from '../state/AppContext';
+import { useCallback, useState } from 'react';
 import { Chip } from '../components/Chip';
+import { TypeIcon } from '../components/TypeIcon';
 import { UnitIcon } from '../components/UnitIcon';
+import { displayName } from '../lib/names';
+import {
+  explainFor,
+  gradeAnswer,
+  hintFor,
+  makeTrainingSession,
+  optionLabel,
+  promptFor,
+  type QuizCard,
+  type QuizOption,
+} from '../lib/training';
+import { useApp } from '../state/AppContext';
 
-const ROLE_OPTIONS: Role[] = [
-  'Tank',
-  'DPS',
-  'Aura',
-  'AOE',
-  'Heal',
-  'Range',
-  'Mana',
-  'Carry',
-  'Opener',
-];
-
-const TYPE_OPTIONS = [
-  'Impact',
-  'Pierce',
-  'Magic',
-  'Pure',
-  'Swift',
-  'Natural',
-  'Fortified',
-  'Immaterial',
-];
-
-type PromptKind = 'roles' | 'typing' | 'strongWeak';
-
-interface Card {
-  kind: 'fighter' | 'merc';
-  id: string;
-  prompt: PromptKind;
-}
-
-function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]!;
-}
-
-function makeSession(n = 8): Card[] {
-  const cards: Card[] = [];
-  for (let i = 0; i < n; i++) {
-    const useMerc = Math.random() < 0.35;
-    const prompt = pickRandom<PromptKind>(['roles', 'typing', 'strongWeak']);
-    if (useMerc) {
-      cards.push({ kind: 'merc', id: pickRandom(MERCS).id, prompt });
-    } else {
-      cards.push({ kind: 'fighter', id: pickRandom(FIGHTERS).id, prompt });
-    }
+function OptionContent({ opt }: { opt: QuizOption }) {
+  const { nameLang } = useApp();
+  const label = optionLabel(opt, nameLang);
+  if (opt.kind === 'type' && opt.icon) {
+    return (
+      <span className="type-chip-label">
+        <TypeIcon type={opt.icon} size={20} />
+        <span>{label}</span>
+      </span>
+    );
   }
-  return cards;
+  if (opt.kind === 'merc' && opt.icon) {
+    return (
+      <span className="type-chip-label">
+        <UnitIcon icon={opt.icon} name={label} size={22} unitId={opt.id} kind="merc" />
+        <span>{label}</span>
+      </span>
+    );
+  }
+  return <span>{label}</span>;
 }
 
 export function TrainingPage() {
   const { nameLang } = useApp();
-  const [session, setSession] = useState<Card[]>(() => makeSession());
+  const [session, setSession] = useState<QuizCard[]>(() => makeTrainingSession());
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{
+    ok: boolean;
+    text: string;
+  } | null>(null);
   const [score, setScore] = useState({ ok: 0, total: 0 });
 
   const card = session[idx];
-  const subject = useMemo(() => {
-    if (!card) return null;
-    if (card.kind === 'merc') return MERCS.find((m) => m.id === card.id) ?? null;
-    return FIGHTERS.find((f) => f.id === card.id) ?? null;
-  }, [card]);
 
   const resetAnswer = () => {
     setSelected([]);
@@ -79,44 +58,31 @@ export function TrainingPage() {
   const next = useCallback(() => {
     resetAnswer();
     if (idx + 1 >= session.length) {
-      setSession(makeSession());
+      setSession(makeTrainingSession());
       setIdx(0);
+      setScore({ ok: 0, total: 0 });
     } else {
       setIdx(idx + 1);
     }
   }, [idx, session.length]);
 
-  const toggle = (v: string) => {
-    setSelected((prev) =>
-      prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v],
-    );
+  const pick = (id: string) => {
+    if (feedback) return;
+    // Single-select for all current modes
+    setSelected([id]);
   };
 
   const check = () => {
-    if (!card || !subject) return;
-    let expected: string[] = [];
-    let detail = '';
-    if (card.prompt === 'roles') {
-      expected = subject.roles;
-      detail = `Rollen: ${expected.join(', ')}`;
-    } else if (card.prompt === 'typing') {
-      expected = [subject.attackType, subject.defenseType];
-      detail = `Atk ${subject.attackType} / Def ${subject.defenseType}`;
-    } else {
-      expected = [...subject.strongVs.slice(0, 2), ...subject.weakVs.slice(0, 1)];
-      detail = `Stark: ${subject.strongVs.join(', ')} · Schwach: ${subject.weakVs.join(', ')}`;
-    }
-    const hit = expected.filter((e) =>
-      selected.some((s) => s.toLowerCase() === e.toLowerCase()),
-    ).length;
-    const ok = hit >= Math.ceil(expected.length / 2) && selected.length > 0;
+    if (!card || selected.length === 0) return;
+    const { ok } = gradeAnswer(card, selected);
     setScore((s) => ({ ok: s.ok + (ok ? 1 : 0), total: s.total + 1 }));
-    setFeedback(
-      `${ok ? '✓' : '✗'} ${detail} · confidence: ${subject.confidence}`,
-    );
+    setFeedback({
+      ok,
+      text: explainFor(card, nameLang),
+    });
   };
 
-  if (!card || !subject) {
+  if (!card) {
     return (
       <div className="page">
         <p>Keine Karten.</p>
@@ -124,94 +90,108 @@ export function TrainingPage() {
     );
   }
 
-  const name = displayName(nameLang, subject.nameDe, subject.nameEn);
-  const options =
-    card.prompt === 'roles'
-      ? ROLE_OPTIONS
-      : card.prompt === 'typing'
-        ? TYPE_OPTIONS
-        : Array.from(
-            new Set([
-              ...subject.strongVs,
-              ...subject.weakVs,
-              'Flying',
-              'Clumped',
-              'Burst',
-              'Sustain',
-              'Fortified',
-              'Swift',
-              'Magic',
-              'Natural',
-            ]),
-          );
-
-  const promptLabel =
-    card.prompt === 'roles'
-      ? nameLang === 'de'
-        ? 'Welche Rollen?'
-        : 'Which roles?'
-      : card.prompt === 'typing'
-        ? nameLang === 'de'
-          ? 'Attack- & Defense-Type?'
-          : 'Attack & defense type?'
-        : nameLang === 'de'
-          ? 'Stark / schwach gegen?'
-          : 'Strong / weak vs?';
+  const subjectName = displayName(
+    nameLang,
+    card.subject.nameDe,
+    card.subject.nameEn,
+  );
+  const hint = hintFor(card, nameLang);
 
   return (
     <div className="page training-page">
       <header className="page-head">
         <h1>Training</h1>
         <p className="muted">
-          Karte {idx + 1}/{session.length} · Score {score.ok}/{score.total}
+          {nameLang === 'de' ? 'Karte' : 'Card'} {idx + 1}/{session.length} ·{' '}
+          {score.ok}/{score.total}
         </p>
       </header>
 
       <section className="training-card panel">
-        <UnitIcon
-          icon={subject.icon}
-          name={name}
-          size={72}
-          unitId={subject.id}
-          kind={card.kind === 'merc' ? 'merc' : undefined}
-        />
-        <h2>{name}</h2>
-        <p className="tiny muted">
-          {card.kind === 'merc' ? 'Mercenary' : 'Fighter'}
-        </p>
-        <p className="prompt">{promptLabel}</p>
+        <div className="training-subject">
+          <UnitIcon
+            icon={card.subject.icon}
+            name={subjectName}
+            size={64}
+            unitId={
+              card.subject.kind === 'wave' ? undefined : card.subject.id
+            }
+            kind={card.subject.kind === 'merc' ? 'merc' : undefined}
+          />
+          <div>
+            <p className="training-kicker">
+              {card.subject.kind === 'wave'
+                ? nameLang === 'de'
+                  ? 'Wave-Frage'
+                  : 'Wave question'
+                : card.subject.kind === 'merc'
+                  ? 'Mercenary'
+                  : 'Fighter'}
+            </p>
+            <h2>{subjectName}</h2>
+          </div>
+        </div>
 
-        <div className="chip-row">
-          {options.map((o) => (
-            <Chip key={o} active={selected.includes(o)} onClick={() => toggle(o)}>
-              {o}
+        <p className="prompt">{promptFor(card, nameLang)}</p>
+        {hint && <p className="prompt-hint">{hint}</p>}
+
+        <div className="chip-row chip-row--quiz">
+          {card.options.map((o) => (
+            <Chip
+              key={o.id}
+              active={selected.includes(o.id)}
+              onClick={() => pick(o.id)}
+              disabled={!!feedback}
+            >
+              <OptionContent opt={o} />
             </Chip>
           ))}
         </div>
 
-        {feedback && <p className="feedback">{feedback}</p>}
+        {feedback && (
+          <p
+            className={`feedback ${feedback.ok ? 'feedback--ok' : 'feedback--bad'}`}
+          >
+            <strong>
+              {feedback.ok
+                ? nameLang === 'de'
+                  ? 'Richtig'
+                  : 'Correct'
+                : nameLang === 'de'
+                  ? 'Nicht ganz'
+                  : 'Not quite'}
+            </strong>
+            {' — '}
+            {feedback.text}
+          </p>
+        )}
 
         <div className="cta-row mt">
           {!feedback ? (
-            <button type="button" className="btn btn--primary" onClick={check}>
-              Prüfen
+            <button
+              type="button"
+              className="btn btn--primary"
+              onClick={check}
+              disabled={selected.length === 0}
+            >
+              {nameLang === 'de' ? 'Prüfen' : 'Check'}
             </button>
           ) : (
             <button type="button" className="btn btn--primary" onClick={next}>
-              Weiter
+              {nameLang === 'de' ? 'Weiter' : 'Next'}
             </button>
           )}
           <button
             type="button"
             className="btn btn--ghost"
             onClick={() => {
-              setSession(makeSession());
+              setSession(makeTrainingSession());
               setIdx(0);
               resetAnswer();
               setScore({ ok: 0, total: 0 });
             }}
           >
-            Neue Session
+            {nameLang === 'de' ? 'Neue Session' : 'New session'}
           </button>
         </div>
       </section>

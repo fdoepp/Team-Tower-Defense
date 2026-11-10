@@ -10,6 +10,7 @@ import { displayName } from '../lib/names';
 import { useApp } from '../state/AppContext';
 import { Chip } from '../components/Chip';
 import { LaneGrid } from '../components/LaneGrid';
+import { TypeIcon } from '../components/TypeIcon';
 import { UnitIcon } from '../components/UnitIcon';
 
 const BREAK_OPTIONS = [8, 10, 13, 15];
@@ -234,13 +235,25 @@ export function MatchPage() {
           >
             −
           </button>
-          <div>
+          <div className="wave-meta">
             <p className="wave-num">Wave {currentWave}</p>
-            <p className="tiny muted">
-              {wave
-                ? `${nameLang === 'de' ? wave.creatureDe : wave.creatureEn} · ${wave.attackType}/${wave.defenseType}`
-                : 'Stub / partial wave table'}
-            </p>
+            {wave ? (
+              <div className="type-row">
+                <span className="tiny muted">
+                  {nameLang === 'de' ? wave.creatureDe : wave.creatureEn}
+                </span>
+                <span className="type-chip-label" title="Attack">
+                  <TypeIcon type={wave.attackType} size={18} />
+                  <span>{wave.attackType}</span>
+                </span>
+                <span className="type-chip-label" title="Defense">
+                  <TypeIcon type={wave.defenseType} size={18} />
+                  <span>{wave.defenseType}</span>
+                </span>
+              </div>
+            ) : (
+              <p className="tiny muted">Stub / partial wave table</p>
+            )}
           </div>
           <button
             type="button"
