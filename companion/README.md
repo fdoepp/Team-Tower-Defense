@@ -19,6 +19,20 @@ npm run build
 npm run preview
 ```
 
+## Deploy (Vercel — preferred auto-deploy path)
+
+Cursor Cloud Agents can publish this folder via **Vercel**. After the first link, **commits to the default branch auto-deploy** (no per-update Publish confirm in Cursor Apps).
+
+Official steps: [Cloud Agent setup → Publish to a live URL](https://cursor.com/docs/cloud-agent/setup#publish-to-a-live-url)
+
+1. In Cursor, open the **Agents Window** for this cloud agent.
+2. Connect a **Vercel** account (Add Vercel / plugin if prompted). Team plans need a Vercel team above Hobby.
+3. Choose **Publish** above the agent input.
+4. Set the Vercel project **Root Directory** to `companion` (monorepo; `vercel.json` lives there).
+5. Deploy. Later merges/pushes to the **default branch** (`main`) redeploy automatically.
+
+SPA routing is covered by `companion/vercel.json` rewrites to `index.html`.
+
 ## What’s in the MVP
 
 | Area | Status |
