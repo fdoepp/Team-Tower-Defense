@@ -1,0 +1,88 @@
+import type { LegionInfo } from './types';
+
+/**
+ * Seed legion summaries. Flavor/heuristics from public Manual + wiki.gg;
+ * not a substitute for official roster dumps via API.
+ */
+export const LEGIONS: LegionInfo[] = [
+  {
+    id: 'element',
+    nameEn: 'Element',
+    nameDe: 'Element',
+    summaryDe: 'Vielseitiges Volk mit starkem Typing-Mix und klassischen Openern.',
+    summaryEn: 'Flexible legion with solid typing coverage and classic openers.',
+    strengths: ['Typing-Mix', 'Opener-Optionen', 'Skalierung'],
+    weaknesses: ['Weniger Extreme Carry', 'Spell-Timing'],
+    confidence: 'medium',
+  },
+  {
+    id: 'atlantean',
+    nameEn: 'Atlantean',
+    nameDe: 'Atlantean',
+    summaryDe: 'Aquatische Units, oft starke Mid-Game-Front und Adapt-Linien.',
+    summaryEn: 'Aquatic units; strong mid-game front and Adapt lines.',
+    strengths: ['Frontline', 'Adapt', 'Mid-Game'],
+    weaknesses: ['Early Flying', 'Food-Druck'],
+    confidence: 'medium',
+  },
+  {
+    id: 'beast',
+    nameEn: 'Beast',
+    nameDe: 'Beast',
+    summaryDe: 'Aggressive Melee/Aura-Pakete; stark auf Hold und Break-Windows.',
+    summaryEn: 'Aggressive melee/aura packages; strong on hold and break windows.',
+    strengths: ['Aggression', 'Aura', 'Value'],
+    weaknesses: ['Range-Coverage', 'Flying'],
+    confidence: 'medium',
+  },
+  {
+    id: 'forsaken',
+    nameEn: 'Forsaken',
+    nameDe: 'Forsaken',
+    summaryDe: 'Dunkle Synergien, Stacking und harte Carry-Linien.',
+    summaryEn: 'Dark synergies, stacking, and hard carry lines.',
+    strengths: ['Carry', 'Stacking', 'Late'],
+    weaknesses: ['Teure Opener', 'Leak-Risiko early'],
+    confidence: 'medium',
+  },
+  {
+    id: 'grove',
+    nameEn: 'Grove',
+    nameDe: 'Grove',
+    summaryDe: 'Nature/Heal/Aura-Fokus; gut zum Lernen von Positioning.',
+    summaryEn: 'Nature/heal/aura focus; good for learning positioning.',
+    strengths: ['Heal', 'Aura', 'Sustain'],
+    weaknesses: ['Burst-Windows', 'Pure/Immaterial late'],
+    confidence: 'medium',
+  },
+  {
+    id: 'mech',
+    nameEn: 'Mech',
+    nameDe: 'Mech',
+    summaryDe: 'Maschinen-Roster mit klaren Rollen und AOE-Optionen.',
+    summaryEn: 'Machine roster with clear roles and AOE options.',
+    strengths: ['AOE', 'Rollenklarheit', 'Range'],
+    weaknesses: ['Worker-Timing', 'Gegen Pure'],
+    confidence: 'medium',
+  },
+  {
+    id: 'shadow',
+    nameEn: 'Shadow',
+    nameDe: 'Shadow',
+    summaryDe: 'Mobile / tricky Units; Mastermind-Picks oft stark.',
+    summaryEn: 'Mobile / tricky units; often strong Mastermind picks.',
+    strengths: ['Flex', 'Mastermind-Picks', 'Tempo'],
+    weaknesses: ['Team-Sync nötig', 'Food'],
+    confidence: 'low',
+  },
+  {
+    id: 'divine',
+    nameEn: 'Divine',
+    nameDe: 'Divine',
+    summaryDe: 'Heilige Lines mit Support und speziellen Synergien.',
+    summaryEn: 'Holy lines with support and special synergies.',
+    strengths: ['Support', 'Synergie', 'Hold'],
+    weaknesses: ['Eco-Druck', 'Gegen Mass-Send'],
+    confidence: 'low',
+  },
+];
