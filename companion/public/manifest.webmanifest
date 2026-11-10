@@ -1,0 +1,10 @@
+{
+  "name": "Legions Begleitapp",
+  "short_name": "Legions",
+  "description": "Legion TD 2 mobile companion — Live assist + Wiki",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e1412",
+  "theme_color": "#0e1412",
+  "lang": "de"
+}

@@ -2,6 +2,10 @@
 
 Derby Time — Stadion-Tower-Defense.
 
+## Legions Begleitapp (LTD2 companion)
+
+Responsive mobile website MVP for **Legion TD 2** lives in [`companion/`](companion/). See [`companion/README.md`](companion/README.md). Unrelated to the Derby Time game under `game/`.
+
 ## Icon-Kanons (verbindlich)
 
 Für **neue Spielversionen** gelten ausschließlich die freigegebenen Ganzkörper-Icons:
