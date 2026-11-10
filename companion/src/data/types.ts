@@ -12,7 +12,8 @@ export type DefenseType =
   | 'Natural'
   | 'Magic'
   | 'Fortified'
-  | 'Immaterial';
+  | 'Immaterial'
+  | 'Arcane';
 
 export type Role =
   | 'Tank'
@@ -70,13 +71,25 @@ export interface Mercenary {
   confidence: 'high' | 'medium' | 'low' | 'uncertain';
 }
 
+export type WaveFormation = 'melee' | 'ranged' | 'mixed' | 'boss';
+export type WavePacking = 'clumped' | 'spread' | 'line';
+
 export interface Wave {
   number: number;
   creatureEn: string;
   creatureDe: string;
+  /**
+   * Official wave-creature CDN stem only:
+   * https://cdn.legiontd2.com/icons/{icon}.png
+   * Must be the wave creature (Crab, Kobra, …) — never a buildable fighter roster pick.
+   */
   icon: string;
   attackType: AttackType;
   defenseType: DefenseType;
+  count: number;
+  boss?: boolean;
+  formation: WaveFormation;
+  packing: WavePacking;
   tags: string[];
   tipDe: string;
   tipEn: string;

@@ -7,6 +7,7 @@ import {
   ATTACK_TYPES,
   DEFENSE_TYPES,
   DEFENSE_WEAK_TO,
+  compositionBlurb,
   rpsAttackVsDefense,
   rpsHowToBeatDefense,
   typeLabel,
@@ -354,8 +355,8 @@ function buildWaveBestMerc(): QuizCard {
     subject: waveSubject(wave),
     promptDe: `Welchen Söldner schickst du am ehesten gegen Welle ${wave.number}?`,
     promptEn: `Which mercenary would you most likely send into wave ${wave.number}?`,
-    hintDe: `Wellen-Defense: ${typeLabel(wave.defenseType, 'de')}${wave.tags.includes('break-window') ? ' · Break-Fenster' : ''}.`,
-    hintEn: `Wave defense: ${typeLabel(wave.defenseType, 'en')}${wave.tags.includes('break-window') ? ' · break window' : ''}.`,
+    hintDe: `Wellen-Defense: ${typeLabel(wave.defenseType, 'de')}${wave.tags.includes('break-window') ? ' · Break-Fenster' : ''} · ${wave.formation}/${wave.packing}.`,
+    hintEn: `Wave defense: ${typeLabel(wave.defenseType, 'en')}${wave.tags.includes('break-window') ? ' · break window' : ''} · ${wave.formation}/${wave.packing}.`,
     options: choices.map((m) => ({
       id: m.id,
       labelDe: m.nameDe,
@@ -379,8 +380,12 @@ function buildWaveTag(): QuizCard {
     opener: { de: 'Frühe Opener-Welle', en: 'Early opener wave' },
     spells: { de: 'Spell-Picks relevant', en: 'Spell picks matter' },
     endgame: { de: 'Endgame', en: 'Endgame' },
-    boss: { de: 'Boss-ähnlich', en: 'Boss-like' },
-    'boss-ish': { de: 'Boss-ähnlich', en: 'Boss-like' },
+    boss: { de: 'Boss', en: 'Boss' },
+    'boss-ish': { de: 'Boss-Anteil', en: 'Boss component' },
+    melee: { de: 'Überwiegend Nahkampf', en: 'Mostly melee' },
+    ranged: { de: 'Überwiegend Fernkampf', en: 'Mostly ranged' },
+    clumped: { de: 'Geklumpt (AOE stark)', en: 'Clumped (AOE strong)' },
+    spread: { de: 'Gesplittet/verteilt', en: 'Spread out' },
   };
   const allTags = [
     'flying',
@@ -389,6 +394,10 @@ function buildWaveTag(): QuizCard {
     'spells',
     'endgame',
     'boss-ish',
+    'melee',
+    'ranged',
+    'clumped',
+    'spread',
   ];
   const opts = withDistractors(tag, allTags, 4);
   return {
@@ -464,7 +473,18 @@ export function optionLabel(opt: QuizOption, lang: NameLang): string {
   return lang === 'de' ? opt.labelDe : opt.labelEn;
 }
 
-/** Immediate explanation after clicking an answer — RPS + tips. */
+function mercProfile(lang: NameLang, profile: string): string {
+  if (lang === 'de') {
+    if (profile === 'power') return 'Power-Söldner (für Break/Leak-Fenster)';
+    if (profile === 'income') return 'Income-Söldner (Eco, wenig Break-Druck)';
+    return 'Mix Income/Power';
+  }
+  if (profile === 'power') return 'power merc (break/leak windows)';
+  if (profile === 'income') return 'income merc (eco, low break pressure)';
+  return 'mixed income/power';
+}
+
+/** Immediate explanation after clicking an answer — RPS + composition + tips. */
 export function explainChoice(
   card: QuizCard,
   selectedId: string,
@@ -481,44 +501,68 @@ export function explainChoice(
   if (card.mode === 'waveBestMerc' && wave) {
     const picked = MERC_BY_ID[selectedId];
     const best = MERC_BY_ID[card.meta?.correctMercId ?? card.correctIds[0]!];
+    const creature = lang === 'de' ? wave.creatureDe : wave.creatureEn;
+
+    parts.push(
+      lang === 'de'
+        ? `Welle ${wave.number} (${creature}): greift mit ${typeLabel(wave.attackType, 'de')} an und hat ${typeLabel(wave.defenseType, 'de')}-Rüstung.`
+        : `Wave ${wave.number} (${creature}): attacks with ${typeLabel(wave.attackType, 'en')} and has ${typeLabel(wave.defenseType, 'en')} armor.`,
+    );
+    parts.push(compositionBlurb(wave, lang));
+
     if (picked) {
       parts.push(
-        rpsAttackVsDefense(
-          picked.attackType,
-          wave.defenseType,
-          lang,
-        ),
+        lang === 'de'
+          ? `Deine Wahl ${picked.nameDe}: Angriff ${typeLabel(picked.attackType, 'de')}, Defense ${typeLabel(picked.defenseType, 'de')}, Spawn ${picked.spawnClass}, ${mercProfile('de', picked.incomeProfile)}.`
+          : `Your pick ${picked.nameEn}: attack ${typeLabel(picked.attackType, 'en')}, defense ${typeLabel(picked.defenseType, 'en')}, spawn ${picked.spawnClass}, ${mercProfile('en', picked.incomeProfile)}.`,
       );
-      const profileDe =
-        picked.incomeProfile === 'power'
-          ? 'Power-Söldner (Break)'
-          : picked.incomeProfile === 'income'
-            ? 'Income-Söldner (Eco)'
-            : 'Mix Income/Power';
-      const profileEn =
-        picked.incomeProfile === 'power'
-          ? 'power merc (break)'
-          : picked.incomeProfile === 'income'
-            ? 'income merc (eco)'
-            : 'mixed income/power';
+      parts.push(
+        rpsAttackVsDefense(picked.attackType, wave.defenseType, lang),
+      );
+      if (wave.packing === 'clumped' && picked.roles.includes('AOE')) {
+        parts.push(
+          lang === 'de'
+            ? 'Zusatz: geklumpte Welle → AOE-Söldner/Flächenschaden sind besonders wertvoll.'
+            : 'Extra: clumped wave → AOE mercs are especially valuable.',
+        );
+      }
+      if (wave.packing === 'spread' && picked.spawnClass === 'ranged') {
+        parts.push(
+          lang === 'de'
+            ? 'Zusatz: gesplittete/Fernkampf-Welle → Ranged-Sends treffen oft besser als reine Tank-Front.'
+            : 'Extra: spread/ranged wave → ranged sends often land better than pure tank front.',
+        );
+      }
+      if (wave.tags.includes('flying')) {
+        parts.push(
+          lang === 'de'
+            ? 'Flying-Welle: reine Ground-Melee-Sends sind riskant — Range/Anti-Air-Logik mitdenken.'
+            : 'Flying wave: pure ground-melee sends are risky — think range/anti-air.',
+        );
+      }
+    }
+
+    if (best) {
+      const strong =
+        (ATTACK_STRONG_VS[best.attackType] ?? []).includes(wave.defenseType);
       parts.push(
         lang === 'de'
-          ? `${picked.nameDe}: ${typeLabel(picked.attackType, 'de')} · ${profileDe}.`
-          : `${picked.nameEn}: ${typeLabel(picked.attackType, 'en')} · ${profileEn}.`,
+          ? `${ok ? 'Deshalb passt' : 'Bessere Wahl'}: ${best.nameDe} (${typeLabel(best.attackType, 'de')}, ${mercProfile('de', best.incomeProfile)}) — ${strong ? 'Typing matched die Wellen-Rüstung.' : rpsHowToBeatDefense(wave.defenseType, 'de')}`
+          : `${ok ? 'That’s why' : 'Better pick'}: ${best.nameEn} (${typeLabel(best.attackType, 'en')}, ${mercProfile('en', best.incomeProfile)}) — ${strong ? 'typing matches the wave armor.' : rpsHowToBeatDefense(wave.defenseType, 'en')}`,
       );
     }
-    if (best && (!picked || picked.id !== best.id)) {
-      parts.push(
-        lang === 'de'
-          ? `Besser: ${best.nameDe} (${typeLabel(best.attackType, 'de')}${best.incomeProfile === 'power' ? ', Power' : ''}) — ${rpsHowToBeatDefense(wave.defenseType, 'de')}`
-          : `Better: ${best.nameEn} (${typeLabel(best.attackType, 'en')}${best.incomeProfile === 'power' ? ', power' : ''}) — ${rpsHowToBeatDefense(wave.defenseType, 'en')}`,
-      );
-    }
+
     if (wave.tags.includes('break-window')) {
       parts.push(
         lang === 'de'
-          ? 'Tipp: Break-Fenster → eher Power-Sends als reine Income-Linie.'
-          : 'Tip: break window → prefer power sends over pure income.',
+          ? 'Tipp: Break-Fenster → Mythium eher in Power-Söldner stecken (Leak-Chance), nicht nur Income-Schnecken.'
+          : 'Tip: break window → spend Mythium on power mercs (leak chance), not only income Snails.',
+      );
+    } else {
+      parts.push(
+        lang === 'de'
+          ? 'Tipp: Kein klares Break-Fenster → Income/King oft sicherer als teurer Power-Send.'
+          : 'Tip: no clear break window → income/King is often safer than an expensive power send.',
       );
     }
     parts.push(lang === 'de' ? wave.tipDe : wave.tipEn);
@@ -526,42 +570,58 @@ export function explainChoice(
     (card.mode === 'waveAttack' || card.mode === 'waveDefense') &&
     wave
   ) {
+    const creature = lang === 'de' ? wave.creatureDe : wave.creatureEn;
     if (card.mode === 'waveAttack') {
       parts.push(
-        lang === 'de'
-          ? `Richtig ist ${typeLabel(wave.attackType, 'de')} (nicht ${typeLabel(selectedId, 'de')}).`
-          : `Correct is ${typeLabel(wave.attackType, 'en')} (not ${typeLabel(selectedId, 'en')}).`,
+        ok
+          ? lang === 'de'
+            ? `Richtig: ${creature} greifen mit ${typeLabel(wave.attackType, 'de')} an.`
+            : `Correct: ${creature} attack with ${typeLabel(wave.attackType, 'en')}.`
+          : lang === 'de'
+            ? `Falsch: nicht ${typeLabel(selectedId, 'de')} — ${creature} greifen mit ${typeLabel(wave.attackType, 'de')} an.`
+            : `Wrong: not ${typeLabel(selectedId, 'en')} — ${creature} attack with ${typeLabel(wave.attackType, 'en')}.`,
       );
-      if (ok) {
-        parts[0] =
-          lang === 'de'
-            ? `Genau: Angriff ${typeLabel(wave.attackType, 'de')}.`
-            : `Correct: attack ${typeLabel(wave.attackType, 'en')}.`;
-      }
+      parts.push(
+        lang === 'de'
+          ? `Das bedeutet für deine Fighter: Rüstung gegen ${typeLabel(wave.attackType, 'de')} priorisieren, wo möglich.`
+          : `For your fighters: prioritize armor that holds vs ${typeLabel(wave.attackType, 'en')} where possible.`,
+      );
     } else {
-      if (ok) {
-        parts.push(
-          lang === 'de'
-            ? `Genau: Defense ${typeLabel(wave.defenseType, 'de')}.`
-            : `Correct: defense ${typeLabel(wave.defenseType, 'en')}.`,
-        );
-      } else {
-        parts.push(
-          lang === 'de'
-            ? `Welle ${wave.number} hat ${typeLabel(wave.defenseType, 'de')} — nicht ${typeLabel(selectedId, 'de')}.`
-            : `Wave ${wave.number} is ${typeLabel(wave.defenseType, 'en')} — not ${typeLabel(selectedId, 'en')}.`,
-        );
-      }
+      parts.push(
+        ok
+          ? lang === 'de'
+            ? `Richtig: ${creature} haben ${typeLabel(wave.defenseType, 'de')}-Rüstung.`
+            : `Correct: ${creature} have ${typeLabel(wave.defenseType, 'en')} armor.`
+          : lang === 'de'
+            ? `Falsch: Welle ${wave.number} hat ${typeLabel(wave.defenseType, 'de')} — nicht ${typeLabel(selectedId, 'de')}.`
+            : `Wrong: wave ${wave.number} is ${typeLabel(wave.defenseType, 'en')} — not ${typeLabel(selectedId, 'en')}.`,
+      );
       parts.push(rpsHowToBeatDefense(wave.defenseType, lang));
     }
+    parts.push(compositionBlurb(wave, lang));
+    parts.push(
+      lang === 'de'
+        ? `Schere-Stein-Papier-Kurz: Angriff der Welle ${typeLabel(wave.attackType, 'de')} vs. deine Defense; deine Angriffe sollten ${typeLabel(wave.defenseType, 'de')} knacken.`
+        : `RPS short: wave attack ${typeLabel(wave.attackType, 'en')} vs your defense; your attacks should crack ${typeLabel(wave.defenseType, 'en')}.`,
+    );
     parts.push(lang === 'de' ? wave.tipDe : wave.tipEn);
   } else if (card.mode === 'waveTag' && wave) {
-    parts.push(lang === 'de' ? wave.tipDe : wave.tipEn);
+    parts.push(
+      ok
+        ? lang === 'de'
+          ? 'Richtig — das trifft auf diese Welle zu.'
+          : 'Correct — that fits this wave.'
+        : lang === 'de'
+          ? 'Falsch — das ist nicht die zentrale Eigenschaft dieser Welle.'
+          : 'Wrong — that is not this wave’s key trait.',
+    );
+    parts.push(compositionBlurb(wave, lang));
     parts.push(
       lang === 'de'
         ? `Typing: ${typeLabel(wave.attackType, 'de')} / ${typeLabel(wave.defenseType, 'de')}. ${rpsHowToBeatDefense(wave.defenseType, 'de')}`
         : `Typing: ${typeLabel(wave.attackType, 'en')} / ${typeLabel(wave.defenseType, 'en')}. ${rpsHowToBeatDefense(wave.defenseType, 'en')}`,
     );
+    parts.push(lang === 'de' ? wave.tipDe : wave.tipEn);
   } else if (card.mode === 'unitAttack' || card.mode === 'unitDefense') {
     const correct = card.correctIds[0]!;
     if (ok) {
@@ -579,22 +639,32 @@ export function explainChoice(
     }
     if (card.mode === 'unitDefense' && card.meta?.unitDefense) {
       parts.push(
-        rpsHowToBeatDefense(card.meta.unitDefense as typeof DEFENSE_TYPES[number], lang),
+        rpsHowToBeatDefense(
+          card.meta.unitDefense as (typeof DEFENSE_TYPES)[number],
+          lang,
+        ),
+      );
+      parts.push(
+        lang === 'de'
+          ? 'Merke: Unit-Defense sagt, welche Angriffstypen sie knacken — das gleiche Prinzip wie bei Wellen-Rüstung.'
+          : 'Remember: unit defense tells you which attack types crack it — same principle as wave armor.',
       );
     }
     if (card.mode === 'unitAttack' && card.meta?.unitAttack) {
       const vs = ATTACK_STRONG_VS[card.meta.unitAttack] ?? [];
       parts.push(
         lang === 'de'
-          ? `${typeLabel(card.meta.unitAttack, 'de')} ist typischerweise stark gegen: ${vs.map((d) => typeLabel(d, 'de')).join(', ') || '—'}.`
-          : `${typeLabel(card.meta.unitAttack, 'en')} is typically strong vs: ${vs.map((d) => typeLabel(d, 'en')).join(', ') || '—'}.`,
+          ? `${typeLabel(card.meta.unitAttack, 'de')} ist typischerweise stark gegen: ${vs.map((d) => typeLabel(d, 'de')).join(', ') || '—'}. Schwach gegen andere Rüstungen — Counters wählen.`
+          : `${typeLabel(card.meta.unitAttack, 'en')} is typically strong vs: ${vs.map((d) => typeLabel(d, 'en')).join(', ') || '—'}. Weak vs other armors — pick counters.`,
       );
     }
   } else if (card.mode === 'unitStrongVsDef' || card.mode === 'unitWeakToAtk') {
     const correct = card.correctIds[0]!;
     if (ok) {
       parts.push(
-        lang === 'de' ? `Stimmt: ${typeLabel(correct, 'de') || correct}.` : `Yes: ${typeLabel(correct, 'en') || correct}.`,
+        lang === 'de'
+          ? `Stimmt: ${typeLabel(correct, 'de') || correct}.`
+          : `Yes: ${typeLabel(correct, 'en') || correct}.`,
       );
     } else {
       parts.push(
@@ -603,24 +673,34 @@ export function explainChoice(
           : `Your pick (${typeLabel(selectedId, 'en') || selectedId}) doesn’t fit — expected: ${typeLabel(correct, 'en') || correct}.`,
       );
     }
-    if (card.meta?.unitAttack && (DEFENSE_TYPES as string[]).includes(correct)) {
+    if (
+      card.meta?.unitAttack &&
+      (DEFENSE_TYPES as string[]).includes(correct)
+    ) {
       parts.push(
         rpsAttackVsDefense(
           card.meta.unitAttack,
-          correct as typeof DEFENSE_TYPES[number],
+          correct as (typeof DEFENSE_TYPES)[number],
           lang,
         ),
+      );
+    }
+    if (card.mode === 'unitWeakToAtk' && card.meta?.unitDefense) {
+      parts.push(
+        lang === 'de'
+          ? `Die Unit selbst hat ${typeLabel(String(card.meta.unitDefense), 'de')}-Defense — Angriffe, die diese Rüstung knacken, sind gefährlich für sie.`
+          : `The unit itself has ${typeLabel(String(card.meta.unitDefense), 'en')} defense — attacks that crack that armor are dangerous to it.`,
       );
     }
   } else if (card.mode === 'unitRole') {
     parts.push(
       ok
         ? lang === 'de'
-          ? `Passt — gültige Rollen: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.de ?? r).join(', ')}.`
-          : `Fits — valid roles: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.en ?? r).join(', ')}.`
+          ? `Passt — gültige Rollen: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.de ?? r).join(', ')}. Rolle steuert Placement (Tank vorne, Range/AOE hinten) und welche Wellen-Komposition sie löst.`
+          : `Fits — valid roles: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.en ?? r).join(', ')}. Role drives placement (tank front, range/AOE back) and which wave compositions it solves.`
         : lang === 'de'
-          ? `Besser eine von: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.de ?? r).join(', ')}.`
-          : `Prefer one of: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.en ?? r).join(', ')}.`,
+          ? `Besser eine von: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.de ?? r).join(', ')}. Denk Placement + Typing, nicht nur den Namen.`
+          : `Prefer one of: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.en ?? r).join(', ')}. Think placement + typing, not just the name.`,
     );
   }
 

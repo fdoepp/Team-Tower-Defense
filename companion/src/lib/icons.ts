@@ -3,8 +3,14 @@ import type { Role } from '../data/types';
 /**
  * Official CDN icons for private companion use only.
  * Pattern: https://cdn.legiontd2.com/icons/{Name}.png
- * Glyphs remain the 404 / offline fallback — not a substitute for license
- * if this build were ever redistributed publicly.
+ *
+ * Waves must use official creature stems only (Crab, Wale, Hopper,
+ * FlyingChicken, Scorpion, Rocko, Sludge, Kobra, Carapace, Granddaddy,
+ * QuillShooter, Mantis, DrillGolem, KillerSlug, Quadrapus, Cardinal,
+ * MetalDragon, WaleChief, DireToad, Maccabeus, LegionLord) — never
+ * substitute buildable fighter roster art for wave symbols.
+ *
+ * Glyphs remain the 404 / offline fallback.
  */
 
 export const CDN_ICON_BASE = 'https://cdn.legiontd2.com/icons';

@@ -12,6 +12,8 @@ import { Chip } from '../components/Chip';
 import { LaneGrid } from '../components/LaneGrid';
 import { TypeIcon } from '../components/TypeIcon';
 import { UnitIcon } from '../components/UnitIcon';
+import { WaveBadge } from '../components/WaveBadge';
+import { typeLabel } from '../lib/typing';
 
 const BREAK_OPTIONS = [8, 10, 13, 15];
 const PLAYSTYLES = ['Lock In', 'Greed', 'Chaos', 'Fiesta', 'Other'];
@@ -236,23 +238,38 @@ export function MatchPage() {
             −
           </button>
           <div className="wave-meta">
-            <p className="wave-num">Wave {currentWave}</p>
             {wave ? (
-              <div className="type-row">
-                <span className="tiny muted">
+              <>
+                <WaveBadge
+                  waveNumber={wave.number}
+                  creatureIcon={wave.icon}
+                  creatureName={
+                    nameLang === 'de' ? wave.creatureDe : wave.creatureEn
+                  }
+                  size={56}
+                />
+                <p className="wave-num">
+                  {nameLang === 'de' ? 'Welle' : 'Wave'} {wave.number} ·{' '}
                   {nameLang === 'de' ? wave.creatureDe : wave.creatureEn}
-                </span>
-                <span className="type-chip-label" title="Attack">
-                  <TypeIcon type={wave.attackType} size={18} />
-                  <span>{wave.attackType}</span>
-                </span>
-                <span className="type-chip-label" title="Defense">
-                  <TypeIcon type={wave.defenseType} size={18} />
-                  <span>{wave.defenseType}</span>
-                </span>
-              </div>
+                </p>
+                <div className="type-row">
+                  <span className="type-chip-label" title="Attack">
+                    <TypeIcon type={wave.attackType} size={18} />
+                    <span>{typeLabel(wave.attackType, nameLang)}</span>
+                  </span>
+                  <span className="type-chip-label" title="Defense">
+                    <TypeIcon type={wave.defenseType} size={18} />
+                    <span>{typeLabel(wave.defenseType, nameLang)}</span>
+                  </span>
+                </div>
+              </>
             ) : (
-              <p className="tiny muted">Stub / partial wave table</p>
+              <>
+                <p className="wave-num">
+                  {nameLang === 'de' ? 'Welle' : 'Wave'} {currentWave}
+                </p>
+                <p className="tiny muted">Stub / partial wave table</p>
+              </>
             )}
           </div>
           <button

@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { cdnIconUrl } from '../lib/icons';
 
 /**
- * Wave subject visual: large wave number + optional official creature icon.
- * Never presents as a mercenary pick token.
+ * Official wave-creature art from CDN (Crab, Kobra, …).
+ * Path: https://cdn.legiontd2.com/icons/{creatureIcon}.png
+ * Small W# chip only as label — never a fighter/merc roster token.
  */
 export function WaveBadge({
   waveNumber,
@@ -25,20 +26,22 @@ export function WaveBadge({
       style={{ width: size, height: size }}
       role="img"
       aria-label={`Wave ${waveNumber} · ${creatureName}`}
-      title={`Wave ${waveNumber}`}
+      title={`Wave ${waveNumber} · ${creatureName}`}
     >
       {showCreature ? (
         <img
           className="wave-badge__creature"
           src={cdnIconUrl(creatureIcon!)}
-          alt=""
+          alt={creatureName}
           onError={() => setFailed(true)}
           referrerPolicy="no-referrer"
         />
       ) : (
-        <span className="wave-badge__fallback" aria-hidden />
+        <span className="wave-badge__fallback" aria-hidden>
+          W{waveNumber}
+        </span>
       )}
-      <span className="wave-badge__num">W{waveNumber}</span>
+      <span className="wave-badge__chip">W{waveNumber}</span>
     </span>
   );
 }
