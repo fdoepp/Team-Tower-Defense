@@ -55,6 +55,7 @@ export function LaneGrid({ placements }: Props) {
                       icon={fighter.icon}
                       name={displayName(nameLang, fighter.nameDe, fighter.nameEn)}
                       size={22}
+                      unitId={fighter.id}
                     />
                   </>
                 )}

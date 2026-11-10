@@ -41,8 +41,8 @@ export function HomePage() {
       </section>
 
       <p className="attribution muted tiny">
-        Icons via cdn.legiontd2.com — © AutoAttack Games. Fan-Tool mit Attribution;
-        Lizenzfreigabe vor öffentlichem Release klären.
+        Unit visuals are original role glyphs (tank/range/heal/…), not official LTD2
+        art. CDN icons stay off until licensed.
       </p>
     </div>
   );

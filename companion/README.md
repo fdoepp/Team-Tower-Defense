@@ -30,12 +30,12 @@ npm run preview
 | Live assist: wave tip + leak/mythium + opponent/send chips | Done (rule-based) |
 | Wiki: Legions, strategies, Mastermind fit, build orders, **Campaign per mission** | Seed + stubs |
 | Training mini-game | Done (short sessions) |
-| Official CDN icons | Tried with fallback placeholders |
+| Unit icons | Original role glyphs (no CDN / no official LTD2 art) |
 
 ## Data & icons
 
 - **Seed JSON/TS** under `src/data/` with source comments. Prefer official API (`https://apiv2.legiontd2.com/`) when an API key is available — none is bundled.
-- **Icons:** `https://cdn.legiontd2.com/icons/{Name}.png` with on-error initials fallback. Assets © AutoAttack Games. Fan-tool use with attribution; **confirm license** with AutoAttack before a public release (`press@autoattack.net` / press kit).
+- **Icons:** Original SVG **role glyphs** (tank / DPS / range / heal / aura / AOE / mana / carry / opener / merc) with stable per-unit accent colors and initials. **No** loads from `cdn.legiontd2.com` and **no** copyrighted LTD2 game art. Official icons stay out until AutoAttack licenses them.
 - Mechanics that are uncertain are labeled with `confidence` / `incomplete`.
 
 ## Stack

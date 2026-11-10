@@ -168,7 +168,13 @@ export function TrainingPage() {
       </header>
 
       <section className="training-card panel">
-        <UnitIcon icon={subject.icon} name={name} size={72} />
+        <UnitIcon
+          icon={subject.icon}
+          name={name}
+          size={72}
+          unitId={subject.id}
+          kind={card.kind === 'merc' ? 'merc' : undefined}
+        />
         <h2>{name}</h2>
         <p className="tiny muted">
           {card.kind === 'merc' ? 'Mercenary' : 'Fighter'}

@@ -359,20 +359,20 @@ a {
 }
 
 .unit-icon {
+  display: inline-block;
   border-radius: 8px;
   background: #0a100e;
-  object-fit: contain;
   flex-shrink: 0;
+  overflow: hidden;
+  line-height: 0;
 }
 
-.unit-icon--fallback {
-  display: inline-grid;
-  place-items: center;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 0.75rem;
-  color: var(--accent);
-  border: 1px dashed var(--line);
+.unit-icon--glyph {
+  border: 0;
+}
+
+.unit-icon svg {
+  display: block;
 }
 
 .pick-tray {

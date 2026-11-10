@@ -81,7 +81,7 @@ export function RosterPage() {
               key={f.id}
               className={`fighter-card ${owned ? 'is-owned' : ''} ${picked ? 'is-picked' : ''}`}
             >
-              <UnitIcon icon={f.icon} name={name} size={44} />
+              <UnitIcon icon={f.icon} name={name} size={44} unitId={f.id} />
               <div className="fighter-card__body">
                 <h3>{name}</h3>
                 <p className="tiny muted">

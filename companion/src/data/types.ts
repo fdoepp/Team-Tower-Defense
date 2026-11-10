@@ -39,7 +39,7 @@ export interface Fighter {
   id: string;
   nameEn: string;
   nameDe: string;
-  /** CDN icon filename without .png — drop-in for official icons */
+  /** Legacy glyph key (not a CDN path); role visuals are generated in-app */
   icon: string;
   legion: LegionId;
   tier: 1 | 2 | 3 | 4 | 5 | 6;

@@ -3,7 +3,7 @@ import type { Mercenary } from './types';
 /**
  * Merc seed for live assist + training.
  * Costs/profiles are community heuristics — mark uncertain where needed.
- * Icons: CDN https://cdn.legiontd2.com/icons/{icon}.png
+ * `icon` key feeds original merc stand-in glyphs only (no CDN art).
  */
 export const MERCS: Mercenary[] = [
   {

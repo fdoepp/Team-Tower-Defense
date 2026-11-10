@@ -144,7 +144,7 @@ export function MatchPage() {
                 className={`pick-token ${pickIds.includes(f.id) ? 'is-on' : ''}`}
                 onClick={() => togglePick(f.id)}
               >
-                <UnitIcon icon={f.icon} name={name} size={36} />
+                <UnitIcon icon={f.icon} name={name} size={36} unitId={f.id} />
                 <span>{name}</span>
               </button>
             );
@@ -303,7 +303,8 @@ export function MatchPage() {
                 active={sendChips.includes(m.id)}
                 onClick={() => toggleSendChip(m.id)}
               >
-                <UnitIcon icon={m.icon} name={name} size={20} /> {name}
+                <UnitIcon icon={m.icon} name={name} size={20} unitId={m.id} kind="merc" />{' '}
+                {name}
               </Chip>
             );
           })}
