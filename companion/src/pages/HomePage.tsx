@@ -1,63 +1,165 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { STRATEGIES } from '../data/strategies';
+import { loadLastPlan, type LastPlanSnapshot } from '../lib/storage';
 import { useApp } from '../state/AppContext';
+import { UnitIcon } from '../components/UnitIcon';
+
+type ActionCardProps = {
+  to?: string;
+  title: string;
+  body: string;
+  icon: string;
+  iconName: string;
+  accent?: 'primary' | 'default' | 'muted';
+  cta?: string;
+};
+
+function ActionCard({
+  to,
+  title,
+  body,
+  icon,
+  iconName,
+  accent = 'default',
+  cta,
+}: ActionCardProps) {
+  const className = `action-card action-card--${accent}${to ? '' : ' action-card--static'}`;
+  const inner = (
+    <>
+      <span className="action-card__icon" aria-hidden>
+        <UnitIcon icon={icon} name={iconName} size={44} />
+      </span>
+      <span className="action-card__body">
+        <h2>{title}</h2>
+        <p>{body}</p>
+        {cta ? <span className="action-card__cta">{cta}</span> : null}
+      </span>
+      {to ? (
+        <span className="chevron" aria-hidden>
+          ›
+        </span>
+      ) : null}
+    </>
+  );
+
+  if (to) {
+    return (
+      <Link to={to} className={className}>
+        {inner}
+      </Link>
+    );
+  }
+
+  return <div className={className}>{inner}</div>;
+}
 
 export function HomePage() {
-  const { pickIds, builderMode, currentWave, strategies, nameLang } = useApp();
+  const { pickIds, ownedIds, nameLang } = useApp();
+  const [lastPlan, setLastPlan] = useState<LastPlanSnapshot | null>(null);
+
+  useEffect(() => {
+    setLastPlan(loadLastPlan());
+  }, []);
+
+  const de = nameLang === 'de';
+  const strategyLabels = (lastPlan?.strategies ?? [])
+    .map((id) => {
+      const s = STRATEGIES.find((x) => x.id === id);
+      return s ? (de ? s.labelDe : s.labelEn) : id;
+    })
+    .filter(Boolean)
+    .slice(0, 2);
 
   return (
     <div className="page home-page">
-      <section className="hero-panel">
+      <section className="hero-panel hero-panel--home">
         <p className="eyebrow">Legions</p>
         <h1>Begleitapp</h1>
         <p>
-          {nameLang === 'de'
+          {de
             ? 'Vor dem Match lernen. In der Build-Phase entscheiden.'
             : 'Learn before queue. Decide in the build phase.'}
         </p>
-        <div className="cta-row">
-          <Link className="btn btn--primary" to="/match">
-            {nameLang === 'de' ? 'Neues Match' : 'New match'}
-          </Link>
-          <Link className="btn btn--ghost" to="/wiki">
-            Wiki
-          </Link>
-        </div>
       </section>
 
-      <section className="list-group">
-        <Link to="/training" className="list-row">
-          <div>
-            <h2>Training</h2>
-            <p>
-              {nameLang === 'de'
-                ? 'Klare Einzelfragen · Units & Waves · Types mit Icons'
-                : 'Clear single questions · units & waves · typed icons'}
-            </p>
-          </div>
-          <span className="chevron" aria-hidden>
-            ›
-          </span>
-        </Link>
-        <Link to="/roster" className="list-row">
-          <div>
-            <h2>Roster</h2>
-            <p>
-              {pickIds.length}/6 Picks · Owned
-            </p>
-          </div>
-          <span className="chevron" aria-hidden>
-            ›
-          </span>
-        </Link>
-        <div className="list-row list-row--static">
-          <div>
-            <h2>{nameLang === 'de' ? 'Letzter Plan' : 'Last plan'}</h2>
-            <p>
-              {builderMode === 'mastermind' ? 'Mastermind' : 'Legion'} · W
-              {currentWave} · {strategies.slice(0, 2).join(', ') || '—'}
-            </p>
-          </div>
-        </div>
+      <section className="action-stack" aria-label={de ? 'Aktionen' : 'Actions'}>
+        <ActionCard
+          to="/match"
+          accent="primary"
+          icon="LegionLord"
+          iconName="Match"
+          title={de ? 'Neues Match' : 'New match'}
+          body={
+            de
+              ? 'Live-Setup: Placement, Strategien, Gegner-Intel'
+              : 'Live setup: placement, strategies, opponent intel'
+          }
+          cta={de ? 'Match starten' : 'Start match'}
+        />
+
+        <ActionCard
+          to="/wiki"
+          icon="Yozora"
+          iconName="Wiki"
+          title={de ? 'Wiki / Lernen' : 'Wiki / Learn'}
+          body={
+            de
+              ? 'Legions, Strategien, Mastermind-Fit, Build Orders, Campaign'
+              : 'Legions, strategies, Mastermind fit, build orders, campaign'
+          }
+        />
+
+        <ActionCard
+          to="/training"
+          icon="Scorpion"
+          iconName="Training"
+          title="Training"
+          body={
+            de
+              ? 'Quiz-Drill: Units, Waves, Types — sofortiges Feedback'
+              : 'Quiz drill: units, waves, types — instant feedback'
+          }
+        />
+
+        <ActionCard
+          to="/roster"
+          icon="Gateguard"
+          iconName="Roster"
+          title="Roster"
+          body={
+            de
+              ? `${ownedIds.size} owned · ${pickIds.length}/6 Picks`
+              : `${ownedIds.size} owned · ${pickIds.length}/6 picks`
+          }
+        />
+
+        {lastPlan ? (
+          <ActionCard
+            to="/match"
+            icon="Kingpin"
+            iconName="Plan"
+            title={de ? 'Letzter Plan' : 'Last plan'}
+            body={
+              de
+                ? `${lastPlan.builderMode === 'mastermind' ? 'Mastermind' : 'Legion'} · W${lastPlan.wave} · ${strategyLabels.join(', ') || '—'} · ${lastPlan.pickCount}/6 Picks`
+                : `${lastPlan.builderMode === 'mastermind' ? 'Mastermind' : 'Legion'} · W${lastPlan.wave} · ${strategyLabels.join(', ') || '—'} · ${lastPlan.pickCount}/6 picks`
+            }
+            cta={de ? 'Plan fortsetzen' : 'Resume plan'}
+          />
+        ) : (
+          <ActionCard
+            accent="muted"
+            icon="Snail"
+            iconName="Plan"
+            title={de ? 'Letzter Plan' : 'Last plan'}
+            body={
+              de
+                ? 'Noch kein Plan — starte ein Match, um später fortzusetzen.'
+                : 'No plan yet — start a match to resume later.'
+            }
+          />
+        )}
       </section>
 
       <p className="attribution muted tiny">

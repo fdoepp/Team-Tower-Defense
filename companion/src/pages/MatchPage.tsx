@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { FIGHTERS, FIGHTER_BY_ID } from '../data/fighters';
 import { LEGIONS } from '../data/legions';
 import { MERCS } from '../data/mercs';
@@ -7,6 +7,7 @@ import { getWave } from '../data/waves';
 import type { LegionId, StrategyId } from '../data/types';
 import { buildLiveAdvice } from '../lib/advice';
 import { displayName } from '../lib/names';
+import { saveLastPlan } from '../lib/storage';
 import { useApp } from '../state/AppContext';
 import { Chip } from '../components/Chip';
 import { LaneGrid } from '../components/LaneGrid';
@@ -61,6 +62,17 @@ export function MatchPage() {
     placements,
     refreshPlacements,
   } = app;
+
+  useEffect(() => {
+    saveLastPlan({
+      builderMode,
+      legionId,
+      wave: currentWave,
+      strategies,
+      pickCount: pickIds.length,
+      updatedAt: Date.now(),
+    });
+  }, [builderMode, legionId, currentWave, strategies, pickIds.length]);
 
   const pool = useMemo(() => {
     let list = FIGHTERS.filter((f) => ownedIds.has(f.id));
