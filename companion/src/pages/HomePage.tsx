@@ -83,89 +83,138 @@ export function HomePage() {
         </p>
       </section>
 
-      <section className="action-stack" aria-label={de ? 'Aktionen' : 'Actions'}>
-        <ActionCard
-          to="/match"
-          accent="primary"
-          icon="LegionLord"
-          iconName="Match"
-          title={de ? 'Neues Match' : 'New match'}
-          body={
-            de
-              ? 'Live-Setup: Placement, Strategien, Gegner-Intel'
-              : 'Live setup: placement, strategies, opponent intel'
-          }
-          cta={de ? 'Match starten' : 'Start match'}
-        />
+      <div className="home-areas">
+        <section className="home-area" aria-labelledby="area-training">
+          <h2 id="area-training" className="home-area__label">
+            1 · Training
+          </h2>
+          <ActionCard
+            to="/training"
+            icon="Scorpion"
+            iconName="Training"
+            title="Training"
+            body={
+              de
+                ? 'Quiz & Erklärungen zu Waves, Units, Söldnern und Typing/RPS'
+                : 'Quiz & explanations for waves, units, mercs, and typing/RPS'
+            }
+            cta={de ? 'Drill starten' : 'Start drill'}
+          />
+        </section>
 
-        <ActionCard
-          to="/wiki"
-          icon="Yozora"
-          iconName="Wiki"
-          title={de ? 'Wiki / Lernen' : 'Wiki / Learn'}
-          body={
-            de
-              ? 'Legions, Strategien, Mastermind-Fit, Build Orders, Campaign'
-              : 'Legions, strategies, Mastermind fit, build orders, campaign'
-          }
-        />
-
-        <ActionCard
-          to="/training"
-          icon="Scorpion"
-          iconName="Training"
-          title="Training"
-          body={
-            de
-              ? 'Quiz-Drill: Units, Waves, Types — sofortiges Feedback'
-              : 'Quiz drill: units, waves, types — instant feedback'
-          }
-        />
-
-        <ActionCard
-          to="/roster"
-          icon="Gateguard"
-          iconName="Roster"
-          title="Roster"
-          body={
-            de
-              ? `${ownedIds.size} owned · ${pickIds.length}/6 Picks`
-              : `${ownedIds.size} owned · ${pickIds.length}/6 picks`
-          }
-        />
-
-        {lastPlan ? (
+        <section className="home-area" aria-labelledby="area-setup">
+          <h2 id="area-setup" className="home-area__label">
+            2 · {de ? 'Setup / Strategie' : 'Setup / Strategy'}
+          </h2>
           <ActionCard
             to="/match"
-            icon="Kingpin"
-            iconName="Plan"
-            title={de ? 'Letzter Plan' : 'Last plan'}
+            icon="LegionLord"
+            iconName="Setup"
+            title={de ? 'Setup / Strategie' : 'Setup / Strategy'}
             body={
               de
-                ? `${lastPlan.builderMode === 'mastermind' ? 'Mastermind' : 'Legion'} · W${lastPlan.wave} · ${strategyLabels.join(', ') || '—'} · ${lastPlan.pickCount}/6 Picks`
-                : `${lastPlan.builderMode === 'mastermind' ? 'Mastermind' : 'Legion'} · W${lastPlan.wave} · ${strategyLabels.join(', ') || '—'} · ${lastPlan.pickCount}/6 picks`
+                ? 'Feste Legion (z. B. Nomad) oder Setup aus Owned-Pool — dann Placement-Tipps & Build Order'
+                : 'Fixed Legion (e.g. Nomad) or setup from owned pool — then placement tips & build order'
             }
-            cta={de ? 'Plan fortsetzen' : 'Resume plan'}
+            cta={de ? 'Setup öffnen' : 'Open setup'}
           />
-        ) : (
-          <ActionCard
-            accent="muted"
-            icon="Snail"
-            iconName="Plan"
-            title={de ? 'Letzter Plan' : 'Last plan'}
-            body={
-              de
-                ? 'Noch kein Plan — starte ein Match, um später fortzusetzen.'
-                : 'No plan yet — start a match to resume later.'
-            }
-          />
-        )}
-      </section>
+        </section>
 
-      <p className="attribution muted tiny">
-        Private companion. Icons © AutoAttack Games via CDN — not for public
-        redistribution.
-      </p>
+        <section className="home-area" aria-labelledby="area-live">
+          <h2 id="area-live" className="home-area__label">
+            3 · Live Copilot
+          </h2>
+          <ActionCard
+            to="/live"
+            accent="primary"
+            icon="Kingpin"
+            iconName="Live"
+            title="Live Copilot"
+            body={
+              de
+                ? 'Während dem Spiel: Wave-Tipps, Sends, Workers, Gegner-Intel'
+                : 'During the game: wave tips, sends, workers, opponent intel'
+            }
+            cta={de ? 'Live öffnen' : 'Open live'}
+          />
+        </section>
+
+        <section className="home-area" aria-labelledby="area-wiki">
+          <h2 id="area-wiki" className="home-area__label">
+            4 · Wiki
+          </h2>
+          <ActionCard
+            to="/wiki"
+            icon="Yozora"
+            iconName="Wiki"
+            title="Wiki"
+            body={
+              de
+                ? 'Suche & Infos zu Masterminds, Waves, Strategien, Units, Söldnern'
+                : 'Search & info on Masterminds, waves, strategies, units, mercs'
+            }
+            cta={de ? 'Wiki öffnen' : 'Open wiki'}
+          />
+        </section>
+
+        <section className="home-area" aria-labelledby="area-misc">
+          <h2 id="area-misc" className="home-area__label">
+            5 · {de ? 'Sonstiges' : 'More'}
+          </h2>
+          <div className="action-stack action-stack--nested">
+            <ActionCard
+              to="/roster"
+              icon="Gateguard"
+              iconName="Roster"
+              title="Roster"
+              body={
+                de
+                  ? `Owned pflegen · ${ownedIds.size} owned · ${pickIds.length}/6 Picks`
+                  : `Manage owned · ${ownedIds.size} owned · ${pickIds.length}/6 picks`
+              }
+            />
+
+            {lastPlan ? (
+              <ActionCard
+                to="/match"
+                icon="Peewee"
+                iconName="Plan"
+                title={de ? 'Letzter Plan' : 'Last plan'}
+                body={
+                  de
+                    ? `${lastPlan.builderMode === 'mastermind' ? 'Mastermind' : 'Legion'} · W${lastPlan.wave} · ${strategyLabels.join(', ') || '—'} · ${lastPlan.pickCount}/6 Picks`
+                    : `${lastPlan.builderMode === 'mastermind' ? 'Mastermind' : 'Legion'} · W${lastPlan.wave} · ${strategyLabels.join(', ') || '—'} · ${lastPlan.pickCount}/6 picks`
+                }
+                cta={de ? 'Plan fortsetzen' : 'Resume plan'}
+              />
+            ) : (
+              <ActionCard
+                accent="muted"
+                icon="Snail"
+                iconName="Plan"
+                title={de ? 'Letzter Plan' : 'Last plan'}
+                body={
+                  de
+                    ? 'Noch kein Plan — starte ein Setup, um später fortzusetzen.'
+                    : 'No plan yet — start a setup to resume later.'
+                }
+              />
+            )}
+
+            <ActionCard
+              accent="muted"
+              icon="Hopper"
+              iconName="Info"
+              title={de ? 'Hinweise' : 'Notes'}
+              body={
+                de
+                  ? 'Private Begleitapp · DE↔EN Namen · Icons via CDN (kein öffentlicher Redistribute)'
+                  : 'Private companion · DE↔EN names · CDN icons (no public redistribute)'
+              }
+            />
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

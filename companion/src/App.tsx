@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from './components/AppShell';
 import { HomePage } from './pages/HomePage';
+import { LivePage } from './pages/LivePage';
 import { MatchPage } from './pages/MatchPage';
 import { RosterPage } from './pages/RosterPage';
 import { TrainingPage } from './pages/TrainingPage';
@@ -15,6 +16,7 @@ export default function App() {
           <Route element={<AppShell />}>
             <Route index element={<HomePage />} />
             <Route path="match" element={<MatchPage />} />
+            <Route path="live" element={<LivePage />} />
             <Route path="wiki" element={<WikiPage />} />
             <Route path="training" element={<TrainingPage />} />
             <Route path="roster" element={<RosterPage />} />

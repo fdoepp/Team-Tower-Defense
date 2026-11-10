@@ -18,8 +18,8 @@ const TABS = [
   },
   {
     to: '/match',
-    labelDe: 'Match',
-    labelEn: 'Match',
+    labelDe: 'Setup',
+    labelEn: 'Setup',
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
         <path
@@ -30,13 +30,13 @@ const TABS = [
     ),
   },
   {
-    to: '/wiki',
-    labelDe: 'Wiki',
-    labelEn: 'Wiki',
+    to: '/live',
+    labelDe: 'Live',
+    labelEn: 'Live',
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
         <path
-          d="M6 4h11a2 2 0 0 1 2 2v13l-3-1.5L13 19l-3-1.5L7 19V6a2 2 0 0 1-1-2Zm2 3v9.1l1.5-.8L12 16.7l2.5-1.4 1.5.8V7H8Z"
+          d="M12 5a7 7 0 1 1 0 14 7 7 0 0 1 0-14Zm0 2.2a4.8 4.8 0 1 0 0 9.6 4.8 4.8 0 0 0 0-9.6Zm-.9 2.1h1.8v3.2l2.2 1.3-.9 1.5-2.9-1.7V9.3Z"
           fill="currentColor"
         />
       </svg>
@@ -56,13 +56,13 @@ const TABS = [
     ),
   },
   {
-    to: '/roster',
-    labelDe: 'Roster',
-    labelEn: 'Roster',
+    to: '/wiki',
+    labelDe: 'Wiki',
+    labelEn: 'Wiki',
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
         <path
-          d="M8 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6Zm8 0a3 3 0 1 1 0-6 3 3 0 0 1 0 6ZM4 19a4 4 0 0 1 4-4h1.2a5.2 5.2 0 0 0 5.6 0H16a4 4 0 0 1 4 4v1H4v-1Z"
+          d="M6 4h11a2 2 0 0 1 2 2v13l-3-1.5L13 19l-3-1.5L7 19V6a2 2 0 0 1-1-2Zm2 3v9.1l1.5-.8L12 16.7l2.5-1.4 1.5.8V7H8Z"
           fill="currentColor"
         />
       </svg>
