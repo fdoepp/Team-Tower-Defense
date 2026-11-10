@@ -2,11 +2,11 @@ import type { Fighter } from './types';
 
 /**
  * Curated subset of real LTD2 fighters for MVP roster/training/planner.
- * `icon` is a legacy key for stand-in glyphs only — no CDN / official art loaded.
+ * `icon` maps to https://cdn.legiontd2.com/icons/{icon}.png (private use only).
+ * Glyph fallback on 404. Assets © AutoAttack Games — not for public redistribution.
  *
  * Sources (names/roles heuristics):
  * - Public units naming / wiki.gg role tags (medium confidence where marked)
- * - Visuals: original role glyphs in-app (not AutoAttack assets)
  *
  * Gold costs / typing are approximate seed values for UX — prefer API
  * /units/byVersion when an API key is available. Do not treat as patch-exact.

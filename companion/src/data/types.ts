@@ -39,7 +39,7 @@ export interface Fighter {
   id: string;
   nameEn: string;
   nameDe: string;
-  /** Legacy glyph key (not a CDN path); role visuals are generated in-app */
+  /** CDN filename stem (Peewee → cdn.legiontd2.com/icons/Peewee.png); glyph on 404 */
   icon: string;
   legion: LegionId;
   tier: 1 | 2 | 3 | 4 | 5 | 6;

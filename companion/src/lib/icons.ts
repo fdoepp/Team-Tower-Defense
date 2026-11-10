@@ -1,10 +1,17 @@
 import type { Role } from '../data/types';
 
 /**
- * Original stylized stand-in icons (not LTD2 art).
- * Role → shape/color mapping for roster/training recognition.
- * CDN / official game icons are intentionally unused until licensed.
+ * Official CDN icons for private companion use only.
+ * Pattern: https://cdn.legiontd2.com/icons/{Name}.png
+ * Glyphs remain the 404 / offline fallback — not a substitute for license
+ * if this build were ever redistributed publicly.
  */
+
+export const CDN_ICON_BASE = 'https://cdn.legiontd2.com/icons';
+
+export function cdnIconUrl(iconName: string): string {
+  return `${CDN_ICON_BASE}/${iconName}.png`;
+}
 
 export type IconKind =
   | 'tank'
@@ -58,7 +65,7 @@ export function roleToKind(roles: Role[] = []): IconKind {
   return 'dps';
 }
 
-/** Stable accent from unit id / name (not brand colors of LTD2). */
+/** Stable accent for glyph fallback */
 export function accentFromKey(key: string): string {
   let h = 0;
   for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;

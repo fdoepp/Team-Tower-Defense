@@ -3,7 +3,7 @@ import type { Mercenary } from './types';
 /**
  * Merc seed for live assist + training.
  * Costs/profiles are community heuristics — mark uncertain where needed.
- * `icon` key feeds original merc stand-in glyphs only (no CDN art).
+ * `icon` → CDN …/icons/{icon}.png (private use); glyph fallback on 404.
  */
 export const MERCS: Mercenary[] = [
   {

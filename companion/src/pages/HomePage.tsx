@@ -41,8 +41,8 @@ export function HomePage() {
       </section>
 
       <p className="attribution muted tiny">
-        Unit visuals are original role glyphs (tank/range/heal/…), not official LTD2
-        art. CDN icons stay off until licensed.
+        Private companion only. Fighter/Merc icons via cdn.legiontd2.com © AutoAttack
+        Games — not for public redistribution. Glyph fallback if an icon 404s.
       </p>
     </div>
   );
