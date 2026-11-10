@@ -2,10 +2,10 @@ import { useCallback, useState } from 'react';
 import { Chip } from '../components/Chip';
 import { TypeIcon } from '../components/TypeIcon';
 import { UnitIcon } from '../components/UnitIcon';
+import { WaveBadge } from '../components/WaveBadge';
 import { displayName } from '../lib/names';
 import {
-  explainFor,
-  gradeAnswer,
+  explainChoice,
   hintFor,
   makeTrainingSession,
   optionLabel,
@@ -41,7 +41,7 @@ export function TrainingPage() {
   const { nameLang } = useApp();
   const [session, setSession] = useState<QuizCard[]>(() => makeTrainingSession());
   const [idx, setIdx] = useState(0);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{
     ok: boolean;
     text: string;
@@ -51,7 +51,7 @@ export function TrainingPage() {
   const card = session[idx];
 
   const resetAnswer = () => {
-    setSelected([]);
+    setSelected(null);
     setFeedback(null);
   };
 
@@ -67,25 +67,20 @@ export function TrainingPage() {
   }, [idx, session.length]);
 
   const pick = (id: string) => {
-    if (feedback) return;
-    // Single-select for all current modes
-    setSelected([id]);
-  };
-
-  const check = () => {
-    if (!card || selected.length === 0) return;
-    const { ok } = gradeAnswer(card, selected);
-    setScore((s) => ({ ok: s.ok + (ok ? 1 : 0), total: s.total + 1 }));
-    setFeedback({
-      ok,
-      text: explainFor(card, nameLang),
-    });
+    if (!card || feedback) return;
+    setSelected(id);
+    const result = explainChoice(card, id, nameLang);
+    setScore((s) => ({
+      ok: s.ok + (result.ok ? 1 : 0),
+      total: s.total + 1,
+    }));
+    setFeedback(result);
   };
 
   if (!card) {
     return (
       <div className="page">
-        <p>Keine Karten.</p>
+        <p>{nameLang === 'de' ? 'Keine Karten.' : 'No cards.'}</p>
       </div>
     );
   }
@@ -109,24 +104,35 @@ export function TrainingPage() {
 
       <section className="training-card panel">
         <div className="training-subject">
-          <UnitIcon
-            icon={card.subject.icon}
-            name={subjectName}
-            size={64}
-            unitId={
-              card.subject.kind === 'wave' ? undefined : card.subject.id
-            }
-            kind={card.subject.kind === 'merc' ? 'merc' : undefined}
-          />
+          {card.subject.kind === 'wave' && card.subject.waveNumber != null ? (
+            <WaveBadge
+              waveNumber={card.subject.waveNumber}
+              creatureIcon={card.subject.icon}
+              creatureName={subjectName}
+              size={64}
+            />
+          ) : (
+            <UnitIcon
+              icon={card.subject.icon}
+              name={subjectName}
+              size={64}
+              unitId={card.subject.id}
+              kind={card.subject.kind === 'merc' ? 'merc' : undefined}
+            />
+          )}
           <div>
             <p className="training-kicker">
               {card.subject.kind === 'wave'
                 ? nameLang === 'de'
-                  ? 'Wave-Frage'
+                  ? 'Wellen-Frage'
                   : 'Wave question'
                 : card.subject.kind === 'merc'
-                  ? 'Mercenary'
-                  : 'Fighter'}
+                  ? nameLang === 'de'
+                    ? 'Söldner'
+                    : 'Mercenary'
+                  : nameLang === 'de'
+                    ? 'Kämpfer'
+                    : 'Fighter'}
             </p>
             <h2>{subjectName}</h2>
           </div>
@@ -136,20 +142,38 @@ export function TrainingPage() {
         {hint && <p className="prompt-hint">{hint}</p>}
 
         <div className="chip-row chip-row--quiz">
-          {card.options.map((o) => (
-            <Chip
-              key={o.id}
-              active={selected.includes(o.id)}
-              onClick={() => pick(o.id)}
-              disabled={!!feedback}
-            >
-              <OptionContent opt={o} />
-            </Chip>
-          ))}
+          {card.options.map((o) => {
+            const isSel = selected === o.id;
+            const isCorrect =
+              feedback &&
+              (card.mode === 'unitRole'
+                ? card.correctIds.includes(o.id)
+                : card.correctIds.includes(o.id));
+            const showMark = feedback && (isSel || isCorrect);
+            return (
+              <Chip
+                key={o.id}
+                active={isSel}
+                className={
+                  showMark
+                    ? isCorrect
+                      ? 'chip--correct'
+                      : isSel
+                        ? 'chip--wrong'
+                        : ''
+                    : ''
+                }
+                onClick={() => pick(o.id)}
+                disabled={!!feedback}
+              >
+                <OptionContent opt={o} />
+              </Chip>
+            );
+          })}
         </div>
 
         {feedback && (
-          <p
+          <div
             className={`feedback ${feedback.ok ? 'feedback--ok' : 'feedback--bad'}`}
           >
             <strong>
@@ -158,28 +182,24 @@ export function TrainingPage() {
                   ? 'Richtig'
                   : 'Correct'
                 : nameLang === 'de'
-                  ? 'Nicht ganz'
-                  : 'Not quite'}
+                  ? 'Falsch'
+                  : 'Wrong'}
             </strong>
-            {' — '}
-            {feedback.text}
-          </p>
+            <p>{feedback.text}</p>
+          </div>
         )}
 
         <div className="cta-row mt">
-          {!feedback ? (
-            <button
-              type="button"
-              className="btn btn--primary"
-              onClick={check}
-              disabled={selected.length === 0}
-            >
-              {nameLang === 'de' ? 'Prüfen' : 'Check'}
-            </button>
-          ) : (
+          {feedback ? (
             <button type="button" className="btn btn--primary" onClick={next}>
               {nameLang === 'de' ? 'Weiter' : 'Next'}
             </button>
+          ) : (
+            <p className="prompt-hint" style={{ margin: 0 }}>
+              {nameLang === 'de'
+                ? 'Tippe eine Antwort — Erklärung erscheint sofort.'
+                : 'Tap an answer — explanation appears immediately.'}
+            </p>
           )}
           <button
             type="button"

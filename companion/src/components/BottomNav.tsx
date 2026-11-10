@@ -1,9 +1,11 @@
 import { NavLink } from 'react-router-dom';
+import { useApp } from '../state/AppContext';
 
 const TABS = [
   {
     to: '/',
-    label: 'Home',
+    labelDe: 'Home',
+    labelEn: 'Home',
     end: true,
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
@@ -16,7 +18,8 @@ const TABS = [
   },
   {
     to: '/match',
-    label: 'Match',
+    labelDe: 'Match',
+    labelEn: 'Match',
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
         <path
@@ -28,7 +31,8 @@ const TABS = [
   },
   {
     to: '/wiki',
-    label: 'Wiki',
+    labelDe: 'Wiki',
+    labelEn: 'Wiki',
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
         <path
@@ -40,7 +44,8 @@ const TABS = [
   },
   {
     to: '/training',
-    label: 'Training',
+    labelDe: 'Training',
+    labelEn: 'Training',
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
         <path
@@ -52,7 +57,8 @@ const TABS = [
   },
   {
     to: '/roster',
-    label: 'Roster',
+    labelDe: 'Roster',
+    labelEn: 'Roster',
     icon: (
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
         <path
@@ -65,8 +71,9 @@ const TABS = [
 ] as const;
 
 export function BottomNav() {
+  const { nameLang } = useApp();
   return (
-    <nav className="bottom-nav" aria-label="Main">
+    <nav className="bottom-nav" aria-label={nameLang === 'de' ? 'Hauptmenü' : 'Main'}>
       {TABS.map((t) => (
         <NavLink
           key={t.to}
@@ -77,7 +84,7 @@ export function BottomNav() {
           }
         >
           {t.icon}
-          <span>{t.label}</span>
+          <span>{nameLang === 'de' ? t.labelDe : t.labelEn}</span>
         </NavLink>
       ))}
     </nav>

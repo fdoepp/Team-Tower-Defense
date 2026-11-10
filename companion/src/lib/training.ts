@@ -1,8 +1,16 @@
 import { FIGHTERS } from '../data/fighters';
-import { MERCS } from '../data/mercs';
+import { MERCS, MERC_BY_ID } from '../data/mercs';
 import { WAVES } from '../data/waves';
-import type { AttackType, NameLang, Role } from '../data/types';
-import { ATTACK_TYPES, DEFENSE_TYPES, DEFENSE_WEAK_TO } from './typing';
+import type { AttackType, NameLang, Role, Wave } from '../data/types';
+import {
+  ATTACK_STRONG_VS,
+  ATTACK_TYPES,
+  DEFENSE_TYPES,
+  DEFENSE_WEAK_TO,
+  rpsAttackVsDefense,
+  rpsHowToBeatDefense,
+  typeLabel,
+} from './typing';
 
 export type QuizMode =
   | 'unitAttack'
@@ -22,14 +30,12 @@ export interface QuizOption {
   labelDe: string;
   labelEn: string;
   kind: OptionKind;
-  /** CDN icon stem for types/mercs */
   icon?: string;
 }
 
 export interface QuizCard {
   id: string;
   mode: QuizMode;
-  /** Single correct answer id (or primary); multiCorrect for multi-select modes */
   correctIds: string[];
   multiSelect: boolean;
   subject: {
@@ -45,8 +51,13 @@ export interface QuizCard {
   hintDe?: string;
   hintEn?: string;
   options: QuizOption[];
-  explainDe: string;
-  explainEn: string;
+  /** Context for building click explanations */
+  meta?: {
+    wave?: Wave;
+    unitAttack?: AttackType;
+    unitDefense?: string;
+    correctMercId?: string;
+  };
 }
 
 function pickRandom<T>(arr: T[]): T {
@@ -65,8 +76,8 @@ function shuffle<T>(arr: T[]): T[] {
 function typeOpts(ids: string[]): QuizOption[] {
   return ids.map((id) => ({
     id,
-    labelDe: id,
-    labelEn: id,
+    labelDe: typeLabel(id, 'de'),
+    labelEn: typeLabel(id, 'en'),
     kind: 'type' as const,
     icon: id,
   }));
@@ -76,6 +87,18 @@ function withDistractors(correct: string, pool: string[], n = 4): string[] {
   const others = shuffle(pool.filter((x) => x !== correct));
   return shuffle([correct, ...others.slice(0, n - 1)]);
 }
+
+const ROLE_LABEL: Record<Role, { de: string; en: string }> = {
+  Tank: { de: 'Tank', en: 'Tank' },
+  DPS: { de: 'DPS', en: 'DPS' },
+  Aura: { de: 'Aura', en: 'Aura' },
+  AOE: { de: 'Flächenschaden (AOE)', en: 'AOE' },
+  Heal: { de: 'Heilung', en: 'Heal' },
+  Range: { de: 'Fernkampf', en: 'Range' },
+  Mana: { de: 'Mana', en: 'Mana' },
+  Carry: { de: 'Carry', en: 'Carry' },
+  Opener: { de: 'Opener', en: 'Opener' },
+};
 
 const ROLE_OPTS: Role[] = [
   'Tank',
@@ -88,6 +111,17 @@ const ROLE_OPTS: Role[] = [
   'Carry',
   'Opener',
 ];
+
+function waveSubject(wave: Wave) {
+  return {
+    kind: 'wave' as const,
+    id: `wave-${wave.number}`,
+    nameDe: `Welle ${wave.number} · ${wave.creatureDe}`,
+    nameEn: `Wave ${wave.number} · ${wave.creatureEn}`,
+    icon: wave.icon,
+    waveNumber: wave.number,
+  };
+}
 
 function buildUnitAttack(): QuizCard {
   const unit =
@@ -107,13 +141,12 @@ function buildUnitAttack(): QuizCard {
       nameEn: unit.nameEn,
       icon: unit.icon,
     },
-    promptDe: `Welchen Angriffstyp (Attack Type) hat ${unit.nameDe}?`,
+    promptDe: `Welchen Angriffstyp hat ${unit.nameDe}?`,
     promptEn: `What attack type does ${unit.nameEn} have?`,
-    hintDe: 'Genau eine richtige Antwort.',
-    hintEn: 'Exactly one correct answer.',
+    hintDe: 'Eine Antwort · Schere-Stein-Papier später für Counters.',
+    hintEn: 'One answer · rock-paper-scissors later for counters.',
     options: typeOpts(opts),
-    explainDe: `${unit.nameDe} greift mit ${atk} an.`,
-    explainEn: `${unit.nameEn} attacks with ${atk}.`,
+    meta: { unitAttack: atk, unitDefense: unit.defenseType },
   };
 }
 
@@ -135,23 +168,20 @@ function buildUnitDefense(): QuizCard {
       nameEn: unit.nameEn,
       icon: unit.icon,
     },
-    promptDe: `Welchen Verteidigungstyp (Defense Type) hat ${unit.nameDe}?`,
+    promptDe: `Welchen Verteidigungstyp hat ${unit.nameDe}?`,
     promptEn: `What defense type does ${unit.nameEn} have?`,
-    hintDe: 'Genau eine richtige Antwort.',
-    hintEn: 'Exactly one correct answer.',
+    hintDe: 'Eine Antwort — bestimmt, welche Angriffe wehtun.',
+    hintEn: 'One answer — decides which attacks hurt it.',
     options: typeOpts(opts),
-    explainDe: `${unit.nameDe} hat Defense ${def}.`,
-    explainEn: `${unit.nameEn} has defense ${def}.`,
+    meta: { unitDefense: def, unitAttack: unit.attackType },
   };
 }
 
 function buildUnitStrongVs(): QuizCard {
   const unit = pickRandom(FIGHTERS.filter((f) => f.strongVs.length > 0));
-  // Prefer defense-type answers when available
   const defHit =
-    unit.strongVs.find((s) =>
-      (DEFENSE_TYPES as string[]).includes(s),
-    ) ?? unit.strongVs[0]!;
+    unit.strongVs.find((s) => (DEFENSE_TYPES as string[]).includes(s)) ??
+    unit.strongVs[0]!;
   const pool = Array.from(
     new Set([...DEFENSE_TYPES, ...unit.strongVs, 'Flying', 'Clumped']),
   );
@@ -170,17 +200,24 @@ function buildUnitStrongVs(): QuizCard {
     },
     promptDe: `Gegen welchen Typ ist ${unit.nameDe} besonders stark?`,
     promptEn: `Which type is ${unit.nameEn} especially strong against?`,
-    hintDe: 'Wähle den Defense-/Zieltyp, gegen den die Unit gut performt.',
-    hintEn: 'Pick the defense/target type this unit performs well against.',
+    hintDe: 'Denk an den Defense-Typ / Ziel, das die Unit gut knackt.',
+    hintEn: 'Think defense/target type this unit cracks well.',
     options: opts.map((id) => ({
       id,
-      labelDe: id,
-      labelEn: id,
+      labelDe: (DEFENSE_TYPES as string[]).includes(id)
+        ? typeLabel(id, 'de')
+        : id === 'Flying'
+          ? 'Flying (fliegend)'
+          : id === 'Clumped'
+            ? 'Clumped (geklumpt)'
+            : id,
+      labelEn: (DEFENSE_TYPES as string[]).includes(id)
+        ? typeLabel(id, 'en')
+        : id,
       kind: (DEFENSE_TYPES as string[]).includes(id) ? 'type' : 'tag',
       icon: (DEFENSE_TYPES as string[]).includes(id) ? id : undefined,
     })),
-    explainDe: `${unit.nameDe} ist u. a. stark gegen: ${unit.strongVs.join(', ')}.`,
-    explainEn: `${unit.nameEn} is strong vs: ${unit.strongVs.join(', ')}.`,
+    meta: { unitAttack: unit.attackType, unitDefense: unit.defenseType },
   };
 }
 
@@ -207,17 +244,24 @@ function buildUnitWeakTo(): QuizCard {
     },
     promptDe: `Wogegen ist ${unit.nameDe} besonders schwach?`,
     promptEn: `What is ${unit.nameEn} especially weak against?`,
-    hintDe: 'Eine Antwort — der typische Counter / Schwachpunkt.',
-    hintEn: 'One answer — the typical counter / weakness.',
+    hintDe: 'Der typische Counter / Schwachpunkt — eine Antwort.',
+    hintEn: 'The typical counter / weakness — one answer.',
     options: opts.map((id) => ({
       id,
-      labelDe: id,
-      labelEn: id,
+      labelDe: (ATTACK_TYPES as string[]).includes(id)
+        ? typeLabel(id, 'de')
+        : id === 'Burst'
+          ? 'Burst (Burst-Schaden)'
+          : id === 'Flying'
+            ? 'Flying (fliegend)'
+            : id,
+      labelEn: (ATTACK_TYPES as string[]).includes(id)
+        ? typeLabel(id, 'en')
+        : id,
       kind: (ATTACK_TYPES as string[]).includes(id) ? 'type' : 'tag',
       icon: (ATTACK_TYPES as string[]).includes(id) ? id : undefined,
     })),
-    explainDe: `${unit.nameDe} ist u. a. schwach gegen: ${unit.weakVs.join(', ')}.`,
-    explainEn: `${unit.nameEn} is weak vs: ${unit.weakVs.join(', ')}.`,
+    meta: { unitAttack: unit.attackType, unitDefense: unit.defenseType },
   };
 }
 
@@ -238,73 +282,51 @@ function buildUnitRole(): QuizCard {
       icon: unit.icon,
     },
     promptDe: `Welche Rolle beschreibt ${unit.nameDe} am besten?`,
-    promptEn: `Which role best describes ${unit.nameDe}?`,
-    hintDe: 'Wähle die passendste Hauptrolle (eine Antwort).',
-    hintEn: 'Pick the best primary role (one answer).',
+    promptEn: `Which role best describes ${unit.nameEn}?`,
+    hintDe: 'Die passendste Hauptrolle — eine Antwort.',
+    hintEn: 'Best primary role — one answer.',
     options: opts.map((id) => ({
       id,
-      labelDe: id,
-      labelEn: id,
+      labelDe: ROLE_LABEL[id as Role]?.de ?? id,
+      labelEn: ROLE_LABEL[id as Role]?.en ?? id,
       kind: 'role',
     })),
-    explainDe: `Rollen von ${unit.nameDe}: ${unit.roles.join(', ')}.`,
-    explainEn: `Roles for ${unit.nameEn}: ${unit.roles.join(', ')}.`,
   };
 }
 
 function buildWaveAttack(): QuizCard {
   const wave = pickRandom(WAVES);
   const opts = withDistractors(wave.attackType, ATTACK_TYPES);
-  const nameDe = `Wave ${wave.number} · ${wave.creatureDe}`;
-  const nameEn = `Wave ${wave.number} · ${wave.creatureEn}`;
   return {
     id: `wa-${wave.number}-${Math.random().toString(36).slice(2, 6)}`,
     mode: 'waveAttack',
     correctIds: [wave.attackType],
     multiSelect: false,
-    subject: {
-      kind: 'wave',
-      id: `wave-${wave.number}`,
-      nameDe,
-      nameEn,
-      icon: wave.icon,
-      waveNumber: wave.number,
-    },
-    promptDe: `Welchen Angriffstyp haben die Creatures auf Wave ${wave.number}?`,
+    subject: waveSubject(wave),
+    promptDe: `Welchen Angriffstyp haben die Kreaturen auf Welle ${wave.number}?`,
     promptEn: `What attack type do the creatures on wave ${wave.number} have?`,
-    hintDe: 'Genau eine richtige Antwort.',
-    hintEn: 'Exactly one correct answer.',
+    hintDe: 'Eine Antwort.',
+    hintEn: 'One answer.',
     options: typeOpts(opts),
-    explainDe: `Wave ${wave.number} (${wave.creatureDe}): Attack ${wave.attackType}.`,
-    explainEn: `Wave ${wave.number} (${wave.creatureEn}): attack ${wave.attackType}.`,
+    meta: { wave },
   };
 }
 
 function buildWaveDefense(): QuizCard {
   const wave = pickRandom(WAVES);
   const opts = withDistractors(wave.defenseType, DEFENSE_TYPES);
-  const nameDe = `Wave ${wave.number} · ${wave.creatureDe}`;
-  const nameEn = `Wave ${wave.number} · ${wave.creatureEn}`;
   return {
     id: `wd-${wave.number}-${Math.random().toString(36).slice(2, 6)}`,
     mode: 'waveDefense',
     correctIds: [wave.defenseType],
     multiSelect: false,
-    subject: {
-      kind: 'wave',
-      id: `wave-${wave.number}`,
-      nameDe,
-      nameEn,
-      icon: wave.icon,
-      waveNumber: wave.number,
-    },
-    promptDe: `Welchen Verteidigungstyp hat Wave ${wave.number}?`,
+    subject: waveSubject(wave),
+    promptDe: `Welchen Verteidigungstyp hat Welle ${wave.number}?`,
     promptEn: `What defense type does wave ${wave.number} have?`,
-    hintDe: 'Damit weißt du, welche Attack Types gut dagegen halten.',
-    hintEn: 'This tells you which attack types hold well against it.',
+    hintDe: 'Damit weißt du, welche Angriffe gut dagegen halten.',
+    hintEn: 'This tells you which attacks hold well against it.',
     options: typeOpts(opts),
-    explainDe: `Wave ${wave.number}: Defense ${wave.defenseType}. Gut dagegen: ${(DEFENSE_WEAK_TO[wave.defenseType] ?? []).join(', ') || '—'}.`,
-    explainEn: `Wave ${wave.number}: defense ${wave.defenseType}. Strong vs it: ${(DEFENSE_WEAK_TO[wave.defenseType] ?? []).join(', ') || '—'}.`,
+    meta: { wave },
   };
 }
 
@@ -324,25 +346,16 @@ function buildWaveBestMerc(): QuizCard {
   const best = ranked[0]!;
   const distractors = shuffle(MERCS.filter((m) => m.id !== best.id)).slice(0, 3);
   const choices = shuffle([best, ...distractors]);
-  const nameDe = `Wave ${wave.number} · ${wave.creatureDe}`;
-  const nameEn = `Wave ${wave.number} · ${wave.creatureEn}`;
   return {
     id: `wm-${wave.number}-${Math.random().toString(36).slice(2, 6)}`,
     mode: 'waveBestMerc',
     correctIds: [best.id],
     multiSelect: false,
-    subject: {
-      kind: 'wave',
-      id: `wave-${wave.number}`,
-      nameDe,
-      nameEn,
-      icon: wave.icon,
-      waveNumber: wave.number,
-    },
-    promptDe: `Welchen Söldner (Merc) schickst du am ehesten mit gegen Wave ${wave.number}?`,
+    subject: waveSubject(wave),
+    promptDe: `Welchen Söldner schickst du am ehesten gegen Welle ${wave.number}?`,
     promptEn: `Which mercenary would you most likely send into wave ${wave.number}?`,
-    hintDe: `Wave-Defense ist ${wave.defenseType}${wave.tags.includes('break-window') ? ' · Break-Fenster' : ''}.`,
-    hintEn: `Wave defense is ${wave.defenseType}${wave.tags.includes('break-window') ? ' · break window' : ''}.`,
+    hintDe: `Wellen-Defense: ${typeLabel(wave.defenseType, 'de')}${wave.tags.includes('break-window') ? ' · Break-Fenster' : ''}.`,
+    hintEn: `Wave defense: ${typeLabel(wave.defenseType, 'en')}${wave.tags.includes('break-window') ? ' · break window' : ''}.`,
     options: choices.map((m) => ({
       id: m.id,
       labelDe: m.nameDe,
@@ -350,8 +363,7 @@ function buildWaveBestMerc(): QuizCard {
       kind: 'merc' as const,
       icon: m.icon,
     })),
-    explainDe: `Gegen Defense ${wave.defenseType} passt ${best.nameDe} (${best.attackType}${best.incomeProfile === 'power' ? ', Power' : best.incomeProfile === 'income' ? ', Income' : ''}) gut. Faustregel — Match-Kontext zählt.`,
-    explainEn: `Vs defense ${wave.defenseType}, ${best.nameEn} (${best.attackType}${best.incomeProfile === 'power' ? ', power' : best.incomeProfile === 'income' ? ', income' : ''}) fits well. Rule of thumb — match context matters.`,
+    meta: { wave, correctMercId: best.id },
   };
 }
 
@@ -360,8 +372,11 @@ function buildWaveTag(): QuizCard {
   const tag = wave.tags[0]!;
   const labels: Record<string, { de: string; en: string }> = {
     flying: { de: 'Flying / fliegend', en: 'Flying' },
-    'break-window': { de: 'Break-Fenster (Send lohnt)', en: 'Break window (send worth it)' },
-    opener: { de: 'Frühe Opener-Wave', en: 'Early opener wave' },
+    'break-window': {
+      de: 'Break-Fenster (Send lohnt sich)',
+      en: 'Break window (send worth it)',
+    },
+    opener: { de: 'Frühe Opener-Welle', en: 'Early opener wave' },
     spells: { de: 'Spell-Picks relevant', en: 'Spell picks matter' },
     endgame: { de: 'Endgame', en: 'Endgame' },
     boss: { de: 'Boss-ähnlich', en: 'Boss-like' },
@@ -381,17 +396,10 @@ function buildWaveTag(): QuizCard {
     mode: 'waveTag',
     correctIds: [tag],
     multiSelect: false,
-    subject: {
-      kind: 'wave',
-      id: `wave-${wave.number}`,
-      nameDe: `Wave ${wave.number} · ${wave.creatureDe}`,
-      nameEn: `Wave ${wave.number} · ${wave.creatureEn}`,
-      icon: wave.icon,
-      waveNumber: wave.number,
-    },
-    promptDe: `Was trifft auf Wave ${wave.number} zu?`,
+    subject: waveSubject(wave),
+    promptDe: `Was trifft auf Welle ${wave.number} zu?`,
     promptEn: `Which statement fits wave ${wave.number}?`,
-    hintDe: 'Eine Eigenschaft dieser Wave.',
+    hintDe: 'Eine Eigenschaft dieser Welle.',
     hintEn: 'One property of this wave.',
     options: opts.map((id) => ({
       id,
@@ -399,8 +407,7 @@ function buildWaveTag(): QuizCard {
       labelEn: labels[id]?.en ?? id,
       kind: 'tag',
     })),
-    explainDe: `Wave ${wave.number}: ${wave.tags.map((t) => labels[t]?.de ?? t).join(', ')}. ${wave.tipDe}`,
-    explainEn: `Wave ${wave.number}: ${wave.tags.map((t) => labels[t]?.en ?? t).join(', ')}. ${wave.tipEn}`,
+    meta: { wave },
   };
 }
 
@@ -418,7 +425,6 @@ const BUILDERS = [
 
 export function makeTrainingSession(n = 10): QuizCard[] {
   const cards: QuizCard[] = [];
-  // Ensure mix: at least ~40% wave-related
   const waveBuilders = [
     buildWaveAttack,
     buildWaveDefense,
@@ -454,25 +460,172 @@ export function hintFor(card: QuizCard, lang: NameLang): string | undefined {
   return lang === 'de' ? card.hintDe : card.hintEn;
 }
 
-export function explainFor(card: QuizCard, lang: NameLang): string {
-  return lang === 'de' ? card.explainDe : card.explainEn;
-}
-
 export function optionLabel(opt: QuizOption, lang: NameLang): string {
   return lang === 'de' ? opt.labelDe : opt.labelEn;
 }
 
-export function gradeAnswer(
+/** Immediate explanation after clicking an answer — RPS + tips. */
+export function explainChoice(
   card: QuizCard,
-  selected: string[],
-): { ok: boolean; detail: string } {
-  if (selected.length === 0) return { ok: false, detail: '' };
-  if (card.mode === 'unitRole') {
-    // any of the unit's roles is acceptable
-    const ok = selected.some((s) => card.correctIds.includes(s));
-    return { ok, detail: '' };
-  }
+  selectedId: string,
+  lang: NameLang,
+): { ok: boolean; text: string } {
   const ok =
-    selected.length === 1 && card.correctIds.includes(selected[0]!);
-  return { ok, detail: '' };
+    card.mode === 'unitRole'
+      ? card.correctIds.includes(selectedId)
+      : card.correctIds.includes(selectedId);
+
+  const wave = card.meta?.wave;
+  const parts: string[] = [];
+
+  if (card.mode === 'waveBestMerc' && wave) {
+    const picked = MERC_BY_ID[selectedId];
+    const best = MERC_BY_ID[card.meta?.correctMercId ?? card.correctIds[0]!];
+    if (picked) {
+      parts.push(
+        rpsAttackVsDefense(
+          picked.attackType,
+          wave.defenseType,
+          lang,
+        ),
+      );
+      const profileDe =
+        picked.incomeProfile === 'power'
+          ? 'Power-Söldner (Break)'
+          : picked.incomeProfile === 'income'
+            ? 'Income-Söldner (Eco)'
+            : 'Mix Income/Power';
+      const profileEn =
+        picked.incomeProfile === 'power'
+          ? 'power merc (break)'
+          : picked.incomeProfile === 'income'
+            ? 'income merc (eco)'
+            : 'mixed income/power';
+      parts.push(
+        lang === 'de'
+          ? `${picked.nameDe}: ${typeLabel(picked.attackType, 'de')} · ${profileDe}.`
+          : `${picked.nameEn}: ${typeLabel(picked.attackType, 'en')} · ${profileEn}.`,
+      );
+    }
+    if (best && (!picked || picked.id !== best.id)) {
+      parts.push(
+        lang === 'de'
+          ? `Besser: ${best.nameDe} (${typeLabel(best.attackType, 'de')}${best.incomeProfile === 'power' ? ', Power' : ''}) — ${rpsHowToBeatDefense(wave.defenseType, 'de')}`
+          : `Better: ${best.nameEn} (${typeLabel(best.attackType, 'en')}${best.incomeProfile === 'power' ? ', power' : ''}) — ${rpsHowToBeatDefense(wave.defenseType, 'en')}`,
+      );
+    }
+    if (wave.tags.includes('break-window')) {
+      parts.push(
+        lang === 'de'
+          ? 'Tipp: Break-Fenster → eher Power-Sends als reine Income-Linie.'
+          : 'Tip: break window → prefer power sends over pure income.',
+      );
+    }
+    parts.push(lang === 'de' ? wave.tipDe : wave.tipEn);
+  } else if (
+    (card.mode === 'waveAttack' || card.mode === 'waveDefense') &&
+    wave
+  ) {
+    if (card.mode === 'waveAttack') {
+      parts.push(
+        lang === 'de'
+          ? `Richtig ist ${typeLabel(wave.attackType, 'de')} (nicht ${typeLabel(selectedId, 'de')}).`
+          : `Correct is ${typeLabel(wave.attackType, 'en')} (not ${typeLabel(selectedId, 'en')}).`,
+      );
+      if (ok) {
+        parts[0] =
+          lang === 'de'
+            ? `Genau: Angriff ${typeLabel(wave.attackType, 'de')}.`
+            : `Correct: attack ${typeLabel(wave.attackType, 'en')}.`;
+      }
+    } else {
+      if (ok) {
+        parts.push(
+          lang === 'de'
+            ? `Genau: Defense ${typeLabel(wave.defenseType, 'de')}.`
+            : `Correct: defense ${typeLabel(wave.defenseType, 'en')}.`,
+        );
+      } else {
+        parts.push(
+          lang === 'de'
+            ? `Welle ${wave.number} hat ${typeLabel(wave.defenseType, 'de')} — nicht ${typeLabel(selectedId, 'de')}.`
+            : `Wave ${wave.number} is ${typeLabel(wave.defenseType, 'en')} — not ${typeLabel(selectedId, 'en')}.`,
+        );
+      }
+      parts.push(rpsHowToBeatDefense(wave.defenseType, lang));
+    }
+    parts.push(lang === 'de' ? wave.tipDe : wave.tipEn);
+  } else if (card.mode === 'waveTag' && wave) {
+    parts.push(lang === 'de' ? wave.tipDe : wave.tipEn);
+    parts.push(
+      lang === 'de'
+        ? `Typing: ${typeLabel(wave.attackType, 'de')} / ${typeLabel(wave.defenseType, 'de')}. ${rpsHowToBeatDefense(wave.defenseType, 'de')}`
+        : `Typing: ${typeLabel(wave.attackType, 'en')} / ${typeLabel(wave.defenseType, 'en')}. ${rpsHowToBeatDefense(wave.defenseType, 'en')}`,
+    );
+  } else if (card.mode === 'unitAttack' || card.mode === 'unitDefense') {
+    const correct = card.correctIds[0]!;
+    if (ok) {
+      parts.push(
+        lang === 'de'
+          ? `Genau: ${typeLabel(correct, 'de')}.`
+          : `Correct: ${typeLabel(correct, 'en')}.`,
+      );
+    } else {
+      parts.push(
+        lang === 'de'
+          ? `Nicht ${typeLabel(selectedId, 'de')} — richtig ist ${typeLabel(correct, 'de')}.`
+          : `Not ${typeLabel(selectedId, 'en')} — correct is ${typeLabel(correct, 'en')}.`,
+      );
+    }
+    if (card.mode === 'unitDefense' && card.meta?.unitDefense) {
+      parts.push(
+        rpsHowToBeatDefense(card.meta.unitDefense as typeof DEFENSE_TYPES[number], lang),
+      );
+    }
+    if (card.mode === 'unitAttack' && card.meta?.unitAttack) {
+      const vs = ATTACK_STRONG_VS[card.meta.unitAttack] ?? [];
+      parts.push(
+        lang === 'de'
+          ? `${typeLabel(card.meta.unitAttack, 'de')} ist typischerweise stark gegen: ${vs.map((d) => typeLabel(d, 'de')).join(', ') || '—'}.`
+          : `${typeLabel(card.meta.unitAttack, 'en')} is typically strong vs: ${vs.map((d) => typeLabel(d, 'en')).join(', ') || '—'}.`,
+      );
+    }
+  } else if (card.mode === 'unitStrongVsDef' || card.mode === 'unitWeakToAtk') {
+    const correct = card.correctIds[0]!;
+    if (ok) {
+      parts.push(
+        lang === 'de' ? `Stimmt: ${typeLabel(correct, 'de') || correct}.` : `Yes: ${typeLabel(correct, 'en') || correct}.`,
+      );
+    } else {
+      parts.push(
+        lang === 'de'
+          ? `Deine Wahl (${typeLabel(selectedId, 'de') || selectedId}) passt nicht — erwartet: ${typeLabel(correct, 'de') || correct}.`
+          : `Your pick (${typeLabel(selectedId, 'en') || selectedId}) doesn’t fit — expected: ${typeLabel(correct, 'en') || correct}.`,
+      );
+    }
+    if (card.meta?.unitAttack && (DEFENSE_TYPES as string[]).includes(correct)) {
+      parts.push(
+        rpsAttackVsDefense(
+          card.meta.unitAttack,
+          correct as typeof DEFENSE_TYPES[number],
+          lang,
+        ),
+      );
+    }
+  } else if (card.mode === 'unitRole') {
+    parts.push(
+      ok
+        ? lang === 'de'
+          ? `Passt — gültige Rollen: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.de ?? r).join(', ')}.`
+          : `Fits — valid roles: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.en ?? r).join(', ')}.`
+        : lang === 'de'
+          ? `Besser eine von: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.de ?? r).join(', ')}.`
+          : `Prefer one of: ${card.correctIds.map((r) => ROLE_LABEL[r as Role]?.en ?? r).join(', ')}.`,
+    );
+  }
+
+  return {
+    ok,
+    text: parts.filter(Boolean).join(' '),
+  };
 }

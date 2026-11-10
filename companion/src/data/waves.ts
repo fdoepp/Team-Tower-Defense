@@ -1,27 +1,27 @@
 import type { Wave } from './types';
 
 /**
- * Wave reference seed (creatures / typing). Patch-dependent stats omitted.
- * Source comments: wiki.gg Waves + Official Gameplay Guide heuristics.
- * Tip text is coaching UX, not invented mechanics.
+ * Wave reference seed. `icon` = official wave creature CDN stem when known
+ * (not mercenary art — e.g. Crab/Wale/Hopper/FlyingChicken).
+ * Tip text is coaching UX from public guides.
  */
 export const WAVES: Wave[] = [
   {
     number: 1,
     creatureEn: 'Crabs',
     creatureDe: 'Krabben',
-    icon: 'Snail', // placeholder wave icon slot — crabs icon may differ
+    icon: 'Crab',
     attackType: 'Pierce',
     defenseType: 'Fortified',
     tags: ['opener'],
-    tipDe: 'Oft King-Up statt Snail; günstiger Tank/Opener reicht.',
+    tipDe: 'Oft King-Up statt Schnecke; günstiger Tank/Opener reicht.',
     tipEn: 'Often King-Up over Snail; cheap tank/opener is enough.',
   },
   {
     number: 2,
     creatureEn: 'Wale',
     creatureDe: 'Wale',
-    icon: 'Brute',
+    icon: 'Wale',
     attackType: 'Impact',
     defenseType: 'Magic',
     tags: [],
@@ -32,7 +32,7 @@ export const WAVES: Wave[] = [
     number: 3,
     creatureEn: 'Hopper',
     creatureDe: 'Hopper',
-    icon: 'Fiend',
+    icon: 'Hopper',
     attackType: 'Magic',
     defenseType: 'Natural',
     tags: [],
@@ -43,7 +43,7 @@ export const WAVES: Wave[] = [
     number: 4,
     creatureEn: 'Flying Chickens',
     creatureDe: 'Fliegende Hühner',
-    icon: 'Harpy',
+    icon: 'FlyingChicken',
     attackType: 'Impact',
     defenseType: 'Swift',
     tags: ['flying'],
@@ -54,7 +54,7 @@ export const WAVES: Wave[] = [
     number: 5,
     creatureEn: 'Spawns',
     creatureDe: 'Spawns',
-    icon: 'Imp',
+    icon: 'Creature',
     attackType: 'Magic',
     defenseType: 'Natural',
     tags: [],
@@ -87,18 +87,21 @@ export const WAVES: Wave[] = [
     number: 8,
     creatureEn: 'Fiends',
     creatureDe: 'Fiends',
-    icon: 'Fiend',
+    // Avoid merc Fiend art as wave subject — number badge is primary; generic creature fallback
+    icon: 'Creature',
     attackType: 'Magic',
     defenseType: 'Swift',
     tags: ['break-window'],
-    tipDe: 'Häufiges Break-Window — Mythium für Power-Mercs prüfen.',
-    tipEn: 'Common break window — check Mythium for power mercs.',
+    tipDe:
+      'Häufiges Break-Fenster — Mythium für Power-Söldner; gegen Swift hilft Impact/Pure.',
+    tipEn:
+      'Common break window — Mythium for power mercs; Impact/Pure help vs Swift.',
   },
   {
     number: 9,
     creatureEn: 'Ghosts',
     creatureDe: 'Geister',
-    icon: 'Gargoyle',
+    icon: 'Creature',
     attackType: 'Magic',
     defenseType: 'Magic',
     tags: [],
@@ -113,14 +116,14 @@ export const WAVES: Wave[] = [
     attackType: 'Impact',
     defenseType: 'Fortified',
     tags: ['break-window', 'boss-ish'],
-    tipDe: 'Starkes Send-Fenster; gegen Kingpin/Brute-Counter denken.',
-    tipEn: 'Strong send window; think counters vs Kingpin/Brute lines.',
+    tipDe: 'Starkes Send-Fenster; Pierce/Impact gegen Fortified; Power-Mercs prüfen.',
+    tipEn: 'Strong send window; Pierce/Impact vs Fortified; check power mercs.',
   },
   {
     number: 11,
     creatureEn: 'Spell Wave',
-    creatureDe: 'Spell-Wave',
-    icon: 'Disciple',
+    creatureDe: 'Spell-Welle',
+    icon: 'Creature',
     attackType: 'Magic',
     defenseType: 'Natural',
     tags: ['spells'],
@@ -130,13 +133,13 @@ export const WAVES: Wave[] = [
   {
     number: 13,
     creatureEn: 'Four Eyes pressure',
-    creatureDe: 'Four-Eyes-Druck',
+    creatureDe: 'Vier-Augen-Druck',
     icon: 'FourEyes',
     attackType: 'Magic',
     defenseType: 'Swift',
     tags: ['break-window'],
-    tipDe: 'Typisches Mid-Break-Fenster (Stub-Wave-Name).',
-    tipEn: 'Typical mid break window (stub wave label).',
+    tipDe: 'Mid-Break-Fenster — Impact/Pure gegen Swift; Team-Send syncen.',
+    tipEn: 'Mid break window — Impact/Pure vs Swift; sync team sends.',
   },
   {
     number: 15,
@@ -146,14 +149,14 @@ export const WAVES: Wave[] = [
     attackType: 'Pierce',
     defenseType: 'Natural',
     tags: ['break-window'],
-    tipDe: 'Anti-Eco Endgame-Fenster oft ≤ W15.',
-    tipEn: 'Anti-eco end windows often ≤ W15.',
+    tipDe: 'Anti-Eco-Fenster oft ≤ W15; Magic/Pierce gegen Natural.',
+    tipEn: 'Anti-eco windows often ≤ W15; Magic/Pierce vs Natural.',
   },
   {
     number: 21,
     creatureEn: 'Legion Lords',
     creatureDe: 'Legion Lords',
-    icon: 'Kingpin',
+    icon: 'LegionLord',
     attackType: 'Pure',
     defenseType: 'Immaterial',
     tags: ['endgame', 'boss'],

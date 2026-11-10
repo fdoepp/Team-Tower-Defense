@@ -16,13 +16,13 @@ import { UnitIcon } from '../components/UnitIcon';
 const BREAK_OPTIONS = [8, 10, 13, 15];
 const PLAYSTYLES = ['Lock In', 'Greed', 'Chaos', 'Fiesta', 'Other'];
 const OPPONENT_PRESETS = [
-  'Kingpin',
-  'Fenix',
-  'Four Eyes',
-  'Brute',
-  'Peewee',
-  'Gateguard',
-  'Yozora',
+  { id: 'Kingpin', de: 'Kingpin', en: 'Kingpin' },
+  { id: 'Fenix', de: 'Fenix', en: 'Fenix' },
+  { id: 'Four Eyes', de: 'Vier Augen', en: 'Four Eyes' },
+  { id: 'Brute', de: 'Schläger', en: 'Brute' },
+  { id: 'Peewee', de: 'Peewee', en: 'Peewee' },
+  { id: 'Gateguard', de: 'Torwächter', en: 'Gateguard' },
+  { id: 'Yozora', de: 'Yozora', en: 'Yozora' },
 ];
 
 export function MatchPage() {
@@ -295,15 +295,17 @@ export function MatchPage() {
           </label>
         </div>
 
-        <h3 className="mt">Gegner / Sends</h3>
+        <h3 className="mt">
+          {nameLang === 'de' ? 'Gegner / Sends' : 'Opponents / Sends'}
+        </h3>
         <div className="chip-row">
-          {OPPONENT_PRESETS.map((name) => (
+          {OPPONENT_PRESETS.map((p) => (
             <Chip
-              key={name}
-              active={opponentChips.includes(name)}
-              onClick={() => toggleOpponentChip(name)}
+              key={p.id}
+              active={opponentChips.includes(p.id)}
+              onClick={() => toggleOpponentChip(p.id)}
             >
-              {name}
+              {nameLang === 'de' ? p.de : p.en}
             </Chip>
           ))}
         </div>

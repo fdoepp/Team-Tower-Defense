@@ -24,7 +24,7 @@ export const MERCS: Mercenary[] = [
   {
     id: 'pack-rat',
     nameEn: 'Pack Rat',
-    nameDe: 'Packrat',
+    nameDe: 'Packratte',
     icon: 'PackRat',
     mythiumCost: 30,
     attackType: 'Pierce',
@@ -39,7 +39,7 @@ export const MERCS: Mercenary[] = [
   {
     id: 'fiend',
     nameEn: 'Fiend',
-    nameDe: 'Fiend',
+    nameDe: 'Unhold',
     icon: 'Fiend',
     mythiumCost: 40,
     attackType: 'Magic',
@@ -54,7 +54,7 @@ export const MERCS: Mercenary[] = [
   {
     id: 'brute',
     nameEn: 'Brute',
-    nameDe: 'Brute',
+    nameDe: 'Schläger',
     icon: 'Brute',
     mythiumCost: 60,
     attackType: 'Impact',
@@ -84,7 +84,7 @@ export const MERCS: Mercenary[] = [
   {
     id: 'four-eyes',
     nameEn: 'Four Eyes',
-    nameDe: 'Four Eyes',
+    nameDe: 'Vier Augen',
     icon: 'FourEyes',
     mythiumCost: 90,
     attackType: 'Magic',
